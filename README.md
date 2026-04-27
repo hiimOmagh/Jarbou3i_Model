@@ -4,7 +4,7 @@ A trilingual, client-side workbench for structured strategic analysis using the 
 
 **Interests → Actors → Tools → Narrative → Results → Feedback**
 
-The tool generates a structured prompt for your preferred AI assistant, imports the JSON answer, then turns it into a navigable analysis with scoring diagnostics, contradictions, scenarios, evidence, assumptions, and a polished standalone HTML report export.
+The tool generates a structured prompt for your preferred AI assistant, imports the JSON answer, then turns it into a navigable analysis with scoring diagnostics, contradictions, scenarios, evidence, assumptions, quality gates, and a polished standalone HTML report export.
 
 ## Live usage model
 
@@ -24,14 +24,18 @@ The tool generates a structured prompt for your preferred AI assistant, imports 
 - Runs client-side in the browser
 - Arabic, English, and French UI
 - RTL/LTR aware
+- Modular static source: `index.html` + `src/styles.css` + `src/app.js`
 - Structured JSON import with recovery from common messy output wrappers
-- Weighted scoring diagnostics
+- Formal schema contract at `schema/strategic-analysis.schema.json`
+- Research Mode prompt with evidence, uncertainty, counter-evidence, and falsifier requirements
+- Computed model diagnostics: API, NSI, tool pressure, interest weight, and quality gate
 - Contradiction analysis with affected layers
 - Scenario/falsifier review
 - Evidence and assumption review
 - HTML report export only, to keep the workflow focused
 - Optimized mascot/icon assets for public web deployment
-- Small PWA manifest for better install/share metadata
+- PWA manifest for install/share metadata
+- Static, schema, fixture, accessibility, RTL, and browser QA gates
 
 ## Privacy model
 
@@ -71,31 +75,52 @@ Your app will be available at the GitHub Pages URL.
 
 ## Testing
 
-Install dependencies and run:
+Fast no-browser QA:
+
+```bash
+node tests/qa-check.mjs
+```
+
+Individual no-browser gates:
+
+```bash
+npm run test:static
+npm run test:schema
+npm run test:fixtures
+npm run test:a11y:static
+```
+
+Browser gate:
 
 ```bash
 npm install
 npx playwright install --with-deps
-npm test
+npm run test:browser
 ```
 
 Available scripts:
 
 ```bash
-npm run test:static  # no browser required
-npm run test:e2e     # Playwright browser flow
-npm test             # static checks + Playwright flow
+npm run test:qa       # consolidated no-browser release gate
+npm run test:browser  # all Playwright browser tests
+npm run test:e2e      # core Playwright flow only
+npm run test:rtl      # Arabic mobile/RTL Playwright smoke only
+npm test              # QA gate + browser gate
 ```
 
-The static suite checks:
+The QA suite checks:
 
 - JavaScript syntax
+- modular file layout
 - duplicate DOM IDs
-- optimized runtime asset references
+- optimized runtime asset references and size limits
 - manifest integrity
+- schema governance
+- fixture quality
+- static accessibility basics
 - absence of removed export/self-check code paths
 
-The browser smoke suite checks:
+The browser suite checks:
 
 - page load
 - optimized icon/mascot references
@@ -105,53 +130,56 @@ The browser smoke suite checks:
 - sample analysis import
 - review tab navigation
 - HTML-only export workflow
+- mobile Arabic overflow smoke
+- runtime accessibility smoke
 
 ## Files
 
 ```text
-index.html                         # deployable static app
+index.html                         # deployable static shell
+src/styles.css                     # application stylesheet
+src/app.js                         # client-side application logic
 manifest.webmanifest               # app/share metadata
 assets/jarbou3i-mascot.png         # original high-resolution source asset
 assets/jarbou3i-mascot-512.png     # optimized welcome/Open Graph/runtime asset
 assets/jarbou3i-mascot-192.png     # optimized header/manifest asset
 assets/apple-touch-icon.png        # Apple touch icon
 assets/favicon-32.png              # browser favicon
-fixtures/sample-analysis-en.json   # English sample structured analysis
-fixtures/sample-analysis-ar.json   # Arabic sample structured analysis
-fixtures/sample-analysis-fr.json   # French sample structured analysis
+schema/strategic-analysis.schema.json
+fixtures/sample-analysis-en.json
+fixtures/sample-analysis-ar.json
+fixtures/sample-analysis-fr.json
+tests/qa-check.mjs                 # consolidated no-browser QA gate
 tests/static-check.mjs             # static release checks
-tests/smoke.spec.js                # Playwright smoke test
+tests/schema-check.mjs             # schema governance checks
+tests/fixtures-check.mjs           # sample fixture checks
+tests/a11y-static-check.mjs        # static accessibility checks
+tests/smoke.spec.js                # Playwright core flow
+tests/a11y.spec.js                 # Playwright runtime accessibility smoke
+tests/rtl-mobile.spec.js           # Playwright mobile RTL smoke
 docs/usage-guide.md                # usage guide
 docs/visual-qa.md                  # manual visual QA checklist
-.github/workflows/ci.yml           # GitHub Actions smoke test
+docs/qa-matrix.md                  # release QA matrix
+.github/workflows/ci.yml           # GitHub Actions test workflow
 ```
 
 ## Public release
 
-Public semantic versioning starts at **1.0.0**. Version **1.1.0** adds the analytical rigor layer: formal schema, Research mode, computed metrics, source discipline, and fixture validation.
+Public semantic versioning starts at **1.0.0**.
+
+- **1.0.0**: initial public static release.
+- **1.1.0**: analytical rigor layer with formal schema, Research mode, computed metrics, source discipline, and fixture validation.
+- **1.2.0**: modular QA hardening with split source files, schema checks, accessibility checks, mobile RTL coverage, and stronger release gates.
 
 Before announcing a public rollout, run:
 
-- `npm run test:static`
-- `npm test` after Playwright browsers are installed
-- Chrome/Edge manual visual QA
-- Arabic RTL visual QA
-- mobile viewport QA around 390 px width
-- exported HTML report QA
+```bash
+node tests/qa-check.mjs
+npm run test:browser
+```
+
+Then complete manual visual QA for Arabic RTL, mobile width around 390 px, dark/light modes, and exported HTML reports.
 
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
-
-
-## v1.1 Analytical rigor layer
-
-This release elevates the tool from a polished static workflow into a schema-governed analytical workbench. New additions include Research prompt mode, `schema_version: 1.1.0`, stable IDs, computed API/NSI/tool-pressure/interest-weight metrics, source/counter-evidence fields, and a quality gate before export.
-
-Recommended validation:
-
-```bash
-npm run test:static
-npm run test:fixtures
-npm test
-```
