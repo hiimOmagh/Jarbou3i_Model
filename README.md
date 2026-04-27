@@ -128,7 +128,7 @@ docs/visual-qa.md                  # manual visual QA checklist
 
 ## Public release
 
-This repository starts public semantic versioning at **1.0.0**. Earlier internal prototype/build numbers are intentionally omitted from the public release history.
+Public semantic versioning starts at **1.0.0**. Version **1.1.0** adds the analytical rigor layer: formal schema, Research mode, computed metrics, source discipline, and fixture validation.
 
 Before announcing a public rollout, run:
 
@@ -142,3 +142,16 @@ Before announcing a public rollout, run:
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
+
+
+## v1.1 Analytical rigor layer
+
+This release elevates the tool from a polished static workflow into a schema-governed analytical workbench. New additions include Research prompt mode, `schema_version: 1.1.0`, stable IDs, computed API/NSI/tool-pressure/interest-weight metrics, source/counter-evidence fields, and a quality gate before export.
+
+Recommended validation:
+
+```bash
+npm run test:static
+npm run test:fixtures
+npm test
+```
