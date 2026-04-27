@@ -1,6 +1,6 @@
 # Strategic Analysis Workbench
 
-A bilingual, client-side workbench for structured strategic analysis using the model:
+A trilingual, client-side workbench for structured strategic analysis using the model:
 
 **Interests → Actors → Tools → Narrative → Results → Feedback**
 
@@ -21,14 +21,14 @@ The tool generates a structured prompt for your preferred AI assistant, imports 
 - **No backend required**
 - **Static GitHub Pages compatible**
 - **Runs client-side in the browser**
-- **Arabic and English UI**
+- **Arabic, English, and French UI**
 - **RTL/LTR aware**
 - **Structured JSON import**
 - **Weighted scoring diagnostics**
 - **Contradiction analysis with affected layers**
 - **Scenario/falsifier review**
 - **Evidence and assumption review**
-- **HTML, Markdown, and JSON export**
+- **HTML report export**
 
 ## Privacy model
 
@@ -83,9 +83,8 @@ The smoke suite checks the public user flow:
 - dark mode toggle
 - sample analysis import
 - review tab navigation
-- runtime self-check
 - invalid JSON handling
-- export buttons
+- HTML report export
 
 ## Files
 
@@ -93,6 +92,7 @@ The smoke suite checks the public user flow:
 index.html                      # deployable static app
 fixtures/sample-analysis-en.json # sample structured analysis
 fixtures/sample-analysis-ar.json # Arabic sample structured analysis
+fixtures/sample-analysis-fr.json # French sample structured analysis
 tests/smoke.spec.js              # Playwright smoke test
 docs/usage-guide.md              # usage guide
 docs/visual-qa.md                # manual visual QA checklist
@@ -109,7 +109,6 @@ Before announcing a major public rollout, run:
 - Arabic RTL visual QA
 - mobile viewport QA
 - exported HTML report QA
-- print/PDF QA
 
 ## Versioning
 
