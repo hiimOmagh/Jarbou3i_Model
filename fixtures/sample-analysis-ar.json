@@ -1,0 +1,136 @@
+{
+  "subject": {
+    "title": "مثال: مخرجات الحرب العالمية الثانية",
+    "context": "1939–1947، النظام الدولي",
+    "question": "كيف أعادت مخرجات الحرب العالمية الثانية تشكيل النظام العالمي؟",
+    "executive_thesis": "أنهت الحرب العالمية الثانية توازن القوى الأوروبي التقليدي وفتحت نظامًا ثنائي القطبية تقوده الولايات المتحدة والاتحاد السوفيتي."
+  },
+  "interests": [
+    {
+      "name": "منع عودة الهيمنة الألمانية",
+      "type": "strategic",
+      "intensity": 5,
+      "horizon": "long",
+      "stakes": "existential",
+      "confidence": "high",
+      "rationale": "جعلت الحربان العالميتان احتواء ألمانيا مصلحة أمنية مركزية للحلفاء."
+    }
+  ],
+  "actors": [
+    {
+      "name": "الولايات المتحدة",
+      "category": "state",
+      "power_index": 5,
+      "financial": 5,
+      "decision_access": 5,
+      "disruption_capacity": 4,
+      "media_influence": 4,
+      "confidence": "high",
+      "rationale": "مكّنتها القدرات الصناعية والمالية والعسكرية من قيادة النظام الجديد."
+    }
+  ],
+  "tools": [
+    {
+      "name": "مؤسسات دولية جديدة",
+      "type": "diplomatic",
+      "cost": 3,
+      "risk": 2,
+      "speed": 3,
+      "reversibility": 2,
+      "deniability": 1,
+      "confidence": "high",
+      "rationale": "وفّرت الأمم المتحدة وبريتون وودز آليات تنسيق وشرعية."
+    }
+  ],
+  "narrative": [
+    {
+      "name": "منع تكرار الحرب الشاملة",
+      "frame": "security",
+      "coherence": 5,
+      "media_alignment": 4,
+      "public_acceptance": 5,
+      "confidence": "high",
+      "rationale": "كانت السردية متماسكة بعد خسائر غير مسبوقة."
+    }
+  ],
+  "results": [
+    {
+      "name": "صعود الثنائية القطبية",
+      "type": "direct",
+      "goal_achieved_pct": 70,
+      "cost_benefit": 3,
+      "power_balance_impact": "strengthened",
+      "confidence": "high",
+      "rationale": "تراجع مركز الثقل الأوروبي وصعدت واشنطن وموسكو."
+    }
+  ],
+  "feedback": [
+    {
+      "description": "الخوف المتبادل دفع إلى أحلاف عسكرية وسباق تسلح.",
+      "adapts": "tools",
+      "speed": "fast",
+      "confidence": "high",
+      "rationale": "أعادت النتائج الأمنية تشكيل الأدوات والتحالفات."
+    }
+  ],
+  "contradictions": {
+    "items": [
+      {
+        "rhetoric": "تحرير الشعوب ومنع الاستبداد",
+        "contradiction_type": "rhetoric_vs_action",
+        "affected_layers": [
+          "narrative",
+          "tools",
+          "results"
+        ],
+        "actions": [
+          "تقسيم مناطق النفوذ في أوروبا",
+          "قبول أنظمة تابعة داخل المجال السوفيتي"
+        ],
+        "interpretation": "رافقت السردية الأخلاقية حسابات أمنية وصلبة.",
+        "severity": 4,
+        "confidence": "high"
+      }
+    ]
+  },
+  "scenarios": {
+    "items": [
+      {
+        "name": "ترسيخ النظام ثنائي القطبية",
+        "probability": 70,
+        "timeframe": "1947–1955",
+        "drivers": [
+          "الاستقطاب الأيديولوجي"
+        ],
+        "early_signals": [
+          "خطة مارشال",
+          "مبدأ ترومان"
+        ],
+        "disproven_if": [
+          "نجاح تسوية أمنية أوروبية جامعة"
+        ],
+        "rationale": "دعمت المؤشرات المبكرة انقسامًا مؤسسيًا وعسكريًا."
+      }
+    ]
+  },
+  "evidence": {
+    "items": [
+      {
+        "claim": "فقدت أوروبا مركزيتها بعد الحرب.",
+        "basis": "inference",
+        "source_note": "مستنتج من توزيع القوة بعد 1945.",
+        "confidence": "high"
+      }
+    ]
+  },
+  "assumptions": {
+    "items": [
+      {
+        "assumption": "ستفضّل القوى الكبرى الاستقرار المؤسسي على العزلة.",
+        "risk": "medium",
+        "disproving_test": "انسحاب أمريكي سريع من أوروبا وانهيار بريتون وودز.",
+        "implication_if_wrong": "سيصبح النظام أكثر سيولة وأقل قابلية للتوقع."
+      }
+    ]
+  }
+}
