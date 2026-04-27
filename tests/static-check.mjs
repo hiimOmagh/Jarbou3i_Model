@@ -59,5 +59,12 @@ if (!manifest.icons?.some((icon) => icon.sizes === '512x512')) fail('manifest la
 if (!index.includes('manifest.webmanifest')) fail('manifest link missing from index.html');
 if (!index.includes('aria-current="step"')) fail('stage accessibility marker missing');
 if (!index.includes('SETTINGS_KEY')) fail('settings persistence is missing');
+if (!index.includes('schema_version')) fail('schema_version support is missing');
+if (!index.includes('modeResearch')) fail('research prompt mode is missing');
+if (!index.includes('qualityGateHtml')) fail('quality gate UI is missing');
+if (!index.includes('actorPowerScore')) fail('computed API scoring is missing');
+if (!fs.existsSync('schema/strategic-analysis.schema.json')) fail('formal strategic analysis schema is missing');
 
 console.log('Static checks passed.');
+
+process.exit(0);
