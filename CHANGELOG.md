@@ -1,3 +1,8 @@
+## 1.1.2
+- Fixed Arabic/RTL welcome-card layout so text no longer collapses into a narrow column.
+- Reworked the mascot welcome card with explicit grid areas for LTR/RTL.
+- Updated the bundled mascot asset to the new circular icon.
+
 ## 1.1.1
 - Added the uploaded mascot image as the app icon/logo and favicon.
 - Added a welcome card in the main workflow area using the mascot.
