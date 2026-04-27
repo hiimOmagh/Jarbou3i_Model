@@ -31,7 +31,7 @@ Paste the JSON into the import field and click **Import analysis**. Then inspect
 
 ## 5. Export
 
-Use HTML for a polished report, Markdown for editing, or JSON for backup/reuse.
+Use **Export HTML report** to download a polished standalone report for sharing or archiving.
 
 ## Important caution
 

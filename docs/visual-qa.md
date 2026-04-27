@@ -28,7 +28,7 @@ Complete this before a public release.
 - [ ] Arabic report uses correct RTL layout
 - [ ] Score formula does not overflow
 - [ ] Evidence table/rows wrap cleanly
-- [ ] Print/PDF page breaks are acceptable
+- [ ] HTML report layout is clean and shareable
 
 ## Analysis quality display
 
