@@ -13,20 +13,21 @@
       "horizon": "long",
       "stakes": "existential",
       "confidence": "high",
-      "rationale": "Deux guerres mondiales ont transformé le contrôle de la puissance allemande en priorité de sécurité."
+      "rationale": "Deux guerres mondiales ont transformé le contrôle de la puissance allemande en priorité de sécurité.",
+      "id": "I1"
     }
   ],
   "actors": [
     {
       "name": "États-Unis",
       "category": "state",
-      "power_index": 5,
       "financial": 5,
       "decision_access": 5,
       "disruption_capacity": 4,
       "media_influence": 4,
       "confidence": "high",
-      "rationale": "Leur capacité industrielle, financière et militaire leur permettait d’organiser l’ordre d’après-guerre."
+      "rationale": "Leur capacité industrielle, financière et militaire leur permettait d’organiser l’ordre d’après-guerre.",
+      "id": "A1"
     }
   ],
   "tools": [
@@ -39,7 +40,8 @@
       "reversibility": 2,
       "deniability": 1,
       "confidence": "high",
-      "rationale": "L’ONU et Bretton Woods ont fourni des instruments de coordination et de légitimité."
+      "rationale": "L’ONU et Bretton Woods ont fourni des instruments de coordination et de légitimité.",
+      "id": "T1"
     }
   ],
   "narrative": [
@@ -50,7 +52,8 @@
       "media_alignment": 4,
       "public_acceptance": 5,
       "confidence": "high",
-      "rationale": "Le traumatisme humain et matériel rendait ce cadrage très puissant."
+      "rationale": "Le traumatisme humain et matériel rendait ce cadrage très puissant.",
+      "id": "N1"
     }
   ],
   "results": [
@@ -61,7 +64,8 @@
       "cost_benefit": 3,
       "power_balance_impact": "strengthened",
       "confidence": "high",
-      "rationale": "Le pouvoir s’est concentré autour de Washington et Moscou."
+      "rationale": "Le pouvoir s’est concentré autour de Washington et Moscou.",
+      "id": "R1"
     }
   ],
   "feedback": [
@@ -70,7 +74,8 @@
       "adapts": "actors",
       "speed": "fast",
       "confidence": "high",
-      "rationale": "Les intérêts de sécurité ont divergé dès la reconstruction."
+      "rationale": "Les intérêts de sécurité ont divergé dès la reconstruction.",
+      "id": "F1"
     }
   ],
   "contradictions": {
@@ -89,7 +94,8 @@
         ],
         "interpretation": "La sécurité collective dépendait d’une hiérarchie de puissances plutôt que d’une égalité souveraine complète.",
         "severity": 8,
-        "confidence": "high"
+        "confidence": "high",
+        "id": "C1"
       }
     ]
   },
@@ -112,7 +118,8 @@
         "disproven_if": [
           "Les grandes puissances acceptent une gouvernance réellement égalitaire."
         ],
-        "rationale": "L’ordre devient stable mais hiérarchisé."
+        "rationale": "L’ordre devient stable mais hiérarchisé.",
+        "id": "S1"
       }
     ]
   },
@@ -122,7 +129,15 @@
         "claim": "Les États-Unis sortent de la guerre avec une puissance industrielle et financière exceptionnelle.",
         "basis": "source_based",
         "source_note": "Données historiques générales sur la production et le financement de guerre.",
-        "confidence": "high"
+        "confidence": "high",
+        "id": "E1",
+        "source_title": "Historical power distribution reference",
+        "source_url": "",
+        "source_date": "unknown",
+        "source_type": "other",
+        "evidence_strength": 3,
+        "uncertainty": "Aggregated historical inference; source specificity should be improved in research use.",
+        "counter_evidence": "Some European states retained substantial institutional and economic capacity after 1945."
       }
     ]
   },
@@ -132,8 +147,39 @@
         "assumption": "La stabilité d’après-guerre dépend de la capacité américaine à financer la reconstruction.",
         "risk": "medium",
         "disproving_test": "Montrer une reconstruction équivalente sans financement américain.",
-        "implication_if_wrong": "Le poids causal des institutions américaines serait surestimé."
+        "implication_if_wrong": "Le poids causal des institutions américaines serait surestimé.",
+        "id": "AS1"
       }
     ]
+  },
+  "schema_version": "1.1.0",
+  "analysis_id": "sample-wwii-fr",
+  "generated_at": "2026-04-27T00:00:00Z",
+  "language": "fr",
+  "model_mode": "research",
+  "links": [
+    {
+      "from": "I1",
+      "to": "A1",
+      "relation": "motivates",
+      "strength": 4
+    },
+    {
+      "from": "A1",
+      "to": "T1",
+      "relation": "uses",
+      "strength": 4
+    },
+    {
+      "from": "T1",
+      "to": "R1",
+      "relation": "produces",
+      "strength": 3
+    }
+  ],
+  "quality_gate": {
+    "publication_risk": "medium",
+    "weakest_layer": "evidence",
+    "next_improvement": "Replace generic historical notes with precise source citations."
   }
 }

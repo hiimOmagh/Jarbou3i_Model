@@ -13,20 +13,21 @@
       "horizon": "long",
       "stakes": "existential",
       "confidence": "high",
-      "rationale": "جعلت الحربان العالميتان احتواء ألمانيا مصلحة أمنية مركزية للحلفاء."
+      "rationale": "جعلت الحربان العالميتان احتواء ألمانيا مصلحة أمنية مركزية للحلفاء.",
+      "id": "I1"
     }
   ],
   "actors": [
     {
       "name": "الولايات المتحدة",
       "category": "state",
-      "power_index": 5,
       "financial": 5,
       "decision_access": 5,
       "disruption_capacity": 4,
       "media_influence": 4,
       "confidence": "high",
-      "rationale": "مكّنتها القدرات الصناعية والمالية والعسكرية من قيادة النظام الجديد."
+      "rationale": "مكّنتها القدرات الصناعية والمالية والعسكرية من قيادة النظام الجديد.",
+      "id": "A1"
     }
   ],
   "tools": [
@@ -39,7 +40,8 @@
       "reversibility": 2,
       "deniability": 1,
       "confidence": "high",
-      "rationale": "وفّرت الأمم المتحدة وبريتون وودز آليات تنسيق وشرعية."
+      "rationale": "وفّرت الأمم المتحدة وبريتون وودز آليات تنسيق وشرعية.",
+      "id": "T1"
     }
   ],
   "narrative": [
@@ -50,7 +52,8 @@
       "media_alignment": 4,
       "public_acceptance": 5,
       "confidence": "high",
-      "rationale": "كانت السردية متماسكة بعد خسائر غير مسبوقة."
+      "rationale": "كانت السردية متماسكة بعد خسائر غير مسبوقة.",
+      "id": "N1"
     }
   ],
   "results": [
@@ -61,7 +64,8 @@
       "cost_benefit": 3,
       "power_balance_impact": "strengthened",
       "confidence": "high",
-      "rationale": "تراجع مركز الثقل الأوروبي وصعدت واشنطن وموسكو."
+      "rationale": "تراجع مركز الثقل الأوروبي وصعدت واشنطن وموسكو.",
+      "id": "R1"
     }
   ],
   "feedback": [
@@ -70,7 +74,8 @@
       "adapts": "tools",
       "speed": "fast",
       "confidence": "high",
-      "rationale": "أعادت النتائج الأمنية تشكيل الأدوات والتحالفات."
+      "rationale": "أعادت النتائج الأمنية تشكيل الأدوات والتحالفات.",
+      "id": "F1"
     }
   ],
   "contradictions": {
@@ -89,7 +94,8 @@
         ],
         "interpretation": "رافقت السردية الأخلاقية حسابات أمنية وصلبة.",
         "severity": 4,
-        "confidence": "high"
+        "confidence": "high",
+        "id": "C1"
       }
     ]
   },
@@ -109,7 +115,8 @@
         "disproven_if": [
           "نجاح تسوية أمنية أوروبية جامعة"
         ],
-        "rationale": "دعمت المؤشرات المبكرة انقسامًا مؤسسيًا وعسكريًا."
+        "rationale": "دعمت المؤشرات المبكرة انقسامًا مؤسسيًا وعسكريًا.",
+        "id": "S1"
       }
     ]
   },
@@ -117,9 +124,17 @@
     "items": [
       {
         "claim": "فقدت أوروبا مركزيتها بعد الحرب.",
-        "basis": "inference",
+        "basis": "source_based",
         "source_note": "مستنتج من توزيع القوة بعد 1945.",
-        "confidence": "high"
+        "confidence": "high",
+        "id": "E1",
+        "source_title": "Historical power distribution reference",
+        "source_url": "",
+        "source_date": "unknown",
+        "source_type": "other",
+        "evidence_strength": 3,
+        "uncertainty": "Aggregated historical inference; source specificity should be improved in research use.",
+        "counter_evidence": "Some European states retained substantial institutional and economic capacity after 1945."
       }
     ]
   },
@@ -129,8 +144,39 @@
         "assumption": "ستفضّل القوى الكبرى الاستقرار المؤسسي على العزلة.",
         "risk": "medium",
         "disproving_test": "انسحاب أمريكي سريع من أوروبا وانهيار بريتون وودز.",
-        "implication_if_wrong": "سيصبح النظام أكثر سيولة وأقل قابلية للتوقع."
+        "implication_if_wrong": "سيصبح النظام أكثر سيولة وأقل قابلية للتوقع.",
+        "id": "AS1"
       }
     ]
+  },
+  "schema_version": "1.1.0",
+  "analysis_id": "sample-wwii-ar",
+  "generated_at": "2026-04-27T00:00:00Z",
+  "language": "ar",
+  "model_mode": "research",
+  "links": [
+    {
+      "from": "I1",
+      "to": "A1",
+      "relation": "motivates",
+      "strength": 4
+    },
+    {
+      "from": "A1",
+      "to": "T1",
+      "relation": "uses",
+      "strength": 4
+    },
+    {
+      "from": "T1",
+      "to": "R1",
+      "relation": "produces",
+      "strength": 3
+    }
+  ],
+  "quality_gate": {
+    "publication_risk": "medium",
+    "weakest_layer": "evidence",
+    "next_improvement": "Replace generic historical notes with precise source citations."
   }
 }
