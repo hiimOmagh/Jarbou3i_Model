@@ -1,8 +1,8 @@
 {
   "name": "strategic-analysis-workbench",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Client-side bilingual strategic analysis workbench for structured AI prompt import and review.",
+  "description": "Client-side trilingual strategic analysis workbench with HTML report export.",
   "scripts": {
     "dev": "http-server . -p 4173 -c-1",
     "test": "playwright test"
