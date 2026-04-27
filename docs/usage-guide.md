@@ -10,15 +10,22 @@ Example:
 World War II outcomes, 1939–1947, international order
 ```
 
-## 2. Copy the prompt
+## 2. Choose language and mode
+
+Select the analysis language and prompt mode:
+
+- **Focused** for a concise structured result.
+- **Expert** for evidence, assumptions, and causal links.
+
+## 3. Copy the prompt
 
 Click **Copy prompt** and paste it into your preferred AI assistant.
 
-## 3. Copy only the JSON result
+## 4. Copy only the JSON result
 
-The AI should return valid JSON. Copy only the JSON object. If the AI wraps it in a code block, the tool will usually extract it automatically.
+The AI should return valid JSON. Copy only the JSON object. If the AI wraps it in a code block or adds text around it, the tool will usually extract the JSON automatically.
 
-## 4. Import and review
+## 5. Import and review
 
 Paste the JSON into the import field and click **Import analysis**. Then inspect:
 
@@ -29,7 +36,7 @@ Paste the JSON into the import field and click **Import analysis**. Then inspect
 - Evidence
 - Exports
 
-## 5. Export
+## 6. Export
 
 Use **Export HTML report** to download a polished standalone report for sharing or archiving.
 
