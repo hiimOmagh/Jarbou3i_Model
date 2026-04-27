@@ -1,6 +1,6 @@
 {
   "name": "strategic-analysis-workbench",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Client-side trilingual strategic analysis workbench with HTML report export.",
   "scripts": {

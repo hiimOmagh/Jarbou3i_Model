@@ -1,3 +1,8 @@
+## 1.1.1
+- Added the uploaded mascot image as the app icon/logo and favicon.
+- Added a welcome card in the main workflow area using the mascot.
+- Bundled the mascot image in `assets/jarbou3i-mascot.png` for deployment.
+
 # Changelog
 
 ## 1.1.0 — Focused export + French language support

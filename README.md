@@ -117,3 +117,8 @@ Public semantic versioning starts at **1.0.0**. Internal development versions ar
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
+
+
+## Mascot and welcome image
+- The uploaded mascot is bundled at `assets/jarbou3i-mascot.png`.
+- It is used in the header logo, the welcome card, and as the favicon.
