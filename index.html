@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Strategic Analysis Workbench</title>
+<meta name="description" content="A bilingual, client-side strategic analysis workbench for structured AI prompts, JSON import, scoring diagnostics, and exportable reports." />
+<meta name="theme-color" content="#255ee8" />
+<meta name="color-scheme" content="light dark" />
+<meta property="og:title" content="Strategic Analysis Workbench" />
+<meta property="og:description" content="Client-side bilingual workbench for six-layer strategic analysis." />
+<meta property="og:type" content="website" />
+<style>
+
+:root{
+  --bg:#eef2f8;
+  --surface:rgba(255,255,255,.84);
+  --surface-solid:#ffffff;
+  --surface-soft:#f8fafc;
+  --surface-muted:#eef3f9;
+  --line:#dce5f2;
+  --line-strong:#c8d4e5;
+  --text:#122033;
+  --strong:#07111f;
+  --muted:#65758b;
+  --accent:#255ee8;
+  --accent-2:#13b8a6;
+  --accent-3:#7255e8;
+  --success:#16a34a;
+  --warn:#d97706;
+  --danger:#dc2626;
+  --p1:#e5484d;--p2:#f97316;--p3:#d9a406;--p4:#2f6fed;--p5:#8b5cf6;--p6:#64748b;
+  --shadow-xs:0 1px 2px rgba(15,23,42,.05);
+  --shadow-sm:0 10px 26px rgba(15,23,42,.065);
+  --shadow:0 24px 70px rgba(15,23,42,.12);
+  --shadow-lg:0 36px 100px rgba(15,23,42,.18);
+  --radius-2xl:34px;
+  --radius-xl:26px;
+  --radius-lg:20px;
+  --radius:16px;
+  --focus:0 0 0 4px rgba(37,94,232,.18)
+}
+body.dark{
+  --bg:#020817;
+  --surface:rgba(15,23,42,.80);
+  --surface-solid:#0f172a;
+  --surface-soft:#111c30;
+  --surface-muted:#18243a;
+  --line:rgba(148,163,184,.16);
+  --line-strong:rgba(148,163,184,.28);
+  --text:#e8eefb;
+  --strong:#ffffff;
+  --muted:#a1b1c9;
+  --accent:#67a2ff;
+  --accent-2:#2dd4bf;
+  --accent-3:#a78bfa;
+  --success:#4ade80;
+  --warn:#fbbf24;
+  --danger:#f87171;
+  --p1:#f87171;--p2:#fb923c;--p3:#facc15;--p4:#60a5fa;--p5:#c084fc;--p6:#a1a1aa;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.20);
+  --shadow-sm:0 10px 26px rgba(0,0,0,.26);
+  --shadow:0 24px 70px rgba(0,0,0,.38);
+  --shadow-lg:0 36px 100px rgba(0,0,0,.48);
+  --focus:0 0 0 4px rgba(103,162,255,.22)
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;font-family:"Inter","Noto Sans Arabic","Noto Kufi Arabic","Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 8% 0%, rgba(37,94,232,.13), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(19,184,166,.12), transparent 30%),
+    radial-gradient(circle at 45% 100%, rgba(114,85,232,.10), transparent 34%),
+    linear-gradient(180deg,color-mix(in srgb,var(--bg) 86%,#fff 14%),var(--bg));
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.52;filter:saturate(.7)}
+.hide{display:none!important}.muted{color:var(--muted)}.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:"Inter","Segoe UI",Arial,sans-serif}
+.app{max-width:1380px;margin:0 auto;padding:24px 20px 86px}
+.top{
+  position:sticky;top:14px;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin-bottom:20px;padding:15px 18px;border:1px solid var(--line);border-radius:28px;background:var(--surface);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:var(--shadow-sm)
+}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}.brand h1{margin:0;color:var(--strong);font-size:clamp(22px,2.7vw,32px);font-weight:1000;letter-spacing:-.035em;line-height:1.05}.brand p{margin:5px 0 0;color:var(--muted);font-size:13.5px;max-width:780px}
+.logo{width:54px;height:54px;border-radius:19px;position:relative;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent-3) 52%,var(--accent-2));box-shadow:0 20px 40px rgba(37,94,232,.24);overflow:hidden;flex:0 0 auto;color:#fff}
+.logo::before{content:"";position:absolute;width:24px;height:24px;border:2px solid rgba(255,255,255,.76);border-radius:50%;box-shadow:0 0 0 8px rgba(255,255,255,.08)}
+.logo::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 -17px 0 rgba(255,255,255,.65),15px 9px 0 rgba(255,255,255,.55),-15px 9px 0 rgba(255,255,255,.55)}
+.logoMark{position:absolute;inset:0;background:linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.22) 42% 44%,transparent 44%)}
+.topActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.segment{display:inline-flex;border:1px solid var(--line);border-radius:16px;background:var(--surface-solid);padding:4px;gap:4px;box-shadow:var(--shadow-xs)}
+.segBtn{border:0;background:transparent;color:var(--muted);min-height:32px;border-radius:12px;padding:0 12px;font-weight:850;transition:.15s ease}.segBtn.active{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 20px rgba(37,94,232,.18)}
+.btn{border:1px solid var(--line);background:var(--surface-solid);color:var(--text);min-height:42px;border-radius:14px;padding:10px 15px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.42)}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--shadow-sm);border-color:color-mix(in srgb,var(--accent) 25%,var(--line-strong))}.btn:focus-visible,.segBtn:focus-visible,.engineCard:focus-visible,.navBtn:focus-visible,.accHead:focus-visible,textarea:focus,input:focus,select:focus{outline:none;box-shadow:var(--focus)}.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-3) 45%,var(--accent-2));border-color:transparent;color:#fff;box-shadow:0 18px 36px rgba(37,94,232,.24)}.btn.ghost{background:transparent;box-shadow:none}.iconBtn{width:42px;padding:0}
+.shell{display:grid;gap:20px}
+.panel{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-2xl);box-shadow:var(--shadow);padding:24px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.panel::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 38%,white),transparent);opacity:.7}.panelHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:17px}.panelHeader h2,.panelHeader h3{margin:0;color:var(--strong);font-weight:1000;letter-spacing:-.025em}.panelHeader h2{font-size:24px}.panelHeader h3{font-size:18px}.panelHeader p{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:760px}
+.commandPanel{padding:26px;background:linear-gradient(145deg,color-mix(in srgb,var(--surface-solid) 74%,transparent),color-mix(in srgb,var(--surface-soft) 76%,transparent));}.commandPanel::after{content:"";position:absolute;inset:auto -80px -120px auto;width:280px;height:280px;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 12%,transparent),transparent 62%);pointer-events:none}.commandPanel .panelHeader h2{font-size:clamp(24px,3vw,34px)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.23fr) minmax(340px,.77fr);gap:18px;position:relative;z-index:1}.card{background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 94%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent));border:1px solid var(--line);border-radius:24px;padding:19px;box-shadow:var(--shadow-sm)}.card.flat{background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft) 88%,transparent),color-mix(in srgb,var(--surface-solid) 90%,transparent))}.topicCommand{border-color:color-mix(in srgb,var(--accent) 20%,var(--line));box-shadow:0 18px 46px rgba(37,94,232,.08)}.importCommand{opacity:.86}.importCommand.ready{opacity:1;border-color:color-mix(in srgb,var(--success) 35%,var(--line));box-shadow:0 18px 46px rgba(22,163,74,.09)}.importCommand.invalid{opacity:1;border-color:color-mix(in srgb,var(--danger) 28%,var(--line));box-shadow:0 18px 46px rgba(220,38,38,.07)}
+.field{display:grid;gap:8px;margin-bottom:14px}.label{font-size:12px;color:var(--muted);font-weight:900;letter-spacing:.035em;text-transform:uppercase}html[dir="rtl"] .label{text-transform:none;letter-spacing:0}.detailsGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;background:color-mix(in srgb,var(--surface-solid) 72%,transparent);border:1px solid var(--line);border-radius:18px;padding:11px;margin:12px 0}.detailsGrid .field{margin-bottom:0}.detailsGrid .label{font-size:11px}textarea,input,select{width:100%;border:1px solid var(--line);background:var(--surface-solid);color:var(--text);border-radius:16px;padding:13px 14px;outline:none;transition:.15s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}textarea:focus,input:focus,select:focus{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));transform:translateY(-1px)}textarea{resize:vertical;min-height:110px}.topicInput{min-height:154px;font-size:16px}.pasteArea{min-height:174px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;direction:ltr;text-align:left;font-size:13px}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}.status{border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:color-mix(in srgb,var(--surface-soft) 92%,transparent);font-size:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}.status.good{border-color:color-mix(in srgb,var(--success) 45%,var(--line));color:var(--success)}.status.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line));color:var(--warn)}.status.bad{border-color:color-mix(in srgb,var(--danger) 45%,var(--line));color:var(--danger)}
+.stage{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:14px 0 20px;border:1px solid var(--line);border-radius:18px;padding:6px;background:color-mix(in srgb,var(--surface-solid) 68%,transparent);box-shadow:var(--shadow-xs)}.stageItem{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;color:var(--muted);border-radius:14px;padding:10px 12px;font-size:13px;font-weight:900;transition:.15s ease}.stageItem:not(:last-child)::after{content:"";position:absolute;top:50%;inset-inline-end:-1px;width:1px;height:22px;background:var(--line)}.stageItem .num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface-muted);font-size:12px;flex:0 0 auto;font-weight:1000}.stageItem.done{color:var(--success)}.stageItem.done .num{background:color-mix(in srgb,var(--success) 14%,var(--surface-muted));color:var(--success)}.stageItem.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-3) 44%,var(--accent-2));box-shadow:0 14px 28px rgba(37,94,232,.20)}.stageItem.active .num{background:rgba(255,255,255,.18);color:#fff}
+.engineNav{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;position:relative}.engineCard{border:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 93%,transparent));border-radius:24px;padding:16px 15px;min-height:132px;box-shadow:var(--shadow-sm);position:relative;overflow:visible;transition:.18s ease;text-align:inherit}.engineCard:hover{transform:translateY(-4px);box-shadow:var(--shadow)}.engineCard::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:4px;background:linear-gradient(90deg,var(--pc),color-mix(in srgb,var(--pc) 26%,transparent));border-radius:24px 24px 0 0}.engineCard::after{content:"";position:absolute;inset:auto 14px 14px auto;width:56px;height:56px;border-radius:50%;background:color-mix(in srgb,var(--pc) 9%,transparent);z-index:0}.engineCard .eyebrow{font-size:11px;color:var(--muted);font-weight:1000;letter-spacing:.08em;text-transform:uppercase}.engineCard h4{position:relative;z-index:1;margin:8px 0 6px;color:var(--strong);font-size:15.5px;font-weight:1000;line-height:1.25}.engineCard p{position:relative;z-index:1;margin:0;color:var(--muted);font-size:12.8px;line-height:1.45}.engineCard .cardCount{position:relative;z-index:1;margin-top:14px;display:inline-flex;border:1px solid var(--line);background:var(--surface-solid);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:1000;color:var(--text)}.engineCard.active{border-color:color-mix(in srgb,var(--pc) 58%,var(--line));box-shadow:0 0 0 4px color-mix(in srgb,var(--pc) 15%,transparent),var(--shadow)}.flowArrow{position:absolute;top:50%;inset-inline-end:-15px;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface-solid);border:1px solid var(--line);color:var(--muted);font-weight:1000;box-shadow:var(--shadow-xs);z-index:3}.engineCard:last-child .flowArrow{display:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:var(--surface-solid);color:var(--text);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;box-shadow:var(--shadow-xs)}
+.reviewShell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px}.sideNav{background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent));border:1px solid var(--line);border-radius:24px;padding:10px;box-shadow:var(--shadow-sm);height:max-content;position:sticky;top:108px}.navBtn{width:100%;border:0;background:transparent;color:var(--muted);border-radius:15px;padding:12px 12px;text-align:inherit;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:.15s ease}.navBtn:hover{background:color-mix(in srgb,var(--surface-soft) 92%,transparent);color:var(--text);transform:none;box-shadow:none}.navBtn.active{background:linear-gradient(135deg,var(--accent),var(--accent-3) 44%,var(--accent-2));color:#fff;box-shadow:0 14px 30px rgba(37,94,232,.20)}.badge{border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:950;background:var(--surface-solid);color:var(--muted)}.navBtn.active .badge{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.16)}.contentPanel{background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent));border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:var(--shadow-sm);min-height:430px}.contentPanel h3{margin:0 0 15px;color:var(--strong);font-size:20px;font-weight:1000;letter-spacing:-.025em}.summaryGrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}.intelBrief{display:grid;gap:12px}.briefHero{border:1px solid var(--line);border-radius:24px;padding:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 8%,var(--surface-solid)),color-mix(in srgb,var(--accent-2) 7%,var(--surface-solid)));box-shadow:var(--shadow-sm)}.briefHero .itemTitle{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.briefHero .itemText{font-size:16px;color:var(--strong)}.scoreBox{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,transparent),color-mix(in srgb,var(--accent-2) 14%,transparent),color-mix(in srgb,var(--accent-3) 12%,transparent));border:1px solid var(--line);border-radius:24px;padding:22px;text-align:center;box-shadow:var(--shadow-sm);align-self:start}.scoreNum{font-size:54px;font-weight:1000;color:var(--strong);line-height:1;letter-spacing:-.04em}.scoreLbl{color:var(--muted);font-size:13px;margin-top:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:850}
+.list{display:grid;gap:10px}.item{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft) 92%,transparent),color-mix(in srgb,var(--surface-solid) 92%,transparent));padding:13px 14px;box-shadow:var(--shadow-xs)}.itemTitle{font-weight:1000;color:var(--strong);margin-bottom:5px;line-height:1.35}.itemMeta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}.itemText{font-size:14px;margin-top:8px;color:var(--text)}.warning{border:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft) 94%,transparent),color-mix(in srgb,var(--surface-solid) 92%,transparent));border-radius:16px;padding:12px 13px;font-size:14px;border-inline-start:4px solid var(--warn);box-shadow:var(--shadow-xs)}.warning.good{border-inline-start-color:var(--success)}
+.accordion{border:1px solid var(--line);border-radius:19px;overflow:hidden;background:var(--surface-solid);margin-bottom:12px;box-shadow:var(--shadow-xs)}.accHead{width:100%;border:0;background:transparent;color:var(--text);padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:1000;text-align:inherit}.accHead:hover{transform:none;box-shadow:none;background:color-mix(in srgb,var(--surface-soft) 88%,transparent)}.accBody{display:none;border-top:1px solid var(--line);padding:14px 16px;background:color-mix(in srgb,var(--surface-soft) 86%,transparent)}.accordion.open .accBody{display:block}
+.conflictGrid,.scenarioGrid,.exportGrid{display:grid;gap:13px}.conflictCard{border:1px solid color-mix(in srgb,var(--warn) 24%,var(--line));border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--warn) 5%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 94%,transparent));padding:16px;box-shadow:var(--shadow-xs)}.conflictTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.conflictLabel,.sectionKicker{font-size:11px;color:var(--muted);font-weight:1000;text-transform:uppercase;letter-spacing:.06em}.conflictTitle{font-weight:1000;color:var(--strong);font-size:16px;margin-top:3px}.actionList{margin:0;padding-inline-start:18px}.actionList li{margin:4px 0}.interpretBox{margin-top:12px;border-top:1px solid var(--line);padding-top:12px;color:var(--text)}.forecastCard{border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,var(--surface-solid)),color-mix(in srgb,var(--accent-3) 5%,var(--surface-soft)));padding:16px;box-shadow:var(--shadow-xs)}.forecastHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.forecastProb{min-width:76px;text-align:center;border:1px solid var(--line);background:var(--surface-solid);border-radius:18px;padding:10px}.forecastProb strong{display:block;font-size:24px;color:var(--strong);line-height:1}.forecastCols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.miniBlock{border:1px solid var(--line);background:color-mix(in srgb,var(--surface-solid) 70%,transparent);border-radius:16px;padding:11px}.miniBlock b{display:block;color:var(--strong);margin-bottom:6px}.evidenceLedger{display:grid;gap:10px}.ledgerRow{display:grid;grid-template-columns:minmax(0,1.5fr) .75fr .75fr minmax(0,1fr);gap:8px;align-items:start;border:1px solid var(--line);background:var(--surface-solid);border-radius:16px;padding:11px;box-shadow:var(--shadow-xs)}.ledgerRow.header{background:var(--surface-muted);font-weight:1000;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.assumptionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.exportCard{border:1px solid var(--line);border-radius:22px;padding:16px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent));box-shadow:var(--shadow-xs);display:grid;gap:10px}.exportCard h4{margin:0;color:var(--strong);font-size:16px}.exportCard p{margin:0;color:var(--muted);font-size:13px}.exportGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.empty{border:1px dashed var(--line-strong);border-radius:22px;background:color-mix(in srgb,var(--surface-soft) 90%,transparent);padding:28px;text-align:center;color:var(--muted)}.empty strong{display:block;color:var(--strong);font-size:18px;margin-bottom:6px}
+.modalBackdrop{position:fixed;inset:0;background:rgba(2,6,23,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:100;display:none;align-items:center;justify-content:center;padding:18px}.modalBackdrop.show{display:flex}.modal{width:min(980px,100%);max-height:88vh;overflow:auto;background:var(--surface);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow-lg);padding:20px}.modalHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.modal h3{margin:0;color:var(--strong);font-size:20px;font-weight:1000}pre{background:color-mix(in srgb,var(--surface-soft) 92%,transparent);border:1px solid var(--line);border-radius:18px;padding:16px;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.8px;line-height:1.55;direction:ltr;text-align:left;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(84px);z-index:200;background:var(--strong);color:var(--bg);padding:13px 18px;border-radius:16px;font-weight:900;box-shadow:var(--shadow-lg);transition:.24s ease;max-width:min(92vw,560px);text-align:center}.toast.show{transform:translateX(-50%) translateY(0)}.report{background:#fff;color:#111;padding:24px;font-family:"Inter","Segoe UI",Tahoma,Arial,sans-serif;line-height:1.6}.report h1,.report h2{color:#111}.report .small{color:#555;font-size:13px}
+@media(max-width:1160px){.engineNav{grid-template-columns:repeat(3,1fr)}.engineCard:nth-child(3) .flowArrow{display:none}.detailsGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:940px){.top{position:relative;top:0;align-items:flex-start;flex-direction:column}.topActions{width:100%;justify-content:space-between}.grid2,.summaryGrid,.reviewShell{grid-template-columns:1fr}.sideNav{position:relative;top:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.panelHeader{flex-direction:column}.forecastCols,.exportGrid,.assumptionGrid{grid-template-columns:1fr}.ledgerRow{grid-template-columns:1fr}.ledgerRow.header{display:none}.flowArrow{display:none}}
+@media(max-width:720px){.app{padding:18px 14px 70px}.panel{padding:18px;border-radius:26px}.stage{grid-template-columns:repeat(2,1fr)}.stageItem:not(:last-child)::after{display:none}.detailsGrid,.engineNav,.sideNav{grid-template-columns:1fr}.brand h1{font-size:22px}.btn{width:100%}.actions{flex-direction:column;align-items:stretch}.logo{width:48px;height:48px}.topActions{gap:8px}}
+@media print{.top,.stage,.actions,.sideNav,.btn,.modalBackdrop,.toast{display:none!important}.app{padding:0;max-width:none}.panel,.card,.contentPanel{box-shadow:none;border-color:#ccc;background:#fff}.reviewShell{display:block}.accBody{display:block!important}}
+
+
+.miniGuide{margin-top:14px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 92%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent));padding:14px 15px;box-shadow:var(--shadow-xs)}
+.miniGuide h4{margin:0 0 8px;color:var(--strong);font-size:14px;font-weight:1000;letter-spacing:-.01em}
+.miniGuide ol{margin:0;padding-inline-start:22px;color:var(--muted);font-size:13.5px}.miniGuide li{margin:4px 0}.miniGuide strong{color:var(--text)}
+.healthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.healthCard{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 88%,transparent));padding:15px;box-shadow:var(--shadow-xs)}
+.healthCard strong{display:block;color:var(--strong);font-size:24px;line-height:1;font-weight:1000;margin-bottom:6px}.healthCard span{color:var(--muted);font-size:12.5px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+.nextAction{border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-inline-start:5px solid var(--accent);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 9%,transparent),color-mix(in srgb,var(--accent-2) 7%,transparent));padding:14px 16px;margin:12px 0;color:var(--text);box-shadow:var(--shadow-xs)}
+.nextAction strong{color:var(--strong)}
+.importCommand.ready{border-color:color-mix(in srgb,var(--success) 42%,var(--line));box-shadow:0 0 0 4px color-mix(in srgb,var(--success) 10%,transparent),var(--shadow-sm)}
+.importCommand.invalid{border-color:color-mix(in srgb,var(--danger) 42%,var(--line));box-shadow:0 0 0 4px color-mix(in srgb,var(--danger) 8%,transparent),var(--shadow-sm)}
+@media(max-width:760px){.healthGrid{grid-template-columns:1fr}}
+
+
+
+:root{
+  --surface-glass:rgba(255,255,255,.78);
+  --panel-glow:0 28px 90px rgba(37,94,232,.105);
+  --hairline:rgba(37,94,232,.10);
+}
+body.dark{
+  --surface-glass:rgba(15,23,42,.78);
+  --panel-glow:0 28px 90px rgba(0,0,0,.38);
+  --hairline:rgba(103,162,255,.14);
+}
+body{letter-spacing:-.003em}
+.app{padding-top:18px}
+.top{
+  padding:13px 16px;
+  border-radius:30px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 82%,transparent),color-mix(in srgb,var(--surface) 92%,transparent));
+  box-shadow:0 18px 58px rgba(15,23,42,.075), inset 0 1px 0 rgba(255,255,255,.58);
+}
+body.dark .top{box-shadow:0 18px 58px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06)}
+.logo{width:52px;height:52px;border-radius:18px;box-shadow:0 18px 38px rgba(37,94,232,.22), inset 0 1px 0 rgba(255,255,255,.32)}
+.brand h1{font-size:clamp(23px,2.45vw,31px);letter-spacing:-.045em}
+html[dir="rtl"] .brand h1{letter-spacing:-.015em}
+.brand p{font-size:13px;line-height:1.35;color:color-mix(in srgb,var(--muted) 88%,var(--text))}
+.segment{border-radius:18px;padding:5px;background:color-mix(in srgb,var(--surface-solid) 86%,transparent)}
+.segBtn{min-height:34px;border-radius:13px;padding:0 13px}
+.iconBtn{width:44px;height:44px;border-radius:16px}
+
+.panel{
+  border-color:color-mix(in srgb,var(--line) 78%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 64%,transparent),color-mix(in srgb,var(--surface-soft) 70%,transparent));
+  box-shadow:var(--panel-glow), inset 0 1px 0 rgba(255,255,255,.45);
+}
+body.dark .panel{box-shadow:var(--panel-glow), inset 0 1px 0 rgba(255,255,255,.05)}
+.panelHeader{margin-bottom:15px}
+.panelHeader h2{line-height:1.05;letter-spacing:-.04em}
+html[dir="rtl"] .panelHeader h2{letter-spacing:-.012em;line-height:1.22}
+.panelHeader p{font-size:13.5px;line-height:1.5}
+.commandPanel{
+  padding:28px;
+  background:
+    radial-gradient(circle at 0% 0%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 32%),
+    radial-gradient(circle at 100% 18%,color-mix(in srgb,var(--accent-2) 8%,transparent),transparent 30%),
+    linear-gradient(145deg,color-mix(in srgb,var(--surface-solid) 74%,transparent),color-mix(in srgb,var(--surface-soft) 82%,transparent));
+}
+.commandPanel::after{opacity:.72;filter:blur(2px)}
+.commandPanel .panelHeader h2{font-size:clamp(26px,2.8vw,35px)}
+
+.stage{
+  padding:5px;
+  border-radius:20px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 78%,transparent),color-mix(in srgb,var(--surface-soft) 75%,transparent));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 8px 22px rgba(15,23,42,.045);
+}
+.stageItem{min-height:44px;padding:9px 12px;font-size:12.8px}
+.stageItem .num{width:25px;height:25px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.stageItem.active{box-shadow:0 12px 26px rgba(37,94,232,.18), inset 0 1px 0 rgba(255,255,255,.22)}
+.stageItem:not(:last-child)::after{opacity:.72}
+
+.grid2{grid-template-columns:minmax(0,1.28fr) minmax(345px,.72fr);gap:20px}
+.card{
+  border-radius:27px;
+  border-color:color-mix(in srgb,var(--line) 82%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 92%,transparent),color-mix(in srgb,var(--surface-soft) 91%,transparent));
+  box-shadow:0 16px 42px rgba(15,23,42,.055), inset 0 1px 0 rgba(255,255,255,.36);
+}
+.topicCommand{
+  border-color:color-mix(in srgb,var(--accent) 26%,var(--line));
+  box-shadow:0 22px 54px rgba(37,94,232,.095), inset 0 1px 0 rgba(255,255,255,.42);
+}
+.importCommand{
+  opacity:1;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 84%,transparent),color-mix(in srgb,var(--surface-soft) 86%,transparent));
+}
+.importCommand:not(.ready):not(.invalid){filter:saturate(.92)}
+.importCommand h3{margin-top:4px;margin-bottom:8px;color:var(--strong);font-size:19px;letter-spacing:-.02em}
+.importCommand p{font-size:13.5px;line-height:1.5;margin-bottom:14px}
+.field{gap:7px;margin-bottom:12px}
+.label{font-size:11.3px;color:color-mix(in srgb,var(--muted) 90%,var(--strong));letter-spacing:.055em}
+html[dir="rtl"] .label{font-size:11.6px;font-weight:950}
+.detailsGrid{
+  margin:12px 0 10px;
+  padding:10px;
+  border-radius:20px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 78%,transparent),color-mix(in srgb,var(--surface-soft) 78%,transparent));
+}
+textarea,input,select{
+  border-radius:17px;
+  border-color:color-mix(in srgb,var(--line) 92%,transparent);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-solid) 88%,transparent));
+}
+.topicInput{min-height:148px;font-size:15.5px;line-height:1.55}
+.pasteArea{min-height:160px;background:color-mix(in srgb,var(--surface-solid) 92%,transparent)}
+.actions{gap:9px;margin-top:12px}
+.btn{border-radius:15px;min-height:43px;font-weight:900;letter-spacing:-.01em}
+.btn.primary{box-shadow:0 14px 32px rgba(37,94,232,.22), inset 0 1px 0 rgba(255,255,255,.22)}
+.btn:disabled{
+  opacity:.62;
+  filter:saturate(.55);
+  background:color-mix(in srgb,var(--surface-muted) 72%,var(--surface-solid));
+  color:color-mix(in srgb,var(--muted) 80%,var(--text));
+  box-shadow:none;
+}
+.status{
+  border-radius:17px;
+  padding:11px 14px;
+  font-size:13.4px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft) 92%,transparent),color-mix(in srgb,var(--surface-solid) 86%,transparent));
+}
+.status.helper{border-color:color-mix(in srgb,var(--accent) 18%,var(--line));color:color-mix(in srgb,var(--muted) 88%,var(--text))}
+
+.miniGuide{
+  padding:13px 14px;
+  border-radius:20px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 80%,transparent),color-mix(in srgb,var(--surface-soft) 88%,transparent));
+}
+.miniGuide h4{font-size:13.5px;margin-bottom:10px}
+.miniGuide ol{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;color:var(--muted);font-size:12.7px}
+.miniGuide li{margin:0;position:relative;padding:8px 10px;border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:14px;background:color-mix(in srgb,var(--surface-solid) 64%,transparent)}
+
+#enginePanel{padding-top:26px;padding-bottom:26px}
+#enginePanel .panelHeader{align-items:center}
+.engineNav{
+  gap:16px;
+  isolation:isolate;
+}
+.engineNav::before{
+  content:"";
+  position:absolute;
+  inset-inline:4%;
+  top:50%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 20%,transparent),color-mix(in srgb,var(--accent-2) 18%,transparent),transparent);
+  z-index:0;
+  opacity:.55;
+}
+.engineCard{
+  z-index:1;
+  min-height:138px;
+  border-radius:25px;
+  padding:17px 16px 16px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 94%,transparent),color-mix(in srgb,var(--surface-soft) 90%,transparent));
+  box-shadow:0 14px 34px rgba(15,23,42,.055), inset 0 1px 0 rgba(255,255,255,.36);
+}
+.engineCard:hover{transform:translateY(-5px);box-shadow:0 22px 48px rgba(15,23,42,.09), inset 0 1px 0 rgba(255,255,255,.35)}
+.engineCard::before{height:3px;opacity:.92}
+.engineCard::after{width:54px;height:54px;opacity:.9;filter:blur(.2px)}
+.engineCard .eyebrow{font-size:10.8px;letter-spacing:.1em;color:color-mix(in srgb,var(--muted) 86%,var(--pc))}
+.engineCard h4{font-size:15.5px;margin-top:9px;margin-bottom:5px}
+.engineCard p{font-size:12.5px;line-height:1.42;max-width:92%}
+.engineCard .cardCount{margin-top:12px;padding:5px 10px;box-shadow:0 5px 12px rgba(15,23,42,.035)}
+.engineCard.active{box-shadow:0 0 0 3px color-mix(in srgb,var(--pc) 14%,transparent),0 22px 52px rgba(15,23,42,.10);transform:translateY(-1px)}
+.engineCard:focus:not(:focus-visible){box-shadow:0 14px 34px rgba(15,23,42,.055), inset 0 1px 0 rgba(255,255,255,.36)}
+.flowArrow{width:24px;height:24px;inset-inline-end:-14px;background:color-mix(in srgb,var(--surface-solid) 92%,transparent);opacity:.82}
+.chip{padding:7px 12px;border-radius:999px;background:linear-gradient(180deg,var(--surface-solid),var(--surface-soft));font-size:12.2px}
+
+.reviewShell{gap:20px}
+.sideNav,.contentPanel{border-radius:27px}
+.sideNav{box-shadow:0 14px 34px rgba(15,23,42,.055), inset 0 1px 0 rgba(255,255,255,.32)}
+.navBtn{min-height:43px;border-radius:16px}
+.contentPanel{box-shadow:0 16px 42px rgba(15,23,42,.06), inset 0 1px 0 rgba(255,255,255,.32)}
+.briefHero,.scoreBox,.healthCard,.conflictCard,.forecastCard,.exportCard,.item,.accordion,.ledgerRow{box-shadow:0 10px 26px rgba(15,23,42,.045), inset 0 1px 0 rgba(255,255,255,.26)}
+.empty{background:linear-gradient(180deg,color-mix(in srgb,var(--surface-soft) 82%,transparent),color-mix(in srgb,var(--surface-solid) 72%,transparent))}
+body.dark .card,body.dark .engineCard,body.dark .sideNav,body.dark .contentPanel{box-shadow:0 16px 42px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.05)}
+@media(max-width:1160px){.engineNav::before{display:none}.miniGuide ol{grid-template-columns:1fr}}
+@media(max-width:940px){.grid2{grid-template-columns:1fr}.importCommand{order:2}.topicCommand{order:1}.top{border-radius:26px}.miniGuide ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.commandPanel{padding:20px}.stageItem{justify-content:flex-start}.miniGuide ol{grid-template-columns:1fr}.brand p{font-size:12.5px}.topActions{width:100%;justify-content:space-between}.segment{order:2}.iconBtn{order:1}.engineCard{min-height:auto}}
+
+
+.reviewShell{grid-template-columns:292px minmax(0,1fr);gap:24px;align-items:start}.sideNav{padding:12px;border-radius:30px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 98%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));border:1px solid color-mix(in srgb,var(--accent) 10%,var(--line));box-shadow:0 24px 58px rgba(15,23,42,.08),inset 0 1px 0 rgba(255,255,255,.70)}body.dark .sideNav{box-shadow:0 24px 58px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.05)}
+.navBtn{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;margin-bottom:9px;padding:14px 14px;border-radius:20px;border:1px solid transparent;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));color:var(--text);box-shadow:var(--shadow-xs);overflow:hidden}.navBtn::before{content:"";position:absolute;inset-block:9px;inset-inline-start:0;width:3px;border-radius:999px;background:linear-gradient(180deg,var(--navTone),color-mix(in srgb,var(--navTone) 45%,transparent));opacity:.24;transition:.18s ease}.navBtn:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--navTone) 18%,var(--line));box-shadow:0 14px 30px rgba(15,23,42,.085)}body.dark .navBtn:hover{box-shadow:0 14px 30px rgba(0,0,0,.24)}.navBtn.active{border-color:color-mix(in srgb,var(--navTone) 30%,var(--line));background:linear-gradient(135deg,color-mix(in srgb,var(--navTone) 12%,var(--surface-solid)),color-mix(in srgb,var(--navTone) 5%,var(--surface-soft)));color:var(--strong);box-shadow:0 20px 38px color-mix(in srgb,var(--navTone) 17%,transparent)}.navBtn.active::before{opacity:1;width:4px}.navGlyph{width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 32% 32%,color-mix(in srgb,var(--navTone) 34%,white),var(--navTone) 68%);box-shadow:0 0 0 6px color-mix(in srgb,var(--navTone) 9%,transparent)}.navText{display:grid;gap:2px;text-align:inherit;min-width:0}.navTitle{font-size:14.5px;font-weight:1000;color:inherit;line-height:1.22}.navHint{font-size:12.1px;font-weight:750;color:var(--muted);line-height:1.35}.badge{min-width:32px;height:32px;display:grid;place-items:center;padding:0 9px;border-radius:999px;border:1px solid color-mix(in srgb,var(--navTone) 22%,var(--line));background:color-mix(in srgb,var(--navTone) 7%,var(--surface-solid));color:var(--strong);font-size:11px;font-weight:1000;box-shadow:var(--shadow-xs)}
+.contentPanel{position:relative;overflow:hidden;padding:25px;border-radius:32px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));border:1px solid color-mix(in srgb,var(--accent) 10%,var(--line));box-shadow:0 28px 66px rgba(15,23,42,.085),inset 0 1px 0 rgba(255,255,255,.70)}body.dark .contentPanel{box-shadow:0 28px 66px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.05)}.contentPanel::before{content:"";position:absolute;inset:0 0 auto 0;height:90px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 5%,transparent),transparent);pointer-events:none}.contentPanel>*{position:relative;z-index:1}
+.metricRing{--pct:0;--ringTone:var(--line-strong);position:relative;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--ringTone) calc(var(--pct)*1%),color-mix(in srgb,var(--surface-soft) 94%,transparent) 0);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ringTone) 22%,var(--line)),0 12px 24px rgba(15,23,42,.085)}.metricRing::before{content:"";position:absolute;inset:7px;border-radius:50%;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 97%,transparent));box-shadow:inset 0 0 0 1px var(--line)}.metricRingInner{position:relative;z-index:1;display:grid;place-items:center;line-height:1;text-align:center}.metricRingInner strong{font-size:20px;color:var(--strong);letter-spacing:-.04em}.metricRingInner span{font-size:10px;font-weight:1000;color:var(--muted);margin-top:3px}.metricRing.xs{width:46px;height:46px}.metricRing.xs::before{inset:6px}.metricRing.xs .metricRingInner strong{font-size:14px}.metricRing.xs .metricRingInner span{font-size:9px}.metricRing.sm{width:58px;height:58px}.metricRing.sm .metricRingInner strong{font-size:16px}.metricRing.md{width:88px;height:88px}.metricRing.md .metricRingInner strong{font-size:28px}.metricRing.lg{width:168px;height:168px}.metricRing.lg::before{inset:11px}.metricRing.lg .metricRingInner strong{font-size:46px}.metricRing.lg .metricRingInner span{font-size:12px}.pct-low{--ringTone:var(--danger)}.pct-warn{--ringTone:#f59e0b}.pct-mid{--ringTone:#eab308}.pct-good{--ringTone:var(--success)}.pct-excellent{--ringTone:var(--accent)}.pct-neutral{--ringTone:var(--line-strong)}
+.chip{padding:7px 11px;border-radius:999px;background:color-mix(in srgb,var(--ringTone,var(--line-strong)) 7%,var(--surface-solid));color:var(--strong);border:1px solid color-mix(in srgb,var(--ringTone,var(--line-strong)) 22%,var(--line));box-shadow:var(--shadow-xs);font-size:12px;font-weight:950}.summaryGrid{grid-template-columns:minmax(0,1fr) 344px;gap:20px;align-items:start}.intelBrief{display:grid;gap:14px}.briefHero{border-radius:28px;padding:20px;border-color:color-mix(in srgb,var(--accent) 16%,var(--line));box-shadow:0 22px 46px rgba(37,94,232,.08)}.scoreSystemGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.scoreMetricCard{border:1px solid color-mix(in srgb,var(--ringTone,var(--accent)) 16%,var(--line));border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--ringTone,var(--accent)) 4%,var(--surface-soft)));padding:14px;display:grid;gap:10px;box-shadow:var(--shadow-xs)}.metricHead{display:flex;justify-content:space-between;align-items:center;gap:12px}.metricHead strong{font-size:13.5px;line-height:1.32;color:var(--strong)}.metricTrack{height:8px;border-radius:999px;background:color-mix(in srgb,var(--surface-soft) 96%,transparent);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}.metricFill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--ringTone),color-mix(in srgb,var(--ringTone) 55%,var(--accent-2)))}.metricHint{font-size:12.4px;line-height:1.45;color:var(--muted)}.scoreBox{display:grid;justify-items:center;gap:12px;padding:24px;border-radius:30px;border-color:color-mix(in srgb,var(--ringTone,var(--accent)) 20%,var(--line));background:linear-gradient(145deg,color-mix(in srgb,var(--ringTone,var(--accent)) 10%,var(--surface-solid)),color-mix(in srgb,var(--accent-2) 9%,var(--surface-soft)),color-mix(in srgb,var(--accent-3) 8%,var(--surface-soft)));box-shadow:0 24px 50px rgba(37,94,232,.12)}.scoreLbl{margin:0;font-size:13px;letter-spacing:.08em}.scoreHelp{max-width:280px;font-size:13px;line-height:1.55;color:var(--muted)}.healthGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.healthCard{border-radius:22px;border:1px solid color-mix(in srgb,var(--ringTone,var(--line-strong)) 18%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));padding:14px;box-shadow:var(--shadow-xs)}.healthCardValue{font-size:28px;font-weight:1000;line-height:1;letter-spacing:-.04em;color:var(--strong)}.healthCard span{font-size:12.5px;font-weight:900;color:var(--muted)}
+.engineCard{padding:18px 16px;border-radius:28px;overflow:hidden}.engineCard::before{height:5px}.engineCard::after{width:68px;height:68px;inset:auto 14px 14px auto;background:radial-gradient(circle at 35% 35%,color-mix(in srgb,var(--pc) 18%,white),color-mix(in srgb,var(--pc) 10%,transparent) 54%,transparent 58%)}.engineHeading{display:flex;align-items:center;gap:10px;position:relative;z-index:1}.engineDot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 32% 32%,color-mix(in srgb,var(--pc) 30%,white),var(--pc) 68%);box-shadow:0 0 0 5px color-mix(in srgb,var(--pc) 9%,transparent)}.engineCard h4{margin:0;font-size:16px}.engineCard p{margin-top:8px;max-width:90%}.engineFooter{position:relative;z-index:1;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.engineCount{display:inline-flex;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--pc) 18%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--pc) 6%,transparent));padding:9px 12px;border-radius:999px;box-shadow:var(--shadow-xs)}.engineCount b{font-size:15px;color:var(--strong)}.engineCount small{font-size:11px;font-weight:900;color:var(--muted)}.flowArrow{width:28px;height:28px}.layerStack{display:grid;gap:12px}.accordion{border-radius:24px;border-color:color-mix(in srgb,var(--pc) 14%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));box-shadow:0 14px 30px rgba(15,23,42,.055)}.accHead{padding:18px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}.accLead{display:flex;align-items:center;gap:12px;min-width:0}.accLead small{display:block;margin-top:2px}.accNumber{width:36px;height:36px;display:grid;place-items:center;border-radius:13px;border:1px solid color-mix(in srgb,var(--pc) 20%,var(--line));background:color-mix(in srgb,var(--pc) 8%,var(--surface-solid));font-size:11px;font-weight:1000;color:var(--strong);box-shadow:var(--shadow-xs)}.accMeta{display:flex;align-items:center;gap:10px;flex-shrink:0}.countBadge{display:inline-flex;gap:5px;align-items:center;border:1px solid color-mix(in srgb,var(--pc) 18%,var(--line));background:var(--surface-solid);padding:9px 11px;border-radius:999px;font-size:12px;font-weight:950;color:var(--strong);box-shadow:var(--shadow-xs)}
+.item{border-radius:21px;padding:15px 16px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));border-color:color-mix(in srgb,var(--accent) 10%,var(--line));box-shadow:0 14px 30px rgba(15,23,42,.055)}.itemMeta{margin-top:8px;gap:7px}.conflictGrid,.scenarioGrid,.exportGrid{gap:15px}.conflictCard,.forecastCard,.ledgerRow,.exportCard{border-radius:26px;box-shadow:0 18px 38px rgba(15,23,42,.06);overflow:hidden}.conflictCard::before,.forecastCard::before{content:"";display:block;height:4px;margin:-16px -16px 14px}.conflictCard::before{background:linear-gradient(90deg,var(--warn),color-mix(in srgb,var(--warn) 34%,transparent))}.forecastCard::before{background:linear-gradient(90deg,var(--ringTone,var(--accent)),color-mix(in srgb,var(--accent-3) 48%,transparent))}.conflictMeta{justify-content:flex-end;align-items:flex-start}.miniBlock{border-radius:19px;padding:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));border-color:color-mix(in srgb,var(--accent) 8%,var(--line))}.interpretBox{margin-top:14px;padding-top:14px}.forecastProbWrap{display:flex;justify-content:center;min-width:98px}.ledgerRow{grid-template-columns:minmax(0,1.55fr) .72fr .72fr minmax(0,1fr);padding:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 100%,transparent),color-mix(in srgb,var(--surface-soft) 97%,transparent));border-color:color-mix(in srgb,var(--accent) 8%,var(--line))}.ledgerRow.header{padding:12px 14px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-muted) 94%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent))}.warning{border-radius:18px}.schemaCard{border-radius:24px;padding:16px;margin-top:16px}@media(max-width:1120px){.reviewShell{grid-template-columns:1fr}.sideNav{position:static}.summaryGrid{grid-template-columns:1fr}.flowArrow{display:none}}@media(max-width:760px){.sideNav{display:grid;grid-template-columns:1fr}.navHint{display:none}.scoreSystemGrid,.healthGrid,.forecastCols,.exportGrid,.assumptionGrid{grid-template-columns:1fr}.accHead{align-items:flex-start;flex-direction:column}.accMeta{width:100%;justify-content:space-between}.metricRing.lg{width:144px;height:144px}.metricRing.lg .metricRingInner strong{font-size:38px}.ledgerRow{grid-template-columns:1fr}.ledgerRow.header{display:none}}
+
+
+.metricRing{--ringTone:var(--line-strong);position:relative;display:grid;place-items:center;border-radius:50%;background:transparent!important;box-shadow:none!important;isolation:isolate;flex:0 0 auto}.metricRing::before{display:none!important}.metricSvg{position:absolute;inset:0;width:100%;height:100%;display:block;transform:rotate(-90deg);overflow:visible}.metricTrackSvg,.metricBarSvg{fill:none;stroke-width:5.2;vector-effect:non-scaling-stroke}.metricTrackSvg{stroke:color-mix(in srgb,var(--ringTone) 13%,var(--surface-soft));}.metricBarSvg{stroke:var(--ringTone);stroke-linecap:round;filter:drop-shadow(0 2px 3px color-mix(in srgb,var(--ringTone) 28%,transparent))}.metricRingInner{position:relative;z-index:2;display:grid;place-items:center;text-align:center;line-height:1;width:calc(100% - 18px);height:calc(100% - 18px);border-radius:50%;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 98%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent));box-shadow:inset 0 0 0 1px var(--line)}.metricRingInner strong{font-weight:1000;letter-spacing:-.045em;color:var(--strong)}.metricRingInner span{font-weight:1000;color:var(--muted);margin-top:1px}.metricRing.xs{width:44px;height:44px}.metricRing.xs .metricRingInner strong{font-size:13px}.metricRing.xs .metricRingInner span{font-size:8.5px}.metricRing.sm{width:54px;height:54px}.metricRing.sm .metricRingInner strong{font-size:16px}.metricRing.sm .metricRingInner span{font-size:9px}.metricRing.md{width:86px;height:86px}.metricRing.md .metricRingInner{width:calc(100% - 22px);height:calc(100% - 22px)}.metricRing.md .metricRingInner strong{font-size:26px}.metricRing.md .metricRingInner span{font-size:11px}.metricRing.lg{width:164px;height:164px}.metricRing.lg .metricRingInner{width:calc(100% - 28px);height:calc(100% - 28px)}.metricRing.lg .metricRingInner strong{font-size:42px}.metricRing.lg .metricRingInner span{font-size:12px}.engineFooter{align-items:center}.engineCount{min-width:86px;justify-content:center}.engineCard .metricRing.sm{margin-inline-end:1px}.pct-low{--ringTone:#ef4444}.pct-warn{--ringTone:#f59e0b}.pct-mid{--ringTone:#eab308}.pct-good{--ringTone:#10b981}.pct-excellent{--ringTone:#2563eb}.pct-neutral{--ringTone:#94a3b8}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1.15;white-space:nowrap}.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ringTone,var(--line-strong));box-shadow:0 0 0 3px color-mix(in srgb,var(--ringTone,var(--line-strong)) 12%,transparent)}.basis-source{--ringTone:#b7791f}.basis-observed{--ringTone:#2563eb}.basis-inferred{--ringTone:#7c3aed}.basis-estimate{--ringTone:#f59e0b}.basis-assumption{--ringTone:#d946ef}.basis-neutral{--ringTone:#64748b}.type-rhetoric{--ringTone:#f97316}.type-tool{--ringTone:#0ea5e9}.type-result{--ringTone:#8b5cf6}.type-interest{--ringTone:#14b8a6}.type-evidence{--ringTone:#22c55e}.type-internal{--ringTone:#ef4444}.confidence-chip.pct-good{--ringTone:#10b981}.confidence-chip.pct-mid{--ringTone:#f59e0b}.confidence-chip.pct-warn,.confidence-chip.pct-low{--ringTone:#ef4444}.severity-chip{font-weight:1000}.risk-chip{font-weight:1000}
+.premiumConflict{padding:17px 17px 18px}.conflictBodyGrid{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:stretch}.conflictMain{display:grid;gap:12px}.conflictInsight{border:1px solid color-mix(in srgb,var(--warn) 18%,var(--line));border-radius:20px;background:linear-gradient(180deg,color-mix(in srgb,var(--warn) 8%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent));padding:14px;box-shadow:var(--shadow-xs);display:grid;align-content:start;gap:10px}.insightLabel{font-size:10.5px;font-weight:1000;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}.insightTitle{font-size:14px;font-weight:1000;line-height:1.35;color:var(--strong)}.insightList{display:grid;gap:9px}.insightList>div{border-top:1px solid color-mix(in srgb,var(--warn) 18%,var(--line));padding-top:8px}.insightList span{display:block;font-size:11px;font-weight:950;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.insightList strong{font-size:13px;color:var(--strong);line-height:1.35}.layerMiniChips{display:flex;gap:6px;flex-wrap:wrap}.layerMiniChips em{font-style:normal;border:1px solid color-mix(in srgb,var(--pc,var(--warn)) 20%,var(--line));background:color-mix(in srgb,var(--pc,var(--warn)) 8%,var(--surface-solid));border-radius:999px;padding:5px 8px;font-size:11px;font-weight:950;color:var(--strong)}.actionBox{background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 99%,transparent),color-mix(in srgb,var(--warn) 3%,var(--surface-soft)))}
+.premiumLedger{gap:12px}.evidenceRow{grid-template-columns:minmax(0,1.45fr) .72fr .72fr minmax(0,1.08fr);align-items:start;padding:16px 16px;border-radius:24px}.evidenceClaim b{font-size:15px;line-height:1.55}.sourceNote{color:var(--text);line-height:1.55}.premiumAssumptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.assumptionCard{border:1px solid color-mix(in srgb,var(--ringTone) 20%,var(--line));border-radius:24px;background:linear-gradient(180deg,color-mix(in srgb,var(--ringTone) 7%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent));padding:16px;box-shadow:0 16px 32px rgba(15,23,42,.06);display:grid;gap:13px;overflow:hidden}.assumptionCard::before{content:"";height:4px;margin:-16px -16px 0;background:linear-gradient(90deg,var(--ringTone),color-mix(in srgb,var(--ringTone) 35%,transparent))}.assumptionTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.assumptionDetails{display:grid;grid-template-columns:1fr;gap:10px}.assumptionDetails>div{border:1px solid color-mix(in srgb,var(--ringTone) 14%,var(--line));background:color-mix(in srgb,var(--surface-solid) 74%,transparent);border-radius:16px;padding:11px 12px}.assumptionDetails span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:1000;color:var(--muted);margin-bottom:5px}.assumptionDetails p{margin:0;color:var(--text);line-height:1.52}.ledgerRow .chip{white-space:normal;text-align:center}.scoreMetricCard .metricRing.xs{width:42px;height:42px}@media(max-width:1080px){.conflictBodyGrid{grid-template-columns:1fr}.conflictInsight{grid-template-columns:1fr}.premiumAssumptions{grid-template-columns:1fr}}@media(max-width:760px){.evidenceRow{grid-template-columns:1fr}.premiumLedger .header{display:none}.metricRing.lg{width:142px;height:142px}.metricRing.md{width:78px;height:78px}.engineFooter{align-items:flex-end}.engineCount{min-width:auto}.conflictTop,.assumptionTop{flex-direction:column}}
+
+
+.metricDiagnosis{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.metricDiagnosis b{color:var(--strong);font-size:12.5px}.exportWide{grid-column:1/-1}.runtimeCheckResult{display:none;white-space:pre-wrap;margin:12px 0 0;background:color-mix(in srgb,var(--surface-soft) 96%,transparent);border:1px solid var(--line);border-radius:16px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.5}.runtimeCheckResult.good,.runtimeCheckResult.warn,.runtimeCheckResult.bad{display:block}.scoreMetricCard{align-content:start}
+
+.scoreFormulaCard{margin-top:14px;border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line));border-radius:22px;padding:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 98%,transparent),color-mix(in srgb,var(--surface-soft) 94%,transparent));box-shadow:var(--shadow-xs)}
+.scoreFormulaCard h4{margin:0 0 8px;color:var(--strong);font-size:14px;font-weight:1000;letter-spacing:-.01em}.scoreFormulaCard p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.formulaGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.formulaWeight{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:14px;padding:9px 10px;background:color-mix(in srgb,var(--surface-solid) 98%,transparent);font-size:12px}.formulaWeight b{font-size:13px;color:var(--strong)}.scoreBandLegend{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.bandChip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:var(--surface-solid);font-size:12px;font-weight:900;color:var(--text)}.bandDot{width:9px;height:9px;border-radius:50%;background:var(--ringTone)}
+.testChecklist{display:grid;gap:9px;margin-top:12px}.testRow{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--surface-solid) 96%,transparent);font-size:13px;color:var(--text)}.testRow::before{content:'✓';width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--success) 12%,transparent);color:var(--success);font-weight:1000;flex:0 0 auto}.exportWide .actions{margin-top:12px}.runtimeCheckResult{min-height:96px;max-height:260px;overflow:auto}.diagnosticNote{border:1px solid color-mix(in srgb,var(--accent) 18%,var(--line));border-radius:18px;padding:12px 13px;background:color-mix(in srgb,var(--accent) 6%,var(--surface-solid));font-size:13px;color:var(--text);line-height:1.55}.modal:focus{outline:none}.modalBackdrop[aria-hidden="true"]{pointer-events:none}.modalBackdrop.show{pointer-events:auto}.navBtn:focus-visible,.btn:focus-visible,.engineCard:focus-visible,.accHead:focus-visible,.segBtn:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 40%,transparent);outline-offset:3px}
+@media(max-width:780px){.formulaGrid{grid-template-columns:1fr}.scoreBandLegend{display:grid;grid-template-columns:1fr}.testRow{font-size:12.8px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+
+.summaryGrid{grid-template-columns:minmax(0,1fr) minmax(300px,344px);align-items:start;max-width:100%;overflow:hidden}
+.summaryGrid>*{min-width:0}.scoreBox{width:100%;max-width:100%;min-width:0;overflow:hidden;padding-inline:22px}.scoreBox .metricRing.lg{width:min(160px,52vw);height:min(160px,52vw);max-width:160px;max-height:160px}.scoreBox .sectionKicker,.scoreBox .scoreLbl,.scoreBox .scoreHelp{max-width:100%;overflow-wrap:anywhere}.scoreMiniNote{width:100%;max-width:100%;border:1px solid color-mix(in srgb,var(--ringTone,var(--accent)) 18%,var(--line));border-radius:16px;padding:10px 12px;background:color-mix(in srgb,var(--ringTone,var(--accent)) 6%,var(--surface-solid));color:var(--text);font-size:12.5px;font-weight:900;line-height:1.45;text-align:center;box-shadow:var(--shadow-xs)}.scoreTopicBox{width:100%;max-width:100%;border:1px solid color-mix(in srgb,var(--ringTone,var(--line-strong)) 18%,var(--line));border-radius:18px;padding:10px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 98%,transparent),color-mix(in srgb,var(--surface-soft) 94%,transparent));box-shadow:var(--shadow-xs);text-align:start;display:grid;gap:4px}.scoreTopicBox span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:1000;color:var(--muted)}.scoreTopicBox strong{font-size:12.8px;line-height:1.35;color:var(--strong);overflow-wrap:anywhere;word-break:normal}.scoreFormulaCard p{overflow-wrap:anywhere}.diagnosticNote{max-width:100%;overflow-wrap:anywhere;white-space:normal}.scoreBox .chip{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:center}
+@media(max-width:1180px){.summaryGrid{grid-template-columns:1fr}.scoreBox{max-width:520px;margin-inline:auto}.scoreSystemGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.scoreSystemGrid,.healthGrid{grid-template-columns:1fr}.scoreBox{max-width:100%;padding:18px}.scoreBox .metricRing.lg{width:138px;height:138px}.scoreMiniNote,.scoreTopicBox{font-size:12px}}
+
+
+
+.metricRing{
+  --ringTone:var(--line-strong);
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  flex:0 0 auto!important;
+  contain:layout paint;
+}
+.metricSvg{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  transform:rotate(-90deg)!important;
+  overflow:hidden!important;
+  z-index:1!important;
+}
+.metricTrackSvg,.metricBarSvg{
+  fill:none!important;
+  stroke-width:5!important;
+  vector-effect:non-scaling-stroke!important;
+}
+.metricTrackSvg{stroke:color-mix(in srgb,var(--ringTone) 12%,var(--surface-soft))!important;}
+.metricBarSvg{
+  stroke:var(--ringTone)!important;
+  stroke-linecap:round!important;
+  filter:none!important;
+}
+.metricRingInner{
+  position:relative!important;
+  z-index:2!important;
+  width:calc(100% - 18px)!important;
+  height:calc(100% - 18px)!important;
+  border-radius:50%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:1px!important;
+  line-height:1!important;
+  text-align:center!important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 99%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;
+  box-shadow:inset 0 0 0 1px var(--line)!important;
+  overflow:hidden!important;
+}
+.metricRingInner strong{display:block!important;margin:0!important;line-height:.95!important;letter-spacing:-.045em!important;text-align:center!important;}
+.metricRingInner span{display:block!important;margin:0!important;line-height:1!important;text-align:center!important;}
+.metricRing.xs{width:42px!important;height:42px!important;}
+.metricRing.sm{width:56px!important;height:56px!important;}
+.metricRing.md{width:82px!important;height:82px!important;}
+.metricRing.lg{width:156px!important;height:156px!important;}
+.metricRing.xs .metricRingInner{width:calc(100% - 16px)!important;height:calc(100% - 16px)!important;}
+.metricRing.sm .metricRingInner{width:calc(100% - 18px)!important;height:calc(100% - 18px)!important;}
+.metricRing.md .metricRingInner{width:calc(100% - 24px)!important;height:calc(100% - 24px)!important;}
+.metricRing.lg .metricRingInner{width:calc(100% - 30px)!important;height:calc(100% - 30px)!important;}
+.metricRing.xs .metricRingInner strong{font-size:12.5px!important;}
+.metricRing.sm .metricRingInner strong{font-size:16px!important;}
+.metricRing.md .metricRingInner strong{font-size:26px!important;}
+.metricRing.lg .metricRingInner strong{font-size:40px!important;}
+.metricRing.xs .metricRingInner span{font-size:8px!important;}
+.metricRing.sm .metricRingInner span{font-size:8.5px!important;}
+.metricRing.md .metricRingInner span{font-size:10px!important;}
+.metricRing.lg .metricRingInner span{font-size:11.5px!important;}
+.prob-low{--ringTone:#64748b;}
+.prob-lowmid{--ringTone:#38bdf8;}
+.prob-mid{--ringTone:#8b5cf6;}
+.prob-high{--ringTone:#2563eb;}
+.forecastCard.prob-low,.forecastCard.pct-low{border-color:color-mix(in srgb,#64748b 26%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#64748b 7%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastCard.prob-lowmid{border-color:color-mix(in srgb,#38bdf8 28%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#38bdf8 8%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastCard.prob-mid{border-color:color-mix(in srgb,#8b5cf6 28%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#8b5cf6 8%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastCard.prob-high{border-color:color-mix(in srgb,#2563eb 30%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#2563eb 9%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastProbWrap{min-width:86px!important;width:86px!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;flex:0 0 86px!important;overflow:visible!important;}
+.forecastHead{align-items:flex-start!important;}
+.engineNav{align-items:stretch!important;overflow:visible!important;}
+.engineCard{
+  min-width:0!important;
+  overflow:hidden!important;
+  contain:layout paint!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  gap:0!important;
+}
+.engineCard::after{pointer-events:none!important;opacity:.72!important;inset-block-end:12px!important;inset-inline-end:12px!important;width:58px!important;height:58px!important;}
+.engineCard p{min-height:48px!important;max-width:100%!important;margin-bottom:0!important;}
+.engineFooter{
+  width:100%!important;
+  min-width:0!important;
+  margin-top:auto!important;
+  padding-top:14px!important;
+  display:grid!important;
+  grid-template-columns:minmax(74px,1fr) 56px!important;
+  align-items:center!important;
+  gap:10px!important;
+  direction:ltr!important;
+  overflow:visible!important;
+  position:relative!important;
+  z-index:2!important;
+}
+html[dir="rtl"] .engineFooter{direction:rtl!important;grid-template-columns:56px minmax(74px,1fr)!important;}
+.engineFooter .metricRing.sm{grid-column:2!important;justify-self:end!important;margin:0!important;}
+html[dir="rtl"] .engineFooter .metricRing.sm{grid-column:1!important;justify-self:start!important;}
+.engineCount{
+  grid-column:1!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:auto!important;
+  justify-content:center!important;
+  padding:8px 10px!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+}
+html[dir="rtl"] .engineCount{grid-column:2!important;}
+.engineCount b{line-height:1!important;}
+.engineCount small{overflow:hidden!important;text-overflow:ellipsis!important;}
+.flowArrow{z-index:4!important;}
+html[dir="rtl"] .flowArrow{inset-inline-end:auto!important;inset-inline-start:-14px!important;}
+@media(max-width:1120px){
+  .engineNav{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .flowArrow{display:none!important;}
+}
+@media(max-width:760px){
+  .engineNav{grid-template-columns:1fr!important;}
+  .forecastHead{display:grid!important;grid-template-columns:1fr auto!important;}
+  .forecastProbWrap{width:76px!important;min-width:76px!important;flex-basis:76px!important;}
+  .metricRing.md{width:74px!important;height:74px!important;}
+  .engineFooter{grid-template-columns:minmax(74px,1fr) 56px!important;}
+  html[dir="rtl"] .engineFooter{grid-template-columns:56px minmax(74px,1fr)!important;}
+}
+
+</style>
+</head>
+<body>
+<noscript><div style="margin:24px;padding:16px;border:1px solid #c8d4e5;border-radius:16px;background:#fff;color:#122033;font-family:system-ui,sans-serif">Strategic Analysis Workbench requires JavaScript to run locally in your browser.</div></noscript>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span class="logoMark"></span></div>
+      <div>
+        <h1 data-i18n="appTitle">مِشرَحة التحليل الاستراتيجي</h1>
+        <p data-i18n="appSubtitle">مسار واضح مع بقاء نموذج التحليل الكامل مرئيًا وقابلًا للتصفح.</p>
+      </div>
+    </div>
+    <div class="topActions">
+      <div class="segment" aria-label="Language selector" id="languageSegment">
+        <button class="segBtn active" id="langAr" type="button">عربي</button>
+        <button class="segBtn" id="langEn" type="button">EN</button>
+      </div>
+      <button class="btn iconBtn" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" data-i18n-title="themeTitle">◐</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="panel commandPanel" id="workflowPanel">
+      <div class="panelHeader">
+        <div>
+          <h2 data-i18n="workflowTitle">مسار التحليل</h2>
+          <p data-i18n="workflowSubtitle">اتبع الخطوات، لكن ابقَ قادرًا على رؤية بنية النموذج والتنقل بين طبقاته.</p>
+        </div>
+      </div>
+      <div class="stage" id="stageBar"></div>
+      <div class="grid2">
+        <div class="card flat topicCommand" id="topicCard">
+          <div class="field">
+            <label class="label" for="topicInput" data-i18n="topicLabel">موضوع التحليل</label>
+            <textarea id="topicInput" class="topicInput" data-i18n-placeholder="topicPlaceholder" placeholder="مثال: صعود اليمين المتطرف في أوروبا 2022–2026"></textarea>
+          </div>
+          <div class="detailsGrid">
+            <div class="field">
+              <label class="label" for="analysisLang" data-i18n="analysisLang">لغة التحليل</label>
+              <select id="analysisLang"><option value="ar" data-i18n-option="optionArabic">العربية</option><option value="en" data-i18n-option="optionEnglish">الإنجليزية</option></select>
+            </div>
+            <div class="field">
+              <label class="label" for="assistantPreset" data-i18n="assistantPreset">المساعد المفضل</label>
+              <select id="assistantPreset"><option value="chatgpt">ChatGPT</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="perplexity">Perplexity</option><option value="custom">Custom</option></select>
+            </div>
+            <div class="field">
+              <label class="label" for="promptMode" data-i18n="promptMode">نمط البرومبت</label>
+              <select id="promptMode"><option value="simple" data-i18n-option="modeSimple">مركّز</option><option value="expert" data-i18n-option="modeExpert">خبير</option></select>
+            </div>
+            <div class="field">
+              <label class="label" for="timeframeInput" data-i18n="timeframeLabel">السياق الزمني/الجغرافي</label>
+              <input id="timeframeInput" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: 2022–2026، أوروبا" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button>
+            <button class="btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة البرومبت</button>
+            <button class="btn" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
+            <button class="btn ghost hide" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
+          </div>
+          <div class="status helper" id="topicStatus" role="status" aria-live="polite" data-i18n="topicStatusStart">أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.</div>
+          <div class="miniGuide" id="miniGuide"><h4 data-i18n="guideTitle">كيف تستخدم الأداة؟</h4><ol id="guideSteps"></ol></div>
+        </div>
+        <div class="card importCommand" id="pasteCard">
+          <h3 data-i18n="pasteTitle">استيراد نتيجة الذكاء الاصطناعي</h3>
+          <p class="muted" data-i18n="pasteSubtitle">بعد استخدام البرومبت، الصق JSON هنا. زر الاستيراد يظهر فقط عندما تكون البنية صالحة.</p>
+          <div class="field">
+            <label class="label" for="jsonInput" data-i18n="jsonLabel">نتيجة JSON</label>
+            <textarea id="jsonInput" class="pasteArea" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button>
+            <button class="btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">برومبت إصلاح JSON</button>
+            <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
+          </div>
+          <div class="status" id="jsonStatus" role="status" aria-live="polite" data-i18n="jsonWaiting">الصق نتيجة JSON للتحقق.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="enginePanel">
+      <div class="panelHeader">
+        <div>
+          <h2 data-i18n="engineTitle">خريطة محرك التحليل</h2>
+          <p data-i18n="engineSubtitle">هذه ليست أزرارًا زائدة؛ هذه طبقات النموذج نفسها. بعد الاستيراد تصبح كل طبقة قابلة للفحص.</p>
+        </div>
+        <div class="chips"><span class="chip" id="analysisStateChip" data-i18n="stateNoAnalysis">لا يوجد تحليل بعد</span></div>
+      </div>
+      <div class="engineNav" id="engineNav"></div>
+    </section>
+
+    <section class="panel hide" id="reviewPanel">
+      <div class="panelHeader">
+        <div>
+          <h2 data-i18n="reviewTitle">مراجعة التحليل</h2>
+          <p data-i18n="reviewSubtitle">تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.</p>
+        </div>
+      </div>
+      <div class="reviewShell">
+        <nav class="sideNav" id="reviewNav" role="tablist" aria-label="Analysis review sections"></nav>
+        <div class="contentPanel" id="reviewContent" role="tabpanel" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modalBackdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="modalHead">
+      <h3 id="modalTitle">Preview</h3>
+      <button class="btn iconBtn" id="modalClose" type="button" aria-label="Close preview">×</button>
+    </div>
+    <pre id="modalContent" tabindex="0"></pre>
+    <div class="actions">
+      <button class="btn primary" id="modalCopy" type="button" data-i18n="copyShownText">نسخ النص المعروض</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+
+
+
+'use strict';
+const I18N={
+ ar:{
+  appTitle:'مِشرَحة التحليل الاستراتيجي',appSubtitle:'مساحة تحليل استراتيجية منظّمة: برومبت ذكي، استيراد واضح، ومراجعة قابلة للتصفح.',workflowTitle:'مركز قيادة التحليل',workflowSubtitle:'ابدأ بالموضوع، انسخ البرومبت، ثم استورد نتيجة JSON لمراجعة النموذج كاملًا.',
+  stages:['الموضوع','البرومبت','الاستيراد','المراجعة'],topicLabel:'موضوع التحليل',topicPlaceholder:'مثال: صعود اليمين المتطرف في أوروبا 2022–2026',analysisLang:'لغة التحليل',assistantPreset:'المساعد المفضل',promptMode:'نمط البرومبت',modeSimple:'مركّز',modeExpert:'خبير',optionArabic:'العربية',optionEnglish:'الإنجليزية',themeTitle:'تبديل الوضع',languageLabel:'اختيار اللغة',severity:'الشدة',severityShort:'شدة',timeframeLabel:'السياق الزمني/الجغرافي',timeframePlaceholder:'اختياري: 2022–2026، أوروبا',copyPrompt:'انسخ البرومبت',previewPrompt:'معاينة البرومبت',editTopic:'تعديل الموضوع',topicStatusStart:'أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.',topicNeeded:'أدخل موضوع التحليل أولًا.',promptCopied:'تم نسخ البرومبت. افتح مساعدك، الصقه، ثم انسخ JSON الناتج إلى خانة الاستيراد.',promptPreview:'معاينة البرومبت',copyShownText:'نسخ النص المعروض',copied:'تم النسخ.',copyFailed:'تعذّر النسخ تلقائيًا. انسخ النص من نافذة المعاينة.',
+  pasteTitle:'استيراد نتيجة الذكاء الاصطناعي',pasteSubtitle:'بعد استخدام البرومبت، الصق JSON هنا. زر الاستيراد يظهر فقط عندما تكون البنية صالحة.',jsonLabel:'نتيجة JSON',jsonPlaceholder:'الصق JSON هنا...',importAnalysis:'استيراد التحليل',repairPrompt:'برومبت إصلاح JSON',clear:'مسح',jsonWaiting:'الصق نتيجة JSON للتحقق.',jsonValid:'JSON صالح. يمكنك الآن استيراد التحليل.',jsonInvalid:'JSON غير صالح أو غير مكتمل. استخدم برومبت الإصلاح إذا لزم.',analysisImported:'تم استيراد التحليل. انتقل الآن إلى مراجعة الطبقات.',repairCopied:'تم نسخ برومبت الإصلاح.',
+  engineTitle:'خريطة محرك التحليل',engineSubtitle:'المسار السببي للنموذج: من الحوافز إلى التكيف. بعد الاستيراد تصبح كل طبقة قابلة للفحص.',stateNoAnalysis:'لا يوجد تحليل بعد',stateImported:'تحليل مستورد',reviewTitle:'مراجعة التحليل',reviewSubtitle:'تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.',
+  overview:'الخلاصة',engine:'الطبقات الست',contradictions:'التناقضات',scenarios:'السيناريوهات',evidence:'الأدلة والافتراضات',exports:'التصدير',quality:'الجودة',score:'مؤشر الجودة',noItems:'لا توجد عناصر.',emptyEngine:'لم يتم استيراد تحليل بعد. خريطة النموذج ظاهرة هنا حتى يعرف المستخدم الطبقات التي سيملؤها التحليل.',
+  pillars:{interests:['المصالح','الحوافز والرهانات'],actors:['الفاعلون','أصحاب القرار والتأثير'],tools:['الأدوات','وسائل الفعل والضغط'],narrative:['السردية','إطار الشرعية والتبرير'],results:['النتائج','آثار قابلة للملاحظة'],feedback:['التغذية الراجعة','تكيف النظام مع النتائج']},
+  nav:{overview:'الخلاصة',pillars:'الطبقات',contradictions:'التناقضات',scenarios:'السيناريوهات',evidence:'الأدلة',exports:'التصدير'},navHints:{overview:'مؤشرات تنفيذية وصحة النموذج',pillars:'تفحّص الطبقات السببية الست',contradictions:'الخطاب مقابل الأفعال',scenarios:'مسارات مستقبلية قابلة للاختبار',evidence:'الأدلة والافتراضات والاختبارات',exports:'إخراج ومشاركة المخرجات'},
+  warnings:{missingPillars:'بعض طبقات النموذج فارغة.',noContradictions:'لم يتم استخراج تناقضات واضحة.',noScenarios:'لا توجد سيناريوهات قابلة للاختبار.',noFalsifiers:'السيناريوهات تحتاج شروط نقض/إبطال.',thinEvidence:'طبقة الأدلة أو الافتراضات ضعيفة.',good:'البنية الأساسية للتحليل مكتملة.'},
+  thesis:'الأطروحة التنفيذية',topic:'الموضوع',context:'السياق',actions:'الإجراءات',downloadJson:'تصدير JSON',downloadMarkdown:'تصدير Markdown',downloadHtml:'تصدير HTML',print:'طباعة',generatedReport:'تقرير تحليل استراتيجي',confidence:'الثقة',type:'النوع',rationale:'التبرير',actionsResults:'الأفعال/النتائج',interpretation:'التفسير',probability:'الاحتمال',timeframe:'الإطار الزمني',drivers:'المحركات',earlySignals:'إشارات مبكرة',disprovenIf:'يُضعف/يُبطل إذا',claim:'ادعاء',basis:'الأساس',sourceNote:'ملاحظة المصدر',assumption:'افتراض',risk:'المخاطر',test:'اختبار النقض',loadSample:'تحميل مثال',sampleLoaded:'تم تحميل مثال تجريبي. يمكنك مراجعة النتائج أو استبدالها بموضوعك.',guideTitle:'طريقة الاستخدام',guideSteps:['اكتب موضوع التحليل بوضوح.','انسخ البرومبت والصقه في مساعدك المفضل.','انسخ JSON الناتج فقط والصقه في خانة الاستيراد.','راجع جودة التحليل ثم صدّره.'],schemaHealth:'صحة الاستيراد',completeness:'الاكتمال',missingItems:'النواقص',nextBestAction:'الخطوة التالية',healthGood:'البنية جيدة. انتقل إلى المراجعة أو التصدير.',healthMissingPillars:'أكمل الطبقات الفارغة أولًا.',healthMissingContradictions:'اطلب استخراج التناقضات بوضوح.',healthMissingScenarios:'اطلب سيناريوهات مع شروط إبطال.',healthMissingEvidence:'اطلب أدلة/افتراضات أو استخدم نمط الخبير.',healthMissingFeedback:'أضف حلقات تغذية راجعة تربط النتائج بالتكيّف.',jsonAutoRecovered:'تم تنظيف النص واستخراج JSON صالح تلقائيًا.',jsonParseProblem:'تعذّر فهم JSON. استخدم برومبت الإصلاح.',reportSubtitle:'تقرير قابل للمشاركة مبني على نموذج المصالح → الفاعلون → الأدوات → السردية → النتائج → التغذية الراجعة.',itemsWord:'عناصر',scoreSystem:'نظام التقييم',scoreGuide:'الدرجة المركّبة توازن بين الاكتمال، التماسك، التناقضات، قابلية اختبار السيناريوهات، والارتكاز على الأدلة.',overallScore:'المؤشر الكلي',scoreCompleteness:'اكتمال الطبقات',scoreCompletenessHint:'مدى امتلاء الطبقات الست والبنية الأساسية.',scoreCoherence:'التماسك السببي',scoreCoherenceHint:'مدى اتصال المصالح والفاعلين والأدوات والنتائج.',scoreContradictions:'جودة التناقضات',scoreContradictionsHint:'مدى وضوح علاقة الخطاب بالأفعال والنتائج.',scoreFalsifiability:'قابلية الاختبار',scoreFalsifiabilityHint:'وجود سيناريوهات مع شروط إبطال واضحة.',scoreEvidence:'ارتكاز الأدلة',scoreEvidenceHint:'وجود أدلة أو افتراضات قابلة للفحص.',scoreReadiness:'جاهزية المشاركة',scoreReadinessHint:'مدى وضوح التحليل وقابليته للتصدير.',valueBand:'مستوى القيمة',outOfHundred:'/100',sectionSummary:'خلاصة القسم',compactView:'عرض مركز',detailedView:'عرض تفصيلي'
+ },
+ en:{
+  appTitle:'Strategic Analysis Workbench',appSubtitle:'An intelligence-style workspace for structured prompts, clean import, and navigable analysis review.',workflowTitle:'Analysis Command Center',workflowSubtitle:'Start with the topic, copy the prompt, then import JSON to review the full model.',
+  stages:['Topic','Prompt','Import','Review'],topicLabel:'Analysis topic',topicPlaceholder:'Example: Rise of the far right in Europe, 2022–2026',analysisLang:'Analysis language',assistantPreset:'Preferred assistant',promptMode:'Prompt mode',modeSimple:'Focused',modeExpert:'Expert',optionArabic:'Arabic',optionEnglish:'English',themeTitle:'Toggle theme',languageLabel:'Language selector',severity:'Severity',severityShort:'S',timeframeLabel:'Time/geographic context',timeframePlaceholder:'Optional: 2022–2026, Europe',copyPrompt:'Copy prompt',previewPrompt:'Preview prompt',editTopic:'Edit topic',topicStatusStart:'Enter a clear topic, then copy the prompt into your preferred assistant.',topicNeeded:'Enter an analysis topic first.',promptCopied:'Prompt copied. Open your assistant, paste it, then copy the JSON result into the import box.',promptPreview:'Prompt preview',copyShownText:'Copy shown text',copied:'Copied.',copyFailed:'Automatic copy failed. Copy the text from the preview window.',
+  pasteTitle:'Import AI Result',pasteSubtitle:'After using the prompt, paste JSON here. The import button becomes usable only when the structure is valid.',jsonLabel:'JSON result',jsonPlaceholder:'Paste JSON here...',importAnalysis:'Import analysis',repairPrompt:'JSON repair prompt',clear:'Clear',jsonWaiting:'Paste JSON to validate.',jsonValid:'Valid JSON. You can import the analysis now.',jsonInvalid:'Invalid or incomplete JSON. Use the repair prompt if needed.',analysisImported:'Analysis imported. You can now review the engine layers.',repairCopied:'Repair prompt copied.',
+  engineTitle:'Analysis Engine Map',engineSubtitle:'The causal path of the model: from incentives to adaptation. After import, each layer becomes inspectable.',stateNoAnalysis:'No analysis yet',stateImported:'Analysis imported',reviewTitle:'Analysis Review',reviewSubtitle:'Navigate the summary, six layers, contradictions, scenarios, evidence, and exports.',
+  overview:'Overview',engine:'Six layers',contradictions:'Contradictions',scenarios:'Scenarios',evidence:'Evidence & assumptions',exports:'Exports',quality:'Quality',score:'Quality index',noItems:'No items.',emptyEngine:'No analysis has been imported yet. The model map remains visible so users understand which layers the analysis will fill.',
+  pillars:{interests:['Interests','Expected material or symbolic benefits.'],actors:['Actors','Decision-makers and influence holders.'],tools:['Tools','Instruments of action.'],narrative:['Narrative','Legitimacy and public framing.'],results:['Results','Direct, indirect, and unintended effects.'],feedback:['Feedback','System adaptation to its own results.']},
+  nav:{overview:'Overview',pillars:'Layers',contradictions:'Contradictions',scenarios:'Scenarios',evidence:'Evidence',exports:'Exports'},navHints:{overview:'Executive signals and model health',pillars:'Inspect the six causal layers',contradictions:'Rhetoric versus actions',scenarios:'Future paths and falsifiers',evidence:'Claims, assumptions, and tests',exports:'Publish and share outputs'},
+  warnings:{missingPillars:'Some model layers are empty.',noContradictions:'No clear contradictions were extracted.',noScenarios:'No testable scenarios were provided.',noFalsifiers:'Scenarios need falsification/disproval conditions.',thinEvidence:'Evidence or assumptions layer is weak.',good:'The core analysis structure is complete.'},
+  thesis:'Executive thesis',topic:'Topic',context:'Context',actions:'Actions',downloadJson:'Export JSON',downloadMarkdown:'Export Markdown',downloadHtml:'Export HTML',print:'Print',generatedReport:'Strategic Analysis Report',confidence:'Confidence',type:'Type',rationale:'Rationale',actionsResults:'Actions/results',interpretation:'Interpretation',probability:'Probability',timeframe:'Timeframe',drivers:'Drivers',earlySignals:'Early signals',disprovenIf:'Disproven if',claim:'Claim',basis:'Basis',sourceNote:'Source note',assumption:'Assumption',risk:'Risk',test:'Disproving test',loadSample:'Load sample',sampleLoaded:'Sample analysis loaded. You can review it or replace it with your own topic.',guideTitle:'How to use it',guideSteps:['Write a clear analysis topic.','Copy the prompt and paste it into your preferred AI assistant.','Copy only the JSON result and paste it into the import box.','Review quality, inspect layers, then export.'],schemaHealth:'Import health',completeness:'Completeness',missingItems:'Missing items',nextBestAction:'Next best action',healthGood:'The structure is healthy. Move to review or export.',healthMissingPillars:'Complete the empty model layers first.',healthMissingContradictions:'Ask for explicit contradiction extraction.',healthMissingScenarios:'Ask for scenarios with disproval conditions.',healthMissingEvidence:'Ask for evidence/assumptions or use Expert mode.',healthMissingFeedback:'Add feedback loops linking results to adaptation.',jsonAutoRecovered:'Text was cleaned and valid JSON was extracted automatically.',jsonParseProblem:'Could not parse JSON. Use the repair prompt.',reportSubtitle:'A shareable report built on the Interests → Actors → Tools → Narrative → Results → Feedback model.',itemsWord:'items',scoreSystem:'Scoring system',scoreGuide:'The composite score balances completeness, coherence, contradiction quality, scenario testability, and evidence grounding.',overallScore:'Overall index',scoreCompleteness:'Layer completeness',scoreCompletenessHint:'How much of the six-layer model and core structure is populated.',scoreCoherence:'Causal coherence',scoreCoherenceHint:'How well interests, actors, tools, and results connect.',scoreContradictions:'Contradiction quality',scoreContradictionsHint:'How clearly rhetoric is matched against actions and results.',scoreFalsifiability:'Testability',scoreFalsifiabilityHint:'Scenarios include explicit falsifiers or disproval conditions.',scoreEvidence:'Evidence grounding',scoreEvidenceHint:'Evidence or testable assumptions anchor the analysis.',scoreReadiness:'Share readiness',scoreReadinessHint:'The analysis is clear enough to export and review.',valueBand:'Value band',outOfHundred:'/100',sectionSummary:'Section summary',compactView:'Compact view',detailedView:'Detailed view'
+ }
+};
+const PILLARS=['interests','actors','tools','narrative','results','feedback'];
+const COLORS={interests:'var(--p1)',actors:'var(--p2)',tools:'var(--p3)',narrative:'var(--p4)',results:'var(--p5)',feedback:'var(--p6)'};
+let state={lang:'ar',stage:'topic',topic:'',context:'',analysisLang:'ar',assistant:'chatgpt',promptMode:'simple',analysis:null,jsonValid:false,activeReview:'overview',activePillar:null,lastPrompt:''};
+const $=id=>document.getElementById(id);const t=(k)=>k.split('.').reduce((o,p)=>o&&o[p],I18N[state.lang])||k;
+function setLang(lang){
+  state.lang=lang;
+  state.analysisLang=lang;
+  document.documentElement.lang=lang;
+  document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  $('langAr').classList.toggle('active',lang==='ar');
+  $('langEn').classList.toggle('active',lang==='en');
+  $('analysisLang').value=lang;
+  renderAll();
+  refreshDynamicMessages();
+}
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{el.placeholder=t(el.dataset.i18nPlaceholder)});
+  document.querySelectorAll('[data-i18n-option]').forEach(el=>{el.textContent=t(el.dataset.i18nOption)});
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{const txt=t(el.dataset.i18nTitle);el.title=txt;el.setAttribute('aria-label',txt)});
+  const seg=$('languageSegment'); if(seg) seg.setAttribute('aria-label',t('languageLabel'));
+}
+function refreshDynamicMessages(){
+  validateJsonInput();
+  const status=$('topicStatus');
+  if(!status) return;
+  if(state.stage==='topic'){
+    status.className='status warn';
+    status.textContent=t('topicStatusStart');
+  }else if(state.stage==='import'){
+    status.className=state.lastPrompt?'status good':'status warn';
+    status.textContent=state.lastPrompt?t('promptCopied'):t('topicStatusStart');
+  }else if(state.stage==='review'){
+    status.className='status good';
+    status.textContent=t('analysisImported');
+  }
+}
+function toast(msg,kind=''){const el=$('toast');el.textContent=msg;el.className='toast show';setTimeout(()=>el.classList.remove('show'),2600)}
+async function copyText(text){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return true}}catch{}try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();const ok=document.execCommand('copy');ta.remove();return ok}catch{return false}}
+function normalizeArray(x){return Array.isArray(x)?x:[]}
+function normalizeAnalysis(raw){const a=(raw&&typeof raw==='object')?raw:{};const out={subject:a.subject||{},contradictions:a.contradictions||{},scenarios:a.scenarios||{},evidence:a.evidence||{},assumptions:a.assumptions||{},links:normalizeArray(a.links)};PILLARS.forEach(p=>out[p]=normalizeArray(a[p]));out.contradictions.items=normalizeArray(out.contradictions.items);out.scenarios.items=normalizeArray(out.scenarios.items);out.evidence.items=normalizeArray(out.evidence.items);out.assumptions.items=normalizeArray(out.assumptions.items);return out;}
+function cleanJsonCandidate(s){return String(s||'').replace(/^\uFEFF/,'').trim().replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/,\s*([}\]])/g,'$1')}
+function balancedJsonSlice(s){const text=String(s||'');let start=-1,open='',close='';for(let i=0;i<text.length;i++){if(text[i]==='{'){start=i;open='{';close='}';break}if(text[i]==='['){start=i;open='[';close=']';break}}if(start<0)return '';let depth=0,inStr=false,esc=false;for(let i=start;i<text.length;i++){const ch=text[i];if(inStr){if(esc){esc=false;continue}if(ch==='\\'){esc=true;continue}if(ch==='"')inStr=false;continue}if(ch==='"'){inStr=true;continue}if(ch===open)depth++;if(ch===close){depth--;if(depth===0)return text.slice(start,i+1)}}return text.slice(start)}
+function extractJson(text){const raw=String(text||'').trim();if(!raw)throw new Error('empty');const attempts=[raw];const fence=raw.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);if(fence)attempts.push(fence[1]);attempts.push(balancedJsonSlice(raw));for(const a of attempts){const cleaned=cleanJsonCandidate(a);if(!cleaned)continue;try{return JSON.parse(cleaned)}catch(e){try{return JSON.parse(cleaned.replace(/\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,''))}catch{}}}throw new Error('invalid')}
+function validateJsonInput(){const text=$('jsonInput').value.trim();if(!text){state.jsonValid=false;$('importBtn').disabled=true;$('repairPromptBtn').disabled=true;$('jsonStatus').className='status';$('jsonStatus').textContent=t('jsonWaiting');$('pasteCard').classList.remove('ready','invalid');return null}try{const raw=extractJson(text);const analysis=normalizeAnalysis(raw);const has=PILLARS.some(p=>analysis[p].length)||analysis.contradictions.items.length||analysis.scenarios.items.length;if(!has)throw new Error('incomplete');state.jsonValid=true;$('importBtn').disabled=false;$('repairPromptBtn').disabled=false;$('jsonStatus').className='status good';const wasMessy=cleanJsonCandidate(text)!==JSON.stringify(raw)&&!/^[\s\n]*[\[{]/.test(text);$('jsonStatus').textContent=wasMessy?t('jsonAutoRecovered'):t('jsonValid');$('pasteCard').classList.add('ready');$('pasteCard').classList.remove('invalid');return analysis}catch(e){state.jsonValid=false;$('importBtn').disabled=true;$('repairPromptBtn').disabled=false;$('jsonStatus').className='status bad';$('jsonStatus').textContent=t('jsonParseProblem');$('pasteCard').classList.remove('ready');$('pasteCard').classList.add('invalid');return null}}
+function buildSchema(lang=state.analysisLang,mode=state.promptMode){const ar=lang==='ar';const label=ar?'أعد JSON صالحًا فقط بالبنية التالية':'Return valid JSON only using this structure';const schema={subject:{title:'string',context:'string',question:'string',executive_thesis:'string'},interests:[{name:'string',type:'strategic|economic|political|ideological',intensity:1,horizon:'short|medium|long',stakes:'marginal|important|existential',confidence:'high|medium|low',rationale:'string'}],actors:[{name:'string',category:'state|company|movement|institution|external',power_index:1,financial:1,decision_access:1,disruption_capacity:1,media_influence:1,confidence:'high|medium|low',rationale:'string'}],tools:[{name:'string',type:'military|economic|legal|diplomatic|media|technological|social',cost:1,risk:1,speed:1,reversibility:1,deniability:1,confidence:'high|medium|low',rationale:'string'}],narrative:[{name:'string',frame:'security|democracy|sovereignty|identity|prosperity|rights|other',coherence:1,media_alignment:1,public_acceptance:1,confidence:'high|medium|low',rationale:'string'}],results:[{name:'string',type:'direct|indirect|unintended',goal_achieved_pct:50,cost_benefit:1,power_balance_impact:'strengthened|neutral|weakened',confidence:'high|medium|low',rationale:'string'}],feedback:[{description:'string',adapts:'interests|actors|tools|narrative',speed:'fast|slow',confidence:'high|medium|low',rationale:'string'}],contradictions:{items:[{rhetoric:'string',contradiction_type:'rhetoric_vs_action|interest_vs_alliance|tool_vs_goal|result_vs_intention',actions:['string'],affected_layers:['interests|actors|tools|narrative|results|feedback'],interpretation:'string',severity:1,confidence:'high|medium|low'}]},scenarios:{items:[{name:'string',probability:40,timeframe:'string',drivers:['string'],early_signals:['string'],disproven_if:['string'],rationale:'string'}]}};if(mode==='expert'){schema.evidence={items:[{claim:'string',basis:'observation|inference|estimate|source_based',source_note:'string',confidence:'high|medium|low'}]};schema.assumptions={items:[{assumption:'string',risk:'low|medium|high',disproving_test:'string',implication_if_wrong:'string'}]};schema.links=[{from:'interest/actor/tool/narrative/result id or name',to:'target id or name',relation:'motivates|uses|justifies|produces|adapts',strength:1}];}
+return label+'\n'+JSON.stringify(schema,null,2);}
+function buildPrompt(){const lang=$('analysisLang').value;state.analysisLang=lang;state.assistant=$('assistantPreset').value;state.promptMode=$('promptMode').value;state.topic=$('topicInput').value.trim();state.context=$('timeframeInput').value.trim();const ar=lang==='ar';const modeText=state.promptMode==='expert'?(ar?'خبير: أضف الأدلة، الافتراضات، والروابط السببية.':'Expert: include evidence, assumptions, and causal links.'):(ar?'مركّز: ركّز على الطبقات الست، التناقضات، والسيناريوهات.':'Focused: prioritize the six layers, contradictions, and scenarios.');
+return ar?`أنت محلل استراتيجي صارم. حلّل الموضوع التالي باستخدام نموذج: مصالح → فاعلون → أدوات → سردية → نتائج → تغذية راجعة.\n\nالموضوع: ${state.topic}\nالسياق: ${state.context||'غير محدد'}\nالنمط: ${modeText}\n\nقواعد مهمة:\n- اكتب كل محتوى التحليل باللغة العربية.\n- لا تُرجع أي شرح خارج JSON.\n- فرّق بين الملاحظة والاستنتاج والتقدير عندما يكون ذلك مطلوبًا.\n- في التناقضات: إذا كانت نفس السردية/الخطاب ينتج عدة أفعال متناقضة، اجعلها مجموعة واحدة تحتوي actions متعددة.\n- في السيناريوهات: أضف شروطًا واضحة تُضعف أو تُبطل السيناريو.\n\n${buildSchema(lang,state.promptMode)}`:
+`You are a rigorous strategic analyst. Analyze the following topic using the model: Interests → Actors → Tools → Narrative → Results → Feedback.\n\nTopic: ${state.topic}\nContext: ${state.context||'not specified'}\nMode: ${modeText}\n\nRules:\n- Write all analysis content in English.\n- Return JSON only. No explanation outside JSON.\n- Separate observation, inference, and estimate where requested.\n- In contradictions: if the same rhetoric/hypothesis has multiple contradictory actions, keep it as one contradiction group with multiple actions.\n- In scenarios: include clear conditions that would weaken or disprove each scenario.\n\n${buildSchema(lang,state.promptMode)}`;}
+
+function sampleAnalysis(lang=state.lang){const ar=lang==='ar';return normalizeAnalysis(ar?{subject:{title:'مثال: الحرب العالمية الثانية وما بعدها',context:'1939–1947، النظام الدولي',question:'كيف أعادت مخرجات الحرب العالمية الثانية تشكيل النظام العالمي؟',executive_thesis:'أنهت الحرب العالمية الثانية توازن القوى الأوروبي التقليدي وفتحت نظامًا ثنائي القطبية تقوده الولايات المتحدة والاتحاد السوفيتي، مع مؤسسات دولية جديدة وشرعية سياسية مبنية على منع حرب شاملة أخرى.'},interests:[{name:'منع عودة الهيمنة الألمانية',type:'strategic',intensity:5,horizon:'long',stakes:'existential',confidence:'high',rationale:'تكرار الحربين العالميتين جعل احتواء ألمانيا مصلحة أمنية مركزية للحلفاء.'},{name:'إعادة بناء الاقتصاد العالمي',type:'economic',intensity:4,horizon:'long',stakes:'important',confidence:'high',rationale:'الدمار الواسع خلق حاجة إلى تمويل وإعادة إعمار وتثبيت التجارة.'}],actors:[{name:'الولايات المتحدة',category:'state',power_index:5,financial:5,decision_access:5,disruption_capacity:4,media_influence:4,confidence:'high',rationale:'امتلكت قدرة مالية وصناعية وعسكرية مكّنتها من قيادة النظام الجديد.'},{name:'الاتحاد السوفيتي',category:'state',power_index:5,financial:3,decision_access:4,disruption_capacity:5,media_influence:3,confidence:'high',rationale:'سيطرته على شرق أوروبا وقوته العسكرية جعلت تأثيره بنيويًا.'}],tools:[{name:'مؤسسات دولية جديدة',type:'diplomatic',cost:3,risk:2,speed:3,reversibility:2,deniability:1,confidence:'high',rationale:'الأمم المتحدة وبريتون وودز وفّرت أدوات تنسيق وشرعية.'},{name:'الاحتلال وإعادة البناء',type:'legal',cost:4,risk:3,speed:2,reversibility:2,deniability:1,confidence:'high',rationale:'إدارة ألمانيا واليابان تطلبت أدوات حكم وإصلاح مؤسسي.'}],narrative:[{name:'منع تكرار الحرب الشاملة',frame:'security',coherence:5,media_alignment:4,public_acceptance:5,confidence:'high',rationale:'السردية كانت متماسكة بعد خسائر بشرية ومادية غير مسبوقة.'}],results:[{name:'صعود نظام ثنائي القطبية',type:'direct',goal_achieved_pct:70,cost_benefit:3,power_balance_impact:'strengthened',confidence:'high',rationale:'انحسر مركز الثقل الأوروبي وصعدت واشنطن وموسكو.'},{name:'بداية الحرب الباردة',type:'unintended',goal_achieved_pct:30,cost_benefit:2,power_balance_impact:'weakened',confidence:'high',rationale:'ترتيبات ما بعد الحرب أنتجت تنافسًا أيديولوجيًا وأمنيًا جديدًا.'}],feedback:[{description:'خوف متبادل بين القوتين دفع إلى أحلاف عسكرية وتسابق تسلح.',adapts:'tools',speed:'fast',confidence:'high',rationale:'النتائج الأمنية أعادت تشكيل الأدوات والتحالفات.'}],contradictions:{items:[{rhetoric:'تحرير الشعوب ومنع الاستبداد',contradiction_type:'rhetoric_vs_action',actions:['تقسيم مناطق النفوذ في أوروبا','قبول أنظمة تابعة داخل المجال السوفيتي','استخدام الاحتلال العسكري لإعادة تشكيل دول مهزومة'],interpretation:'السردية الأخلاقية رافقتها اعتبارات قوة وأمن صلبة.',severity:4,confidence:'high'}]},scenarios:{items:[{name:'ترسيخ النظام ثنائي القطبية',probability:70,timeframe:'1947–1955',drivers:['الاستقطاب الأيديولوجي','الأحلاف العسكرية','إعادة الإعمار تحت قيادة الكتلتين'],early_signals:['خطة مارشال','مبدأ ترومان','تأسيس الناتو'],disproven_if:['نجاح تسوية أمنية أوروبية جامعة','تقليل الوجود العسكري للقوتين'],rationale:'المؤشرات المبكرة دعمت انقسامًا مؤسسيًا وعسكريًا.'}]},evidence:{items:[{claim:'أوروبا فقدت مركزية النظام الدولي بعد الحرب.',basis:'inference',source_note:'مستنتج من توزيع القوة بعد 1945',confidence:'high'}]},assumptions:{items:[{assumption:'القوى الكبرى ستفضّل الاستقرار المؤسسي على العودة لعزلة ما قبل الحرب.',risk:'medium',disproving_test:'انسحاب أمريكي سريع من أوروبا وفشل مؤسسات بريتون وودز',implication_if_wrong:'سيصبح النظام أكثر سيولة وأقل قابلية للتوقع.'}]}}:{subject:{title:'Sample: World War II outcomes',context:'1939–1947, international order',question:'How did World War II outcomes reshape the global system?',executive_thesis:'World War II ended the old European balance of power and opened a bipolar order led by the United States and the Soviet Union, supported by new international institutions and a legitimacy frame centered on preventing another total war.'},interests:[{name:'Prevent renewed German hegemony',type:'strategic',intensity:5,horizon:'long',stakes:'existential',confidence:'high',rationale:'The repetition of two world wars made German containment a central Allied security interest.'},{name:'Rebuild the global economy',type:'economic',intensity:4,horizon:'long',stakes:'important',confidence:'high',rationale:'Mass destruction created a need for finance, reconstruction, and trade stabilization.'}],actors:[{name:'United States',category:'state',power_index:5,financial:5,decision_access:5,disruption_capacity:4,media_influence:4,confidence:'high',rationale:'Its financial, industrial, and military capacity enabled it to lead the new order.'},{name:'Soviet Union',category:'state',power_index:5,financial:3,decision_access:4,disruption_capacity:5,media_influence:3,confidence:'high',rationale:'Its control over Eastern Europe and military weight made its influence structural.'}],tools:[{name:'New international institutions',type:'diplomatic',cost:3,risk:2,speed:3,reversibility:2,deniability:1,confidence:'high',rationale:'The UN and Bretton Woods institutions provided coordination and legitimacy mechanisms.'},{name:'Occupation and reconstruction',type:'legal',cost:4,risk:3,speed:2,reversibility:2,deniability:1,confidence:'high',rationale:'Administering Germany and Japan required governance and institutional reform tools.'}],narrative:[{name:'Prevent another total war',frame:'security',coherence:5,media_alignment:4,public_acceptance:5,confidence:'high',rationale:'The narrative was coherent after unprecedented human and material losses.'}],results:[{name:'Rise of bipolarity',type:'direct',goal_achieved_pct:70,cost_benefit:3,power_balance_impact:'strengthened',confidence:'high',rationale:'Europe receded as the central power arena while Washington and Moscow rose.'},{name:'Beginning of the Cold War',type:'unintended',goal_achieved_pct:30,cost_benefit:2,power_balance_impact:'weakened',confidence:'high',rationale:'Postwar arrangements produced a new ideological and security rivalry.'}],feedback:[{description:'Mutual fear between the two superpowers drove military alliances and arms competition.',adapts:'tools',speed:'fast',confidence:'high',rationale:'Security outcomes reshaped tools and alliances.'}],contradictions:{items:[{rhetoric:'Liberating peoples and preventing tyranny',contradiction_type:'rhetoric_vs_action',actions:['Division of spheres of influence in Europe','Acceptance of dependent regimes inside the Soviet sphere','Use of military occupation to reshape defeated states'],interpretation:'The moral rhetoric operated alongside hard security and power calculations.',severity:4,confidence:'high'}]},scenarios:{items:[{name:'Consolidation of bipolar order',probability:70,timeframe:'1947–1955',drivers:['Ideological polarization','Military alliances','Reconstruction under bloc leadership'],early_signals:['Marshall Plan','Truman Doctrine','Creation of NATO'],disproven_if:['Successful pan-European security settlement','Rapid reduction of superpower military presence'],rationale:'Early indicators supported institutional and military division.'}]},evidence:{items:[{claim:'Europe lost centrality in the international system after the war.',basis:'inference',source_note:'Inferred from post-1945 power distribution',confidence:'high'}]},assumptions:{items:[{assumption:'Great powers will prefer institutional stability over a return to prewar isolation.',risk:'medium',disproving_test:'Rapid U.S. withdrawal from Europe and failure of Bretton Woods institutions',implication_if_wrong:'The order would become more fluid and less predictable.'}]}})}
+function schemaHealth(a=state.analysis){if(!a)return {pct:0,missing:[],next:t('healthMissingPillars')};const missing=[];const pillarFilled=PILLARS.filter(p=>normalizeArray(a[p]).length>0).length;if(pillarFilled<6)missing.push(t('healthMissingPillars'));if(!normalizeArray(a.contradictions?.items).length)missing.push(t('healthMissingContradictions'));const sc=normalizeArray(a.scenarios?.items);if(!sc.length)missing.push(t('healthMissingScenarios'));if(sc.some(s=>!normalizeArray(s.disproven_if).length))missing.push(t('healthMissingScenarios'));if(!normalizeArray(a.feedback).length)missing.push(t('healthMissingFeedback'));if(!normalizeArray(a.evidence?.items).length&&!normalizeArray(a.assumptions?.items).length)missing.push(t('healthMissingEvidence'));const checks=10;let passed=0;passed+=pillarFilled;passed+=normalizeArray(a.contradictions?.items).length?1:0;passed+=sc.length?1:0;passed+=sc.length&&sc.every(s=>normalizeArray(s.disproven_if).length)?1:0;passed+=(normalizeArray(a.evidence?.items).length||normalizeArray(a.assumptions?.items).length)?1:0;const pct=Math.round(Math.min(100,(passed/checks)*100));return {pct,missing:[...new Set(missing)],next:missing[0]||t('healthGood')}}
+function safeFileSlug(s){return String(s||'strategic-analysis').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\u0600-\u06ff]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,70)||'strategic-analysis'}
+function renderGuide(){const el=$('guideSteps');if(!el)return;const steps=t('guideSteps');el.innerHTML=(Array.isArray(steps)?steps:[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}
+function renderStages(){const arr=t('stages');const idx={topic:0,prompt:1,import:2,review:3}[state.stage]??0;$('stageBar').innerHTML=arr.map((s,i)=>`<div class="stageItem ${i<idx?'done':''} ${i===idx?'active':''}"><span class="num">${i+1}</span><span>${s}</span></div>`).join('')}
+function countFor(p){return state.analysis?normalizeArray(state.analysis[p]).length:0}
+function renderEngineNav(){const dict=t('pillars');const arrow=state.lang==='ar'?'←':'→';$('engineNav').innerHTML=PILLARS.map((p,i)=>{const d=dict[p];const count=countFor(p);const filled=count>0?' filled':'';const depth=layerDepthPct(p);return `<button class="engineCard ${state.activePillar===p?'active':''}${filled} ${pctClass(depth)}" style="--pc:${COLORS[p]}" data-pillar-card="${p}" type="button"><div class="eyebrow">${String(i+1).padStart(2,'0')}</div><div class="engineHeading"><span class="engineDot" aria-hidden="true"></span><h4>${d[0]}</h4></div><p>${d[1]}</p><div class="engineFooter"><span class="engineCount"><b>${count}</b><small>${itemsWord()}</small></span>${ringMetric(depth,'sm')}</div><span class="flowArrow" aria-hidden="true">${arrow}</span></button>`}).join('');document.querySelectorAll('[data-pillar-card]').forEach(btn=>btn.onclick=()=>{state.activePillar=btn.dataset.pillarCard;if(state.analysis){state.activeReview='pillars';renderReview();document.getElementById('reviewPanel').scrollIntoView({behavior:'smooth',block:'start'});}renderEngineNav();});$('analysisStateChip').textContent=state.analysis?t('stateImported'):t('stateNoAnalysis')}
+function getWarnings(){if(!state.analysis)return [t('emptyEngine')];const a=state.analysis;const w=[];if(PILLARS.some(p=>!a[p].length))w.push(t('warnings.missingPillars'));if(!a.contradictions.items.length)w.push(t('warnings.noContradictions'));if(!a.scenarios.items.length)w.push(t('warnings.noScenarios'));if(a.scenarios.items.length&&a.scenarios.items.some(s=>!normalizeArray(s.disproven_if).length))w.push(t('warnings.noFalsifiers'));if((!a.evidence||!normalizeArray(a.evidence.items).length)&&(!a.assumptions||!normalizeArray(a.assumptions.items).length))w.push(t('warnings.thinEvidence'));if(!w.length)w.push(t('warnings.good'));return w;}
+function score(){if(!state.analysis)return 0;const a=state.analysis;let pts=0;pts+=PILLARS.filter(p=>a[p].length).length*10;pts+=Math.min(10,a.contradictions.items.length*4);pts+=Math.min(10,a.scenarios.items.length*4);pts+=a.scenarios.items.some(s=>normalizeArray(s.disproven_if).length)?8:0;pts+=normalizeArray(a.evidence.items).length?6:0;pts+=normalizeArray(a.assumptions.items).length?6:0;return Math.min(100,pts)}
+function escapeHtml(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function arr(v){return Array.isArray(v)?v.filter(Boolean):[]}
+function valuePct(v,max=100){const n=Number(v);if(!Number.isFinite(n))return 0;return Math.max(0,Math.min(max,n))}
+function pctClass(v){const n=valuePct(v);return n>=90?'pct-excellent':n>=76?'pct-good':n>=56?'pct-mid':n>=35?'pct-warn':'pct-low'}
+function labelText(en,ar){return state.lang==='ar'?ar:en}
+function normalizeToken(v){return String(v??'').trim().toLowerCase().replace(/[\s-]+/g,'_')}
+function confidenceScore(v){const s=normalizeToken(v);if(/high|strong|عال|قوي/.test(s))return 92;if(/medium|moderate|متوسط/.test(s))return 64;if(/low|weak|منخفض|ضعيف/.test(s))return 34;return 50}
+function confidenceClass(v){return pctClass(confidenceScore(v))}
+function severityScore(v){const m=String(v??'').match(/\d+(?:\.\d+)?/);if(!m)return 50;return Math.max(0,Math.min(100,Number(m[0])*10))}
+function riskScore(v){const s=normalizeToken(v);if(/critical|existential|severe|high|major|حاسم|وجود|مرتفع|عال|خطير/.test(s))return 88;if(/medium|moderate|material|important|متوسط|مهم/.test(s))return 62;if(/low|minor|contained|منخفض|ضعيف|محدود/.test(s))return 34;return 52}
+function semanticClass(v){const s=normalizeToken(v);if(/existential|critical|حاسم|وجود/.test(s))return 'pct-excellent';if(/important|strategic|source_based|source_grounded|significant|مهم|استراتيجي/.test(s))return 'pct-good';if(/medium|political|economic|ideological|short|long|observation|inference|متوسط|سياسي|اقتصادي/.test(s))return 'pct-mid';if(/low|minor|منخفض/.test(s))return 'pct-warn';return 'pct-neutral'}
+function basisInfo(v){const s=normalizeToken(v);if(/source/.test(s))return {label:labelText('Source-grounded','مرتكز على مصدر'),cls:'basis-source'};if(/observation|observed|ملاحظة/.test(s))return {label:labelText('Direct observation','ملاحظة مباشرة'),cls:'basis-observed'};if(/inference|inferred|استنتاج/.test(s))return {label:labelText('Analytical inference','استنتاج تحليلي'),cls:'basis-inferred'};if(/estimate|estimated|تقدير/.test(s))return {label:labelText('Estimate','تقدير'),cls:'basis-estimate'};if(/assumption|assumed|افتراض/.test(s))return {label:labelText('Working assumption','افتراض عملي'),cls:'basis-assumption'};return {label:displayEnum(v),cls:'basis-neutral'}}
+function confidenceInfo(v){const score=confidenceScore(v);const s=normalizeToken(v);let label=displayEnum(v||'');if(/high|strong|عال|قوي/.test(s))label=labelText('High confidence','ثقة عالية');else if(/medium|moderate|متوسط/.test(s))label=labelText('Medium confidence','ثقة متوسطة');else if(/low|weak|منخفض|ضعيف/.test(s))label=labelText('Low confidence','ثقة منخفضة');return {label,cls:confidenceClass(v),score}}
+function riskInfo(v){const score=riskScore(v);let label=labelText('Risk not specified','المخاطر غير محددة');const s=normalizeToken(v);if(/critical|existential|severe|حاسم|وجود|خطير/.test(s))label=labelText('Critical risk','مخاطر حرجة');else if(/high|major|مرتفع|عال/.test(s))label=labelText('High risk','مخاطر عالية');else if(/medium|moderate|material|important|متوسط|مهم/.test(s))label=labelText('Medium risk','مخاطر متوسطة');else if(/low|minor|contained|منخفض|محدود/.test(s))label=labelText('Low risk','مخاطر منخفضة');return {label,cls:pctClass(score),score}}
+function displayEnum(v){const raw=String(v??'').trim();if(!raw)return '';const s=normalizeToken(raw);const map={
+  rhetoric_vs_action:[labelText('Rhetoric vs action','الخطاب مقابل الفعل'),'type-rhetoric'],tool_vs_goal:[labelText('Tool vs goal','الأداة مقابل الهدف'),'type-tool'],result_vs_intention:[labelText('Result vs intention','النتيجة مقابل النية'),'type-result'],interest_vs_alliance:[labelText('Interest vs alliance','المصلحة مقابل التحالف'),'type-interest'],claim_vs_evidence:[labelText('Claim vs evidence','الادعاء مقابل الدليل'),'type-evidence'],internal_inconsistency:[labelText('Internal inconsistency','تناقض داخلي'),'type-internal'],
+  source_based:[labelText('Source-grounded','مرتكز على مصدر'),'basis-source'],source_grounded:[labelText('Source-grounded','مرتكز على مصدر'),'basis-source'],observation:[labelText('Direct observation','ملاحظة مباشرة'),'basis-observed'],inference:[labelText('Analytical inference','استنتاج تحليلي'),'basis-inferred'],estimate:[labelText('Estimate','تقدير'),'basis-estimate'],assumption:[labelText('Working assumption','افتراض عملي'),'basis-assumption']
+};
+  return map[s]?.[0] || raw.replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase())
+}
+function enumClass(v){const s=normalizeToken(v);const map={source_based:'basis-source',source_grounded:'basis-source',observation:'basis-observed',inference:'basis-inferred',estimate:'basis-estimate',assumption:'basis-assumption',rhetoric_vs_action:'type-rhetoric',tool_vs_goal:'type-tool',result_vs_intention:'type-result',interest_vs_alliance:'type-interest',claim_vs_evidence:'type-evidence',internal_inconsistency:'type-internal'};return map[s]||''}
+function pill(v,kind=''){if(v===undefined||v===null||v==='')return '';const raw=String(v);let cls='chip pct-neutral',label=displayEnum(raw);if(kind==='confidence'){const info=confidenceInfo(raw);cls='chip confidence-chip '+info.cls;label=info.label}else if(kind==='basis'){const info=basisInfo(raw);cls='chip basis-chip '+info.cls;label=info.label}else if(kind==='risk'){const info=riskInfo(raw);cls='chip risk-chip '+info.cls;label=info.label}else if(kind==='severity'){cls='chip severity-chip '+pctClass(severityScore(raw));label=raw}else if(kind==='percent'){cls='chip '+pctClass(valuePct(Number(raw)))}else{const ecls=enumClass(raw);cls='chip '+(ecls||semanticClass(raw))}return `<span class="${cls}">${escapeHtml(label)}</span>`}
+function itemsWord(){return t('itemsWord')|| (state.lang==='ar'?'عناصر':'items')}
+function layerDepthPct(p){if(!state.analysis)return 0;const counts=PILLARS.map(x=>countFor(x));const max=Math.max(1,...counts);return Math.round((countFor(p)/max)*100)}
+function ringMetric(value,size='sm',suffix='%',toneClass=''){const pct=valuePct(value);const dash=pct.toFixed(1);const cls=toneClass||pctClass(pct);return `<div class="metricRing ${size} ${cls}" aria-label="${Math.round(pct)}${suffix}"><svg class="metricSvg" viewBox="0 0 64 64" aria-hidden="true"><circle class="metricTrackSvg" cx="32" cy="32" r="24"></circle><circle class="metricBarSvg" cx="32" cy="32" r="24" pathLength="100" stroke-dasharray="${dash} 100"></circle></svg><div class="metricRingInner"><strong>${Math.round(pct)}</strong><span>${suffix}</span></div></div>`}
+function probabilityClass(v){const n=valuePct(v);return n>=70?'prob-high':n>=45?'prob-mid':n>=25?'prob-lowmid':'prob-low'}
+function probabilityMetric(value,size='md'){return ringMetric(value,size,'%',probabilityClass(value))}
+function contradictionTypeLabel(v){return displayEnum(v||'')||labelText('Contradiction','تناقض')}
+function affectedLayers(c){
+  const allowed=new Set(PILLARS);
+  const raw=normalizeArray(c.affected_layers||c.affectedLayers||c.layers||c.affected_model_layers);
+  const explicit=raw.map(x=>normalizeToken(typeof x==='object'?(x.name||x.layer||''):x)).map(x=>PILLARS.find(p=>x===p||x.includes(p)||p.includes(x))).filter(Boolean);
+  if(explicit.length)return [...new Set(explicit)].filter(x=>allowed.has(x)).slice(0,6);
+  const s=[c.contradiction_type,c.type,c.rhetoric,c.interpretation,arr(c.actions).join(' ')].join(' ').toLowerCase();const hits=[];
+  if(/interest|material|economic|alliance|sovereign|مصلحة/.test(s))hits.push('interests');
+  if(/actor|party|state|union|coalition|فاعل/.test(s))hits.push('actors');
+  if(/tool|sanction|policy|military|instrument|أداة/.test(s))hits.push('tools');
+  if(/rhetoric|claim|narrative|legitim|خطاب|سرد/.test(s))hits.push('narrative');
+  if(/result|outcome|effect|نتيجة/.test(s))hits.push('results');
+  if(/feedback|adapt|cycle|تكيف/.test(s))hits.push('feedback');
+  return [...new Set(hits)].slice(0,3)
+}
+function contradictionMeaning(c){const s=normalizeToken(c.contradiction_type||c.type||'');const sev=severityScore(c.severity);if(s.includes('rhetoric'))return labelText('Narrative credibility risk','خطر على مصداقية السردية');if(s.includes('tool'))return labelText('Instrument-goal mismatch','اختلال بين الأداة والهدف');if(s.includes('result'))return labelText('Outcome divergence','انحراف بين النية والنتيجة');if(s.includes('interest'))return labelText('Alliance or incentive constraint','قيد تحالفي أو حافزي');if(s.includes('claim'))return labelText('Evidence credibility pressure','ضغط على موثوقية الادعاء');return sev>=80?labelText('High strategic inconsistency','تناقض استراتيجي عالٍ'):labelText('Strategic consistency risk','خطر على الاتساق الاستراتيجي')}
+function impactScope(c){const sev=severityScore(c.severity);if(sev>=85)return labelText('Systemic impact','أثر منظومي');if(sev>=65)return labelText('Strategic impact','أثر استراتيجي');if(sev>=45)return labelText('Operational impact','أثر تشغيلي');return labelText('Limited impact','أثر محدود')}
+function scoreBreakdown(a=state.analysis){if(!a)return {completeness:0,coherence:0,contradictions:0,falsifiability:0,evidence:0,readiness:0,overall:0};const filled=PILLARS.filter(p=>normalizeArray(a[p]).length).length;const completeness=Math.round((filled/6)*100);const hasCore=normalizeArray(a.interests).length&&normalizeArray(a.actors).length&&normalizeArray(a.tools).length&&normalizeArray(a.results).length;const feedback=normalizeArray(a.feedback).length;const coherence=Math.min(100,Math.round((filled/6)*50+(hasCore?28:0)+(feedback?22:0)));const con=normalizeArray(a.contradictions?.items);const contradictions=Math.min(100,con.length*16+con.filter(c=>arr(c.actions).length>=2).length*8+con.filter(c=>(c.interpretation||'').trim()).length*7+con.filter(c=>affectedLayers(c).length).length*5);const sc=normalizeArray(a.scenarios?.items);const falsifiability=sc.length?Math.min(100,sc.length*14+Math.round((sc.filter(s=>arr(s.disproven_if).length).length/sc.length)*50)+sc.filter(s=>s.probability!==undefined&&s.probability!==null&&s.probability!=='').length*8):0;const ev=normalizeArray(a.evidence?.items),ass=normalizeArray(a.assumptions?.items);const sourceShare=ev.length?Math.round((ev.filter(e=>/source/.test(normalizeToken(e.basis))).length/ev.length)*30):0;const evidence=Math.min(100,ev.length*10+ass.length*8+sourceShare);const warnings=getWarnings(a).filter(w=>w!==t('warnings.good')).length;const readiness=Math.max(0,Math.min(100,70+completeness*.18+contradictions*.12+evidence*.10-warnings*11));const overall=Math.round(completeness*.25+coherence*.20+contradictions*.15+falsifiability*.15+evidence*.15+readiness*.10);return {completeness,coherence,contradictions,falsifiability,evidence,readiness,overall}}
+function scoreDiagnostic(key,val,a=state.analysis){const data={
+ completeness:{reason:val<70?labelText('Some model layers are still thin or empty.','بعض طبقات النموذج لا تزال ضعيفة أو فارغة.'):labelText('The six-layer structure is substantially populated.','البنية ذات الطبقات الست مكتملة بدرجة جيدة.'),action:val<70?labelText('Add missing layer items, especially feedback and results.','أضف عناصر للطبقات الناقصة، خصوصًا النتائج والتغذية الراجعة.'):labelText('Review quality rather than adding more volume.','راجع الجودة بدل إضافة حجم زائد.')},
+ coherence:{reason:val<70?labelText('Causal links across interests, actors, tools, and results need clearer connection.','الروابط السببية بين المصالح والفاعلين والأدوات والنتائج تحتاج وضوحًا أكبر.'):labelText('The core causal chain is visible.','السلسلة السببية الأساسية واضحة.'),action:val<70?labelText('Ask the AI to make the causal chain explicit.','اطلب من المساعد توضيح السلسلة السببية صراحة.'):labelText('Check for weak assumptions inside the causal chain.','افحص الافتراضات الضعيفة داخل السلسلة السببية.')},
+ contradictions:{reason:val<70?labelText('Contradictions need stronger action/result grouping or interpretation.','التناقضات تحتاج ربطًا أقوى بالأفعال/النتائج أو تفسيرًا أوضح.'):labelText('Contradictions are actionable and interpretable.','التناقضات قابلة للفحص والتفسير.'),action:val<70?labelText('Add actions/results and affected layers for each contradiction.','أضف الأفعال/النتائج والطبقات المتأثرة لكل تناقض.'):labelText('Prioritize the highest-severity contradictions.','رتّب التناقضات الأعلى شدة.')},
+ falsifiability:{reason:val<70?labelText('Scenarios lack enough disproval conditions or probability discipline.','السيناريوهات تفتقر إلى شروط إبطال أو ضبط احتمالي كافٍ.'):labelText('Scenarios include testable falsifiers.','السيناريوهات تتضمن شروط إبطال قابلة للاختبار.'),action:val<70?labelText('Add early signals and disproven-if conditions.','أضف إشارات مبكرة وشروط إبطال واضحة.'):labelText('Monitor early signals against each scenario.','راقب الإشارات المبكرة لكل سيناريو.')},
+ evidence:{reason:val<70?labelText('Evidence grounding is weak or too inference-heavy.','الارتكاز على الأدلة ضعيف أو يعتمد كثيرًا على الاستنتاجات.'):labelText('Evidence and assumptions provide reasonable grounding.','الأدلة والافتراضات تعطي ارتكازًا معقولًا.'),action:val<70?labelText('Add source-grounded claims and tests for assumptions.','أضف ادعاءات مرتكزة على مصادر واختبارات للافتراضات.'):labelText('Verify source notes before publication.','تحقق من ملاحظات المصادر قبل النشر.')},
+ readiness:{reason:val<70?labelText('The analysis still has gaps that reduce share readiness.','ما زالت هناك فجوات تقلل جاهزية المشاركة.'):labelText('The analysis is ready for review/export with minor checks.','التحليل جاهز للمراجعة/التصدير مع فحوصات بسيطة.'),action:val<70?labelText('Resolve warnings before exporting the final report.','عالج التحذيرات قبل تصدير التقرير النهائي.'):labelText('Export the report and perform a final human review.','صدّر التقرير وأجرِ مراجعة بشرية أخيرة.')}
+};return data[key]||{reason:'',action:''}}
+function metricCard(key,label,val,hint){const d=scoreDiagnostic(key,val);return `<div class="scoreMetricCard ${pctClass(val)}"><div class="metricHead"><strong>${escapeHtml(label)}</strong>${ringMetric(val,'xs')}</div><div class="metricTrack"><span class="metricFill" style="width:${valuePct(val)}%"></span></div><div class="metricHint">${escapeHtml(hint)}</div><div class="metricDiagnosis"><span>${escapeHtml(d.reason)}</span><b>${escapeHtml(d.action)}</b></div></div>`}
+
+function scoreWeights(){return {completeness:25,coherence:20,contradictions:15,falsifiability:15,evidence:15,readiness:10}}
+function scoreWeightLabel(k){return ({completeness:t('scoreCompleteness'),coherence:t('scoreCoherence'),contradictions:t('scoreContradictions'),falsifiability:t('scoreFalsifiability'),evidence:t('scoreEvidence'),readiness:t('scoreReadiness')})[k]||k}
+function scoreFormulaText(){return labelText('Overall score = 25% completeness + 20% coherence + 15% contradiction quality + 15% scenario testability + 15% evidence grounding + 10% share readiness.','المؤشر الكلي = 25% اكتمال الطبقات + 20% التماسك السببي + 15% جودة التناقضات + 15% قابلية اختبار السيناريوهات + 15% ارتكاز الأدلة + 10% جاهزية المشاركة.')}
+function scoreFormulaHtml(){const weights=scoreWeights();const entries=Object.keys(weights).map(k=>`<div class="formulaWeight"><span>${escapeHtml(scoreWeightLabel(k))}</span><b>${weights[k]}%</b></div>`).join('');const bands=[['pct-low','0–34'],['pct-warn','35–55'],['pct-mid','56–75'],['pct-good','76–89'],['pct-excellent','90–100']].map(([cls,label])=>`<span class="bandChip ${cls}"><span class="bandDot"></span>${label}</span>`).join('');return `<div class="scoreFormulaCard"><h4>${escapeHtml(labelText('Scoring formula','معادلة التقييم'))}</h4><p>${escapeHtml(scoreFormulaText())}</p><div class="formulaGrid">${entries}</div><div class="scoreBandLegend" aria-label="${escapeHtml(labelText('Score bands','مستويات الدرجة'))}">${bands}</div></div>`}
+function browserChecklistItems(){return state.lang==='ar'?["افتح الملف في Chrome أو Edge أو Firefox.","بدّل اللغة العربية ⇄ الإنجليزية وتأكد أن الواجهة والبرومبت يتغيران.","حمّل المثال التجريبي وتنقّل بين كل تبويبات المراجعة.","الصق JSON غير صالح ثم JSON صالحًا وتحقق من رسائل الاستيراد.","صدّر HTML وMarkdown وJSON وافتح التقرير المستقل.","جرّب الطباعة/الحفظ PDF وتحقق من فواصل الصفحات.","اختبر العرض على شاشة هاتف أو نافذة ضيقة.","راجع التقرير العربي وتأكد من اتجاه RTL وعدم تسرب مصطلحات خام."]:["Open the file in Chrome/Edge/Firefox.","Switch Arabic ⇄ English and verify UI plus prompt language update.","Load the sample analysis and click every review tab.","Paste invalid JSON, then valid JSON, and verify import states.","Export HTML, Markdown, and JSON; open the standalone report.","Use print/save as PDF and inspect page breaks.","Test a mobile-sized browser window.","Inspect the Arabic report for RTL layout and raw enum leakage."]}
+function browserChecklistHtml(){return `<div class="testChecklist">${browserChecklistItems().map(x=>`<div class="testRow">${escapeHtml(x)}</div>`).join('')}</div>`}
+function playwrightSnippet(){return `// Playwright smoke-test skeleton\nimport { test, expect } from '@playwright/test';\n\ntest('Strategic Analysis Workbench core flow', async ({ page }) => {\n  await page.goto('/');\n  await expect(page.locator('#copyPromptBtn')).toBeVisible();\n  await page.locator('#langEn').click();\n  await page.locator('#topicInput').fill('World War II outcomes, 1939-1947');\n  await page.locator('#previewPromptBtn').click();\n  await expect(page.locator('#modalBackdrop')).toHaveClass(/show/);\n  await page.keyboard.press('Escape');\n  await page.locator('#loadSampleBtn').click();\n  await expect(page.locator('#reviewPanel')).toBeVisible();\n  for (const tab of ['overview','pillars','contradictions','scenarios','evidence','exports']) {\n    await page.locator('[data-review="'+tab+'"]').click();\n    await expect(page.locator('#reviewContent')).toBeVisible();\n  }\n  await page.locator('[data-review="exports"]').click();\n  await page.locator('#selfCheckBtn').click();\n  await expect(page.locator('#runtimeCheckResult')).toContainText('Runtime self-check');\n});`}
+
+function itemCard(obj,extra=''){return `<article class="item"><div class="itemTitle">${escapeHtml(obj.name||obj.title||obj.description||obj.claim||obj.assumption||obj.rhetoric||'—')}</div><div class="itemMeta">${pill(obj.type||obj.category||obj.frame||obj.basis)}${pill(obj.confidence,'confidence')}${pill(obj.horizon||obj.timeframe)}${pill(obj.stakes)}</div>${obj.rationale?`<div class="itemText">${escapeHtml(obj.rationale)}</div>`:''}${extra}</article>`}
+function renderOverview(){const a=state.analysis;const warnings=getWarnings(a);const h=schemaHealth(a);const b=scoreBreakdown(a);const missing=h.missing.length?h.missing.map(w=>`<div class="warning">${escapeHtml(w)}</div>`).join(''):`<div class="warning good">${escapeHtml(t('healthGood'))}</div>`;return `<h3>${t('overview')}</h3><div class="summaryGrid"><div class="intelBrief"><div class="briefHero"><div class="itemTitle">${t('thesis')}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis||a.subject.question||a.subject.title||'—')}</div></div><div class="scoreSystemGrid">${metricCard('completeness',t('scoreCompleteness'),b.completeness,t('scoreCompletenessHint'))}${metricCard('coherence',t('scoreCoherence'),b.coherence,t('scoreCoherenceHint'))}${metricCard('contradictions',t('scoreContradictions'),b.contradictions,t('scoreContradictionsHint'))}${metricCard('falsifiability',t('scoreFalsifiability'),b.falsifiability,t('scoreFalsifiabilityHint'))}${metricCard('evidence',t('scoreEvidence'),b.evidence,t('scoreEvidenceHint'))}${metricCard('readiness',t('scoreReadiness'),b.readiness,t('scoreReadinessHint'))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${t('completeness')}</span></div><div class="healthCard ${h.missing.length?'pct-warn':'pct-good'}"><div class="healthCardValue">${h.missing.length}</div><span>${t('missingItems')}</span></div><div class="healthCard ${pctClass(b.coherence)}"><div class="healthCardValue">${b.coherence}%</div><span>${t('scoreCoherence')}</span></div></div><div class="nextAction"><strong>${t('nextBestAction')}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map(w=>`<div class="warning">${escapeHtml(w)}</div>`).join('')||`<div class="warning good">${t('warnings').good}</div>`}</div></div><aside class="scoreBox ${pctClass(b.overall)}"><div class="sectionKicker">${t('scoreSystem')}</div><div class="scoreOrbWrap">${ringMetric(b.overall,'lg')}</div><div class="scoreLbl">${t('overallScore')}</div><div class="scoreHelp">${t('scoreGuide')}</div><div class="scoreMiniNote">${escapeHtml(labelText('Weighted diagnostic index','مؤشر تشخيصي موزون'))}</div><div class="scoreTopicBox"><span>${t('topic')}</span><strong>${escapeHtml(a.subject.title||state.topic||'—')}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t('schemaHealth')}</h3><div class="list">${missing}</div></div>`}
+function renderPillars(){const labels=t('pillars');return `<h3>${t('engine')}</h3><div class="layerStack">${PILLARS.map((p,i)=>{const depth=layerDepthPct(p);return `<section class="accordion ${state.activePillar===p?'open':''}" style="--pc:${COLORS[p]}"><button class="accHead" data-acc="${p}" type="button"><span class="accLead"><span class="accNumber">${String(i+1).padStart(2,'0')}</span><span><strong>${labels[p][0]}</strong><small class="muted">${labels[p][1]}</small></span></span><span class="accMeta"><span class="countBadge"><b>${countFor(p)}</b> ${itemsWord()}</span>${ringMetric(depth,'xs')}</span></button><div class="accBody">${state.analysis[p].length?state.analysis[p].map(o=>itemCard(o)).join(''):`<div class="empty"><strong>${t('noItems')}</strong></div>`}</div></section>`}).join('')}</div>`}
+function renderContradictions(){const items=state.analysis.contradictions.items;return `<h3>${t('contradictions')}</h3><div class="conflictGrid">${items.length?items.map(c=>{const layers=affectedLayers(c);return `<article class="conflictCard premiumConflict"><div class="conflictTop"><div><div class="conflictLabel">${t('contradictions')}</div><div class="conflictTitle">${escapeHtml(c.rhetoric||c.name||c.title||'—')}</div></div><div class="chips conflictMeta">${pill(c.contradiction_type||c.type)}${pill(c.confidence,'confidence')}${c.severity!==undefined&&c.severity!==null&&c.severity!==''?pill(`${t('severityShort')} ${c.severity}`,'severity'):''}</div></div><div class="conflictBodyGrid"><div class="conflictMain"><div class="miniBlock actionBox"><b>${t('actionsResults')}</b><ul class="actionList">${arr(c.actions).length?arr(c.actions).map(x=>`<li>${escapeHtml(x)}</li>`).join(''):'<li>—</li>'}</ul></div><div class="interpretBox"><b>${t('interpretation')}:</b> ${escapeHtml(c.interpretation||'—')}</div></div><aside class="conflictInsight"><div class="insightLabel">${labelText('Strategic signal','الإشارة الاستراتيجية')}</div><div class="insightTitle">${escapeHtml(contradictionMeaning(c))}</div><div class="insightList"><div><span>${labelText('Type','النوع')}</span><strong>${escapeHtml(contradictionTypeLabel(c.contradiction_type||c.type))}</strong></div><div><span>${labelText('Impact','الأثر')}</span><strong>${escapeHtml(impactScope(c))}</strong></div><div><span>${labelText('Affected layers','الطبقات المتأثرة')}</span><div class="layerMiniChips">${layers.length?layers.map(p=>`<em style="--pc:${COLORS[p]}">${escapeHtml(t('pillars')[p][0].replace(/[🔴🟠🟡🔵🟣⚫]/g,'').trim())}</em>`).join(''):`<em>${labelText('Cross-layer','عابر للطبقات')}</em>`}</div></div></div></aside></div></article>`}).join(''):`<div class="empty"><strong>${t('noItems')}</strong></div>`}</div>`}
+function renderScenarios(){const items=state.analysis.scenarios.items;return `<h3>${t('scenarios')}</h3><div class="scenarioGrid">${items.length?items.map(s=>{const pct=valuePct(Number(s.probability));return `<article class="forecastCard ${pctClass(pct)}"><div class="forecastHead"><div><div class="sectionKicker">${t('scenarios')}</div><div class="conflictTitle">${escapeHtml(s.name||s.title||'—')}</div><div class="muted">${escapeHtml(s.timeframe||'—')}</div></div><div class="forecastProbWrap">${probabilityMetric(pct,'md')}</div></div><div class="forecastCols"><div class="miniBlock"><b>${t('drivers')}</b>${arr(s.drivers).map(x=>'• '+escapeHtml(x)).join('<br>')||'—'}</div><div class="miniBlock"><b>${t('earlySignals')}</b>${arr(s.early_signals).map(x=>'• '+escapeHtml(x)).join('<br>')||'—'}</div><div class="miniBlock"><b>${t('disprovenIf')}</b>${arr(s.disproven_if).map(x=>'• '+escapeHtml(x)).join('<br>')||'—'}</div></div></article>`}).join(''):`<div class="empty"><strong>${t('noItems')}</strong></div>`}</div>`}
+function renderEvidence(){const ev=normalizeArray(state.analysis.evidence.items), as=normalizeArray(state.analysis.assumptions.items);const assumptionCard=a=>{const riskText=a.risk||a.risk_level||'';const r=riskInfo(riskText);return `<article class="assumptionCard ${r.cls}"><div class="assumptionTop"><div><div class="sectionKicker">${t('assumption')}</div><div class="itemTitle">${escapeHtml(a.assumption||a.name||a.title||a.description||'—')}</div></div><div class="chips">${pill(riskText,'risk')}${a.confidence?pill(a.confidence,'confidence'):''}</div></div><div class="assumptionDetails"><div><span>${t('risk')}</span><p>${escapeHtml(riskText||labelText('No explicit risk stated.','لا توجد مخاطر مصرح بها.'))}</p></div><div><span>${t('test')}</span><p>${escapeHtml(a.disproving_test||a.test||labelText('No falsifier provided.','لا يوجد اختبار إبطال.'))}</p></div></div></article>`};return `<h3>${t('evidence')}</h3><div class="evidenceLedger premiumLedger"><div class="ledgerRow header"><div>${t('claim')}</div><div>${t('basis')}</div><div>${t('confidence')}</div><div>${t('sourceNote')}</div></div>${ev.length?ev.map(e=>`<div class="ledgerRow evidenceRow"><div class="evidenceClaim"><b>${escapeHtml(e.claim||e.name||'—')}</b></div><div>${pill(e.basis,'basis')}</div><div>${pill(e.confidence,'confidence')}</div><div class="sourceNote">${escapeHtml(e.source_note||'—')}</div></div>`).join(''):`<div class="empty"><strong>${t('noItems')}</strong></div>`}</div><h3 style="margin-top:22px">${t('assumption')}</h3><div class="assumptionGrid premiumAssumptions">${as.length?as.map(assumptionCard).join(''):`<div class="empty"><strong>${t('noItems')}</strong></div>`}</div>`}
+function markdown(){const a=state.analysis;if(!a)return '';const b=scoreBreakdown(a);const lines=[];lines.push(`# ${t('generatedReport')}`,'');lines.push(`**${t('overallScore')}:** ${b.overall}/100`,'');lines.push(`## ${t('thesis')}`,a.subject.executive_thesis||a.subject.question||'','');lines.push(`## ${t('scoreSystem')}`);['completeness','coherence','contradictions','falsifiability','evidence','readiness'].forEach(k=>{const label={completeness:t('scoreCompleteness'),coherence:t('scoreCoherence'),contradictions:t('scoreContradictions'),falsifiability:t('scoreFalsifiability'),evidence:t('scoreEvidence'),readiness:t('scoreReadiness')}[k];const d=scoreDiagnostic(k,b[k]);lines.push(`- **${label}:** ${b[k]}/100 — ${d.reason} ${d.action}`)});lines.push('');PILLARS.forEach(pillar=>{lines.push(`## ${t('pillars')[pillar][0]}`);a[pillar].forEach(x=>lines.push(`- **${x.name||x.description||''}** — ${x.rationale||x.stakes||''}`));lines.push('')});lines.push(`## ${t('contradictions')}`);a.contradictions.items.forEach(c=>{lines.push(`- **${c.rhetoric||''}** (${contradictionTypeLabel(c.contradiction_type||c.type)}, ${t('confidence')}: ${displayEnum(c.confidence||'')})`);lines.push(`  - ${labelText('Strategic signal','الإشارة الاستراتيجية')}: ${contradictionMeaning(c)}`);lines.push(`  - ${labelText('Affected layers','الطبقات المتأثرة')}: ${affectedLayers(c).map(p=>t('pillars')[p][0]).join(', ')||labelText('Cross-layer','عابر للطبقات')}`);arr(c.actions).forEach(x=>lines.push(`  - ${x}`));lines.push(`  - ${t('interpretation')}: ${c.interpretation||''}`)});lines.push('',`## ${t('scenarios')}`);a.scenarios.items.forEach(s=>{lines.push(`- **${s.name||''}** (${s.probability||''}%, ${s.timeframe||''})`);arr(s.drivers).forEach(x=>lines.push(`  - ${t('drivers')}: ${x}`));arr(s.early_signals).forEach(x=>lines.push(`  - ${t('earlySignals')}: ${x}`));arr(s.disproven_if).forEach(x=>lines.push(`  - ${t('disprovenIf')}: ${x}`))});lines.push('',`## ${t('evidence')}`);normalizeArray(a.evidence.items).forEach(e=>lines.push(`- **${e.claim||''}** — ${basisInfo(e.basis).label}; ${confidenceInfo(e.confidence).label}. ${e.source_note||''}`));normalizeArray(a.assumptions.items).forEach(x=>lines.push(`- **${t('assumption')}:** ${x.assumption||''} — ${riskInfo(x.risk||x.risk_level).label}; ${t('test')}: ${x.disproving_test||x.test||''}`));return lines.join('\\n')}
+function download(name,text,type='text/plain'){const blob=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},200)}
+function htmlReport(){
+  const a=state.analysis||normalizeAnalysis({});const b=scoreBreakdown(a);const h=schemaHealth(a);const dir=state.lang==='ar'?'rtl':'ltr';
+  const metricKeys=['completeness','coherence','contradictions','falsifiability','evidence','readiness'];
+  const metricLabels={completeness:t('scoreCompleteness'),coherence:t('scoreCoherence'),contradictions:t('scoreContradictions'),falsifiability:t('scoreFalsifiability'),evidence:t('scoreEvidence'),readiness:t('scoreReadiness')};
+  const pctTone=v=>valuePct(v)>=90?'#2563eb':valuePct(v)>=76?'#16a34a':valuePct(v)>=56?'#ca8a04':valuePct(v)>=35?'#f59e0b':'#dc2626';
+  const reportRing=v=>`<span class="rRing" style="--v:${valuePct(v)};--tone:${pctTone(v)}"><span>${Math.round(valuePct(v))}</span><small>%</small></span>`;
+  const metricHtml=metricKeys.map(k=>{const d=scoreDiagnostic(k,b[k],a);return `<article class="metric"><div><h3>${escapeHtml(metricLabels[k])}</h3><p>${escapeHtml(d.reason)}</p><b>${escapeHtml(d.action)}</b></div>${reportRing(b[k])}</article>`}).join('');
+  const formulaHtml=`<section class="formula"><h2>${escapeHtml(labelText('Scoring formula','معادلة التقييم'))}</h2><p>${escapeHtml(scoreFormulaText())}</p><div class="weights">${Object.entries(scoreWeights()).map(([k,w])=>`<span><b>${w}%</b>${escapeHtml(scoreWeightLabel(k))}</span>`).join('')}</div></section>`;
+  const pillarsHtml=PILLARS.map(p=>`<section class="block"><header><h2>${escapeHtml(t('pillars')[p][0])}</h2><span>${normalizeArray(a[p]).length} ${escapeHtml(t('itemsWord'))}</span></header>${normalizeArray(a[p]).map(x=>`<article class="item"><h3>${escapeHtml(x.name||x.description||'—')}</h3><div class="chips">${[x.type,x.category,x.frame,x.confidence,x.horizon,x.stakes].filter(Boolean).map(v=>`<em>${escapeHtml(displayEnum(v))}</em>`).join('')}</div><p>${escapeHtml(x.rationale||x.stakes||'')}</p></article>`).join('')||`<p class="muted">${escapeHtml(t('noItems'))}</p>`}</section>`).join('');
+  const contradictions=normalizeArray(a.contradictions?.items).map(c=>{const layers=affectedLayers(c).map(p=>t('pillars')[p][0]).join(' · ')||labelText('Cross-layer','عابر للطبقات');return `<article class="conflict"><header><div><small>${escapeHtml(contradictionTypeLabel(c.contradiction_type||c.type))}</small><h3>${escapeHtml(c.rhetoric||'—')}</h3></div><div class="chips"><em>${escapeHtml(confidenceInfo(c.confidence).label)}</em><em>${escapeHtml(t('severityShort'))} ${escapeHtml(c.severity||'—')}</em></div></header><div class="signal"><b>${escapeHtml(labelText('Strategic signal','الإشارة الاستراتيجية'))}</b><span>${escapeHtml(contradictionMeaning(c))}</span><small>${escapeHtml(labelText('Affected layers','الطبقات المتأثرة'))}: ${escapeHtml(layers)}</small></div><ul>${arr(c.actions).map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul><p><b>${escapeHtml(t('interpretation'))}:</b> ${escapeHtml(c.interpretation||'')}</p></article>`}).join('')||`<p class="muted">${escapeHtml(t('noItems'))}</p>`;
+  const scenarios=normalizeArray(a.scenarios?.items).map(s=>`<article class="scenario"><header><div><small>${escapeHtml(s.timeframe||'—')}</small><h3>${escapeHtml(s.name||'—')}</h3></div>${reportRing(Number(s.probability)||0)}</header><div class="cols"><div><b>${escapeHtml(t('drivers'))}</b>${arr(s.drivers).map(x=>`<p>• ${escapeHtml(x)}</p>`).join('')||'<p>—</p>'}</div><div><b>${escapeHtml(t('earlySignals'))}</b>${arr(s.early_signals).map(x=>`<p>• ${escapeHtml(x)}</p>`).join('')||'<p>—</p>'}</div><div><b>${escapeHtml(t('disprovenIf'))}</b>${arr(s.disproven_if).map(x=>`<p>• ${escapeHtml(x)}</p>`).join('')||'<p>—</p>'}</div></div></article>`).join('')||`<p class="muted">${escapeHtml(t('noItems'))}</p>`;
+  const evidence=normalizeArray(a.evidence?.items).map(e=>`<tr><td><b>${escapeHtml(e.claim||e.name||'—')}</b></td><td><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em></td><td>${escapeHtml(e.source_note||'—')}</td></tr>`).join('')||`<tr><td colspan="4">${escapeHtml(t('noItems'))}</td></tr>`;
+  const assumptions=normalizeArray(a.assumptions?.items).map(x=>`<article class="assumption"><h3>${escapeHtml(x.assumption||x.name||'—')}</h3><div class="chips"><em>${escapeHtml(riskInfo(x.risk||x.risk_level).label)}</em>${x.confidence?`<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>`:''}</div><p><b>${escapeHtml(t('test'))}:</b> ${escapeHtml(x.disproving_test||x.test||'—')}</p><p><b>${escapeHtml(labelText('If wrong','إذا كان خاطئًا'))}:</b> ${escapeHtml(x.implication_if_wrong||'—')}</p></article>`).join('')||`<p class="muted">${escapeHtml(t('noItems'))}</p>`;
+  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(t('generatedReport'))}</title><style>:root{--bg:#f3f6fb;--text:#0f172a;--muted:#64748b;--line:#dbe6f5;--accent:#2563eb;--success:#16a34a;--warn:#d97706;--danger:#dc2626}*{box-sizing:border-box}html{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{margin:0;background:radial-gradient(circle at 10% 0%,#dbeafe,transparent 32%),var(--bg);color:var(--text);font-family:Inter,"Noto Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;line-height:1.62}.shell{max-width:1120px;margin:0 auto;padding:38px 22px 70px}.hero{background:linear-gradient(135deg,#08111f,#1d4ed8 58%,#0f766e);color:white;border-radius:32px;padding:34px;box-shadow:0 28px 70px rgba(15,23,42,.20)}.hero h1{margin:0;font-size:36px;letter-spacing:-.04em}.hero p{margin:10px 0 0;color:#dbeafe}.heroGrid{display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:center}.overall{display:grid;place-items:center;gap:8px}.rRing{--v:0;--tone:#2563eb;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tone) calc(var(--v)*1%),rgba(15,23,42,.12) 0)}.rRing:before{content:"";position:absolute;inset:9px;border-radius:50%;background:white}.hero .rRing:before{background:#0f172a}.rRing span,.rRing small{position:relative;z-index:1}.rRing span{font-size:28px;font-weight:1000}.rRing small{font-size:11px;color:var(--muted);font-weight:900}.hero .rRing small{color:#bfdbfe}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;padding:20px;margin-top:16px;box-shadow:0 16px 36px rgba(15,23,42,.07)}.metric{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:18px;align-items:center}.metric h3,.block h2,.conflict h3,.scenario h3,.assumption h3,.formula h2{margin:0}.metric p{margin:6px 0;color:var(--muted)}.metric b{font-size:13px}.formula p{margin:8px 0 0;color:var(--muted)}.weights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.weights span{border:1px solid var(--line);border-radius:16px;padding:10px;background:#f8fafc;color:#334155}.weights b{display:block;color:var(--text);font-size:18px}.chips{display:flex;gap:7px;flex-wrap:wrap}.chips em,td em,.block header span{font-style:normal;border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:#f8fafc;font-size:12px;font-weight:850}.block header,.conflict header,.scenario header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}.item{border-top:1px solid var(--line);padding:12px 0}.item:first-of-type{border-top:0}.item h3{font-size:16px;margin:0 0 6px}.item p{margin:8px 0 0;color:#334155}.signal{background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:12px;margin:12px 0}.signal b,.signal span,.signal small{display:block}.signal span{font-weight:900}.signal small{color:var(--muted)}ul{margin:8px 0 0;padding-inline-start:22px}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.cols div{background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:12px}.evidenceTable{overflow:auto}.evidenceTable table{width:100%;border-collapse:separate;border-spacing:0 10px}.evidenceTable th{text-align:start;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.evidenceTable td{background:#f8fafc;border-block:1px solid var(--line);padding:12px;vertical-align:top}.evidenceTable td:first-child{border-inline-start:1px solid var(--line);border-start-start-radius:16px;border-end-start-radius:16px}.evidenceTable td:last-child{border-inline-end:1px solid var(--line);border-start-end-radius:16px;border-end-end-radius:16px}.muted{color:var(--muted)}@media(max-width:820px){.heroGrid,.grid,.cols,.weights{grid-template-columns:1fr}.shell{padding:20px 12px}.hero h1{font-size:28px}}@media print{@page{margin:14mm}body{background:white}.shell{padding:0}.hero,.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{box-shadow:none;break-inside:avoid;page-break-inside:avoid}.hero{border-radius:18px}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}
+.summaryGrid{grid-template-columns:minmax(0,1fr) minmax(300px,344px);align-items:start;max-width:100%;overflow:hidden}
+.summaryGrid>*{min-width:0}.scoreBox{width:100%;max-width:100%;min-width:0;overflow:hidden;padding-inline:22px}.scoreBox .metricRing.lg{width:min(160px,52vw);height:min(160px,52vw);max-width:160px;max-height:160px}.scoreBox .sectionKicker,.scoreBox .scoreLbl,.scoreBox .scoreHelp{max-width:100%;overflow-wrap:anywhere}.scoreMiniNote{width:100%;max-width:100%;border:1px solid color-mix(in srgb,var(--ringTone,var(--accent)) 18%,var(--line));border-radius:16px;padding:10px 12px;background:color-mix(in srgb,var(--ringTone,var(--accent)) 6%,var(--surface-solid));color:var(--text);font-size:12.5px;font-weight:900;line-height:1.45;text-align:center;box-shadow:var(--shadow-xs)}.scoreTopicBox{width:100%;max-width:100%;border:1px solid color-mix(in srgb,var(--ringTone,var(--line-strong)) 18%,var(--line));border-radius:18px;padding:10px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 98%,transparent),color-mix(in srgb,var(--surface-soft) 94%,transparent));box-shadow:var(--shadow-xs);text-align:start;display:grid;gap:4px}.scoreTopicBox span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:1000;color:var(--muted)}.scoreTopicBox strong{font-size:12.8px;line-height:1.35;color:var(--strong);overflow-wrap:anywhere;word-break:normal}.scoreFormulaCard p{overflow-wrap:anywhere}.diagnosticNote{max-width:100%;overflow-wrap:anywhere;white-space:normal}.scoreBox .chip{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:center}
+@media(max-width:1180px){.summaryGrid{grid-template-columns:1fr}.scoreBox{max-width:520px;margin-inline:auto}.scoreSystemGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.scoreSystemGrid,.healthGrid{grid-template-columns:1fr}.scoreBox{max-width:100%;padding:18px}.scoreBox .metricRing.lg{width:138px;height:138px}.scoreMiniNote,.scoreTopicBox{font-size:12px}}
+
+
+
+.metricRing{
+  --ringTone:var(--line-strong);
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  flex:0 0 auto!important;
+  contain:layout paint;
+}
+.metricSvg{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  transform:rotate(-90deg)!important;
+  overflow:hidden!important;
+  z-index:1!important;
+}
+.metricTrackSvg,.metricBarSvg{
+  fill:none!important;
+  stroke-width:5!important;
+  vector-effect:non-scaling-stroke!important;
+}
+.metricTrackSvg{stroke:color-mix(in srgb,var(--ringTone) 12%,var(--surface-soft))!important;}
+.metricBarSvg{
+  stroke:var(--ringTone)!important;
+  stroke-linecap:round!important;
+  filter:none!important;
+}
+.metricRingInner{
+  position:relative!important;
+  z-index:2!important;
+  width:calc(100% - 18px)!important;
+  height:calc(100% - 18px)!important;
+  border-radius:50%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:1px!important;
+  line-height:1!important;
+  text-align:center!important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 99%,transparent),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;
+  box-shadow:inset 0 0 0 1px var(--line)!important;
+  overflow:hidden!important;
+}
+.metricRingInner strong{display:block!important;margin:0!important;line-height:.95!important;letter-spacing:-.045em!important;text-align:center!important;}
+.metricRingInner span{display:block!important;margin:0!important;line-height:1!important;text-align:center!important;}
+.metricRing.xs{width:42px!important;height:42px!important;}
+.metricRing.sm{width:56px!important;height:56px!important;}
+.metricRing.md{width:82px!important;height:82px!important;}
+.metricRing.lg{width:156px!important;height:156px!important;}
+.metricRing.xs .metricRingInner{width:calc(100% - 16px)!important;height:calc(100% - 16px)!important;}
+.metricRing.sm .metricRingInner{width:calc(100% - 18px)!important;height:calc(100% - 18px)!important;}
+.metricRing.md .metricRingInner{width:calc(100% - 24px)!important;height:calc(100% - 24px)!important;}
+.metricRing.lg .metricRingInner{width:calc(100% - 30px)!important;height:calc(100% - 30px)!important;}
+.metricRing.xs .metricRingInner strong{font-size:12.5px!important;}
+.metricRing.sm .metricRingInner strong{font-size:16px!important;}
+.metricRing.md .metricRingInner strong{font-size:26px!important;}
+.metricRing.lg .metricRingInner strong{font-size:40px!important;}
+.metricRing.xs .metricRingInner span{font-size:8px!important;}
+.metricRing.sm .metricRingInner span{font-size:8.5px!important;}
+.metricRing.md .metricRingInner span{font-size:10px!important;}
+.metricRing.lg .metricRingInner span{font-size:11.5px!important;}
+.prob-low{--ringTone:#64748b;}
+.prob-lowmid{--ringTone:#38bdf8;}
+.prob-mid{--ringTone:#8b5cf6;}
+.prob-high{--ringTone:#2563eb;}
+.forecastCard.prob-low,.forecastCard.pct-low{border-color:color-mix(in srgb,#64748b 26%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#64748b 7%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastCard.prob-lowmid{border-color:color-mix(in srgb,#38bdf8 28%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#38bdf8 8%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastCard.prob-mid{border-color:color-mix(in srgb,#8b5cf6 28%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#8b5cf6 8%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastCard.prob-high{border-color:color-mix(in srgb,#2563eb 30%,var(--line))!important;background:linear-gradient(135deg,color-mix(in srgb,#2563eb 9%,var(--surface-solid)),color-mix(in srgb,var(--surface-soft) 96%,transparent))!important;}
+.forecastProbWrap{min-width:86px!important;width:86px!important;display:flex!important;align-items:flex-start!important;justify-content:center!important;flex:0 0 86px!important;overflow:visible!important;}
+.forecastHead{align-items:flex-start!important;}
+.engineNav{align-items:stretch!important;overflow:visible!important;}
+.engineCard{
+  min-width:0!important;
+  overflow:hidden!important;
+  contain:layout paint!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  gap:0!important;
+}
+.engineCard::after{pointer-events:none!important;opacity:.72!important;inset-block-end:12px!important;inset-inline-end:12px!important;width:58px!important;height:58px!important;}
+.engineCard p{min-height:48px!important;max-width:100%!important;margin-bottom:0!important;}
+.engineFooter{
+  width:100%!important;
+  min-width:0!important;
+  margin-top:auto!important;
+  padding-top:14px!important;
+  display:grid!important;
+  grid-template-columns:minmax(74px,1fr) 56px!important;
+  align-items:center!important;
+  gap:10px!important;
+  direction:ltr!important;
+  overflow:visible!important;
+  position:relative!important;
+  z-index:2!important;
+}
+html[dir="rtl"] .engineFooter{direction:rtl!important;grid-template-columns:56px minmax(74px,1fr)!important;}
+.engineFooter .metricRing.sm{grid-column:2!important;justify-self:end!important;margin:0!important;}
+html[dir="rtl"] .engineFooter .metricRing.sm{grid-column:1!important;justify-self:start!important;}
+.engineCount{
+  grid-column:1!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:auto!important;
+  justify-content:center!important;
+  padding:8px 10px!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+}
+html[dir="rtl"] .engineCount{grid-column:2!important;}
+.engineCount b{line-height:1!important;}
+.engineCount small{overflow:hidden!important;text-overflow:ellipsis!important;}
+.flowArrow{z-index:4!important;}
+html[dir="rtl"] .flowArrow{inset-inline-end:auto!important;inset-inline-start:-14px!important;}
+@media(max-width:1120px){
+  .engineNav{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  .flowArrow{display:none!important;}
+}
+@media(max-width:760px){
+  .engineNav{grid-template-columns:1fr!important;}
+  .forecastHead{display:grid!important;grid-template-columns:1fr auto!important;}
+  .forecastProbWrap{width:76px!important;min-width:76px!important;flex-basis:76px!important;}
+  .metricRing.md{width:74px!important;height:74px!important;}
+  .engineFooter{grid-template-columns:minmax(74px,1fr) 56px!important;}
+  html[dir="rtl"] .engineFooter{grid-template-columns:56px minmax(74px,1fr)!important;}
+}
+
+</style></head><body><main class="shell"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title||t('generatedReport'))}</h1><p>${escapeHtml(t('reportSubtitle'))}</p><p>${escapeHtml(a.subject.context||a.subject.question||'')}</p></div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(t('overallScore'))}</strong></div></div></section>${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t('thesis'))}</h2><p>${escapeHtml(a.subject.executive_thesis||'—')}</p><p class="muted"><b>${escapeHtml(t('nextBestAction'))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t('contradictions'))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t('scenarios'))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t('evidence'))}</h2><table><thead><tr><th>${escapeHtml(t('claim'))}</th><th>${escapeHtml(t('basis'))}</th><th>${escapeHtml(t('confidence'))}</th><th>${escapeHtml(t('sourceNote'))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t('assumption'))}</h2>${assumptions}</section></main></body></html>`
+}
+
+function selfCheckResults(){const tests=[];const add=(name,pass,detail='')=>tests.push({name,pass:!!pass,detail});try{const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);add(labelText('Unique DOM IDs','معرّفات DOM فريدة'),new Set(ids).size===ids.length,`${new Set(ids).size}/${ids.length}`)}catch(e){add('DOM ID check',false,e.message)}try{const sample=sampleAnalysis(state.lang);add(labelText('Sample analysis normalizes','المثال التجريبي قابل للتطبيع'),!!sample&&PILLARS.every(p=>Array.isArray(sample[p])))}catch(e){add('Sample analysis',false,e.message)}try{const b=scoreBreakdown(state.analysis||sampleAnalysis(state.lang));add(labelText('Weighted scoring works','نظام التقييم يعمل'),Number.isFinite(b.overall)&&b.overall>=0&&b.overall<=100,`${b.overall}/100`)}catch(e){add('Weighted scoring',false,e.message)}try{add(labelText('Score formula visible','معادلة التقييم ظاهرة'),typeof scoreFormulaText()==='string'&&scoreFormulaText().length>20)}catch(e){add('Score formula',false,e.message)}try{const rep=htmlReport();add(labelText('HTML report generation','توليد تقرير HTML'),rep.includes('<!doctype html>')&&rep.includes('formula')&&rep.includes('page-break-inside'),`${rep.length} chars`)}catch(e){add('HTML report',false,e.message)}try{const md=markdown();add(labelText('Markdown export generation','توليد Markdown'),typeof md==='string'&&md.length>20,`${md.length} chars`)}catch(e){add('Markdown export',false,e.message)}try{const messy='Here is JSON:\n```json\n{"subject":{"title":"x"},"interests":[]}\n```';const parsed=tryParseJson(messy);add(labelText('Messy JSON extraction','استخراج JSON من نص مختلط'),!!parsed&&parsed.subject.title==='x')}catch(e){add('JSON extraction',false,e.message)}try{add(labelText('Modal accessibility attributes','خصائص الوصول للنافذة'),$('modalBackdrop').getAttribute('aria-hidden')!==null&&document.querySelector('.modal')?.getAttribute('role')==='dialog')}catch(e){add('Accessibility',false,e.message)}try{add(labelText('RTL/LTR document state','حالة اتجاه الصفحة'),document.documentElement.dir===(state.lang==='ar'?'rtl':'ltr'),document.documentElement.dir)}catch(e){add('Direction check',false,e.message)}const passed=tests.filter(x=>x.pass).length;return {passed,total:tests.length,tests}}
+function runSelfCheck(){const r=selfCheckResults();const icon=r.passed===r.total?'✅':'⚠️';const lines=[`${icon} ${labelText('Runtime self-check','فحص التشغيل')}: ${r.passed}/${r.total}`, ...r.tests.map(t=>`${t.pass?'✓':'✕'} ${t.name}${t.detail?' — '+t.detail:''}`)];const box=$('runtimeCheckResult');if(box){box.className='runtimeCheckResult '+(r.passed===r.total?'good':'warn');box.textContent=lines.join('\n')}else{showModal(labelText('Runtime self-check','فحص التشغيل'),lines.join('\n'))}return r}
+window.StrategicWorkbenchSelfCheck=runSelfCheck;
+function renderExports(){const ar=state.lang==='ar';const d=ar?{html:'تقرير مستقل مصقول بنفس منطق واجهة المراجعة، مناسب للمشاركة أو الأرشفة.',md:'نص قابل للتحرير للملاحظات أو النشر.',json:'بيانات منظمة قابلة لإعادة الاستخدام أو النسخ الاحتياطي.',print:'استخدم نافذة الطباعة في المتصفح للحفظ كملف PDF.',check:'فحص سريع للواجهة الحالية: المعرفات، المثال التجريبي، التقييم، التصدير، واستخراج JSON.',browser:'قائمة تحقق عملية قبل مشاركة الملف: المتصفح، اللغة، التصدير، الطباعة، والموبايل.'}:{html:'Polished standalone report aligned with the review interface for sharing or archiving.',md:'Editable report text for notes, docs, or publishing workflows.',json:'Machine-readable structured data for reuse or backup.',print:'Use the browser print dialog to save as PDF.',check:'Quick local check of DOM IDs, sample analysis, scoring, exports, and JSON extraction.',browser:'Practical checklist before sharing: browser, language, export, print, and mobile behavior.'};return `<h3>${t('exports')}</h3><div class="exportGrid"><div class="exportCard"><h4>${t('downloadHtml')}</h4><p>${d.html}</p><button class="btn primary" id="exportHtml" type="button">${t('downloadHtml')}</button></div><div class="exportCard"><h4>${t('downloadMarkdown')}</h4><p>${d.md}</p><button class="btn" id="exportMd" type="button">${t('downloadMarkdown')}</button></div><div class="exportCard"><h4>${t('downloadJson')}</h4><p>${d.json}</p><button class="btn" id="exportJson" type="button">${t('downloadJson')}</button></div><div class="exportCard"><h4>${t('print')}</h4><p>${d.print}</p><button class="btn ghost" id="printBtn" type="button">${t('print')}</button></div><div class="exportCard exportWide"><h4>${labelText('Runtime self-check','فحص التشغيل')}</h4><p>${d.check}</p><button class="btn" id="selfCheckBtn" type="button">${labelText('Run self-check','تشغيل الفحص')}</button><pre class="runtimeCheckResult" id="runtimeCheckResult"></pre></div><div class="exportCard exportWide"><h4>${labelText('Browser QA checklist','قائمة فحص المتصفح')}</h4><p>${d.browser}</p>${browserChecklistHtml()}<div class="actions"><button class="btn" id="copyChecklistBtn" type="button">${labelText('Copy checklist','نسخ القائمة')}</button><button class="btn ghost" id="copyPlaywrightBtn" type="button">${labelText('Copy Playwright skeleton','نسخ قالب Playwright')}</button></div></div></div>`}
+function renderReviewNav(){const counts={overview:'',pillars:PILLARS.reduce((n,p)=>n+countFor(p),0),contradictions:state.analysis.contradictions.items.length,scenarios:state.analysis.scenarios.items.length,evidence:normalizeArray(state.analysis.evidence.items).length+normalizeArray(state.analysis.assumptions.items).length,exports:''};const items=['overview','pillars','contradictions','scenarios','evidence','exports'];const tones={overview:'var(--accent)',pillars:'var(--p4)',contradictions:'var(--warn)',scenarios:'var(--accent-3)',evidence:'var(--success)',exports:'var(--p5)'};$('reviewNav').innerHTML=items.map(k=>`<button class="navBtn ${state.activeReview===k?'active':''}" data-review="${k}" style="--navTone:${tones[k]}" type="button" role="tab" aria-selected="${state.activeReview===k?'true':'false'}"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${t('nav')[k]}</span><span class="navHint">${t('navHints')?.[k]||''}</span></span>${counts[k]!==''?`<span class="badge">${counts[k]}</span>`:''}</button>`).join('');document.querySelectorAll('[data-review]').forEach(b=>b.onclick=()=>{state.activeReview=b.dataset.review;renderReview()});}
+function renderReview(){if(!state.analysis){$('reviewPanel').classList.add('hide');return}$('reviewPanel').classList.remove('hide');renderReviewNav();let html='';if(state.activeReview==='overview')html=renderOverview();if(state.activeReview==='pillars')html=renderPillars();if(state.activeReview==='contradictions')html=renderContradictions();if(state.activeReview==='scenarios')html=renderScenarios();if(state.activeReview==='evidence')html=renderEvidence();if(state.activeReview==='exports')html=renderExports();$('reviewContent').innerHTML=html;document.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{const box=b.closest('.accordion');box.classList.toggle('open');state.activePillar=b.dataset.acc;renderEngineNav()});const ej=$('exportJson');if(ej){ej.onclick=()=>download(`${safeFileSlug(state.analysis?.subject?.title||state.topic)}.json`,JSON.stringify(state.analysis,null,2),'application/json');$('exportMd').onclick=()=>download(`${safeFileSlug(state.analysis?.subject?.title||state.topic)}.md`,markdown(),'text/markdown');$('exportHtml').onclick=()=>download(`${safeFileSlug(state.analysis?.subject?.title||state.topic)}-report.html`,htmlReport(),'text/html');$('printBtn').onclick=()=>window.print();const sc=$('selfCheckBtn');if(sc)sc.onclick=()=>runSelfCheck();const cc=$('copyChecklistBtn');if(cc)cc.onclick=async()=>{const ok=await copyText(browserChecklistItems().map((x,i)=>`${i+1}. ${x}`).join('\n'));toast(ok?t('copied'):t('copyFailed'))};const cp=$('copyPlaywrightBtn');if(cp)cp.onclick=async()=>{const ok=await copyText(playwrightSnippet());toast(ok?t('copied'):t('copyFailed'))};}}
+function renderAll(){applyI18n();$('analysisLang').value=state.analysisLang;$('assistantPreset').value=state.assistant;$('promptMode').value=state.promptMode;$('timeframeInput').value=state.context;$('topicInput').value=state.topic;renderGuide();renderStages();renderEngineNav();renderReview();}
+function showModal(title,content){$('modalTitle').textContent=title;$('modalContent').textContent=content;const back=$('modalBackdrop');back.classList.add('show');back.setAttribute('aria-hidden','false');setTimeout(()=>document.querySelector('.modal')?.focus(),0)}
+function closeModal(){const back=$('modalBackdrop');back.classList.remove('show');back.setAttribute('aria-hidden','true')}
+function trapModalFocus(e){const back=$('modalBackdrop');if(!back.classList.contains('show')||e.key!=='Tab')return;const focusables=[...back.querySelectorAll('button,[href],textarea,input,select,[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled);if(!focusables.length)return;const first=focusables[0],last=focusables[focusables.length-1];if(e.shiftKey&&document.activeElement===first){last.focus();e.preventDefault()}else if(!e.shiftKey&&document.activeElement===last){first.focus();e.preventDefault()}}
+function repairPrompt(){const ar=state.analysisLang==='ar';const bad=$('jsonInput').value.trim();return ar?`أصلح النص التالي ليصبح JSON صالحًا فقط ومتوافقًا مع مخطط أداة التحليل. لا تكتب أي شرح خارج JSON.\n\nالنص:\n${bad}\n\nالمخطط المطلوب:\n${buildSchema(state.analysisLang,state.promptMode)}`:`Repair the following text into valid JSON only, matching the analysis workbench schema. Do not write any explanation outside JSON.\n\nText:\n${bad}\n\nRequired schema:\n${buildSchema(state.analysisLang,state.promptMode)}`}
+$('langAr').onclick=()=>setLang('ar');$('langEn').onclick=()=>setLang('en');$('themeBtn').onclick=()=>document.body.classList.toggle('dark');
+$('copyPromptBtn').onclick=async()=>{state.topic=$('topicInput').value.trim();state.context=$('timeframeInput').value.trim();if(!state.topic){toast(t('topicNeeded'));$('topicStatus').className='status bad';$('topicStatus').textContent=t('topicNeeded');return}const p=buildPrompt();state.lastPrompt=p;const ok=await copyText(p);state.stage='import';$('editTopicBtn').classList.remove('hide');$('topicStatus').className=ok?'status good':'status warn';$('topicStatus').textContent=ok?t('promptCopied'):t('copyFailed');if(!ok)showModal(t('promptPreview'),p);renderAll();};
+$('previewPromptBtn').onclick=()=>{state.topic=$('topicInput').value.trim();state.context=$('timeframeInput').value.trim();if(!state.topic){toast(t('topicNeeded'));return}state.lastPrompt=buildPrompt();showModal(t('promptPreview'),state.lastPrompt)};
+$('editTopicBtn').onclick=()=>{state.stage='topic';renderAll();};$('jsonInput').addEventListener('input',validateJsonInput);$('clearJsonBtn').onclick=()=>{$('jsonInput').value='';validateJsonInput()};
+$('importBtn').onclick=()=>{const a=validateJsonInput();if(!a)return;state.analysis=a;state.stage='review';state.activeReview='overview';state.activePillar=null;$('topicInput').value=a.subject.title||state.topic;$('timeframeInput').value=a.subject.context||state.context;state.topic=$('topicInput').value;state.context=$('timeframeInput').value;$('topicStatus').className='status good';$('topicStatus').textContent=t('analysisImported');toast(t('analysisImported'));renderAll();document.getElementById('reviewPanel').scrollIntoView({behavior:'smooth',block:'start'});};
+$('repairPromptBtn').onclick=async()=>{const p=repairPrompt();const ok=await copyText(p);toast(ok?t('repairCopied'):t('copyFailed'));if(!ok)showModal(t('repairPrompt'),p)};
+$('loadSampleBtn').onclick=()=>{const a=sampleAnalysis(state.lang);state.analysis=a;state.stage='review';state.activeReview='overview';state.activePillar=null;state.topic=a.subject.title;state.context=a.subject.context;$('topicInput').value=state.topic;$('timeframeInput').value=state.context;$('jsonInput').value=JSON.stringify(a,null,2);toast(t('sampleLoaded'));renderAll();document.getElementById('reviewPanel').scrollIntoView({behavior:'smooth',block:'start'});};
+$('modalClose').onclick=closeModal;$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();trapModalFocus(e)});$('modalCopy').onclick=async()=>{const ok=await copyText($('modalContent').textContent);toast(ok?t('copied'):t('copyFailed'))};
+['analysisLang','assistantPreset','promptMode','timeframeInput','topicInput'].forEach(id=>$(id).addEventListener('change',()=>{state.analysisLang=$('analysisLang').value;state.assistant=$('assistantPreset').value;state.promptMode=$('promptMode').value;state.context=$('timeframeInput').value;state.topic=$('topicInput').value;}));$('topicInput').addEventListener('input',()=>{state.topic=$('topicInput').value});$('timeframeInput').addEventListener('input',()=>{state.context=$('timeframeInput').value});
+renderAll();validateJsonInput();
+
+
+
+</script>
+</body>
+</html>
