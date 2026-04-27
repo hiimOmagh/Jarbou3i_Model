@@ -69,37 +69,43 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/interest"
-      }
+      },
+      "minItems": 1
     },
     "actors": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/actor"
-      }
+      },
+      "minItems": 1
     },
     "tools": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/tool"
-      }
+      },
+      "minItems": 1
     },
     "narrative": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/narrative"
-      }
+      },
+      "minItems": 1
     },
     "results": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/result"
-      }
+      },
+      "minItems": 1
     },
     "feedback": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/feedback"
-      }
+      },
+      "minItems": 1
     },
     "contradictions": {
       "type": "object",
@@ -111,7 +117,8 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/contradiction"
-          }
+          },
+          "minItems": 1
         }
       }
     },
@@ -125,7 +132,8 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/scenario"
-          }
+          },
+          "minItems": 1
         }
       }
     },
@@ -136,7 +144,8 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/evidence"
-          }
+          },
+          "minItems": 1
         }
       }
     },
@@ -147,7 +156,8 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/assumption"
-          }
+          },
+          "minItems": 0
         }
       }
     },
@@ -186,7 +196,10 @@
         "rationale": {
           "type": "string"
         }
-      }
+      },
+      "required": [
+        "id"
+      ]
     },
     "interest": {
       "allOf": [
@@ -195,6 +208,7 @@
         },
         {
           "required": [
+            "id",
             "name",
             "type",
             "intensity",
@@ -241,6 +255,7 @@
         },
         {
           "required": [
+            "id",
             "name",
             "category",
             "financial",
@@ -278,6 +293,7 @@
         },
         {
           "required": [
+            "id",
             "name",
             "type",
             "cost",
@@ -319,6 +335,7 @@
         },
         {
           "required": [
+            "id",
             "name",
             "frame",
             "coherence",
@@ -352,6 +369,7 @@
         },
         {
           "required": [
+            "id",
             "name",
             "type",
             "goal_achieved_pct",
@@ -387,6 +405,7 @@
         },
         {
           "required": [
+            "id",
             "description",
             "adapts",
             "speed"
@@ -411,6 +430,7 @@
     "contradiction": {
       "type": "object",
       "required": [
+        "id",
         "rhetoric",
         "actions",
         "interpretation",
@@ -454,6 +474,7 @@
     "scenario": {
       "type": "object",
       "required": [
+        "id",
         "name",
         "probability",
         "drivers",
@@ -501,9 +522,18 @@
     "evidence": {
       "type": "object",
       "required": [
+        "id",
         "claim",
         "basis",
-        "confidence"
+        "confidence",
+        "source_title",
+        "source_url",
+        "source_date",
+        "source_type",
+        "source_note",
+        "evidence_strength",
+        "uncertainty",
+        "counter_evidence"
       ],
       "properties": {
         "id": {
@@ -552,6 +582,7 @@
     "assumption": {
       "type": "object",
       "required": [
+        "id",
         "assumption",
         "risk",
         "disproving_test"
