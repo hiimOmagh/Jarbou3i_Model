@@ -1,11 +1,13 @@
 {
-  "name": "strategic-analysis-workbench",
-  "version": "1.1.2",
+  "name": "jarbou3i-model",
+  "version": "1.0.0",
   "private": true,
-  "description": "Client-side trilingual strategic analysis workbench with HTML report export.",
+  "description": "Jarbou3i Model: a client-side trilingual strategic analysis workbench with HTML report export.",
   "scripts": {
     "dev": "http-server . -p 4173 -c-1",
-    "test": "playwright test"
+    "test": "npm run test:static && npm run test:e2e",
+    "test:static": "node tests/static-check.mjs",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",

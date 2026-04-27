@@ -1,34 +1,37 @@
-# Strategic Analysis Workbench
+# Jarbou3i Model — Strategic Analysis Workbench
 
 A trilingual, client-side workbench for structured strategic analysis using the model:
 
 **Interests → Actors → Tools → Narrative → Results → Feedback**
 
-The tool generates a structured prompt for your preferred AI assistant, imports the JSON answer, then turns it into a navigable analysis with scoring diagnostics, contradictions, scenarios, evidence, assumptions, and exportable reports.
+The tool generates a structured prompt for your preferred AI assistant, imports the JSON answer, then turns it into a navigable analysis with scoring diagnostics, contradictions, scenarios, evidence, assumptions, and a polished standalone HTML report export.
 
 ## Live usage model
 
 1. Enter an analysis topic.
-2. Copy the generated prompt.
-3. Paste it into ChatGPT, Claude, Gemini, Perplexity, or another AI assistant.
-4. Copy only the JSON result.
-5. Paste the JSON into the workbench.
-6. Review, score, inspect, and export the analysis.
+2. Choose the analysis language and prompt mode.
+3. Copy the generated prompt.
+4. Paste it into ChatGPT, Claude, Gemini, Perplexity, or another AI assistant.
+5. Copy only the JSON result.
+6. Paste the JSON into the workbench.
+7. Review, score, inspect, and export the analysis as HTML.
 
 ## Key properties
 
-- **No API key required**
-- **No backend required**
-- **Static GitHub Pages compatible**
-- **Runs client-side in the browser**
-- **Arabic, English, and French UI**
-- **RTL/LTR aware**
-- **Structured JSON import**
-- **Weighted scoring diagnostics**
-- **Contradiction analysis with affected layers**
-- **Scenario/falsifier review**
-- **Evidence and assumption review**
-- **HTML report export**
+- No API key required
+- No backend required
+- Static GitHub Pages compatible
+- Runs client-side in the browser
+- Arabic, English, and French UI
+- RTL/LTR aware
+- Structured JSON import with recovery from common messy output wrappers
+- Weighted scoring diagnostics
+- Contradiction analysis with affected layers
+- Scenario/falsifier review
+- Evidence and assumption review
+- HTML report export only, to keep the workflow focused
+- Optimized mascot/icon assets for public web deployment
+- Small PWA manifest for better install/share metadata
 
 ## Privacy model
 
@@ -68,7 +71,7 @@ Your app will be available at the GitHub Pages URL.
 
 ## Testing
 
-Install dependencies and run the smoke tests:
+Install dependencies and run:
 
 ```bash
 npm install
@@ -76,49 +79,66 @@ npx playwright install --with-deps
 npm test
 ```
 
-The smoke suite checks the public user flow:
+Available scripts:
+
+```bash
+npm run test:static  # no browser required
+npm run test:e2e     # Playwright browser flow
+npm test             # static checks + Playwright flow
+```
+
+The static suite checks:
+
+- JavaScript syntax
+- duplicate DOM IDs
+- optimized runtime asset references
+- manifest integrity
+- absence of removed export/self-check code paths
+
+The browser smoke suite checks:
 
 - page load
-- language switch
-- dark mode toggle
+- optimized icon/mascot references
+- language switch and RTL/LTR direction
+- theme toggle state
+- prompt preview modal
 - sample analysis import
 - review tab navigation
-- invalid JSON handling
-- HTML report export
+- HTML-only export workflow
 
 ## Files
 
 ```text
-index.html                      # deployable static app
-fixtures/sample-analysis-en.json # sample structured analysis
-fixtures/sample-analysis-ar.json # Arabic sample structured analysis
-fixtures/sample-analysis-fr.json # French sample structured analysis
-tests/smoke.spec.js              # Playwright smoke test
-docs/usage-guide.md              # usage guide
-docs/visual-qa.md                # manual visual QA checklist
-.github/workflows/ci.yml         # GitHub Actions smoke test
+index.html                         # deployable static app
+manifest.webmanifest               # app/share metadata
+assets/jarbou3i-mascot.png         # original high-resolution source asset
+assets/jarbou3i-mascot-512.png     # optimized welcome/Open Graph/runtime asset
+assets/jarbou3i-mascot-192.png     # optimized header/manifest asset
+assets/apple-touch-icon.png        # Apple touch icon
+assets/favicon-32.png              # browser favicon
+fixtures/sample-analysis-en.json   # English sample structured analysis
+fixtures/sample-analysis-ar.json   # Arabic sample structured analysis
+fixtures/sample-analysis-fr.json   # French sample structured analysis
+tests/static-check.mjs             # static release checks
+tests/smoke.spec.js                # Playwright smoke test
+docs/usage-guide.md                # usage guide
+docs/visual-qa.md                  # manual visual QA checklist
+.github/workflows/ci.yml           # GitHub Actions smoke test
 ```
 
 ## Public release
 
-This repository starts public versioning at **1.0.0**. Earlier internal prototype/build numbers are intentionally not part of the public release history.
+This repository starts public semantic versioning at **1.0.0**. Earlier internal prototype/build numbers are intentionally omitted from the public release history.
 
-Before announcing a major public rollout, run:
+Before announcing a public rollout, run:
 
-- browser tests in Chrome, Firefox, Edge, and Safari if available
+- `npm run test:static`
+- `npm test` after Playwright browsers are installed
+- Chrome/Edge manual visual QA
 - Arabic RTL visual QA
-- mobile viewport QA
+- mobile viewport QA around 390 px width
 - exported HTML report QA
-
-## Versioning
-
-Public semantic versioning starts at **1.0.0**. Internal development versions are omitted from the public changelog to keep the repository clean and understandable for first-time users.
 
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
-
-
-## Mascot and welcome image
-- The uploaded mascot is bundled at `assets/jarbou3i-mascot.png`.
-- It is used in the header logo, the welcome card, and as the favicon.
