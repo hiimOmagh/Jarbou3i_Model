@@ -36,7 +36,7 @@ It runs on pushes and pull requests.
 ## Public release checklist
 
 - [ ] README reviewed
-- [ ] Changelog starts at public version `1.0.0`
+- [ ] Changelog includes `1.1.0` analytical rigor upgrade
 - [ ] License selected deliberately
 - [ ] Security notice reviewed
 - [ ] GitHub Pages deployment works
@@ -47,3 +47,7 @@ It runs on pushes and pull requests.
 - [ ] Arabic RTL exported HTML report inspected
 - [ ] Mobile width around 390 px inspected
 - [ ] Runtime images load from optimized assets, not the 2048 px source file
+
+- [ ] Formal schema exists at `schema/strategic-analysis.schema.json`
+- [ ] Fixture validation passes with `npm run test:fixtures`
+- [ ] Research mode prompt is manually tested with one fresh topic
