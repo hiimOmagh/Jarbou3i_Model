@@ -14,14 +14,14 @@ Run before pushing a release:
 
 ```bash
 npm install
-npm run test:static
+node tests/qa-check.mjs
 npx playwright install --with-deps
-npm test
+npm run test:browser
 ```
 
-`npm run test:static` is the fast gate. It checks JavaScript syntax, duplicate DOM IDs, manifest integrity, optimized image references, and absence of removed legacy export/self-check paths.
+`node tests/qa-check.mjs` is the fast no-browser gate. It checks JavaScript syntax, modular source layout, duplicate DOM IDs, manifest integrity, optimized image references, schema governance, fixture quality, static accessibility basics, and absence of removed legacy export/self-check paths.
 
-`npm test` runs the static gate first, then the Playwright browser flow.
+`npm run test:browser` runs the Playwright browser flow, runtime accessibility smoke, and RTL/mobile smoke tests.
 
 ## CI
 
@@ -36,18 +36,18 @@ It runs on pushes and pull requests.
 ## Public release checklist
 
 - [ ] README reviewed
-- [ ] Changelog includes `1.1.0` analytical rigor upgrade
+- [ ] Changelog includes `1.2.0` modular QA hardening
 - [ ] License selected deliberately
 - [ ] Security notice reviewed
 - [ ] GitHub Pages deployment works
-- [ ] `npm run test:static` passes
+- [ ] `node tests/qa-check.mjs` passes
+- [ ] `npm run test:browser` passes
 - [ ] Full CI passes
 - [ ] Visual QA checklist completed
 - [ ] Arabic, English, and French UI inspected
 - [ ] Arabic RTL exported HTML report inspected
 - [ ] Mobile width around 390 px inspected
 - [ ] Runtime images load from optimized assets, not the 2048 px source file
-
 - [ ] Formal schema exists at `schema/strategic-analysis.schema.json`
-- [ ] Fixture validation passes with `npm run test:fixtures`
+- [ ] Fixture validation passes
 - [ ] Research mode prompt is manually tested with one fresh topic
