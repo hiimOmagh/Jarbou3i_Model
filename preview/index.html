@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jarbou3i Model — Editorial Intelligence Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="description" content="Jarbou3i Model is a trilingual, client-side editorial intelligence workspace for schema-governed strategic analysis." />
+<meta name="theme-color" content="#0B0D10" />
+<meta name="color-scheme" content="dark" />
+<meta property="og:title" content="Jarbou3i Model — Editorial Intelligence Workspace" />
+<meta property="og:description" content="Turn messy AI output into structured strategic briefs." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="assets/jarbou3i-mascot-512.png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+<meta name="twitter:card" content="summary" />
+<meta name="app-version" content="1.3.0" />
+<link rel="stylesheet" href="src/styles.css" />
+<script src="src/app.js" defer></script>
+</head>
+<body data-mode="empty" data-rail="closed">
+<noscript><div class="noscript">Jarbou3i Model requires JavaScript to run locally in your browser.</div></noscript>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="glyph" aria-hidden="true">J</div>
+      <div class="logo legacyLogo" aria-hidden="true"><img src="assets/jarbou3i-mascot-192.png" width="22" height="22" decoding="async" alt=""></div>
+      <span class="name">Jarbou3i <em>Model</em></span>
+      <span class="sep">/</span>
+      <span class="doc" id="currentDocTitle"><em data-i18n="untitled">untitled</em> · <span data-i18n="waitingPaste">waiting for paste</span></span>
+    </div>
+    <div class="crumbs" id="topCrumbs" aria-live="polite">
+      <span class="pulse muted"></span>
+      <span data-i18n="emptyHint">no analysis yet · paste output to begin</span>
+    </div>
+    <div></div>
+    <div class="topActions">
+      <button class="btn ghost" id="themeBtn" type="button" title="Toggle theme" aria-label="Toggle theme" aria-pressed="false" data-i18n-title="themeTitle">◐</button>
+      <div class="lang" id="languageSegment" role="tablist" aria-label="Language selector">
+        <button id="langAr" role="tab" aria-selected="true" class="on" type="button" data-lang="ar">عربي</button>
+        <button id="langEn" role="tab" aria-selected="false" type="button" data-lang="en">EN</button>
+        <button id="langFr" role="tab" aria-selected="false" type="button" data-lang="fr">FR</button>
+      </div>
+      <button class="iconBtn" id="historyBtn" type="button" title="History" aria-label="History">↺</button>
+      <button class="iconBtn" id="shareBtn" type="button" title="Share" aria-label="Share">⌁</button>
+      <button class="btn primary" id="topExportBtn" type="button" disabled><span data-i18n="exportBrief">Export brief</span> <span class="kbd">⌘E</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="pane sourcePane" id="workflowPanel">
+      <div class="paneHead">
+        <div>
+          <div class="eyebrow"><b>01</b><span data-i18n="source">Source</span></div>
+          <h2><span data-i18n="messy">Messy</span> <em data-i18n="input">input</em></h2>
+        </div>
+        <div class="meter" id="sourceMeter" data-i18n="awaitingPaste">awaiting paste</div>
+      </div>
+
+      <div class="emptyState" id="emptyState">
+        <div class="emptyHero">
+          <img class="welcomeMascot" src="assets/jarbou3i-mascot-512.png" width="96" height="96" decoding="async" fetchpriority="high" alt="">
+          <div>
+            <div class="welcomeEyebrow" data-i18n="welcomeEyebrow">Tool guide</div>
+            <h3 class="welcomeTitle"><span data-i18n="welcomeTitle">Welcome to Jarbou3i Model</span></h3>
+            <p class="welcomeBody" data-i18n="welcomeBody">Define a topic, copy the prompt to your assistant, then paste the JSON result back here.</p>
+          </div>
+        </div>
+        <div class="stage" id="stageBar"></div>
+        <div class="topicBox">
+          <div class="field">
+            <label class="label" for="topicInput" data-i18n="topicLabel">Analysis topic</label>
+            <textarea id="topicInput" class="topicInput" data-i18n-placeholder="topicPlaceholder" placeholder="Example: Rise of the far right in Europe, 2022–2026"></textarea>
+          </div>
+          <div class="detailsGrid">
+            <div class="field">
+              <label class="label" for="analysisLang" data-i18n="analysisLang">Analysis language</label>
+              <select id="analysisLang"><option value="ar" data-i18n-option="optionArabic">Arabic</option><option value="en" data-i18n-option="optionEnglish">English</option><option value="fr" data-i18n-option="optionFrench">French</option></select>
+            </div>
+            <div class="field">
+              <label class="label" for="assistantPreset" data-i18n="assistantPreset">Preferred assistant</label>
+              <select id="assistantPreset"><option value="chatgpt">ChatGPT</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="perplexity">Perplexity</option><option value="custom">Custom</option></select>
+            </div>
+            <div class="field">
+              <label class="label" for="promptMode" data-i18n="promptMode">Prompt mode</label>
+              <select id="promptMode"><option value="simple" data-i18n-option="modeSimple">Focused</option><option value="expert" data-i18n-option="modeExpert">Expert</option><option value="research" data-i18n-option="modeResearch">Research</option></select>
+            </div>
+            <div class="field">
+              <label class="label" for="timeframeInput" data-i18n="timeframeLabel">Time/geographic context</label>
+              <input id="timeframeInput" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="Optional: 2022–2026, Europe" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="copyPromptBtn" type="button" data-i18n="copyPrompt">Copy prompt</button>
+            <button class="btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">Preview prompt</button>
+            <button class="btn" id="loadSampleBtn" type="button" data-i18n="loadSample">Load sample</button>
+            <button class="btn ghost hide" id="editTopicBtn" type="button" data-i18n="editTopic">Edit topic</button>
+          </div>
+          <div class="status helper" id="topicStatus" role="status" aria-live="polite" data-i18n="topicStatusStart">Enter a clear topic, then copy the prompt into your preferred assistant.</div>
+        </div>
+        <div class="pasteZone">
+          <div class="field">
+            <label class="label" for="jsonInput" data-i18n="jsonLabel">JSON result</label>
+            <textarea id="jsonInput" class="pasteArea" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="importBtn" type="button" disabled data-i18n="importAnalysis">Import analysis</button>
+            <button class="btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">JSON repair prompt</button>
+            <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">Clear</button>
+          </div>
+          <div class="status" id="jsonStatus" role="status" aria-live="polite" data-i18n="jsonWaiting">Paste JSON to validate.</div>
+        </div>
+      </div>
+
+      <div class="sourceReady hide" id="sourceReady">
+        <div class="srcToolbar" role="tablist" aria-label="Source tabs">
+          <button class="tab on" type="button" role="tab" aria-selected="true" data-source-tab="raw"><span class="dot"></span><span data-i18n="pastedText">Pasted text</span></button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-source-tab="json">JSON</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-source-tab="sources"><span data-i18n="sources">Sources</span> <span class="ct" id="sourceCountTab">0</span></button>
+        </div>
+        <div class="legend" id="sourceLegend"></div>
+        <div class="raw" id="rawSource"></div>
+        <div class="rawFoot">
+          <button class="btn ghost" id="repasteBtn" type="button" data-i18n="repaste">Re-paste</button>
+          <button class="btn ghost" id="repairPromptBtnReady" type="button" data-i18n="repairPrompt">JSON repair prompt</button>
+          <div class="grow"></div>
+          <button class="btn" id="restructureBtn" type="button"><span data-i18n="restructure">Restructure</span> <span class="kbd">⌘↵</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane structurePane" id="enginePanel">
+      <div class="paneHead">
+        <div>
+          <div class="eyebrow"><b>02</b><span data-i18n="structure">Structure</span></div>
+          <h2><span data-i18n="six">Six</span> <em data-i18n="layers2">layers</em></h2>
+        </div>
+        <div class="meter" id="structureMeter"><span data-i18n="schemaReady">schema ready</span><br>strategic-analysis@2</div>
+      </div>
+      <div class="parseStrip"><span data-i18n="parsed">Parsed</span><div class="bar"><i id="parseBar"></i></div><strong id="parsePct">0%</strong></div>
+      <div class="layers" id="engineNav"></div>
+    </section>
+
+    <section class="pane briefPane" id="reviewPanel">
+      <div class="paneHead">
+        <div>
+          <div class="eyebrow"><b>03</b><span data-i18n="brief">Brief</span></div>
+          <h2><span data-i18n="editorial">Editorial</span> <em data-i18n="preview">preview</em></h2>
+        </div>
+        <div class="briefToolbar">
+          <nav class="briefTabs" id="reviewNav" role="tablist" aria-label="Analysis review sections"></nav>
+        </div>
+      </div>
+      <div class="briefScroll">
+        <div class="emptyBrief" id="emptyBrief">
+          <div class="ttl" data-i18n="briefAwaits">Your brief will appear here</div>
+          <div class="sub" data-i18n="onceParsed">once the JSON is parsed and structured</div>
+          <div class="ghostH short"></div><div class="ghostL w90"></div><div class="ghostL w70"></div><div class="ghostL w90"></div>
+        </div>
+        <article class="doc hide" id="reviewContent" role="tabpanel" aria-live="polite"></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="qualityRail" id="qualityRail" aria-live="polite">
+    <div class="qrailCollapsed" id="qrailCollapsed"></div>
+    <div class="qrailExpanded" id="qrailExpanded"></div>
+  </footer>
+</div>
+
+<div class="modalBackdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="modalHead">
+      <h3 id="modalTitle">Preview</h3>
+      <button class="btn iconBtn" id="modalClose" type="button" aria-label="Close preview">×</button>
+    </div>
+    <pre id="modalContent" tabindex="0"></pre>
+    <div class="actions"><button class="btn primary" id="modalCopy" type="button" data-i18n="copyShownText">Copy shown text</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
