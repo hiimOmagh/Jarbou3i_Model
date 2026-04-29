@@ -38,8 +38,8 @@ if (!app.includes('schema_version')) fail('schema_version support is missing');
 if (!app.includes('modeResearch')) fail('research prompt mode is missing');
 if (!app.includes('qualityGateHtml')) fail('quality gate UI is missing');
 if (!app.includes('actorPowerScore')) fail('computed API scoring is missing');
-if (pkg.version !== '1.3.0') fail('package version must be 1.3.0');
-if (!index.includes('name="app-version" content="1.3.0"')) fail('app version metadata missing');
+if (pkg.version !== '1.3.1') fail('package version must be 1.3.1');
+if (!index.includes('name="app-version" content="1.3.1"')) fail('app version metadata missing');
 
 const requiredTop = ['schema_version','subject','interests','actors','tools','narrative','results','feedback','contradictions','scenarios'];
 const arraySections = ['interests','actors','tools','narrative','results','feedback'];
