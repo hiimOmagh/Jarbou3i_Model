@@ -1,4 +1,4 @@
-/* Jarbou3i Model v1.3.0 — stable editorial UI refresh */
+/* Jarbou3i Model v1.3.1 — stable editorial UI refresh */
 'use strict';
 
 const SETTINGS_KEY = 'jarbou3i-model-settings-v1';
