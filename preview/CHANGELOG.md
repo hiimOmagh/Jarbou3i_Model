@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.3.1 — Responsive Layout and Mobile QA Fix
+
+Patched the stable editorial UI refresh after visual QA on desktop, iPad, and mobile viewports.
+
+### Fixed
+
+- Reworked tablet layout from a crushed three-column cockpit into a Source/Structure + Brief responsive layout.
+- Made the mobile header static and compact to prevent toolbar/header overlap.
+- Disabled sticky source controls on mobile to avoid covering content.
+- Added horizontal-overflow guards for language controls, brief tabs, legends, and the collapsed quality rail.
+- Improved mobile pane flow, typography scaling, button wrapping, and bottom quality rail behavior.
+- Preserved the desktop three-pane editorial workspace and stable client-side behavior.
+
+### Validated
+
+- `npm run test:qa`
+- `npm run test:static`
+- `npm run test:schema`
+- `npm run test:fixtures`
+- `npm run test:a11y:static`
+
 ## v1.3.0 — Stable Editorial UI Refresh
 
 Freshened the stable client-side app with the dark editorial intelligence workspace direction.

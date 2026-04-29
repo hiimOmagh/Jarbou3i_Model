@@ -1,6 +1,6 @@
 # Jarbou3i Model
 
-A trilingual, client-side editorial intelligence workspace that turns messy AI output into structured strategic briefs. The stable v1.3.0 UI uses the Source → Structure → Brief workflow with a collapsible quality rail and HTML brief export.
+A trilingual, client-side editorial intelligence workspace that turns messy AI output into structured strategic briefs. The stable v1.3.1 UI uses the Source → Structure → Brief workflow with a collapsible quality rail and HTML brief export.
 ## Live usage model
 
 1. Enter an analysis topic.
