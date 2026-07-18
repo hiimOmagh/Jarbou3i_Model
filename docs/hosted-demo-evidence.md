@@ -1,78 +1,27 @@
-# Hosted Demo Evidence — v1.3.0-bio
+# Hosted UI Evidence — 1.4.0-bio-alpha.4
 
-This release adds a browser evidence contract for the public/root UI. The evidence gate runs against the same static app served by Playwright and can be used locally or in GitHub Actions.
+The browser evidence flow can target either the local static test server or a deployed public URL. The generated metadata explicitly records which one was used.
 
-## Command
+## Local capture
 
 ```bash
 npm run test:browser:hosted
 ```
 
-By default, evidence is written to:
+Output defaults to `hosted-demo-evidence-local/` and is automatically reviewed by the package script.
 
-```text
-hosted-demo-evidence-local/
-```
-
-GitHub Actions sets:
-
-```text
-HOSTED_DEMO_EVIDENCE_DIR=hosted-demo-evidence
-```
-
-and uploads the folder as the `hosted-demo-evidence` artifact.
-
-## Required evidence files
-
-The evidence capture writes:
-
-```text
-desktop-first-screen.png
-mobile-first-screen.png
-strategic-mode.png
-biopolitical-mode.png
-visible-text-ar.json
-visible-text-en.json
-visible-text-fr.json
-hosted-demo-metadata.json
-```
-
-## Contract
-
-The public UI evidence proves:
-
-- the root page loads from the deployable source of truth;
-- the app version metadata matches `1.3.0-bio`;
-- the Strategic and Biopolitical lens controls are visible;
-- Strategic mode is visible on the first public screen;
-- Biopolitical mode can be activated from the public UI;
-- Arabic visible text is captured with `dir="rtl"`;
-- English and French visible text are captured with `dir="ltr"`;
-- desktop and mobile screenshots are attached as Playwright evidence.
-
-## Hygiene rule
-
-Evidence folders are generated artifacts. Before commit, remove:
-
-```text
-hosted-demo-evidence/
-hosted-demo-evidence-local/
-playwright-report/
-test-results/
-```
-
-Then run:
+## Deployed capture
 
 ```bash
-npm run test:hygiene
+PLAYWRIGHT_BASE_URL=https://example.invalid \
+HOSTED_DEMO_EVIDENCE_DIR=hosted-demo-evidence \
+npm run test:browser:hosted
 ```
 
-## Evidence review gate
+When `PLAYWRIGHT_BASE_URL` is set, Playwright does not start the local server. Relative test navigation targets the supplied deployment.
 
-From v1.3.0-bio onward, generated evidence should be reviewed before release lock:
+## Evidence contract
 
-```bash
-node tests/hosted-demo-evidence-review-check.mjs hosted-demo-evidence-local
-```
+The capture covers the first desktop and mobile screens, both analysis lenses, and visible-text snapshots for Arabic, English, and French. The reviewer checks version metadata, file completeness, locale direction, lens visibility, and the disclosed capture target.
 
-In GitHub Actions, the browser job reviews `hosted-demo-evidence/` before artifact upload. The review fails if any required screenshot, visible-text snapshot, metadata field, locale direction, or lens toggle visibility contract is missing.
+Generated evidence, Playwright reports, and test results are ignored outputs. Run `npm run test:hygiene` before handoff.

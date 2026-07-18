@@ -1,148 +1,867 @@
 {
-  "schema_version": "1.1.0",
-  "analysis_id": "digital-health-passport-biopolitical-ar",
-  "generated_at": "2026-06-07T00:00:00Z",
+  "schema_version": "2.1.0",
+  "analysis_contract": "biopolitical-training-map-v2",
+  "contract_status": "canonical",
+  "analysis_id": "health-pass-v2-ar",
+  "generated_at": "2026-07-17T00:00:00Z",
+  "language": "ar",
   "model_mode": "research",
   "analysis_lens": "biopolitical",
   "subject": {
-    "title": "مثال: جوازات الصحة الرقمية",
-    "context": "2020–2022، الحركة والصحة العامة",
-    "question": "كيف حكمت جوازات الصحة الرقمية السكان عبر الخطر والحركة وإثبات الحالة الصحية؟",
-    "executive_thesis": "ربط جواز الصحة بين الحماية الجماعية والتحكم التفاضلي في الحركة: جعل إثبات الحالة الصحية شرطًا عمليًا، وفي الوقت نفسه طبّع تصنيف الأجساد حسب الخطر والامتثال."
+    "title": "الجوازات الصحية الرقمية والحركة المشروطة",
+    "context": "2020–2022، ولايات أوروبية مختارة",
+    "research_question": "متى عملت الجوازات الصحية الرقمية كحماية للصحة العامة، ومتى أنشأت أنظمة دائمة للتصنيف والحركة المشروطة؟",
+    "executive_finding": "جمعت الجوازات الرقمية بين وظيفة صحية عامة مشروعة وبنية جديدة لضبط الوصول. تدعم الأدلة وصفًا مختلطًا: كانت الحماية والتنسيق الإداري حقيقيين، بينما اختلف التناسب وإعادة الاستخدام والأعباء غير المتكافئة وإمكانية الخروج حسب الولاية."
   },
-  "interests": [
-    {
-      "id": "P1",
-      "name": "تحويل العدوى إلى مشكلة حركة قابلة للتحقق",
-      "type": "health",
-      "intensity": 5,
-      "horizon": "medium",
-      "stakes": "important",
-      "confidence": "high",
-      "rationale": "أصبحت حركة الأشخاص قابلة للحكم عبر الشهادات وحدود الخطر وإثباتات الحالة الصحية."
-    }
-  ],
-  "actors": [
-    {
-      "id": "POP1",
-      "name": "المطعّمون والمختبَرون وغير الحاملين لشهادة",
-      "category": "population",
-      "financial": 2,
-      "decision_access": 1,
-      "disruption_capacity": 3,
-      "media_influence": 3,
-      "confidence": "high",
-      "rationale": "تم تقسيم السكان حسب وضعية إثبات صحي تتحكم في الوصول إلى بعض الفضاءات."
-    }
-  ],
-  "tools": [
-    {
-      "id": "GT1",
-      "name": "شهادة QR والتحكم في الدخول",
-      "type": "classification",
-      "cost": 3,
-      "risk": 4,
-      "speed": 5,
-      "reversibility": 3,
-      "deniability": 1,
-      "confidence": "high",
-      "rationale": "حوّل رمز QR الوضع الطبي إلى إشارة إذن قابلة للقراءة من المؤسسات والمنصات والفضاءات العامة."
-    }
-  ],
-  "narrative": [
-    {
-      "id": "N1",
-      "name": "المسؤولية الصحية كشرط للمشاركة",
-      "frame": "responsibility",
-      "coherence": 4,
-      "media_alignment": 4,
-      "public_acceptance": 3,
-      "confidence": "medium",
-      "rationale": "يُقدَّم الشخص المسؤول كمن يجعل حالته الصحية قابلة للتحقق لحماية الآخرين."
-    }
-  ],
-  "results": [
-    {
-      "id": "O1",
-      "name": "وصول تفاضلي إلى الفضاءات الاجتماعية",
-      "type": "social",
-      "goal_achieved_pct": 65,
-      "cost_benefit": 3,
-      "power_balance_impact": "strengthened",
-      "confidence": "medium",
-      "rationale": "تم تعديل الوصول إلى العمل والنقل والترفيه حسب الحالة الصحية، مع آثار إدماج وإقصاء."
-    }
-  ],
-  "feedback": [
-    {
-      "id": "RF1",
-      "description": "احتجاجات قانونية وتعديل قواعد الصلاحية",
-      "adapts": "tools",
-      "speed": "fast",
-      "confidence": "high",
-      "rationale": "المقاومة والتقاضي والتغير الوبائي فرضت تعديل مدد الصلاحية والاستثناءات وشروط الرقابة."
-    }
-  ],
-  "contradictions": {
-    "items": [
+  "framing": {
+    "contested_terms": [
       {
-        "id": "C1",
-        "rhetoric": "الحماية الجماعية",
-        "contradiction_type": "protection_vs_control",
-        "actions": [
-          "اشتراط إثبات صحي للوصول إلى فضاءات عادية",
-          "توسيع رقابة الحالة خارج المجال الطبي المباشر"
+        "term": "الجواز الصحي",
+        "definitions": [
+          "وثيقة قابلة للتحقق تربط معلومة صحية محددة بقرار وصول."
         ],
-        "affected_layers": [
-          "tools",
-          "narrative",
-          "results"
+        "working_definition": "وثيقة قابلة للتحقق تربط معلومة صحية محددة بقرار وصول.",
+        "stakes": "يحدد التعريف الممارسات التي تُعد تنسيقًا صحيًا مقابل ضبط عام للوصول."
+      }
+    ],
+    "historical_context": {
+      "summary": "ظهرت أنظمة الجواز خلال جائحة حادة واعتمدت على بنى سابقة للهوية والتلقيح وضبط الحدود.",
+      "turning_points": [
+        "طارئ وبائي حاد",
+        "نشر وثائق قابلة للتشغيل البيني",
+        "مراجعة قضائية وسياسية"
+      ],
+      "continuities": [
+        "التحقق من الهوية",
+        "سجلات التلقيح",
+        "الضوابط الصحية على الحدود"
+      ]
+    },
+    "official_problem_definition": "التحقق من حالة صحية محددة لتقليل العدوى القابلة للتجنب في أماكن مختارة.",
+    "critical_problem_definition": "تحويل الحالة الجسدية إلى شرط ترخيص للمشاركة العادية.",
+    "unknowns": [
+      "لا يمكن استنتاج التطبيع بعيد المدى من التبني القصير وحده."
+    ]
+  },
+  "legal_framework": {
+    "status": "assessed",
+    "jurisdictions": [
+      "2020–2022، ولايات أوروبية مختارة"
+    ],
+    "applicable_authorities": [
+      "قانون الصحة العامة وقانون حماية البيانات؛ تتطلب الصكوك الدقيقة تحققًا خاصًا بكل ولاية."
+    ],
+    "rights_engaged": [
+      "الخصوصية وعدم التمييز والحركة والعمل والوصول إلى الخدمات الأساسية."
+    ],
+    "safeguards_and_remedies": [
+      "تضمنت أنظمة كثيرة بنود انتهاء وإعفاءات واختبارًا مجانيًا ومراجعة قضائية أو أُوقفت."
+    ],
+    "uncertainties": [
+      "لا يمكن استنتاج التطبيع بعيد المدى من التبني القصير وحده."
+    ]
+  },
+  "international_comparison": [
+    {
+      "id": "CMP1",
+      "jurisdiction_or_context": "2020–2022، ولايات أوروبية مختارة",
+      "comparison_basis": "قارن المدة والإعفاءات والبدائل المجانية وتقييد الغرض والطعن والتفكيك.",
+      "similarities": [
+        "ربط التحقق القائم على الوثائق المعلومات الصحية بالوصول."
+      ],
+      "differences": [
+        "تضمنت أنظمة كثيرة بنود انتهاء وإعفاءات واختبارًا مجانيًا ومراجعة قضائية أو أُوقفت."
+      ],
+      "transfer_limits": [
+        "لا يمكن استنتاج التطبيع بعيد المدى من التبني القصير وحده."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ],
+      "confidence": "low"
+    }
+  ],
+  "capture_levels": [
+    {
+      "level": "body",
+      "status": "present",
+      "finding": "جرى النظر صراحة في مستوى الجسد، وتظل الثقة محدودة بسبب عدم تحقق مصادر المثال.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "level": "mind",
+      "status": "uncertain",
+      "finding": "جرى النظر صراحة في مستوى العقل، وتظل الثقة محدودة بسبب عدم تحقق مصادر المثال.",
+      "evidence_ids": []
+    },
+    {
+      "level": "relationship",
+      "status": "uncertain",
+      "finding": "جرى النظر صراحة في مستوى العلاقة، وتظل الثقة محدودة بسبب عدم تحقق مصادر المثال.",
+      "evidence_ids": []
+    },
+    {
+      "level": "population",
+      "status": "present",
+      "finding": "جرى النظر صراحة في مستوى السكان، وتظل الثقة محدودة بسبب عدم تحقق مصادر المثال.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "level": "environment",
+      "status": "not_applicable",
+      "finding": "جرى النظر صراحة في مستوى البيئة، وتظل الثقة محدودة بسبب عدم تحقق مصادر المثال.",
+      "evidence_ids": []
+    }
+  ],
+  "theoretical_comparison": [
+    {
+      "id": "THEORY1",
+      "tradition": "الحكمانية والاقتصاد السياسي",
+      "contribution": "تتبع الحكمانية التصنيف والسلوك، ويختبر الاقتصاد السياسي الملكية والعمل والربح وتوزيع التكاليف.",
+      "limitations": [
+        "لا يثبت أي من التقليدين وحده النية أو الفعالية أو التناسب."
+      ],
+      "relevance": "relevant",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    }
+  ],
+  "human_functions": [
+    {
+      "id": "HF1",
+      "domain": "biological",
+      "name": "الحركة والحماية الصحية والمشاركة الاجتماعية",
+      "scientific_definition": "يتفاعل خطر العدوى على مستوى السكان مع الحالة الصحية الفردية والتعرض.",
+      "lived_context": "اختبر الناس الوثيقة كحماية أو عبء إداري أو إقصاء أو طمأنة بحسب المخاطر والعمل والسياق القانوني.",
+      "governed_variation": "أنتج اختلاف الوثائق والإعفاءات فئات وصول مختلفة.",
+      "authority_defining_normality": "سلطات الصحة العامة",
+      "refusal_conditions": "كان الرفض ذا معنى فقط حيث وُجدت بدائل مجانية وأماكن غير أساسية.",
+      "confidence": "medium"
+    }
+  ],
+  "power_map": {
+    "actors": [
+      {
+        "id": "ACT1",
+        "name": "سلطات الصحة العامة",
+        "role": "decision_maker",
+        "formal_mandate": "حماية الصحة العامة وفق القانون المنطبق.",
+        "material_interests": [
+          "التنسيق الإداري",
+          "الشرعية المؤسسية"
         ],
-        "interpretation": "منطق الحماية أنتج أيضًا بنية فرز وحركة مشروطة.",
-        "severity": 4,
+        "authority_sources": [
+          "قانون الصحة العامة",
+          "الخبرة"
+        ],
+        "funding": [
+          "الميزانية العامة"
+        ],
+        "information_advantages": [
+          "البيانات الوبائية"
+        ],
+        "enforcement_capacities": [
+          "قواعد الوصول"
+        ],
+        "dependencies": [
+          "السلطة التشريعية",
+          "الموردون التقنيون"
+        ],
+        "stated_objectives": [
+          "تقليل خطر العدوى"
+        ],
+        "plausible_unstated_incentives": [
+          "إظهار القدرة على الإدارة خلال الأزمة"
+        ],
+        "internal_disagreements": [
+          "النطاق والمدة"
+        ],
+        "accountability": [
+          "المحاكم",
+          "الهيئات التشريعية",
+          "سلطات حماية البيانات"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "affected_populations": [
+      {
+        "id": "POP1",
+        "name": "عمال وسكان خاضعون لفحوص الوصول",
+        "classification": "مؤهل / غير مؤهل مؤقتًا لأماكن محددة",
+        "exposure": [
+          "فحوص الوصول"
+        ],
+        "benefits": [
+          "تحقق أقل احتكاكًا خلال طارئ صحي حاد."
+        ],
+        "burdens": [
+          "إقصاء وعبء غير متكافئ عندما يتعذر الاختبار أو التلقيح أو التوثيق أو الطعن."
+        ],
+        "agency": "غيّرت الدعاوى والاحتجاجات والحلول التقنية والمطالبة ببنود الانتهاء طريقة التنفيذ.",
+        "missing_from_record": false,
+        "confidence": "medium"
+      }
+    ],
+    "institutions": [
+      {
+        "id": "INST1",
+        "name": "شبكة التحقق من الوثائق",
+        "mandate": "تنفيذ قواعد الوصول المحددة.",
+        "role": "تنفيذ",
+        "accountability": [
+          "تقييد الغرض",
+          "التدقيق",
+          "الطعن"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "power_asymmetries": [
+      {
+        "id": "ASYM1",
+        "between": [
+          "ACT1",
+          "POP1"
+        ],
+        "resource": "infrastructure",
+        "effect": "استطاعت السلطات والأماكن اشتراط الوصول، بينما تفاوتت قدرة الأفراد على الطعن في الأخطاء.",
+        "confidence": "high"
+      }
+    ]
+  },
+  "mechanisms": {
+    "instruments": [
+      {
+        "id": "INS1",
+        "name": "وثيقة QR وقاعدة تحقق",
+        "type": "infrastructure",
+        "mechanism": "تحوّل حالة صحية محددة إلى قرار وصول قابل للقراءة آليًا.",
+        "scale": [
+          "individual",
+          "institutional",
+          "national"
+        ],
+        "stated_purpose": "تحقق أقل احتكاكًا خلال طارئ صحي حاد.",
+        "ownership": "قواعد عامة وبنية تقنية عامة/خاصة مختلطة.",
+        "oversight": "اختلف حسب الولاية.",
+        "confidence": "high"
+      }
+    ],
+    "infrastructures": [
+      {
+        "id": "INF1",
+        "name": "بنية إصدار الوثائق والتحقق منها",
+        "owner": "السلطات العامة والمزودون التقنيون المتعاقدون",
+        "dependency_created": "قد يعتمد الوصول على جهاز أو وثائق أو اختبار أو وثيقة معترف بها.",
+        "actions_enabled_or_blocked": [
+          "دخول الأماكن المنظمة"
+        ],
+        "access_conditions": [
+          "وثيقة صالحة أو إعفاء معترف به"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "political_economy": [
+      {
+        "id": "PE1",
+        "ownership": "سيطرة مختلطة بين القطاع العام والموردين",
+        "labor": "العاملون في الصحة والإدارة والأماكن",
+        "profit": "عقود الموردين وخدمات الامتثال",
+        "unpaid_care": "تحملت الأسر أعمال المواعيد والتوثيق",
+        "privatized_risks": [
+          "تكاليف الوقت والوصول"
+        ],
+        "socialized_costs": [
+          "الاختبار والإدارة الممولان عامًا"
+        ],
+        "scarcity_mechanism": "تفاوت الوصول إلى الاختبارات والوثائق",
+        "dependency_model": "وصول يعتمد على الوثيقة",
+        "confidence": "medium"
+      }
+    ],
+    "power_modes": [
+      {
+        "mode": "biopower",
+        "mechanism": "أُدير خطر السكان عبر وثائق فردية.",
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "high"
+      },
+      {
+        "mode": "datafication",
+        "mechanism": "أصبحت الحالة الصحية بيانات معيارية تُستخدم في قرارات الوصول.",
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "meaning_systems": {
+    "norms": [
+      {
+        "id": "NORM1",
+        "name": "المشاركة المسؤولة عبر حالة قابلة للتحقق",
+        "definition": "قُدّمت المشاركة على أنها مسؤولة عندما أمكن التحقق من الحالة.",
+        "authority": "سلطات الصحة العامة",
+        "subject_position": "المشارك المسؤول القابل للتحقق.",
+        "alternatives": [
+          "احتياطات شاملة دون فرز حسب الحالة"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "regimes_of_truth": [
+      {
+        "id": "RT1",
+        "claim": "عوملت الوثائق المحددة كبدائل تشغيلية لانخفاض الخطر.",
+        "authorizing_institutions": [
+          "سلطات الصحة العامة"
+        ],
+        "validation_procedure": "مراجعة السياسات والأدلة الوبائية",
+        "funding_or_interest": "إدارة الصحة العامة",
+        "excluded_knowledge": [
+          "التباين السلوكي الخاص بالسياق"
+        ],
+        "evidence_quality": "مختلطة وحساسة للزمن",
+        "confidence": "medium"
+      }
+    ],
+    "classifications": [
+      {
+        "id": "CLASS1",
+        "category": "مؤهل / غير مؤهل مؤقتًا لأماكن محددة",
+        "definition": "حالة وثيقة قائمة على القواعد",
+        "decision_use": "الوصول إلى أماكن محددة",
+        "error_risks": [
+          "سجلات قديمة",
+          "تفاوت الوصول إلى الوثائق"
+        ],
+        "contestability": "اختلف حسب الولاية",
+        "confidence": "high"
+      }
+    ],
+    "looping_effects": [
+      {
+        "id": "LOOP1",
+        "classification_id": "CLASS1",
+        "institutional_response": "منح الوصول أو منعه",
+        "altered_opportunity_or_identity": "أصبحت حالة الوثيقة حاسمة للمشاركة",
+        "behavioral_adaptation": "الاختبار أو التلقيح أو التجنب أو الاحتجاج أو الحلول الالتفافية",
+        "new_data": "سجلات التحقق والإقبال",
+        "confirmation_or_revision": "وُسعت القواعد أو ضُيقت أو سُحبت",
+        "falsified_if": [
+          "لا يتبع التصنيف أي تكيف سلوكي أو مؤسسي"
+        ],
         "confidence": "medium"
       }
     ]
   },
-  "scenarios": {
-    "items": [
+  "intervention_assessment": {
+    "interventions": [
       {
-        "id": "S1",
-        "name": "تطبيع دائم لإثبات الخطر",
-        "probability": 45,
-        "timeframe": "2–5 سنوات",
-        "drivers": [
-          "قابلية التشغيل التقني",
-          "قبول مؤسسي",
-          "أزمات صحية متكررة"
+        "id": "IV1",
+        "name": "وصول مشروط باستخدام دليل صحي",
+        "target_function_ids": [
+          "HF1"
         ],
-        "early_signals": [
-          "إعادة استخدام الشهادات لمخاطر جديدة",
-          "تمددها نحو التأمين أو أصحاب العمل"
+        "actor_ids": [
+          "ACT1"
         ],
-        "disproven_if": [
-          "إلغاء الشهادات دون إعادة استخدام مؤسسي",
-          "أطر قانونية تمنع صراحة إعادة الاستخدام"
+        "instrument_ids": [
+          "INS1"
         ],
-        "rationale": "يمكن لبنية الإثبات أن تعيش بعد الأزمة التي بررتها."
+        "modality": "mixed",
+        "stated_benefit": "تحقق أقل احتكاكًا خلال طارئ صحي حاد.",
+        "evidence_of_benefit": [
+          "E1"
+        ],
+        "documented_harms": [
+          "إقصاء وعبء غير متكافئ عندما يتعذر الاختبار أو التلقيح أو التوثيق أو الطعن."
+        ],
+        "necessity": "partly_supported",
+        "proportionality": "mixed",
+        "dependency_created": "قد تصبح الوثيقة أو الإثبات البديل ضروريين للمشاركة.",
+        "consent": "جزئية: اختلفت المشاركة والبدائل.",
+        "exit": "أقوى حيث وُجدت بنود انتهاء وبدائل غير رقمية.",
+        "contestability": "اختلفت باختلاف آليات الطعن والتصحيح.",
+        "confidence": "medium"
+      }
+    ],
+    "capture_assessment": {
+      "status": "mixed_capture",
+      "criteria": [
+        {
+          "criterion": "knowledge_deficit",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "consent_failure",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "vulnerability_exploitation",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "unequal_distribution",
+          "status": "present",
+          "evidence_ids": [
+            "E1"
+          ],
+          "reason": "اختلفت أعباء الوصول باختلاف إتاحة الاختبار والتوثيق ومرونة العمل والوصول الرقمي."
+        },
+        {
+          "criterion": "disproportionate_power_or_profit",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "dependency_or_costly_exit",
+          "status": "present",
+          "evidence_ids": [
+            "E1"
+          ],
+          "reason": "اعتمد الوصول إلى بعض الأماكن على إثبات معترف به أو بديل متاح."
+        },
+        {
+          "criterion": "alternatives_suppressed",
+          "status": "uncertain",
+          "evidence_ids": [
+            "E1",
+            "E2"
+          ],
+          "reason": "اختلفت الاختبارات والإعفاءات والبدائل غير الرقمية بين الولايات."
+        },
+        {
+          "criterion": "behavior_optimized_without_oversight",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "choice_architecture_constraint",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "data_repurposing",
+          "status": "uncertain",
+          "evidence_ids": [
+            "E2"
+          ],
+          "reason": "يجب إثبات إعادة الاستخدام عبر المجالات بدل استنتاجها من الإمكان التقني."
+        },
+        {
+          "criterion": "human_capacity_commercialized",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "classification_not_contestable",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "لا يتضمن المثال البنيوي أدلة متحققة كافية لحكم أكثر حسمًا."
+        },
+        {
+          "criterion": "environmental_unavoidability",
+          "status": "not_applicable",
+          "evidence_ids": [],
+          "reason": "لا تتمحور الحالة حول تعرض بيئي لا يمكن تجنبه."
+        }
+      ],
+      "counter_evidence": [
+        "تضمنت أنظمة كثيرة بنود انتهاء وإعفاءات واختبارًا مجانيًا ومراجعة قضائية أو أُوقفت."
+      ],
+      "legitimate_benefits": [
+        "تحقق أقل احتكاكًا خلال طارئ صحي حاد."
+      ],
+      "conclusion": "جمع التدخل بين الحماية والوصول المشروط. ويتوقف حكم الاستحواذ على المدة والبدائل وتقييد الغرض وإعادة الاستخدام وقابلية الطعن.",
+      "confidence": "medium"
+    },
+    "care_control_tensions": [
+      {
+        "id": "TENSION1",
+        "care_claim": "الحماية الجماعية",
+        "control_effects": [
+          "الوصول المشروط",
+          "التحقق من الحالة"
+        ],
+        "interpretation": "تداخلت الرعاية والسيطرة دون أن تتطابقا.",
+        "severity": 3,
+        "confidence": "high"
       }
     ]
   },
+  "scale_time": {
+    "scales": [
+      "individual",
+      "institutional",
+      "national",
+      "transnational"
+    ],
+    "immediate_effects": [
+      "تحقق أسرع من الحالة",
+      "الوصول المشروط"
+    ],
+    "medium_term_adaptations": [
+      "تغييرات القواعد",
+      "التقاضي",
+      "التكيف السلوكي"
+    ],
+    "intergenerational_effects": [],
+    "historical_continuities": [
+      "ضوابط الهوية والصحة الحدودية"
+    ],
+    "path_dependencies": [
+      "الاستثمار في بنية وثائق قابلة للتشغيل البيني"
+    ],
+    "future_feedback_loops": [
+      {
+        "id": "FUT1",
+        "name": "إعادة الاستخدام عبر المجالات",
+        "timeframe": "من سنتين إلى خمس سنوات",
+        "drivers": [
+          "قابلية التشغيل البيني",
+          "التكاليف المؤسسية الغارقة"
+        ],
+        "early_signals": [
+          "الاستخدام خارج الغرض الصحي الأصلي"
+        ],
+        "falsified_if": [
+          "تُفكك البنية ويُحظر إعادة استخدامها قانونيًا"
+        ],
+        "rationale": "قد تعيش البنية القابلة لإعادة الاستخدام أطول من الطارئ الذي بررها.",
+        "probability": 40
+      }
+    ]
+  },
+  "distribution": {
+    "items": [
+      {
+        "id": "DIST1",
+        "population_id": "POP1",
+        "benefits": [
+          "تحقق أقل احتكاكًا خلال طارئ صحي حاد."
+        ],
+        "burdens": [
+          "إقصاء وعبء غير متكافئ عندما يتعذر الاختبار أو التلقيح أو التوثيق أو الطعن."
+        ],
+        "protection": [
+          "خفض التعرض في بعض الأماكن"
+        ],
+        "opportunity": [
+          "وصول مشروط بإثبات"
+        ],
+        "recognition": [
+          "هوية المشارك المسؤول"
+        ],
+        "profit": [
+          "إيرادات الموردين والامتثال"
+        ],
+        "voice": [
+          "تشاور غير متكافئ"
+        ],
+        "risk": [
+          "خطأ إقصاء"
+        ],
+        "surveillance": [
+          "وقائع التحقق"
+        ],
+        "discipline": [
+          "سلوك تشكله شروط الوصول"
+        ],
+        "displacement": [],
+        "illness_injury_death": [
+          "عدوى محتملة جرى تجنبها؛ حجم الأثر يعتمد على السياق"
+        ],
+        "axes": [
+          "class",
+          "disability",
+          "age",
+          "citizenship"
+        ],
+        "scale": [
+          "individual",
+          "institutional"
+        ],
+        "time_horizon": "فوري ومتوسط المدى",
+        "outcome_character": "uncertain",
+        "confidence": "medium"
+      }
+    ],
+    "inequality_dimensions": [
+      {
+        "axis": "class",
+        "mechanism": "تفاوت الوصول إلى الاختبار والتوثيق والعمل المرن والأجهزة الرقمية.",
+        "affected_groups": [
+          "عمال وسكان خاضعون لفحوص الوصول"
+        ],
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "necropolitical_dimensions": []
+  },
+  "consent_exit": {
+    "consent_status": "partial",
+    "informed": "partial",
+    "specific": "partial",
+    "revocable": "partial",
+    "comprehensible": "partial",
+    "materially_voluntary": "partial",
+    "exit_conditions": [
+      "اختبار مجاني",
+      "وثيقة غير رقمية",
+      "إعفاء",
+      "بند انتهاء"
+    ],
+    "contestability": [
+      "إجراء تصحيح",
+      "طعن إداري",
+      "مراجعة قضائية"
+    ],
+    "accountability": [
+      "رقابة حماية البيانات",
+      "مراجعة تشريعية"
+    ]
+  },
+  "competing_explanations": [
+    {
+      "id": "EX1",
+      "type": "official",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "أداة مؤقتة لتنسيق الصحة العامة خفّضت مخاطر العدوى القابلة للتجنب.",
+      "mechanism": "التحقق من المخاطر وتنسيق الوصول.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX2",
+      "type": "public_interest",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "سعى التدخل إلى وسيلة أقل احتكاكًا لحماية الأماكن المشتركة مع إعادة فتح النشاط.",
+      "mechanism": "خفض المخاطر الجماعية عبر احتياطات متمايزة.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX3",
+      "type": "political_economy",
+      "relevance": "relevant",
+      "evidentiary_status": "not_assessed",
+      "claim": "ربما شكّلت التعاقدات وتكاليف الامتثال وعدم تكافؤ مرونة العمل طريقة التنفيذ.",
+      "mechanism": "تتوزع التكاليف والمنافع عبر الملكية والعمل والمشتريات.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX4",
+      "type": "institutional_inertia",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "قد تعيش البنية القابلة لإعادة الاستخدام أطول من الطارئ الذي بررها.",
+      "mechanism": "قد تدفع التكاليف الغارقة وقابلية التشغيل البيني إلى استمرار الاستخدام المؤسسي.",
+      "supporting_evidence_ids": [
+        "E2"
+      ],
+      "counter_evidence_ids": [
+        "E1"
+      ],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX5",
+      "type": "security",
+      "relevance": "uncertain",
+      "evidentiary_status": "not_assessed",
+      "claim": "قد يهم منطق أمني أوسع حين تتقاطع الوثائق الصحية مع ضبط الحدود.",
+      "mechanism": "قد تتقارب أنظمة الهوية والمخاطر عند الحدود.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX6",
+      "type": "cultural",
+      "relevance": "relevant",
+      "evidentiary_status": "not_assessed",
+      "claim": "شكّلت معايير التضامن والمسؤولية والاستقلال الجسدي القبول والرفض.",
+      "mechanism": "غيّرت الأطر الأخلاقية المتنافسة تفسير القاعدة نفسها.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX7",
+      "type": "technological",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "جعلت بنية رموز QR القابلة للتشغيل البيني التحقق السريع من الحالة ممكنًا إداريًا.",
+      "mechanism": "تخفض الوثائق المعيارية تكلفة التحقق وتزيد قابلية التوسع.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX8",
+      "type": "critical_biopolitical",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "طبّع الجواز التصنيف البنيوي للأجساد والمشاركة المشروطة.",
+      "mechanism": "تشترط البيانات والتصنيف المشاركة.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX9",
+      "type": "actor_error_unintended_consequence",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "ربما نتج بعض الإقصاء عن أخطاء التنفيذ لا عن استراتيجية سيطرة متماسكة.",
+      "mechanism": "التعقيد الإداري وتفاوت القدرة.",
+      "supporting_evidence_ids": [
+        "E2"
+      ],
+      "counter_evidence_ids": [
+        "E1"
+      ],
+      "falsified_if": [
+        "يناقض دليل مقارن أفضل الآلية المقترحة."
+      ],
+      "confidence": "low"
+    }
+  ],
   "evidence": {
     "items": [
       {
         "id": "E1",
-        "claim": "ربطت الشهادة الصحية بين الوضع الطبي والوصول الاجتماعي.",
-        "basis": "source_based",
-        "source_title": "أطر عامة لشهادات الصحة 2020–2022",
+        "claim": "ربطت القواعد وثائق صحية محددة بالوصول إلى أماكن بعينها.",
+        "epistemic_type": "verified_fact",
+        "source_tier": "primary_legal_policy",
+        "source_title": "قانون أو لائحة للجواز الصحي خاصة بالولاية — استبدلها بمصدر متحقق",
         "source_url": "",
-        "source_date": "2022-01-01",
-        "source_type": "إطار سياسات",
-        "source_note": "يجب التحقق حسب الدولة المدروسة.",
-        "evidence_strength": 3,
-        "uncertainty": "اختلفت القواعد كثيرًا بين الدول.",
-        "counter_evidence": "في بعض السياقات كانت الشهادات محدودة زمنيًا وتم إلغاؤها بعد الأزمة.",
+        "source_locator": "",
+        "source_date": "",
+        "geography": "2020–2022، ولايات أوروبية مختارة",
+        "population": "عمال وسكان خاضعون لفحوص الوصول",
+        "measurement_method": "مراجعة الوثائق القانونية والسياسات",
+        "denominator": "غير منطبق",
+        "sample_size": "غير منطبق",
+        "measurement_validity": "يتطلب التحقق مقابل الصك النافذ في كل ولاية.",
+        "causal_identification": "دليل وصفي قانوني وسياساتي فقط.",
+        "replication_status": "not_applicable",
+        "conflicts_of_interest": "غير مُقيّم في هذا المثال البنيوي.",
+        "missing_data": "تغيب المصادر المتحققة الخاصة بكل ولاية.",
+        "selection_effects": "الولايات توضيحية وليست عينة منهجية.",
+        "relevant_comparison": "قارن القواعد بوجود بدائل مجانية وبنود انتهاء وبدونهما.",
+        "cross_context_applicability": "لا تعمم عبر الولايات دون تحقق.",
+        "claim_source_fit": "unknown",
+        "verification_status": "unverified",
+        "verified_by": "",
+        "verification_date": "",
+        "uncertainty": "اختلفت القواعد حسب الولاية وتغيرت بمرور الوقت.",
+        "limitations": "يوضح المثال البنية ولا يقدم خلاصة تجريبية عامة.",
+        "counter_evidence": "تضمنت أنظمة كثيرة بنود انتهاء وإعفاءات واختبارًا مجانيًا ومراجعة قضائية أو أُوقفت.",
         "confidence": "medium"
+      },
+      {
+        "id": "E2",
+        "claim": "اختلفت شروط التنفيذ والانتهاء اختلافًا جوهريًا.",
+        "epistemic_type": "plausible_inference",
+        "source_tier": "reputable_organization_report",
+        "source_title": "مراجعة مقارنة للتنفيذ — استبدلها بمصدر متحقق",
+        "source_url": "",
+        "source_locator": "",
+        "source_date": "",
+        "geography": "2020–2022، ولايات أوروبية مختارة",
+        "population": "عمال وسكان خاضعون لفحوص الوصول",
+        "measurement_method": "مراجعة مقارنة للسياسات",
+        "denominator": "غير منطبق",
+        "sample_size": "غير مذكور في هذا المثال البنيوي",
+        "measurement_validity": "غير متحقق",
+        "causal_identification": "مقارنة وصفية فقط",
+        "replication_status": "unknown",
+        "conflicts_of_interest": "غير معلوم",
+        "missing_data": "لم تُرفق المصادر المقارنة الأساسية.",
+        "selection_effects": "اختيار الحالات غير موثق.",
+        "relevant_comparison": "القواعد عبر ولايات مختارة",
+        "cross_context_applicability": "غير معلوم حتى التحقق من المصادر",
+        "claim_source_fit": "unknown",
+        "verification_status": "unverified",
+        "verified_by": "",
+        "verification_date": "",
+        "uncertainty": "قابلية المقارنة بين الولايات غير مكتملة.",
+        "limitations": "يتطلب مصادر متحققة خاصة بكل ولاية.",
+        "counter_evidence": "ربما اتسمت بعض الأنظمة برقابة ضعيفة أو إعادة استخدام تقني دائمة.",
+        "confidence": "low"
       }
     ]
   },
@@ -150,38 +869,125 @@
     "items": [
       {
         "id": "AS1",
-        "assumption": "يمكن إعادة استخدام بنى التحقق لأنظمة خطر أخرى.",
+        "assumption": "تزيد قابلية التشغيل البيني التقنية احتمال إعادة الاستخدام.",
         "risk": "medium",
-        "disproving_test": "لا يظهر أي إعادة استخدام أو تمدد مؤسسي بعد الأزمة.",
-        "implication_if_wrong": "يبقى الجواز أداة أزمة مؤقتة وليس بنية حكم دائمة.",
+        "disproving_test": "تُفكك الأنظمة القابلة للتشغيل البيني أو يُمنع إعادة استخدامها قانونيًا.",
+        "implication_if_wrong": "ستكون مخاوف الاعتماد على المسار مبالغًا فيها.",
         "confidence": "medium"
       }
     ]
   },
+  "resistance_agency": {
+    "items": [
+      {
+        "id": "RES1",
+        "actor_or_population": "عمال وسكان خاضعون لفحوص الوصول",
+        "form": "litigation",
+        "mechanism": "غيّرت الدعاوى والاحتجاجات والحلول التقنية والمطالبة ببنود الانتهاء طريقة التنفيذ.",
+        "effect_on_system": "ضيّقت بعض القواعد أو أوضحتها أو أنهتها.",
+        "constraints": [
+          "الكلفة",
+          "تفاوت الوصول القانوني"
+        ],
+        "confidence": "medium"
+      }
+    ]
+  },
+  "alternatives": {
+    "items": [
+      {
+        "id": "ALT1",
+        "level": "national",
+        "proposal": "قواعد ضيقة ومحددة زمنيًا مع بدائل مجانية وتقييد صارم للغرض وتدقيق مستقل وطعن ميسّر.",
+        "mechanism": "الحفاظ على هدف الحماية مع خفض التبعية والإقصاء وانحراف الوظيفة.",
+        "feasibility": "medium",
+        "tradeoffs": [
+          "الكلفة الإدارية",
+          "تحقق أبطأ محتملًا"
+        ],
+        "rights_safeguards": [
+          "تقييد الغرض",
+          "بند انتهاء",
+          "الطعن",
+          "بديل غير رقمي"
+        ],
+        "evidence_needed": [
+          "بيانات مقارنة عن الفعالية والأعباء"
+        ],
+        "lower_harm_rationale": "يحافظ على حماية متناسبة مع صون الخروج وقابلية الطعن."
+      }
+    ]
+  },
+  "calibrated_conclusion": {
+    "strongly_supported": [
+      "حوّلت الوثيقة المعلومة الصحية إلى إشارة لضبط الوصول."
+    ],
+    "plausible_unconfirmed": [
+      "قد تعيش البنية القابلة لإعادة الاستخدام أطول من الطارئ الذي بررها."
+    ],
+    "disputed": [
+      "اختلف صافي المنفعة الوبائية والتكلفة التوزيعية حسب الولاية والفترة."
+    ],
+    "unknown": [
+      "لا يمكن استنتاج التطبيع بعيد المدى من التبني القصير وحده."
+    ],
+    "evidence_that_would_change": [
+      "دليل مقارن يثبت إعادة استخدام دائمة عبر مجالات أخرى أو تفكيكًا مؤسسيًا كاملًا."
+    ],
+    "overall_confidence": "medium"
+  },
+  "self_audit": {
+    "malicious_intent_without_evidence": "pass",
+    "institutional_claims_uncritically": "pass",
+    "metaphor_as_mechanism": "pass",
+    "human_function_identified": "pass",
+    "mechanism_explained": "pass",
+    "care_control_overlap": "pass",
+    "material_and_meaning": "pass",
+    "history_included": "pass",
+    "political_economy_included": "pass",
+    "inequality_dimensions": "pass",
+    "agency_resistance": "pass",
+    "competing_explanations": "pass",
+    "statistics_quotations_verified": "concern",
+    "uncertainty_stated": "pass",
+    "benefits_costs_identified": "pass",
+    "realistic_alternatives": "pass",
+    "stigmatization_risk_checked": "pass",
+    "falsifier_identified": "pass"
+  },
+  "self_audit_notes": [
+    "هذا المثال بنيوي؛ استبدل عناوين المصادر النائبة بأدلة متحققة خاصة بكل ولاية."
+  ],
   "links": [
     {
-      "from": "P1",
-      "to": "GT1",
+      "from": "HF1",
+      "to": "INS1",
       "relation": "enables",
-      "strength": 4
+      "mechanism": "أصبح الخطر الصحي قابلًا للتشغيل عبر التحقق من الوثيقة.",
+      "confidence": "high"
     },
     {
-      "from": "GT1",
-      "to": "O1",
-      "relation": "causes",
-      "strength": 3
+      "from": "INS1",
+      "to": "CLASS1",
+      "relation": "classifies",
+      "mechanism": "يعيّن التحقق حالة الوصول.",
+      "confidence": "high"
     },
     {
-      "from": "RF1",
-      "to": "GT1",
-      "relation": "feeds_back",
-      "strength": 4
+      "from": "CLASS1",
+      "to": "DIST1",
+      "relation": "distributes",
+      "mechanism": "تغيّر الحالة الوصول والعبء.",
+      "confidence": "high"
+    },
+    {
+      "from": "RES1",
+      "to": "IV1",
+      "relation": "resists",
+      "mechanism": "يغيّر الطعن النطاق والمدة.",
+      "confidence": "medium"
     }
   ],
-  "quality_gate": {
-    "publication_risk": "medium",
-    "weakest_layer": "evidence",
-    "next_improvement": "أضف مصادر قانونية وتجريبية خاصة بالبلد المدروس."
-  },
-  "language": "ar"
+  "migration": null
 }

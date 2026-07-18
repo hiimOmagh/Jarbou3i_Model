@@ -1,58 +1,113 @@
-import fs from 'node:fs';
+import fs from "node:fs";
+import vm from "node:vm";
+import Ajv2020 from "ajv/dist/2020.js";
 
 const fail = (message) => {
   console.error(`Schema check failed: ${message}`);
   process.exit(1);
 };
+const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 
-const schema = JSON.parse(fs.readFileSync('schema/strategic-analysis.schema.json', 'utf8'));
-const requiredTop = ['schema_version', 'subject', 'interests', 'actors', 'tools', 'narrative', 'results', 'feedback', 'contradictions', 'scenarios'];
-const arraySections = ['interests', 'actors', 'tools', 'narrative', 'results', 'feedback'];
-const resolveRequired = (items) => {
-  const refName = items?.$ref?.split('/').pop();
-  const def = refName ? schema.$defs?.[refName] : items;
-  return def?.allOf?.[1]?.required || def?.required || [];
-};
+const canonicalSchema = readJson("schema/biopolitical-analysis.schema.json");
+const draftSchema = readJson("schema/biopolitical-migrated-draft.schema.json");
+const strategicSchema = readJson("schema/strategic-analysis.schema.json");
 
-if (schema.$schema !== 'https://json-schema.org/draft/2020-12/schema') fail('schema must declare JSON Schema draft 2020-12');
-for (const key of requiredTop) {
-  if (!schema.required?.includes(key)) fail(`schema missing required key: ${key}`);
-  if (!schema.properties?.[key]) fail(`schema missing property declaration: ${key}`);
+let canonical;
+let migratedDraft;
+try {
+  const ajv = new Ajv2020({
+    allErrors: true,
+    strict: true,
+    validateFormats: false,
+  });
+  canonical = ajv.compile(canonicalSchema);
+  migratedDraft = ajv.compile(draftSchema);
+} catch (error) {
+  fail(`biopolitical schemas must compile in strict Ajv mode: ${error.message}`);
 }
-for (const section of arraySections) {
-  const prop = schema.properties[section];
-  if (prop.type !== 'array') fail(`${section} must be declared as array`);
-  if (!prop.minItems || prop.minItems < 1) fail(`${section} must require at least one item`);
-  const required = resolveRequired(prop.items);
-  if (!required.includes('id')) fail(`${section} items must require id`);
-}
-const evidenceRequired = resolveRequired(schema.properties.evidence?.properties?.items?.items);
-const scenarioRequired = resolveRequired(schema.properties.scenarios?.properties?.items?.items);
-if (!evidenceRequired.includes('counter_evidence')) fail('evidence items must require counter_evidence');
-if (!scenarioRequired.includes('disproven_if')) fail('scenario items must require disproven_if');
-if (!schema.properties.links) fail('schema should keep causal links available');
-if (!schema.properties.analysis_lens) fail('schema missing analysis_lens property');
-if (!schema.properties.analysis_lens.enum?.includes('biopolitical')) fail('schema must allow biopolitical lens');
 
-const files = fs.readdirSync('fixtures').filter((name) => name.endsWith('.json'));
-for (const file of files) {
-  const data = JSON.parse(fs.readFileSync(`fixtures/${file}`, 'utf8'));
-  for (const key of requiredTop) if (!(key in data)) fail(`${file}: missing ${key}`);
-  if (!['strategic', 'biopolitical'].includes(data.analysis_lens)) fail(`${file}: invalid analysis_lens`);
-  for (const section of arraySections) {
-    if (!Array.isArray(data[section]) || data[section].length < 1) fail(`${file}: ${section} must have at least one item`);
-    for (const [idx, item] of data[section].entries()) {
-      if (!item.id) fail(`${file}: ${section}[${idx}] missing id`);
+if (canonicalSchema.properties?.schema_version?.const !== "2.1.0") {
+  fail("canonical schema version must be 2.1.0");
+}
+if (canonicalSchema.properties?.contract_status?.const !== "canonical") {
+  fail("canonical schema must require an explicit canonical status");
+}
+if (
+  draftSchema.properties?.analysis_contract?.const !==
+    "biopolitical-migrated-draft-v1" ||
+  draftSchema.properties?.contract_status?.const !== "migrated_draft"
+) {
+  fail("migrated drafts need a distinct contract identity and status");
+}
+
+for (const key of [
+  "legal_framework",
+  "international_comparison",
+  "capture_levels",
+  "theoretical_comparison",
+  "migration",
+]) {
+  if (!canonicalSchema.required?.includes(key)) {
+    fail(`canonical top-level contract is missing ${key}`);
+  }
+}
+
+if (canonicalSchema.$defs?.captureCriterion?.properties?.criterion?.enum?.length !== 13) {
+  fail("capture schema must enumerate exactly 13 criteria");
+}
+if (canonicalSchema.$defs?.explanation?.properties?.type?.enum?.length !== 9) {
+  fail("explanation schema must enumerate exactly nine families");
+}
+if (canonicalSchema.$defs?.captureLevel?.properties?.level?.enum?.length !== 5) {
+  fail("capture-level schema must enumerate exactly five levels");
+}
+if (canonicalSchema.$defs?.selfAudit?.required?.length !== 18) {
+  fail("self-audit schema must require all 18 checks");
+}
+
+for (const lang of ["ar", "en", "fr"]) {
+  const fixture = readJson(`fixtures/sample-analysis-bio-${lang}.json`);
+  if (!canonical(fixture)) {
+    fail(`${lang} canonical fixture failed schema validation: ${JSON.stringify(canonical.errors)}`);
+  }
+}
+
+const invalid = structuredClone(readJson("fixtures/sample-analysis-bio-en.json"));
+invalid.evidence.items[0].verification_status = 7;
+if (canonical(invalid)) {
+  fail("canonical validator accepted an invalid evidence verification type");
+}
+
+const context = { window: {} };
+context.window.window = context.window;
+vm.createContext(context);
+new vm.Script(fs.readFileSync("src/biopolitics.js", "utf8"), {
+  filename: "src/biopolitics.js",
+}).runInContext(context);
+const legacy = readJson("fixtures/sample-analysis-bio-en.legacy-v1.json");
+const draft = context.window.Jarbou3iBiopolitics.migrateLegacy(legacy);
+if (!migratedDraft(draft)) {
+  fail(`legacy adapter output failed the migrated-draft schema: ${JSON.stringify(migratedDraft.errors)}`);
+}
+if (canonical(draft)) {
+  fail("a migrated draft must never validate as a canonical analysis");
+}
+
+try {
+  const strategicAjv = new Ajv2020({
+    allErrors: true,
+    strict: false,
+    validateFormats: false,
+  });
+  const validateStrategic = strategicAjv.compile(strategicSchema);
+  for (const lang of ["ar", "en", "fr"]) {
+    const fixture = readJson(`fixtures/sample-analysis-${lang}.json`);
+    if (!validateStrategic(fixture)) {
+      fail(`${lang} strategic fixture failed its schema`);
     }
   }
-  const scenarios = data.scenarios?.items || [];
-  if (!scenarios.every((item) => Array.isArray(item.disproven_if) && item.disproven_if.length)) fail(`${file}: each scenario needs disproven_if`);
-  const evidence = data.evidence?.items || [];
-  if (!evidence.some((item) => item.basis === 'source_based')) fail(`${file}: needs source_based evidence`);
-  if (!evidence.some((item) => typeof item.counter_evidence === 'string' && item.counter_evidence.trim())) fail(`${file}: needs counter_evidence`);
+} catch (error) {
+  fail(`strategic schema could not compile: ${error.message}`);
 }
 
-if (!files.some((file) => JSON.parse(fs.readFileSync(`fixtures/${file}`, 'utf8')).analysis_lens === 'biopolitical')) fail('no biopolitical fixture found');
-
-console.log('Schema checks passed.');
-process.exit(0);
+console.log("Schema checks passed.");

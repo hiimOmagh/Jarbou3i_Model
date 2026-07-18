@@ -1,3 +1,220 @@
+# Changelog
+
+## 2.0.0-bio-rc.11 — Language-Linked Sample Loading
+
+- Makes the selected interface language the default language for both Strategic and Biopolitical sample topics, while preserving a deliberately different Analysis language as an expert override.
+- Persists whether Analysis language follows the interface language; selecting the matching language relinks them, and imported analyses remain authoritative for their declared language.
+- Adds cross-engine coverage for all three languages and both lenses, plus override persistence and relinking, increasing the browser core from 208 to 216 cases.
+- Closes VIS-002 after human review of regenerated RC 10 evidence confirmed all six phone Connections captures were toast-free and exposed the Relationship Explorer.
+
+## 2.0.0-bio-rc.10 — Localized Toast Exit and Evidence Closure
+
+- Corrects the remaining RC 9 phone evidence obstruction: the toast’s former fixed `84px` hidden translation could leave tall Arabic, English, or French messages partly visible after the active class was removed.
+- Moves hidden toasts by their complete rendered height plus safe viewport clearance and disables pointer interception while hidden.
+- Strengthens visual capture by polling the toast’s actual bounding rectangle until it is physically outside the viewport, rather than treating class removal as proof of disappearance.
+- Records VIS-001 and VIS-003 as human-verified closures and prepares VIS-002 for regenerated RC 10 evidence review; analysis, graph, schema, import, export, and interaction contracts remain unchanged.
+
+## 2.0.0-bio-rc.9 — Human Visual-Evidence Fidelity
+
+- Responded to the fully green RC 8 automated gate (208 core, 2 hosted, and 18 visual cases) with a human inspection of all 36 language/theme/viewport screenshots.
+- Preloads and synchronously decodes the above-the-fold guide mascot, preventing blank critical illustration frames observed in French light-phone and hosted Arabic mobile evidence.
+- Decode-gates critical visual assets, clears transient toasts before screenshots, and targets the Relationship Explorer itself on phone Connections captures so evidence shows reviewable product content rather than temporary notifications or navigation alone.
+- Adds machine-reviewed metadata for asset decoding, transient-UI clearance, and the phone capture target; analytical data, graph behavior, schemas, imports, exports, and interaction logic remain unchanged.
+
+## 2.0.0-bio-rc.8 — Interaction Epoch and Full-Matrix Synchronization
+
+- Added a render epoch to the Relationship Explorer focus scheduler so callbacks from superseded renders are cancelled deterministically.
+- Distinguished mandatory focus transfers for Focus mode, overlays, walkthroughs, and node navigation from optional field-focus restoration, fixing WebKit’s Focus-mode entry contract without reopening the saved-view race.
+- Hardened Connections and migrated-pillar browser flows through native focus-and-Enter activation plus selected/expanded-state assertions, addressing the two Firefox transitions exposed by the parallel 208-case matrix.
+- Canonical analysis, persistence payloads, graph projections, schemas, imports, and exports remain unchanged.
+
+## 2.0.0-bio-rc.7 — Cross-Engine Deferred Focus Arbitration
+
+- Consolidated every Relationship Explorer post-render focus restoration behind one guarded scheduler instead of leaving overlay, Focus, walkthrough, and node paths as unconditional animation-frame callbacks.
+- Preserves any focus deliberately claimed by a user, assistive technology, or test runner before the deferred callback executes, eliminating the saved-view focus theft reproduced in Firefox and WebKit under the full 208-case matrix.
+- Added a static regression guard against reintroducing direct deferred focus paths; canonical analysis, persistence payloads, schemas, imports, and exports remain unchanged.
+
+## 2.0.0-bio-rc.6 — Deferred Focus Ownership Correction
+
+- Corrected a Relationship Explorer focus race where a stale animation-frame callback could return focus to Search after the user or assistive technology had already moved to another control.
+- Deferred filter-focus restoration now runs only while document focus remains neutral, preserving deliberate focus ownership across rapid keyboard and programmatic navigation.
+- Strengthened the saved-view contract by crossing an animation-frame boundary before asserting Save focus and keyboard activation; canonical analysis, persistence payloads, schemas, imports, and exports remain unchanged.
+
+## 2.0.0-bio-rc.5 — Full-Matrix Saved-View Synchronization
+
+- Added an explicit search-value settlement assertion before saving a Relationship Explorer view after search-driven rerendering.
+- Added an explicit focused-button assertion before keyboard activation of Save view, ensuring the full 208-test parallel matrix targets the current rendered control rather than the preceding search field.
+- Preserved the saved-view persistence, restore, deletion, keyboard, and analysis-scoping contracts; production runtime behavior and canonical analysis content are unchanged.
+
+## 2.0.0-bio-rc.4 — Firefox Reflow Target Hardening
+
+- Prevented record- and connection-inspector close controls from flex-shrinking below their declared 32px physical width under Firefox at the 320px/400%-equivalent intersection.
+- Stabilized the reflow audit’s Connections transition through native focus-and-Enter activation and an explicit selected-tab assertion before inspecting the responsive list.
+- Preserved the complete 48-cell reflow contract; no canonical analysis, graph, schema, import, or export content changed.
+
+## 2.0.0-bio-rc.3 — Reflow List-Mode Inspector Correction
+
+- Replaced the reflow audit’s hard-coded `ACT1` Map-node target with the first visible semantic record button in the active Connections list.
+- Aligned the inspector contract with the intentional narrow-screen Story/List fallback while preserving keyboard activation, dialog containment, Escape closure, and focus restoration.
+- Added a static regression guard for the list-scoped record target; no production analysis, layout, graph, import, export, or schema behavior changed.
+
+## 2.0.0-bio-rc.2 — Reflow Audit Setup Correction
+
+- Added localized, non-empty analysis topics to every 200%/400% equivalent reflow case before activating Preview prompt, satisfying the production validation contract in all 48 language, theme, viewport, and engine intersections.
+- Preserved the modal keyboard contract and strengthened it with an explicit open-backdrop assertion before checking initial modal focus, containment, Escape closure, and trigger-focus restoration.
+- Added a static regression guard for the topic prerequisite and modal-open assertion; no production analysis, layout, graph, import, export, or schema behavior changed.
+
+## 2.0.0-bio-rc.1 — Reflow and Human Visual-Audit Readiness
+
+- Added 48 reflow cases crossing Arabic, English, and French; light and dark; 200%/400% equivalent 640px/320px viewports; and Chromium, Firefox, WebKit, and mobile Chrome.
+- Reflow coverage includes modal containment and focus return, complete mobile Connections fallback, Spatial disablement, reference-inspector containment and focus return, 24px minimum visible button targets, and page-level overflow protection.
+- Added deterministic visual evidence capture for 18 language/theme/viewport combinations with shell and Connections screenshots, producing 36 screenshots, 18 measurement records, and one 55-artifact manifest.
+- Added a visual-evidence completeness reviewer, dedicated reflow and visual-audit commands, CI artifact retention, and a manual audit ledger for native assistive technology, linguistic nuance, physical touch, native zoom, print/PDF preview, and epistemic integrity.
+- Advanced the verified Beta 3 baseline to RC 1 without changing canonical Strategic or Biopolitical analysis content, graph projections, schemas, imports, or exports.
+
+## 2.0.0-bio-beta.3 — Firefox Full-Matrix Explorer Stabilization
+
+- Stabilized saved-view authoring by activating Network, Analyst, Time, Save, and Restore through their native focus-and-Enter semantics and verifying each state before snapshot creation.
+- Stabilized Spatial record opening by focusing the freshly rendered “Open record” control before Enter activation.
+- Preserved pointer coverage throughout the remaining explorer suite while making the two persistence/accessibility contracts deterministic under the expanded 160-test parallel workload.
+- Responded to a fully green 28-case Beta 2 audit and two Firefox-only legacy explorer races in the complete suite; production state, graph geometry, canonical analysis, and export behavior remain unchanged.
+
+## 2.0.0-bio-beta.2 — Forced-Colors Focus and WebKit Print Synchronization
+
+- Extended the forced-colors focus outline from `:focus-visible` to `:focus` and `:focus-visible`, ensuring programmatic and assistive-technology focus remains perceivable in addition to conventional keyboard focus.
+- Synchronized the print-palette assertion with WebKit’s asynchronous media transition using `matchMedia("print")` and computed-style polling; the exact readable palette requirement remains unchanged.
+- Responded to the Beta 1 matrix result of 26/28 passed while preserving the 24-cell language/theme/runtime coverage, canonical analysis contracts, and all previously verified behavior.
+
+## 2.0.0-bio-beta.1 — Final Intersection Audit and Release Hardening
+
+- Added a 24-cell automated release gate crossing Arabic, English, and French with light and dark themes across desktop Chromium, Firefox, WebKit, and mobile Chrome.
+- Each intersection validates persisted locale/theme settings, directionality, localized future-schema rejection, valid sample recovery, responsive Relationship Explorer presentation, duplicate-ID absence, page overflow, serious/critical axe findings, reduced motion, and print readability.
+- Added four cross-engine keyboard-focus cases, including forced-colors emulation in Chromium, without manufacturing skipped results on engines that do not emulate that media feature.
+- Hardened dark-theme printing with an explicit light print token set and hardened forced-colors focus, selected states, borders, and relationship graphics.
+- Added a dedicated `test:browser:audit` command, made the audit part of the complete browser release gate, and documented the remaining native assistive-technology, linguistic, zoom, print-preview, touch-hardware, and epistemic manual sign-offs.
+- Preserved the Strategic v1.1 engine, Biopolitical Training Map v2.1 schema and integrity gates, deterministic graph projections, imports, exports, and canonical analysis content unchanged.
+
+## 2.0.0-bio-alpha.3 — WebKit Space-Key Activation Hotfix
+
+- Normalized map-node Space activation across printable-key, legacy-key, and physical-key representations (`key`, `Spacebar`, and `code`) while preserving the distinct contract: Space selects and Enter opens the record inspector.
+- Added a static regression guard for the physical Space-key path after the focused Alpha 2 matrix passed 11 of 12 tests and isolated the remaining failure to WebKit.
+- Preserved deterministic graph geometry, spatial navigation, canonical analysis, imports, exports, schemas, and all non-keyboard behavior unchanged.
+
+## 2.0.0-bio-alpha.2 — Spatial Access and Cross-Browser Test Stabilization
+
+- Added a localized spatial record picker that reliably selects depth-occluded cards without flattening the visual 3D field or removing direct semantic node buttons.
+- Replaced exact zero-duration assertions with a numeric one-millisecond ceiling, accommodating the one-microsecond reduced-motion clamp returned by Chromium, Firefox, and WebKit.
+- Scoped Biopolitical export-tab and Network-node keyboard actions to their elements to prevent Firefox from losing focus during freshly rendered test transitions.
+- Preserved canonical analysis, deterministic spatial geometry, exports, schemas, and all Strategic and Biopolitical runtime behavior.
+
+## 2.0.0-bio-alpha.1 — Phase 4 Capability-Gated Spatial Exploration
+
+- Added a deterministic Spatial relationship view that projects the existing filtered graph into nine labeled 3D pillar clusters while preserving all 32 fixture records and 28 indexed connections.
+- Added localized orbit, tilt, zoom, and reset controls; pointer dragging; arrow-key, plus/minus, and Home equivalents; live orientation feedback; and reduced-motion behavior.
+- Kept every spatial node as a semantic inspectable button and retained the complete Connections list as the always-available accessible equivalent.
+- Added a strict capability boundary: narrow or unsupported displays disable Spatial, explain why, and remain in the labeled list instead of receiving a degraded or overflowing scene.
+- Extended analysis-scoped saved views with spatial mode, orientation, tilt, and zoom without storing canonical analysis content.
+- Added pure geometry invariants, capability/fallback assertions, keyboard and axe coverage, and eight cross-browser Phase 4 contracts without adding WebGL, network, or third-party runtime dependencies.
+
+## 1.9.0-bio-alpha.2 — Firefox RTL Export-Tab Test Stabilization
+
+- Stabilized the Arabic Strategic cross-locale export contract in Firefox by activating the already accessible Export tab through focus and Enter instead of a timing-sensitive pointer hit on the freshly rendered RTL navigation.
+- Preserved the production runtime and all Phase 3 analysis, graph, overlay, saved-view, schema, import, and export behavior unchanged.
+
+## 1.9.0-bio-alpha.1 — Phase 3 Context Overlays and Durable Views
+
+- Added localized temporal overlays that project five canonical bands from authored history, dated evidence, immediate effects, medium-term adaptations and dependencies, and future or intergenerational signals without inferring chronology.
+- Added localized international-comparison cards with basis, similarities, differences, transfer limits, confidence, and direct navigation to named supporting evidence.
+- Added analysis-scoped saved explorer views that restore mode, view, detail level, overlay, filters, layers, selection, neighborhood, and zoom from browser-local presentation state without storing or mutating canonical analysis data.
+- Expanded standalone HTML reports with a complete named relationship atlas, explicit/evidence/structural connection families, canonical time signals, and international comparison limits while preserving the embedded and downloadable canonical JSON contract unchanged.
+- Added pure projection invariants, static Phase 3 guards, lossless export markers, and eight cross-browser overlay/persistence contracts.
+
+## 1.8.0-bio-alpha.1 — Phase 2 Guided Exploration
+
+- Added an escapable Focus mode that expands the relationship workspace, locks background scrolling, preserves theme/RTL behavior, and safely deactivates when leaving Connections.
+- Added localized deterministic walkthroughs for Story, Evidence Trail, and Network with progress, named endpoints, relationship explanations, previous/next controls, and visual target highlighting.
+- Replaced transient bottom-only details with a persistent inspection dock for both records and connections; selections now survive mode and map/list changes.
+- Added explicit hidden-selection messaging and a one-action reveal path that restores the full Network context without mutating the analysis.
+- Added record-level inspection actions for opening the full canonical record or isolating its one-hop neighborhood.
+- Added 12 cross-browser contracts for Focus behavior, walkthrough progress, inspection continuity, and hidden-context recovery, bringing the relationship explorer matrix to 32 tests.
+
+## 1.7.0-bio-alpha.2 — Mobile Story-Test State Hotfix
+
+- Made the Guided/Analyst browser contract explicitly switch from the intentional mobile list default to Story Map before selecting a causal connector.
+- Added an immediate four-connector assertion so future failures identify view-state drift instead of waiting for the global timeout.
+- No runtime, schema, graph, import, export, accessibility, or visual behavior changed.
+
+## 1.7.0-bio-alpha.1 — Phase 1 Comprehension Architecture
+
+- Replaced the one-layout-fits-all relationship map with three purpose-built views: numbered causal paths for Story, claim-centered support/counter clusters for Evidence Trail, and a compact nine-pillar topology for Network.
+- Added Guided and Analyst detail levels so general readers see names and plain-language explanations first, while analysts retain canonical IDs, confidence, provenance, and source paths.
+- Added localized “Why connected?” explanations for authored, supporting, counter, and structural relationships in Arabic, English, and French.
+- Moved dense filters and layer controls into a progressive disclosure panel, kept search/reset immediately available, and added an always-visible connection legend.
+- Removed the forced nine-column Network canvas in favor of a responsive three-column topology, with single-column mobile behavior and preserved RTL, keyboard, reduced-motion, and accessible list support.
+- Added cross-browser contracts for deterministic causal paths, evidence clusters, detail-level disclosure, provenance, and connection explanations.
+
+## 1.6.0-bio-alpha.2 — Story Map Pillar-Taxonomy Hotfix
+
+- Corrected the graph-to-view pillar mapping so every indexed record uses the same nine canonical pillar keys as the review protocol and 2D lane renderer.
+- Restored the four previously omitted desktop lane groups—actors/institutions, mechanisms/infrastructure, meaning/classification, and human functions—so all 32 fixture records render in Network mode.
+- Restored desktop search, node inspection, and keyboard selection for records such as `ACT1`; mobile list mode was unaffected because it does not group records into lanes.
+- Added a pure no-browser invariant that requires the fixture graph to populate exactly the nine rendered Biopolitical pillar keys, preventing taxonomy drift from passing CI again.
+
+## 1.6.0-bio-alpha.1 — 2D Relationship Story Map
+
+- Added a localized Connections review tab with deterministic Story, Evidence Trail, and Network modes over the canonical relationship index.
+- Added searchable and filterable HTML node lanes with authored, evidentiary, and structural SVG connector layers; no force simulation, CDN, canvas, or network dependency is used.
+- Added pillar, record-type, relation, confidence, and evidence-verification filters; one-hop neighborhood focus; live result counts; zoom, fit, and reset controls.
+- Added an equivalent accessible connections list and inspectable edge details with named endpoints, relation, mechanism, provenance, and canonical source path.
+- Synchronized map nodes with the existing reference inspector and added “Show in map” navigation from any named reference.
+- Added responsive mobile list defaults, RTL lane mirroring, keyboard mode navigation, keyboard node selection, reduced-motion behavior, and map-specific accessibility tests.
+
+## 1.5.0-bio-alpha.1 — Named Relationship Explorer
+
+- Added a pure, lens-aware relationship index over every canonical Biopolitical ID-bearing record, authored link, and validated cross-reference without changing the v2.1 schema.
+- Replaced raw reference-only strings in the review experience with compact chips that show the record’s human-readable name and preserve its canonical ID.
+- Added an accessible side inspector (mobile bottom sheet) with type, pillar, confidence, incoming references, outgoing references, keyboard focus containment, Escape dismissal, and focus restoration.
+- Added human-readable reference expansion and a named reference directory to standalone HTML reports while preserving the lossless canonical JSON payload unchanged.
+- Added fixture-level graph integrity tests and cross-browser interaction/export contracts for named references.
+
+## 1.4.0-bio-alpha.4 — Browser Matrix Resource-Stability Hotfix
+
+- Capped the core Playwright matrix at four workers by default so report generation, downloads, WebKit, and axe scans do not saturate a developer workstation.
+- Raised the cross-browser per-test budget from 30 to 60 seconds and assertion budget from five to ten seconds without weakening any contract assertion.
+- Added `PLAYWRIGHT_WORKERS` as an explicit override for slower or faster hosts and documented the two-worker PowerShell fallback.
+- Added a CI contract guard so the bounded-worker and timeout policy cannot silently regress.
+
+## 1.4.0-bio-alpha.3 — Windows Browser Matrix Hotfix
+
+- Preserved the selected language in generated Strategic samples so Arabic and French exports no longer fall back to English metadata.
+- Stabilized review-tab interaction across Firefox and WebKit by removing sticky/hover movement from the navigation hit targets.
+- Made modal focus restoration explicit for WebKit, which does not consistently focus buttons on pointer activation.
+- Delayed object-URL cleanup so Firefox can complete consecutive HTML and JSON downloads reliably.
+- Added selected-tab assertions and atomic download waits to browser tests, with a focused timeout budget for the two-file lossless export contract.
+- Added a safe cross-platform release-layout migration for upgrades over an older directory; it preserves divergent files and removes only verified duplicates.
+
+## 1.4.0-bio-alpha.2 — Audit Remediation
+
+- Upgraded the canonical Biopolitical schema to `2.1.0`, added legal, international, five-level capture, theoretical-comparison, evidence-design, verification, and outcome-character requirements, and generated a strict browser validator from the schema.
+- Added a separate `biopolitical-migrated-draft-v1` identity so legacy six-layer material is preserved without being falsely stamped canonical.
+- Enforced exact 13 capture criteria, nine explanation families, five capture levels, global ID uniqueness, typed references, falsifiers, quantitative metadata, evidence traceability, and self-audit consistency at import time.
+- Separated structural readiness from source verification; placeholder fixtures and unverified sources cannot pass the publication gate.
+- Hardened prompts against embedded instructions, fabricated evidence, profiling, coercive surveillance, repression, manipulation, stigmatization, and group-to-individual inference.
+- Made review/export lossless through expanded analytical cards, canonical JSON download, a complete in-app contract inspector, and an embedded machine-readable payload in HTML reports.
+- Made report language follow the analysis language independently of the interface language and completed Arabic/French fixture localization and enum/audit labels.
+- Added keyboard-complete tabs, semantic accordions, segmented-control radio states, modal focus restoration/trapping, and automated accessibility scanning.
+- Standardized CI on npm, expanded Chromium/Firefox/WebKit/mobile coverage, added adversarial import/parser/export tests, archived non-production root prototypes, and replaced the development server with a minimal dependency-free static server.
+
+## 1.4.0-bio-alpha.1 — Biopolitical Training Map v2 Replacement
+
+- Replaced the former six-array Biopolitical semantic remap with the independent `biopolitical-training-map-v2` contract and schema `2.0.0`.
+- Added nine analytical pillars spanning question/context, human functions, actors and affected populations, mechanisms and infrastructure, meaning and classification, intervention/capture, distribution, evidence and rival explanations, and agency/alternatives.
+- Added the protection-to-expropriation intervention continuum, 13 capture criteria, source hierarchy, calibrated conclusion, and 18-point self-audit.
+- Added trilingual v2 prompts, canonical fixtures, readiness diagnostics, review navigation, responsive rendering, and schema/contract-tagged HTML export.
+- Preserved the Strategic v1.1 engine and made lens changes/imports contract-safe.
+- Added a conservative legacy Biopolitical v1.1 migration adapter that does not invent governing actors or intervention modality and exposes missing v2 fields as warnings.
+- Added dedicated v2, schema, fixture, import, export, cross-locale, accessibility, desktop, RTL, and mobile QA coverage.
+
 ## v1.3.0-bio — Stable Release Tag + Archive
 
 - Relabeled the locked alpha.7 evidence/stable baseline as `v1.3.0-bio`.
@@ -32,8 +249,6 @@
 - Hardened workspace hygiene against preview tracks, Playwright output, patch folders, and root patch/package ZIP artifacts.
 - Added release lock documentation in `docs/release-lock.md`.
 - Bumped root app identity and lockfile metadata to `1.3.0-bio-alpha.5`.
-
-# Changelog
 
 ## v1.3.0-bio-alpha.5 — Review Title Lens Contract Hotfix
 

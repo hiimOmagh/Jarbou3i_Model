@@ -18,7 +18,15 @@ if (!index.includes('aria-labelledby="modalTitle"')) fail('modal labelling missi
 if (!index.includes('role="tablist"')) fail('tablist role missing');
 if (!app.includes('role="tab"')) fail('runtime tabs must use role tab');
 if (!app.includes('aria-selected')) fail('runtime tabs must set aria-selected');
+if (!app.includes('aria-controls')) fail('runtime tabs and accordions need aria-controls');
+if (!app.includes('aria-expanded')) fail('runtime accordions need aria-expanded');
+if (!app.includes('aria-labelledby')) fail('runtime panels need stable labels');
+if (!index.includes('role="radiogroup"') || !index.includes('role="radio"')) fail('segmented controls need radio semantics');
+if (!index.includes('aria-checked="true"')) fail('segmented controls need checked state');
+if (!index.includes('tabindex="-1"')) fail('segmented controls need roving tabindex');
 if (!app.includes('aria-current="step"')) fail('current stage marker missing');
+if (!app.includes('function trapModalFocus(')) fail('modal focus trap missing');
+if (!app.includes('function bindRadioGroupKeyboard(')) fail('radio groups need arrow-key behavior');
 
 const imgTags = [...html.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
 for (const tag of imgTags) {

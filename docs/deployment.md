@@ -1,53 +1,32 @@
 # Deployment Notes
 
-## GitHub Pages
-
-1. Push this folder to a GitHub repository.
-2. Go to **Settings → Pages**.
-3. Use **Deploy from branch**.
-4. Select branch `main` and folder `/root`.
-5. Save and wait for the Pages URL.
-
-## Required release checks
-
-Run before pushing a release:
+## Release checks
 
 ```bash
-npm install
-node tests/qa-check.mjs
+npm ci
+npm run test:ci:no-browser
 npx playwright install --with-deps
-npm run test:browser
+npm run test:ci:browser
 ```
 
-`node tests/qa-check.mjs` is the fast no-browser gate. It checks JavaScript syntax, modular source layout, duplicate DOM IDs, manifest integrity, optimized image references, schema governance, fixture quality, static accessibility basics, and absence of removed legacy export/self-check paths.
+The committed workflow uses npm only, Node 20, the package lock, strict no-browser gates, Chromium/Firefox/WebKit/mobile browser coverage, and hosted-evidence artifact review.
 
-`npm run test:browser` runs the Playwright browser flow, runtime accessibility smoke, and RTL/mobile smoke tests.
+## GitHub Pages
 
-## CI
+1. Push the release root to a repository.
+2. In **Settings → Pages**, choose **Deploy from branch**.
+3. Select `main` and `/root`.
+4. Confirm the deployed entry point is `index.html`.
 
-The repository includes a GitHub Actions workflow at:
+Do not publish `preview/`, `biopreview/`, `node_modules/`, Playwright reports, test results, or hosted-evidence folders. The archived pages under `docs/archive/legacy-pages/` are historical prototypes, not product entry points.
 
-```text
-.github/workflows/ci.yml
-```
+## Manual verification
 
-It runs on pushes and pull requests.
+- Inspect Arabic, English, and French interface and analysis-language combinations.
+- Import one canonical and one migrated-draft Biopolitical fixture.
+- Confirm the sample remains blocked from publication because its sources are unverified.
+- Open standalone Strategic and Biopolitical HTML exports.
+- Parse the embedded `#canonical-analysis` payload and compare it with JSON export.
+- Inspect Arabic HTML at mobile width and confirm no horizontal overflow.
+- Confirm no runtime network request is required.
 
-## Public release checklist
-
-- [ ] README reviewed
-- [ ] Changelog includes `1.2.0` modular QA hardening
-- [ ] License selected deliberately
-- [ ] Security notice reviewed
-- [ ] GitHub Pages deployment works
-- [ ] `node tests/qa-check.mjs` passes
-- [ ] `npm run test:browser` passes
-- [ ] Full CI passes
-- [ ] Visual QA checklist completed
-- [ ] Arabic, English, and French UI inspected
-- [ ] Arabic RTL exported HTML report inspected
-- [ ] Mobile width around 390 px inspected
-- [ ] Runtime images load from optimized assets, not the 2048 px source file
-- [ ] Formal schema exists at `schema/strategic-analysis.schema.json`
-- [ ] Fixture validation passes
-- [ ] Research mode prompt is manually tested with one fresh topic

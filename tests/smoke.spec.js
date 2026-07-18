@@ -18,14 +18,15 @@ test('Jarbou3i Model core flow', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
 
   await page.locator('#langEn').click();
+  await page.locator('#analysisLang').selectOption('en');
   await page.locator('#themeBtn').click();
   await expect(page.locator('body')).toHaveClass(/dark/);
   await expect(page.locator('#themeBtn')).toHaveAttribute('aria-pressed', 'true');
 
   await expect(page.locator('#analysisLens')).toBeVisible();
-  await expect(page.locator('[data-lens="strategic"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-lens="strategic"]')).toHaveAttribute('aria-checked', 'true');
   await page.locator('[data-lens="biopolitical"]').click();
-  await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute('aria-checked', 'true');
   await expect(page.locator('h1')).toContainText('Biopolitical');
   await page.locator('#topicInput').fill('Digital health passports, 2020-2022');
   await page.locator('#previewPromptBtn').click();
@@ -34,17 +35,17 @@ test('Jarbou3i Model core flow', async ({ page }) => {
 
   await page.locator('#loadSampleBtn').click();
   await expect(page.locator('#reviewPanel')).toBeVisible();
-  await expect(page.locator('#reviewContent')).toContainText('health passport');
+  await expect(page.locator('#reviewContent')).toContainText(/Digital health passes/i);
   await expect(page.locator('[aria-current="step"]')).toContainText('Review');
 
-  for (const tab of ['overview', 'pillars', 'contradictions', 'scenarios', 'evidence', 'exports']) {
-    await page.locator(`[data-review="${tab}"]`).click();
+  for (const tab of ['overview', 'pillars', 'evidence', 'conclusion', 'exports']) {
+    await page.locator(`[data-bio-review="${tab}"]`).click();
     await expect(page.locator('#reviewContent')).toBeVisible();
   }
 
-  await page.locator('[data-review="exports"]').click();
+  await page.locator('[data-bio-review="exports"]').click();
   await expect(page.locator('#exportHtml')).toBeVisible();
-  await expect(page.locator('#exportJson')).toHaveCount(0);
+  await expect(page.locator('#exportJson')).toBeVisible();
   await expect(page.locator('#exportMd')).toHaveCount(0);
   await expect(page.locator('#printBtn')).toHaveCount(0);
   await expect(page.locator('#selfCheckBtn')).toHaveCount(0);

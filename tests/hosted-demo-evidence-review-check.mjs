@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '1.3.0-bio';
+const EXPECTED_VERSION = '2.0.0-bio-rc.11';
 
 const fail = (message) => {
   console.error(`Hosted demo evidence review failed: ${message}`);
@@ -62,6 +62,10 @@ if (metadata.capture_set !== 'public-ui-lock') {
   fail('metadata capture_set must be public-ui-lock');
 }
 
+if (!['deployed', 'local-test-server'].includes(metadata.capture_target)) {
+  fail('metadata capture_target must disclose deployed or local-test-server');
+}
+
 if (metadata.generated_by !== 'tests/hosted-demo-evidence.spec.js') {
   fail('metadata generated_by must identify hosted-demo-evidence.spec.js');
 }
@@ -80,6 +84,7 @@ for (const fileName of requiredFiles) {
 
 const contract = metadata.public_ui_contract || {};
 for (const [name, value] of Object.entries({
+  critical_visual_assets_decoded: true,
   app_version_meta: true,
   strategic_toggle: true,
   biopolitical_toggle: true,

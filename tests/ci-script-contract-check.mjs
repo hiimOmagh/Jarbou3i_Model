@@ -1,91 +1,115 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
 
 const fail = (message) => {
   console.error(`CI script contract check failed: ${message}`);
   process.exit(1);
 };
+const read = (file) => fs.readFileSync(file, "utf8");
+const pkg = JSON.parse(read("package.json"));
+const workflow = read(".github/workflows/ci.yml");
+const playwright = read("playwright.config.js");
 
-const read = (file) => fs.readFileSync(file, 'utf8');
-const root = process.cwd();
-const pkg = JSON.parse(read(path.join(root, 'package.json')));
-const lock = JSON.parse(read(path.join(root, 'package-lock.json')));
-const workflowPath = path.join(root, '.github', 'workflows', 'ci.yml');
-
-if (!fs.existsSync(workflowPath)) fail('missing .github/workflows/ci.yml');
-
-const workflow = read(workflowPath);
-const scripts = pkg.scripts || {};
-
-const requiredScripts = {
-  'test:ci:no-browser':
-    'npm run test:qa && npm run test:static && npm run test:schema && npm run test:fixtures && npm run test:a11y:static && npm run test:ci:contract && npm run test:hygiene',
-  'test:browser:core':
-    'playwright test tests/a11y.spec.js tests/smoke.spec.js tests/rtl-mobile.spec.js tests/export-contract.spec.js tests/lens-import-contract.spec.js tests/cross-locale-export-contract.spec.js',
-  'test:browser:hosted': 'playwright test tests/hosted-demo-evidence.spec.js --workers=1',
-  'test:browser': 'npm run test:browser:core && npm run test:browser:hosted',
-  'test:ci:browser': 'npm run test:browser && npm run test:evidence:hosted',
-  'test:ci': 'npm run test:ci:no-browser && npm run test:ci:browser',
-  'test:source': 'node tests/source-of-truth-check.mjs',
-  'test:hygiene': 'node tests/workspace-hygiene-check.mjs',
-  'test:evidence:hosted': 'node tests/hosted-demo-evidence-review-check.mjs'
-};
-
-for (const [name, command] of Object.entries(requiredScripts)) {
-  if (scripts[name] !== command) fail(`${name} must equal: ${command}`);
+const noBrowser = pkg.scripts?.["test:ci:no-browser"] || "";
+for (const gate of [
+  "build:validator",
+  "test:qa",
+  "test:static",
+  "test:bio:v2",
+  "test:bio:integrity",
+  "test:schema",
+  "test:fixtures",
+  "test:parser",
+  "test:layout:migration",
+  "test:i18n:bio",
+  "test:a11y:static",
+  "test:ci:contract",
+  "test:hygiene",
+]) {
+  if (!noBrowser.includes(`npm run ${gate}`)) {
+    fail(`test:ci:no-browser is missing ${gate}`);
+  }
+}
+if (pkg.scripts?.["upgrade:layout"] !== "node scripts/migrate-release-layout.mjs") {
+  fail("upgrade:layout must execute the guarded release-layout migration");
 }
 
-const requiredWorkflowTokens = [
-  'name: No-browser gates',
-  'name: Browser gates',
-  'needs: no-browser',
-  'node-version: 20',
-  'corepack enable',
-  'corepack prepare pnpm@9.15.9 --activate',
-  'pnpm install --no-frozen-lockfile',
-  'pnpm exec playwright install --with-deps',
-  'pnpm exec playwright test tests/a11y.spec.js tests/smoke.spec.js tests/rtl-mobile.spec.js tests/export-contract.spec.js tests/lens-import-contract.spec.js tests/cross-locale-export-contract.spec.js',
-  'pnpm exec playwright test tests/hosted-demo-evidence.spec.js --workers=1',
-  'node tests/hosted-demo-evidence-review-check.mjs hosted-demo-evidence',
-  'npm run test:ci:no-browser',
-  'HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence',
-  'actions/upload-artifact@v4',
-  'name: hosted-demo-evidence'
-];
-
-for (const token of requiredWorkflowTokens) {
-  if (!workflow.includes(token)) fail(`workflow missing token: ${token}`);
+const core = pkg.scripts?.["test:browser:core"] || "";
+for (const spec of [
+  "tests/a11y.spec.js",
+  "tests/smoke.spec.js",
+  "tests/rtl-mobile.spec.js",
+  "tests/export-contract.spec.js",
+  "tests/export-completeness.spec.js",
+  "tests/lens-import-contract.spec.js",
+  "tests/import-validation.spec.js",
+  "tests/cross-locale-export-contract.spec.js",
+  "tests/sample-language-contract.spec.js",
+  "tests/release-audit-matrix.spec.js",
+  "tests/reflow-audit.spec.js",
+]) {
+  if (!core.includes(spec)) fail(`browser core is missing ${spec}`);
+}
+if (pkg.scripts?.["test:browser:reflow"] !== "playwright test tests/reflow-audit.spec.js") {
+  fail("dedicated reflow audit script is missing");
+}
+const visualAudit = pkg.scripts?.["test:browser:visual-audit"] || "";
+for (const token of ["tests/visual-audit-evidence.spec.js", "--project=chromium", "--workers=1", "npm run test:evidence:visual-audit"]) {
+  if (!visualAudit.includes(token)) fail(`visual audit script is missing ${token}`);
+}
+if (pkg.scripts?.["test:browser:audit"] !== "playwright test tests/release-audit-matrix.spec.js") {
+  fail("dedicated browser audit script is missing");
+}
+const hosted = pkg.scripts?.["test:browser:hosted"] || "";
+for (const token of [
+  "tests/hosted-demo-evidence.spec.js",
+  "--project=chromium",
+  "--project=mobile-chrome",
+  "--workers=1",
+  "npm run test:evidence:hosted",
+]) {
+  if (!hosted.includes(token)) fail(`hosted browser script is missing ${token}`);
+}
+if (pkg.scripts?.test !== "npm run test:ci") {
+  fail("default npm test must execute the complete CI contract");
 }
 
-const forbiddenWorkflowTokens = [
-  'node-version: 22',
-  'cache: npm',
-  'npm ci',
-  'npm install --no-audit --no-fund || true',
-  'npm install --no-audit --no-fund --no-save @playwright/test',
-  'npx playwright install --with-deps',
-  'npx playwright test',
-  'node tests/qa-check.mjs'
-];
-
-for (const token of forbiddenWorkflowTokens) {
-  if (workflow.includes(token)) fail(`workflow must not contain token: ${token}`);
+for (const token of [
+  "PLAYWRIGHT_WORKERS",
+  "const DEFAULT_BROWSER_WORKERS = 4;",
+  "timeout: 60_000",
+  "expect: { timeout: 10_000 }",
+  "workers: workerCount",
+]) {
+  if (!playwright.includes(token)) {
+    fail(`Playwright resource contract is missing: ${token}`);
+  }
 }
 
-if (workflow.includes('npm run test:browser') && !workflow.includes('npm run test:ci:browser')) {
-  fail('workflow must call the stable browser CI alias when package scripts are used directly');
+for (const token of [
+  "name: No-browser gates",
+  "name: Browser gates",
+  "needs: no-browser",
+  "node-version: 20",
+  "cache: npm",
+  "npm ci",
+  "npm run test:ci:no-browser",
+  "npx playwright install --with-deps",
+  "npm run test:ci:browser",
+  "HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence",
+  "VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence",
+  "name: visual-audit-evidence",
+  "actions/upload-artifact@v4",
+]) {
+  if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
+}
+for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
+  if (workflow.includes(forbidden)) {
+    fail(`workflow mixes package-manager contracts: ${forbidden}`);
+  }
 }
 
-if (pkg.version !== '1.3.0-bio') {
-  fail('package version must be 1.3.0-bio');
+if (pkg.version !== "2.0.0-bio-rc.11") {
+  fail("package version must be 2.0.0-bio-rc.11");
 }
 
-if (lock.version !== pkg.version) {
-  fail('package-lock root version must match package.json');
-}
-
-if (lock.packages?.['']?.version !== pkg.version) {
-  fail('package-lock packages[""] version must match package.json');
-}
-
-console.log('CI script contract check passed.');
+console.log("CI script contract check passed.");

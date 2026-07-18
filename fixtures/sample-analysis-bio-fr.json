@@ -1,148 +1,867 @@
 {
-  "schema_version": "1.1.0",
-  "analysis_id": "digital-health-passport-biopolitical-fr",
-  "generated_at": "2026-06-07T00:00:00Z",
+  "schema_version": "2.1.0",
+  "analysis_contract": "biopolitical-training-map-v2",
+  "contract_status": "canonical",
+  "analysis_id": "health-pass-v2-fr",
+  "generated_at": "2026-07-17T00:00:00Z",
+  "language": "fr",
   "model_mode": "research",
   "analysis_lens": "biopolitical",
   "subject": {
-    "title": "Exemple : passeports sanitaires numériques",
-    "context": "2020–2022, mobilité et santé publique",
-    "question": "Comment les passeports sanitaires numériques ont-ils gouverné les populations par le risque, la mobilité et la preuve sanitaire ?",
-    "executive_thesis": "Le passeport sanitaire a relié protection collective et contrôle différencié de la mobilité : il a rendu la preuve de santé opérationnelle, tout en normalisant la classification des corps selon le risque et la conformité."
+    "title": "Pass sanitaires numériques et mobilité conditionnelle",
+    "context": "2020–2022, juridictions européennes sélectionnées",
+    "research_question": "Dans quelles conditions les pass sanitaires ont-ils protégé la santé publique, et dans quelles conditions ont-ils créé des systèmes durables de classification et de mobilité conditionnelle ?",
+    "executive_finding": "Les pass ont combiné une fonction sanitaire légitime et une nouvelle infrastructure de contrôle d’accès. Les preuves soutiennent une qualification mixte : protection et coordination étaient réelles, tandis que proportionnalité, réutilisation, charges inégales et possibilité de sortie variaient selon les juridictions."
   },
-  "interests": [
-    {
-      "id": "P1",
-      "name": "Transformer la contagion en problème de mobilité vérifiable",
-      "type": "health",
-      "intensity": 5,
-      "horizon": "medium",
-      "stakes": "important",
-      "confidence": "high",
-      "rationale": "La circulation des personnes est devenue gouvernable par certificats, seuils de risque et preuves sanitaires."
-    }
-  ],
-  "actors": [
-    {
-      "id": "POP1",
-      "name": "Personnes vaccinées, testées ou non certifiées",
-      "category": "population",
-      "financial": 2,
-      "decision_access": 1,
-      "disruption_capacity": 3,
-      "media_influence": 3,
-      "confidence": "high",
-      "rationale": "La population a été segmentée selon des statuts de preuve sanitaire qui conditionnaient l’accès à certains espaces."
-    }
-  ],
-  "tools": [
-    {
-      "id": "GT1",
-      "name": "Certificat QR et contrôle d’accès",
-      "type": "classification",
-      "cost": 3,
-      "risk": 4,
-      "speed": 5,
-      "reversibility": 3,
-      "deniability": 1,
-      "confidence": "high",
-      "rationale": "Le QR code a converti un statut médical en signal d’autorisation lisible par institutions, plateformes et lieux publics."
-    }
-  ],
-  "narrative": [
-    {
-      "id": "N1",
-      "name": "Responsabilité sanitaire comme condition de participation",
-      "frame": "responsibility",
-      "coherence": 4,
-      "media_alignment": 4,
-      "public_acceptance": 3,
-      "confidence": "medium",
-      "rationale": "Le sujet responsable est présenté comme celui qui rend son statut sanitaire vérifiable pour protéger autrui."
-    }
-  ],
-  "results": [
-    {
-      "id": "O1",
-      "name": "Accès différencié aux espaces sociaux",
-      "type": "social",
-      "goal_achieved_pct": 65,
-      "cost_benefit": 3,
-      "power_balance_impact": "strengthened",
-      "confidence": "medium",
-      "rationale": "L’accès au travail, au transport ou aux loisirs a été modulé par un statut sanitaire, avec effets d’inclusion et d’exclusion."
-    }
-  ],
-  "feedback": [
-    {
-      "id": "RF1",
-      "description": "Contestations juridiques et adaptation des règles de validité",
-      "adapts": "tools",
-      "speed": "fast",
-      "confidence": "high",
-      "rationale": "Les résistances, contentieux et changements épidémiques ont forcé l’ajustement des durées, exemptions et conditions de contrôle."
-    }
-  ],
-  "contradictions": {
-    "items": [
+  "framing": {
+    "contested_terms": [
       {
-        "id": "C1",
-        "rhetoric": "Protection collective",
-        "contradiction_type": "protection_vs_control",
-        "actions": [
-          "Conditionner l’accès à des espaces ordinaires à une preuve sanitaire",
-          "Étendre des contrôles de statut au-delà du soin médical"
+        "term": "pass sanitaire",
+        "definitions": [
+          "Justificatif vérifiable reliant une information sanitaire définie à une décision d’accès."
         ],
-        "affected_layers": [
-          "tools",
-          "narrative",
-          "results"
+        "working_definition": "Justificatif vérifiable reliant une information sanitaire définie à une décision d’accès.",
+        "stakes": "La définition détermine quelles pratiques relèvent de la coordination sanitaire ou d’un contrôle général de l’accès."
+      }
+    ],
+    "historical_context": {
+      "summary": "Les systèmes de pass sont apparus pendant une pandémie aiguë, sur des infrastructures d’identité, vaccination et frontière préexistantes.",
+      "turning_points": [
+        "Urgence pandémique aiguë",
+        "Déploiement de justificatifs interopérables",
+        "Contrôle judiciaire et politique"
+      ],
+      "continuities": [
+        "Vérification de l’identité",
+        "Registres de vaccination",
+        "Contrôles sanitaires aux frontières"
+      ]
+    },
+    "official_problem_definition": "Vérifier un statut sanitaire défini afin de réduire les transmissions évitables dans certains lieux.",
+    "critical_problem_definition": "Transformer un statut corporel en condition d’autorisation de la participation ordinaire.",
+    "unknowns": [
+      "Les effets de normalisation à long terme ne découlent pas de la seule adoption temporaire."
+    ]
+  },
+  "legal_framework": {
+    "status": "assessed",
+    "jurisdictions": [
+      "2020–2022, juridictions européennes sélectionnées"
+    ],
+    "applicable_authorities": [
+      "Droit de la santé publique et protection des données ; les instruments exacts exigent une vérification propre à chaque juridiction."
+    ],
+    "rights_engaged": [
+      "Vie privée, non-discrimination, circulation, travail et accès aux services essentiels."
+    ],
+    "safeguards_and_remedies": [
+      "De nombreux dispositifs avaient des clauses d’extinction, exemptions, tests gratuits, contrôle judiciaire ou furent abandonnés."
+    ],
+    "uncertainties": [
+      "Les effets de normalisation à long terme ne découlent pas de la seule adoption temporaire."
+    ]
+  },
+  "international_comparison": [
+    {
+      "id": "CMP1",
+      "jurisdiction_or_context": "2020–2022, juridictions européennes sélectionnées",
+      "comparison_basis": "Comparer durée, exemptions, alternatives gratuites, limitation de finalité, recours et démantèlement.",
+      "similarities": [
+        "La vérification par justificatif reliait information sanitaire et accès."
+      ],
+      "differences": [
+        "De nombreux dispositifs avaient des clauses d’extinction, exemptions, tests gratuits, contrôle judiciaire ou furent abandonnés."
+      ],
+      "transfer_limits": [
+        "Les effets de normalisation à long terme ne découlent pas de la seule adoption temporaire."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ],
+      "confidence": "low"
+    }
+  ],
+  "capture_levels": [
+    {
+      "level": "body",
+      "status": "present",
+      "finding": "Le niveau corps a été examiné explicitement ; la confiance reste limitée par les sources non vérifiées de l’exemple.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "level": "mind",
+      "status": "uncertain",
+      "finding": "Le niveau esprit a été examiné explicitement ; la confiance reste limitée par les sources non vérifiées de l’exemple.",
+      "evidence_ids": []
+    },
+    {
+      "level": "relationship",
+      "status": "uncertain",
+      "finding": "Le niveau relation a été examiné explicitement ; la confiance reste limitée par les sources non vérifiées de l’exemple.",
+      "evidence_ids": []
+    },
+    {
+      "level": "population",
+      "status": "present",
+      "finding": "Le niveau population a été examiné explicitement ; la confiance reste limitée par les sources non vérifiées de l’exemple.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "level": "environment",
+      "status": "not_applicable",
+      "finding": "Le niveau environnement a été examiné explicitement ; la confiance reste limitée par les sources non vérifiées de l’exemple.",
+      "evidence_ids": []
+    }
+  ],
+  "theoretical_comparison": [
+    {
+      "id": "THEORY1",
+      "tradition": "Gouvernementalité et économie politique",
+      "contribution": "La gouvernementalité suit classification et conduite ; l’économie politique examine propriété, travail, profit et répartition des coûts.",
+      "limitations": [
+        "Aucune de ces traditions n’établit à elle seule l’intention, l’efficacité ou la proportionnalité."
+      ],
+      "relevance": "relevant",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    }
+  ],
+  "human_functions": [
+    {
+      "id": "HF1",
+      "domain": "biological",
+      "name": "Mobilité, protection sanitaire et participation sociale",
+      "scientific_definition": "Le risque infectieux au niveau de la population interagit avec l’état de santé individuel et l’exposition.",
+      "lived_context": "Selon le risque, le travail et le contexte juridique, le même justificatif fut vécu comme protection, charge administrative, exclusion ou réassurance.",
+      "governed_variation": "Des justificatifs et exemptions différents ont produit des catégories d’accès distinctes.",
+      "authority_defining_normality": "Autorités de santé publique",
+      "refusal_conditions": "Le refus n’était effectif que là où existaient des alternatives gratuites et des espaces non essentiels.",
+      "confidence": "medium"
+    }
+  ],
+  "power_map": {
+    "actors": [
+      {
+        "id": "ACT1",
+        "name": "Autorités de santé publique",
+        "role": "decision_maker",
+        "formal_mandate": "Protéger la santé publique conformément au droit applicable.",
+        "material_interests": [
+          "Coordination administrative",
+          "Légitimité institutionnelle"
         ],
-        "interpretation": "La logique de protection produit aussi une infrastructure de tri et de mobilité conditionnelle.",
-        "severity": 4,
+        "authority_sources": [
+          "Droit de la santé publique",
+          "Expertise"
+        ],
+        "funding": [
+          "Budget public"
+        ],
+        "information_advantages": [
+          "Données épidémiologiques"
+        ],
+        "enforcement_capacities": [
+          "Règles d’accès"
+        ],
+        "dependencies": [
+          "Autorité législative",
+          "Prestataires techniques"
+        ],
+        "stated_objectives": [
+          "Réduire le risque de transmission"
+        ],
+        "plausible_unstated_incentives": [
+          "Démontrer la capacité de gouvernement en période de crise"
+        ],
+        "internal_disagreements": [
+          "Portée et durée"
+        ],
+        "accountability": [
+          "Tribunaux",
+          "Assemblées législatives",
+          "Autorités de protection des données"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "affected_populations": [
+      {
+        "id": "POP1",
+        "name": "Travailleurs et résidents soumis aux contrôles d’accès",
+        "classification": "Éligible / temporairement inéligible à certains espaces",
+        "exposure": [
+          "Contrôles d’accès"
+        ],
+        "benefits": [
+          "Vérification à faible friction pendant une urgence sanitaire aiguë."
+        ],
+        "burdens": [
+          "Exclusion et charge inégale lorsque test, vaccination, documentation ou recours étaient inaccessibles."
+        ],
+        "agency": "Contentieux, protestations, contournements techniques et demandes de clauses d’extinction ont modifié la mise en œuvre.",
+        "missing_from_record": false,
+        "confidence": "medium"
+      }
+    ],
+    "institutions": [
+      {
+        "id": "INST1",
+        "name": "Réseau de vérification des justificatifs",
+        "mandate": "Mettre en œuvre les règles d’accès définies.",
+        "role": "mise en œuvre",
+        "accountability": [
+          "Limitation de finalité",
+          "Audit",
+          "Recours"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "power_asymmetries": [
+      {
+        "id": "ASYM1",
+        "between": [
+          "ACT1",
+          "POP1"
+        ],
+        "resource": "infrastructure",
+        "effect": "Autorités et établissements pouvaient conditionner l’accès, tandis que la capacité individuelle à contester les erreurs était inégale.",
+        "confidence": "high"
+      }
+    ]
+  },
+  "mechanisms": {
+    "instruments": [
+      {
+        "id": "INS1",
+        "name": "Justificatif QR et règle de vérification",
+        "type": "infrastructure",
+        "mechanism": "Transforme un statut sanitaire défini en décision d’accès lisible par machine.",
+        "scale": [
+          "individual",
+          "institutional",
+          "national"
+        ],
+        "stated_purpose": "Vérification à faible friction pendant une urgence sanitaire aiguë.",
+        "ownership": "Règles publiques et infrastructure technique publique-privée mixtes.",
+        "oversight": "Variable selon la juridiction.",
+        "confidence": "high"
+      }
+    ],
+    "infrastructures": [
+      {
+        "id": "INF1",
+        "name": "Infrastructure d’émission et de vérification des justificatifs",
+        "owner": "Autorités publiques et prestataires techniques sous contrat",
+        "dependency_created": "L’accès pouvait dépendre d’un appareil, de documents, d’un test ou d’un justificatif reconnu.",
+        "actions_enabled_or_blocked": [
+          "Entrée dans les espaces réglementés"
+        ],
+        "access_conditions": [
+          "Justificatif valide ou exemption reconnue"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "political_economy": [
+      {
+        "id": "PE1",
+        "ownership": "Contrôle mixte public et prestataire",
+        "labor": "Personnel sanitaire, administratif et des établissements",
+        "profit": "Contrats de prestataires et services de conformité",
+        "unpaid_care": "Les ménages ont absorbé le travail de planification et de documentation",
+        "privatized_risks": [
+          "Coûts de temps et d’accès"
+        ],
+        "socialized_costs": [
+          "Tests et administration publics"
+        ],
+        "scarcity_mechanism": "Accès inégal aux tests et aux documents",
+        "dependency_model": "Accès dépendant du justificatif",
+        "confidence": "medium"
+      }
+    ],
+    "power_modes": [
+      {
+        "mode": "biopower",
+        "mechanism": "Le risque populationnel a été administré au moyen de justificatifs individuels.",
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "high"
+      },
+      {
+        "mode": "datafication",
+        "mechanism": "Le statut sanitaire est devenu une donnée standardisée utilisée dans les décisions d’accès.",
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "meaning_systems": {
+    "norms": [
+      {
+        "id": "NORM1",
+        "name": "Participation responsable par statut vérifiable",
+        "definition": "La participation était qualifiée de responsable lorsque le statut pouvait être vérifié.",
+        "authority": "Autorités de santé publique",
+        "subject_position": "Le participant responsable et vérifiable.",
+        "alternatives": [
+          "Précautions universelles sans tri par statut"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "regimes_of_truth": [
+      {
+        "id": "RT1",
+        "claim": "Les justificatifs définis ont servi de proxys opérationnels d’un risque moindre.",
+        "authorizing_institutions": [
+          "Autorités de santé publique"
+        ],
+        "validation_procedure": "Examen des politiques et des données épidémiologiques",
+        "funding_or_interest": "Administration de la santé publique",
+        "excluded_knowledge": [
+          "Variation comportementale propre au contexte"
+        ],
+        "evidence_quality": "Mixte et sensible au temps",
+        "confidence": "medium"
+      }
+    ],
+    "classifications": [
+      {
+        "id": "CLASS1",
+        "category": "Éligible / temporairement inéligible à certains espaces",
+        "definition": "Statut de justificatif fondé sur des règles",
+        "decision_use": "Accès à des lieux déterminés",
+        "error_risks": [
+          "Dossiers obsolètes",
+          "Accès inégal aux documents"
+        ],
+        "contestability": "Variable selon la juridiction",
+        "confidence": "high"
+      }
+    ],
+    "looping_effects": [
+      {
+        "id": "LOOP1",
+        "classification_id": "CLASS1",
+        "institutional_response": "Autoriser ou refuser l’accès",
+        "altered_opportunity_or_identity": "Le statut du justificatif est devenu déterminant pour la participation",
+        "behavioral_adaptation": "Test, vaccination, évitement, protestation ou contournement",
+        "new_data": "Registres de vérification et d’adoption",
+        "confirmation_or_revision": "Les règles ont été étendues, resserrées ou retirées",
+        "falsified_if": [
+          "Aucune adaptation comportementale ou institutionnelle ne suit la classification"
+        ],
         "confidence": "medium"
       }
     ]
   },
-  "scenarios": {
-    "items": [
+  "intervention_assessment": {
+    "interventions": [
       {
-        "id": "S1",
-        "name": "Normalisation durable de la preuve de risque",
-        "probability": 45,
-        "timeframe": "2–5 ans",
-        "drivers": [
-          "Interopérabilité technique",
-          "Acceptation institutionnelle",
-          "Crises sanitaires récurrentes"
+        "id": "IV1",
+        "name": "Accès conditionnel fondé sur une preuve sanitaire",
+        "target_function_ids": [
+          "HF1"
         ],
-        "early_signals": [
-          "Réutilisation des certificats pour de nouveaux risques",
-          "Extension à des assurances ou employeurs"
+        "actor_ids": [
+          "ACT1"
         ],
-        "disproven_if": [
-          "Les certificats sont supprimés sans réemploi institutionnel",
-          "Les cadres juridiques interdisent explicitement la réutilisation"
+        "instrument_ids": [
+          "INS1"
         ],
-        "rationale": "Une infrastructure de preuve peut survivre à la crise qui l’a justifiée."
+        "modality": "mixed",
+        "stated_benefit": "Vérification à faible friction pendant une urgence sanitaire aiguë.",
+        "evidence_of_benefit": [
+          "E1"
+        ],
+        "documented_harms": [
+          "Exclusion et charge inégale lorsque test, vaccination, documentation ou recours étaient inaccessibles."
+        ],
+        "necessity": "partly_supported",
+        "proportionality": "mixed",
+        "dependency_created": "Un justificatif ou une preuve alternative pouvait devenir nécessaire à la participation.",
+        "consent": "Partiel : participation et alternatives variaient.",
+        "exit": "Plus solide là où existaient des clauses d’extinction et des alternatives non numériques.",
+        "contestability": "Variable selon les mécanismes de recours et de correction.",
+        "confidence": "medium"
+      }
+    ],
+    "capture_assessment": {
+      "status": "mixed_capture",
+      "criteria": [
+        {
+          "criterion": "knowledge_deficit",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "consent_failure",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "vulnerability_exploitation",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "unequal_distribution",
+          "status": "present",
+          "evidence_ids": [
+            "E1"
+          ],
+          "reason": "Les charges d’accès variaient selon l’accès aux tests, aux documents, à la flexibilité du travail et au numérique."
+        },
+        {
+          "criterion": "disproportionate_power_or_profit",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "dependency_or_costly_exit",
+          "status": "present",
+          "evidence_ids": [
+            "E1"
+          ],
+          "reason": "L’accès à certains lieux dépendait d’un justificatif reconnu ou d’une alternative disponible."
+        },
+        {
+          "criterion": "alternatives_suppressed",
+          "status": "uncertain",
+          "evidence_ids": [
+            "E1",
+            "E2"
+          ],
+          "reason": "Tests, exemptions et alternatives non numériques variaient selon les juridictions."
+        },
+        {
+          "criterion": "behavior_optimized_without_oversight",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "choice_architecture_constraint",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "data_repurposing",
+          "status": "uncertain",
+          "evidence_ids": [
+            "E2"
+          ],
+          "reason": "La réutilisation intersectorielle doit être démontrée et non déduite de la seule possibilité technique."
+        },
+        {
+          "criterion": "human_capacity_commercialized",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "classification_not_contestable",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "L’exemple structurel ne contient pas assez de preuves vérifiées pour une conclusion plus ferme."
+        },
+        {
+          "criterion": "environmental_unavoidability",
+          "status": "not_applicable",
+          "evidence_ids": [],
+          "reason": "Le cas ne porte pas principalement sur une exposition environnementale inévitable."
+        }
+      ],
+      "counter_evidence": [
+        "De nombreux dispositifs avaient des clauses d’extinction, exemptions, tests gratuits, contrôle judiciaire ou furent abandonnés."
+      ],
+      "legitimate_benefits": [
+        "Vérification à faible friction pendant une urgence sanitaire aiguë."
+      ],
+      "conclusion": "L’intervention combinait protection et accès conditionnel. Le constat de capture dépend de la durée, des alternatives, de la limitation de finalité, de la réutilisation et de la contestabilité.",
+      "confidence": "medium"
+    },
+    "care_control_tensions": [
+      {
+        "id": "TENSION1",
+        "care_claim": "Protection collective",
+        "control_effects": [
+          "Accès conditionnel",
+          "Vérification du statut"
+        ],
+        "interpretation": "Soin et contrôle se chevauchaient sans être identiques.",
+        "severity": 3,
+        "confidence": "high"
       }
     ]
   },
+  "scale_time": {
+    "scales": [
+      "individual",
+      "institutional",
+      "national",
+      "transnational"
+    ],
+    "immediate_effects": [
+      "Vérification plus rapide du statut",
+      "Accès conditionnel"
+    ],
+    "medium_term_adaptations": [
+      "Modification des règles",
+      "Contentieux",
+      "Adaptation comportementale"
+    ],
+    "intergenerational_effects": [],
+    "historical_continuities": [
+      "Contrôles d’identité et sanitaires aux frontières"
+    ],
+    "path_dependencies": [
+      "Investissement dans une infrastructure de justificatifs interopérables"
+    ],
+    "future_feedback_loops": [
+      {
+        "id": "FUT1",
+        "name": "Réutilisation intersectorielle",
+        "timeframe": "2 à 5 ans",
+        "drivers": [
+          "Interopérabilité",
+          "Coûts institutionnels irrécupérables"
+        ],
+        "early_signals": [
+          "Usage au-delà de la finalité sanitaire initiale"
+        ],
+        "falsified_if": [
+          "L’infrastructure est démantelée et sa réutilisation interdite par la loi"
+        ],
+        "rationale": "Une infrastructure réutilisable peut survivre à l’urgence qui l’a justifiée.",
+        "probability": 40
+      }
+    ]
+  },
+  "distribution": {
+    "items": [
+      {
+        "id": "DIST1",
+        "population_id": "POP1",
+        "benefits": [
+          "Vérification à faible friction pendant une urgence sanitaire aiguë."
+        ],
+        "burdens": [
+          "Exclusion et charge inégale lorsque test, vaccination, documentation ou recours étaient inaccessibles."
+        ],
+        "protection": [
+          "Réduction de l’exposition dans certains lieux"
+        ],
+        "opportunity": [
+          "Accès conditionné à une preuve"
+        ],
+        "recognition": [
+          "Identité du participant responsable"
+        ],
+        "profit": [
+          "Revenus des prestataires et de la conformité"
+        ],
+        "voice": [
+          "Consultation inégale"
+        ],
+        "risk": [
+          "Erreur d’exclusion"
+        ],
+        "surveillance": [
+          "Événements de vérification"
+        ],
+        "discipline": [
+          "Comportement façonné par les conditions d’accès"
+        ],
+        "displacement": [],
+        "illness_injury_death": [
+          "Infections potentiellement évitées ; ampleur de l’effet dépendante du contexte"
+        ],
+        "axes": [
+          "class",
+          "disability",
+          "age",
+          "citizenship"
+        ],
+        "scale": [
+          "individual",
+          "institutional"
+        ],
+        "time_horizon": "immédiat et moyen terme",
+        "outcome_character": "uncertain",
+        "confidence": "medium"
+      }
+    ],
+    "inequality_dimensions": [
+      {
+        "axis": "class",
+        "mechanism": "Accès inégal aux tests, aux documents, au travail flexible et aux appareils numériques.",
+        "affected_groups": [
+          "Travailleurs et résidents soumis aux contrôles d’accès"
+        ],
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "necropolitical_dimensions": []
+  },
+  "consent_exit": {
+    "consent_status": "partial",
+    "informed": "partial",
+    "specific": "partial",
+    "revocable": "partial",
+    "comprehensible": "partial",
+    "materially_voluntary": "partial",
+    "exit_conditions": [
+      "Tests gratuits",
+      "Justificatif non numérique",
+      "Exemption",
+      "Clause d’extinction"
+    ],
+    "contestability": [
+      "Procédure de correction",
+      "Recours administratif",
+      "Contrôle judiciaire"
+    ],
+    "accountability": [
+      "Contrôle de la protection des données",
+      "Contrôle législatif"
+    ]
+  },
+  "competing_explanations": [
+    {
+      "id": "EX1",
+      "type": "official",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Un outil temporaire de coordination sanitaire a réduit un risque évitable de transmission.",
+      "mechanism": "Vérification du risque et coordination de l’accès.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX2",
+      "type": "public_interest",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "L’intervention cherchait un moyen moins contraignant de protéger les espaces partagés lors de la reprise d’activité.",
+      "mechanism": "Réduction du risque collectif par des précautions différenciées.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX3",
+      "type": "political_economy",
+      "relevance": "relevant",
+      "evidentiary_status": "not_assessed",
+      "claim": "Les contrats, les coûts de conformité et l’inégale flexibilité du travail ont pu façonner la mise en œuvre.",
+      "mechanism": "Coûts et bénéfices se répartissent par la propriété, le travail et les marchés publics.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX4",
+      "type": "institutional_inertia",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Une infrastructure réutilisable peut survivre à l’urgence qui l’a justifiée.",
+      "mechanism": "Les coûts irrécupérables et l’interopérabilité peuvent favoriser la poursuite de l’usage institutionnel.",
+      "supporting_evidence_ids": [
+        "E2"
+      ],
+      "counter_evidence_ids": [
+        "E1"
+      ],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX5",
+      "type": "security",
+      "relevance": "uncertain",
+      "evidentiary_status": "not_assessed",
+      "claim": "Une logique sécuritaire plus large peut compter lorsque les justificatifs sanitaires croisent le contrôle frontalier.",
+      "mechanism": "Les systèmes d’identité et de risque peuvent converger aux frontières.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX6",
+      "type": "cultural",
+      "relevance": "relevant",
+      "evidentiary_status": "not_assessed",
+      "claim": "Les normes de solidarité, de responsabilité et d’autonomie corporelle ont façonné acceptation et refus.",
+      "mechanism": "Des cadres moraux concurrents ont modifié l’interprétation d’une même règle.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX7",
+      "type": "technological",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "L’infrastructure QR interopérable a rendu administrativement possible une vérification rapide du statut.",
+      "mechanism": "Les justificatifs standardisés réduisent le coût de vérification et augmentent la capacité de déploiement.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX8",
+      "type": "critical_biopolitical",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Le pass a normalisé une classification infrastructurelle des corps et de la participation.",
+      "mechanism": "La mise en données et la classification conditionnent la participation.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX9",
+      "type": "actor_error_unintended_consequence",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Une partie de l’exclusion peut provenir d’erreurs de mise en œuvre plutôt que d’une stratégie cohérente de contrôle.",
+      "mechanism": "Complexité administrative et capacités inégales.",
+      "supporting_evidence_ids": [
+        "E2"
+      ],
+      "counter_evidence_ids": [
+        "E1"
+      ],
+      "falsified_if": [
+        "De meilleures preuves comparatives contredisent le mécanisme proposé."
+      ],
+      "confidence": "low"
+    }
+  ],
   "evidence": {
     "items": [
       {
         "id": "E1",
-        "claim": "La certification sanitaire a lié statut médical et accès social.",
-        "basis": "source_based",
-        "source_title": "Cadres publics de certification sanitaire 2020–2022",
+        "claim": "Des règles ont relié des justificatifs sanitaires définis à l’accès à certains lieux.",
+        "epistemic_type": "verified_fact",
+        "source_tier": "primary_legal_policy",
+        "source_title": "Loi ou règlement propre à la juridiction sur le pass sanitaire — à remplacer par une source vérifiée",
         "source_url": "",
-        "source_date": "2022-01-01",
-        "source_type": "cadre de politique publique",
-        "source_note": "À vérifier selon le pays étudié.",
-        "evidence_strength": 3,
-        "uncertainty": "Les règles différaient fortement selon les juridictions.",
-        "counter_evidence": "Dans certains contextes, les certificats ont été limités dans le temps et supprimés après la crise.",
+        "source_locator": "",
+        "source_date": "",
+        "geography": "2020–2022, juridictions européennes sélectionnées",
+        "population": "Travailleurs et résidents soumis aux contrôles d’accès",
+        "measurement_method": "Examen de documents juridiques et de politique publique",
+        "denominator": "Non applicable",
+        "sample_size": "Non applicable",
+        "measurement_validity": "Exige une vérification au regard de l’instrument en vigueur dans chaque juridiction.",
+        "causal_identification": "Preuve descriptive juridique et de politique publique uniquement.",
+        "replication_status": "not_applicable",
+        "conflicts_of_interest": "Non évalué dans cet exemple structurel.",
+        "missing_data": "Les sources vérifiées propres aux juridictions sont absentes.",
+        "selection_effects": "Les juridictions sont illustratives et ne constituent pas un échantillon.",
+        "relevant_comparison": "Comparer les règles avec et sans alternatives gratuites ni clauses d’extinction.",
+        "cross_context_applicability": "Ne pas généraliser entre juridictions sans vérification.",
+        "claim_source_fit": "unknown",
+        "verification_status": "unverified",
+        "verified_by": "",
+        "verification_date": "",
+        "uncertainty": "Les règles différaient selon les juridictions et évoluaient dans le temps.",
+        "limitations": "L’exemple illustre la structure sans fournir de conclusion empirique universelle.",
+        "counter_evidence": "De nombreux dispositifs avaient des clauses d’extinction, exemptions, tests gratuits, contrôle judiciaire ou furent abandonnés.",
         "confidence": "medium"
+      },
+      {
+        "id": "E2",
+        "claim": "Les conditions de mise en œuvre et d’extinction variaient sensiblement.",
+        "epistemic_type": "plausible_inference",
+        "source_tier": "reputable_organization_report",
+        "source_title": "Revue comparative de mise en œuvre — à remplacer par une source vérifiée",
+        "source_url": "",
+        "source_locator": "",
+        "source_date": "",
+        "geography": "2020–2022, juridictions européennes sélectionnées",
+        "population": "Travailleurs et résidents soumis aux contrôles d’accès",
+        "measurement_method": "Revue comparative des politiques",
+        "denominator": "Non applicable",
+        "sample_size": "Non indiqué dans cet exemple structurel",
+        "measurement_validity": "Non vérifié",
+        "causal_identification": "Comparaison descriptive uniquement",
+        "replication_status": "unknown",
+        "conflicts_of_interest": "Inconnu",
+        "missing_data": "Les sources comparatives sous-jacentes ne sont pas fournies.",
+        "selection_effects": "La sélection des cas n’est pas documentée.",
+        "relevant_comparison": "Règles dans les juridictions sélectionnées",
+        "cross_context_applicability": "Inconnu jusqu’à vérification des sources",
+        "claim_source_fit": "unknown",
+        "verification_status": "unverified",
+        "verified_by": "",
+        "verification_date": "",
+        "uncertainty": "Comparabilité incomplète entre juridictions.",
+        "limitations": "Exige des sources vérifiées propres à chaque juridiction.",
+        "counter_evidence": "Certains systèmes ont pu connaître un contrôle faible ou une réutilisation technique durable.",
+        "confidence": "low"
       }
     ]
   },
@@ -150,38 +869,125 @@
     "items": [
       {
         "id": "AS1",
-        "assumption": "Les infrastructures de vérification peuvent être réutilisées pour d’autres régimes de risque.",
+        "assumption": "L’interopérabilité technique augmente la possibilité de réutilisation.",
         "risk": "medium",
-        "disproving_test": "Aucune réutilisation ou extension institutionnelle observable après la crise.",
-        "implication_if_wrong": "Le passeport reste un instrument temporaire de crise plutôt qu’une infrastructure durable de gouvernement.",
+        "disproving_test": "Les systèmes interopérables sont démantelés ou leur réutilisation est interdite par la loi.",
+        "implication_if_wrong": "Les préoccupations liées à la dépendance au sentier seraient surestimées.",
         "confidence": "medium"
       }
     ]
   },
+  "resistance_agency": {
+    "items": [
+      {
+        "id": "RES1",
+        "actor_or_population": "Travailleurs et résidents soumis aux contrôles d’accès",
+        "form": "litigation",
+        "mechanism": "Contentieux, protestations, contournements techniques et demandes de clauses d’extinction ont modifié la mise en œuvre.",
+        "effect_on_system": "A resserré, clarifié ou supprimé certaines règles.",
+        "constraints": [
+          "Coût",
+          "Accès inégal au droit"
+        ],
+        "confidence": "medium"
+      }
+    ]
+  },
+  "alternatives": {
+    "items": [
+      {
+        "id": "ALT1",
+        "level": "national",
+        "proposal": "Règles étroites et limitées dans le temps, alternatives gratuites, finalité stricte, audit indépendant et recours accessible.",
+        "mechanism": "Préserver l’objectif protecteur tout en réduisant dépendance, exclusion et dérive de finalité.",
+        "feasibility": "medium",
+        "tradeoffs": [
+          "Coût administratif",
+          "Vérification potentiellement plus lente"
+        ],
+        "rights_safeguards": [
+          "Limitation de finalité",
+          "Clause d’extinction",
+          "Recours",
+          "Alternative non numérique"
+        ],
+        "evidence_needed": [
+          "Données comparatives d’efficacité et de charge"
+        ],
+        "lower_harm_rationale": "Maintient une protection proportionnée tout en préservant sortie et contestabilité."
+      }
+    ]
+  },
+  "calibrated_conclusion": {
+    "strongly_supported": [
+      "Le justificatif a transformé l’information sanitaire en signal de contrôle d’accès."
+    ],
+    "plausible_unconfirmed": [
+      "Une infrastructure réutilisable peut survivre à l’urgence qui l’a justifiée."
+    ],
+    "disputed": [
+      "Le bénéfice épidémiologique net et le coût distributif variaient selon juridictions et périodes."
+    ],
+    "unknown": [
+      "Les effets de normalisation à long terme ne découlent pas de la seule adoption temporaire."
+    ],
+    "evidence_that_would_change": [
+      "Des comparaisons montrant soit une réutilisation durable intersectorielle, soit un démantèlement institutionnel complet."
+    ],
+    "overall_confidence": "medium"
+  },
+  "self_audit": {
+    "malicious_intent_without_evidence": "pass",
+    "institutional_claims_uncritically": "pass",
+    "metaphor_as_mechanism": "pass",
+    "human_function_identified": "pass",
+    "mechanism_explained": "pass",
+    "care_control_overlap": "pass",
+    "material_and_meaning": "pass",
+    "history_included": "pass",
+    "political_economy_included": "pass",
+    "inequality_dimensions": "pass",
+    "agency_resistance": "pass",
+    "competing_explanations": "pass",
+    "statistics_quotations_verified": "concern",
+    "uncertainty_stated": "pass",
+    "benefits_costs_identified": "pass",
+    "realistic_alternatives": "pass",
+    "stigmatization_risk_checked": "pass",
+    "falsifier_identified": "pass"
+  },
+  "self_audit_notes": [
+    "Cet exemple est structurel ; remplacez les titres de sources provisoires par des preuves vérifiées propres aux juridictions."
+  ],
   "links": [
     {
-      "from": "P1",
-      "to": "GT1",
+      "from": "HF1",
+      "to": "INS1",
       "relation": "enables",
-      "strength": 4
+      "mechanism": "Le risque sanitaire est devenu opérationnel par la vérification du justificatif.",
+      "confidence": "high"
     },
     {
-      "from": "GT1",
-      "to": "O1",
-      "relation": "causes",
-      "strength": 3
+      "from": "INS1",
+      "to": "CLASS1",
+      "relation": "classifies",
+      "mechanism": "La vérification attribue un statut d’accès.",
+      "confidence": "high"
     },
     {
-      "from": "RF1",
-      "to": "GT1",
-      "relation": "feeds_back",
-      "strength": 4
+      "from": "CLASS1",
+      "to": "DIST1",
+      "relation": "distributes",
+      "mechanism": "Le statut modifie l’accès et la charge.",
+      "confidence": "high"
+    },
+    {
+      "from": "RES1",
+      "to": "IV1",
+      "relation": "resists",
+      "mechanism": "La contestation modifie la portée et la durée.",
+      "confidence": "medium"
     }
   ],
-  "quality_gate": {
-    "publication_risk": "medium",
-    "weakest_layer": "evidence",
-    "next_improvement": "Ajouter des sources juridiques et empiriques propres au pays étudié."
-  },
-  "language": "fr"
+  "migration": null
 }

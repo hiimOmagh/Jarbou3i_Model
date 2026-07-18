@@ -1,0 +1,1459 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jarbou3i.example/schema/biopolitical-analysis-v2.1.schema.json",
+  "title": "Jarbou3i Biopolitical Analysis Contract v2.1",
+  "description": "First-class contract derived from the Jarbou3i Biopolitics AI Training Map. It separates human functions, governing actors, affected populations, mechanisms, meaning systems, intervention modality, capture tests, distribution, evidence, agency, alternatives, and calibrated judgment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "analysis_contract",
+    "contract_status",
+    "analysis_id",
+    "generated_at",
+    "language",
+    "model_mode",
+    "analysis_lens",
+    "subject",
+    "framing",
+    "legal_framework",
+    "international_comparison",
+    "capture_levels",
+    "theoretical_comparison",
+    "human_functions",
+    "power_map",
+    "mechanisms",
+    "meaning_systems",
+    "intervention_assessment",
+    "scale_time",
+    "distribution",
+    "consent_exit",
+    "competing_explanations",
+    "evidence",
+    "assumptions",
+    "resistance_agency",
+    "alternatives",
+    "calibrated_conclusion",
+    "self_audit",
+    "self_audit_notes",
+    "links",
+    "migration"
+  ],
+  "properties": {
+    "schema_version": { "const": "2.1.0" },
+    "analysis_contract": { "const": "biopolitical-training-map-v2" },
+    "contract_status": { "const": "canonical" },
+    "analysis_id": { "type": "string", "minLength": 1 },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "language": { "enum": ["ar", "en", "fr"] },
+    "model_mode": { "enum": ["simple", "focused", "expert", "research"] },
+    "analysis_lens": { "const": "biopolitical" },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "context",
+        "research_question",
+        "executive_finding"
+      ],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "context": { "type": "string" },
+        "research_question": { "type": "string", "minLength": 1 },
+        "executive_finding": { "type": "string", "minLength": 1 }
+      }
+    },
+    "framing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contested_terms",
+        "historical_context",
+        "official_problem_definition",
+        "critical_problem_definition",
+        "unknowns"
+      ],
+      "properties": {
+        "contested_terms": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/contestedTerm" }
+        },
+        "historical_context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["summary", "turning_points", "continuities"],
+          "properties": {
+            "summary": { "type": "string", "minLength": 1 },
+            "turning_points": { "$ref": "#/$defs/stringArray" },
+            "continuities": { "$ref": "#/$defs/stringArray" }
+          }
+        },
+        "official_problem_definition": { "type": "string" },
+        "critical_problem_definition": { "type": "string" },
+        "unknowns": { "$ref": "#/$defs/nonEmptyStringArray" }
+      }
+    },
+    "legal_framework": { "$ref": "#/$defs/legalFramework" },
+    "international_comparison": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/internationalComparison" }
+    },
+    "capture_levels": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/captureLevel" }
+    },
+    "theoretical_comparison": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/theoreticalComparison" }
+    },
+    "human_functions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/humanFunction" }
+    },
+    "power_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actors",
+        "affected_populations",
+        "institutions",
+        "power_asymmetries"
+      ],
+      "properties": {
+        "actors": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/actor" }
+        },
+        "affected_populations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/population" }
+        },
+        "institutions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/institution" }
+        },
+        "power_asymmetries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/asymmetry" }
+        }
+      }
+    },
+    "mechanisms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instruments",
+        "infrastructures",
+        "political_economy",
+        "power_modes"
+      ],
+      "properties": {
+        "instruments": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/instrument" }
+        },
+        "infrastructures": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/infrastructure" }
+        },
+        "political_economy": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/politicalEconomy" }
+        },
+        "power_modes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/powerMode" }
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "infrastructures": { "type": "array", "minItems": 1 }
+          }
+        },
+        {
+          "properties": {
+            "political_economy": { "type": "array", "minItems": 1 }
+          }
+        }
+      ]
+    },
+    "meaning_systems": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "norms",
+        "regimes_of_truth",
+        "classifications",
+        "looping_effects"
+      ],
+      "properties": {
+        "norms": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/norm" }
+        },
+        "regimes_of_truth": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/regimeOfTruth" }
+        },
+        "classifications": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/classification" }
+        },
+        "looping_effects": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/loopingEffect" }
+        }
+      }
+    },
+    "intervention_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interventions",
+        "capture_assessment",
+        "care_control_tensions"
+      ],
+      "properties": {
+        "interventions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/intervention" }
+        },
+        "capture_assessment": { "$ref": "#/$defs/captureAssessment" },
+        "care_control_tensions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/careControlTension" }
+        }
+      }
+    },
+    "scale_time": { "$ref": "#/$defs/scaleTime" },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "inequality_dimensions",
+        "necropolitical_dimensions"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/distributionItem" }
+        },
+        "inequality_dimensions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/inequalityDimension" }
+        },
+        "necropolitical_dimensions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/necropoliticalDimension" }
+        }
+      }
+    },
+    "consent_exit": { "$ref": "#/$defs/consentExit" },
+    "competing_explanations": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": { "$ref": "#/$defs/explanation" }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidence" }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": { "type": "array", "items": { "$ref": "#/$defs/assumption" } }
+      }
+    },
+    "resistance_agency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/resistance" }
+        }
+      }
+    },
+    "alternatives": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/alternative" }
+        }
+      }
+    },
+    "calibrated_conclusion": { "$ref": "#/$defs/calibratedConclusion" },
+    "self_audit": { "$ref": "#/$defs/selfAudit" },
+    "self_audit_notes": { "$ref": "#/$defs/stringArray" },
+    "links": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+    "migration": { "type": "null" }
+  },
+  "$defs": {
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "auditStatus": { "enum": ["pass", "concern", "not_applicable"] },
+    "stringArray": { "type": "array", "items": { "type": "string" } },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "contestedTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["term", "definitions", "working_definition", "stakes"],
+      "properties": {
+        "term": { "type": "string", "minLength": 1 },
+        "definitions": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "working_definition": { "type": "string", "minLength": 1 },
+        "stakes": { "type": "string" }
+      }
+    },
+    "legalFramework": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "jurisdictions",
+        "applicable_authorities",
+        "rights_engaged",
+        "safeguards_and_remedies",
+        "uncertainties"
+      ],
+      "properties": {
+        "status": { "enum": ["assessed", "not_relevant", "unknown"] },
+        "jurisdictions": { "$ref": "#/$defs/stringArray" },
+        "applicable_authorities": { "$ref": "#/$defs/stringArray" },
+        "rights_engaged": { "$ref": "#/$defs/stringArray" },
+        "safeguards_and_remedies": { "$ref": "#/$defs/stringArray" },
+        "uncertainties": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "internationalComparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "jurisdiction_or_context",
+        "comparison_basis",
+        "similarities",
+        "differences",
+        "transfer_limits",
+        "evidence_ids",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "jurisdiction_or_context": { "type": "string", "minLength": 1 },
+        "comparison_basis": { "type": "string", "minLength": 1 },
+        "similarities": { "$ref": "#/$defs/stringArray" },
+        "differences": { "$ref": "#/$defs/stringArray" },
+        "transfer_limits": { "$ref": "#/$defs/stringArray" },
+        "evidence_ids": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "captureLevel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "status", "finding", "evidence_ids"],
+      "properties": {
+        "level": {
+          "enum": ["body", "mind", "relationship", "population", "environment"]
+        },
+        "status": { "enum": ["present", "absent", "uncertain", "not_applicable"] },
+        "finding": { "type": "string", "minLength": 1 },
+        "evidence_ids": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "theoreticalComparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "tradition",
+        "contribution",
+        "limitations",
+        "relevance",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "tradition": { "type": "string", "minLength": 1 },
+        "contribution": { "type": "string", "minLength": 1 },
+        "limitations": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "relevance": { "enum": ["relevant", "not_relevant", "uncertain"] },
+        "evidence_ids": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "humanFunction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "domain",
+        "name",
+        "scientific_definition",
+        "lived_context",
+        "governed_variation",
+        "authority_defining_normality",
+        "refusal_conditions",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "domain": {
+          "enum": [
+            "biological",
+            "cognitive_affective",
+            "reproductive",
+            "social_relational",
+            "symbolic",
+            "environmental"
+          ]
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "scientific_definition": { "type": "string" },
+        "lived_context": { "type": "string" },
+        "governed_variation": { "type": "string" },
+        "authority_defining_normality": { "type": "string" },
+        "refusal_conditions": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "role",
+        "formal_mandate",
+        "material_interests",
+        "authority_sources",
+        "funding",
+        "information_advantages",
+        "enforcement_capacities",
+        "dependencies",
+        "stated_objectives",
+        "plausible_unstated_incentives",
+        "internal_disagreements",
+        "accountability",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "role": {
+          "enum": [
+            "decision_maker",
+            "implementer",
+            "expert",
+            "funder",
+            "beneficiary",
+            "intermediary",
+            "resisting_group",
+            "other"
+          ]
+        },
+        "formal_mandate": { "type": "string" },
+        "material_interests": { "$ref": "#/$defs/stringArray" },
+        "authority_sources": { "$ref": "#/$defs/stringArray" },
+        "funding": { "$ref": "#/$defs/stringArray" },
+        "information_advantages": { "$ref": "#/$defs/stringArray" },
+        "enforcement_capacities": { "$ref": "#/$defs/stringArray" },
+        "dependencies": { "$ref": "#/$defs/stringArray" },
+        "stated_objectives": { "$ref": "#/$defs/stringArray" },
+        "plausible_unstated_incentives": { "$ref": "#/$defs/stringArray" },
+        "internal_disagreements": { "$ref": "#/$defs/stringArray" },
+        "accountability": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "population": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "classification",
+        "exposure",
+        "benefits",
+        "burdens",
+        "agency",
+        "missing_from_record",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "classification": { "type": "string" },
+        "exposure": { "$ref": "#/$defs/stringArray" },
+        "benefits": { "$ref": "#/$defs/stringArray" },
+        "burdens": { "$ref": "#/$defs/stringArray" },
+        "agency": { "type": "string" },
+        "missing_from_record": { "type": "boolean" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "institution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "mandate",
+        "role",
+        "accountability",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "mandate": { "type": "string" },
+        "role": { "type": "string" },
+        "accountability": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "asymmetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "between", "resource", "effect", "confidence"],
+      "properties": {
+        "id": { "type": "string" },
+        "between": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "resource": { "type": "string" },
+        "effect": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "instrument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type",
+        "mechanism",
+        "scale",
+        "stated_purpose",
+        "ownership",
+        "oversight",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": [
+            "law",
+            "force",
+            "architecture",
+            "money",
+            "expertise",
+            "statistics",
+            "surveillance",
+            "incentive",
+            "norm",
+            "algorithm",
+            "narrative",
+            "infrastructure",
+            "medical",
+            "other"
+          ]
+        },
+        "mechanism": { "type": "string", "minLength": 1 },
+        "scale": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "stated_purpose": { "type": "string" },
+        "ownership": { "type": "string" },
+        "oversight": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "infrastructure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "owner",
+        "dependency_created",
+        "actions_enabled_or_blocked",
+        "access_conditions",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "owner": { "type": "string" },
+        "dependency_created": { "type": "string" },
+        "actions_enabled_or_blocked": { "$ref": "#/$defs/stringArray" },
+        "access_conditions": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "politicalEconomy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "ownership",
+        "labor",
+        "profit",
+        "unpaid_care",
+        "privatized_risks",
+        "socialized_costs",
+        "scarcity_mechanism",
+        "dependency_model",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "ownership": { "type": "string" },
+        "labor": { "type": "string" },
+        "profit": { "type": "string" },
+        "unpaid_care": { "type": "string" },
+        "privatized_risks": { "$ref": "#/$defs/stringArray" },
+        "socialized_costs": { "$ref": "#/$defs/stringArray" },
+        "scarcity_mechanism": { "type": "string" },
+        "dependency_model": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "powerMode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "mechanism", "evidence_ids", "confidence"],
+      "properties": {
+        "mode": {
+          "enum": [
+            "sovereign_power",
+            "disciplinary_power",
+            "biopower",
+            "governmentality",
+            "pastoral_power",
+            "psychopolitics",
+            "necropolitics",
+            "datafication",
+            "algorithmic_governance",
+            "political_economy",
+            "coloniality",
+            "ecological_governmentality"
+          ]
+        },
+        "mechanism": { "type": "string" },
+        "evidence_ids": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "norm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "definition",
+        "authority",
+        "subject_position",
+        "alternatives",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "definition": { "type": "string" },
+        "authority": { "type": "string" },
+        "subject_position": { "type": "string" },
+        "alternatives": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "regimeOfTruth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "claim",
+        "authorizing_institutions",
+        "validation_procedure",
+        "funding_or_interest",
+        "excluded_knowledge",
+        "evidence_quality",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "claim": { "type": "string" },
+        "authorizing_institutions": { "$ref": "#/$defs/stringArray" },
+        "validation_procedure": { "type": "string" },
+        "funding_or_interest": { "type": "string" },
+        "excluded_knowledge": { "$ref": "#/$defs/stringArray" },
+        "evidence_quality": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "category",
+        "definition",
+        "decision_use",
+        "error_risks",
+        "contestability",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "definition": { "type": "string" },
+        "decision_use": { "type": "string" },
+        "error_risks": { "$ref": "#/$defs/stringArray" },
+        "contestability": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "loopingEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "classification_id",
+        "institutional_response",
+        "altered_opportunity_or_identity",
+        "behavioral_adaptation",
+        "new_data",
+        "confirmation_or_revision",
+        "falsified_if",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "classification_id": { "type": "string" },
+        "institutional_response": { "type": "string" },
+        "altered_opportunity_or_identity": { "type": "string" },
+        "behavioral_adaptation": { "type": "string" },
+        "new_data": { "type": "string" },
+        "confirmation_or_revision": { "type": "string" },
+        "falsified_if": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "intervention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "target_function_ids",
+        "actor_ids",
+        "instrument_ids",
+        "modality",
+        "stated_benefit",
+        "evidence_of_benefit",
+        "documented_harms",
+        "necessity",
+        "proportionality",
+        "dependency_created",
+        "consent",
+        "exit",
+        "contestability",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "target_function_ids": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "actor_ids": { "$ref": "#/$defs/stringArray" },
+        "instrument_ids": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "modality": {
+          "enum": [
+            "protection",
+            "assistance",
+            "treatment",
+            "regulation",
+            "persuasion",
+            "incentivization",
+            "manipulation",
+            "exploitation",
+            "coercion",
+            "capture",
+            "expropriation",
+            "mixed",
+            "undetermined"
+          ]
+        },
+        "stated_benefit": { "type": "string" },
+        "evidence_of_benefit": { "$ref": "#/$defs/stringArray" },
+        "documented_harms": { "$ref": "#/$defs/stringArray" },
+        "necessity": {
+          "enum": ["supported", "partly_supported", "unsupported", "unknown"]
+        },
+        "proportionality": {
+          "enum": ["proportionate", "mixed", "disproportionate", "unknown"]
+        },
+        "dependency_created": { "type": "string" },
+        "consent": { "type": "string" },
+        "exit": { "type": "string" },
+        "contestability": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "captureAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "criteria",
+        "counter_evidence",
+        "legitimate_benefits",
+        "conclusion",
+        "confidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "no_capture",
+            "limited_capture",
+            "mixed_capture",
+            "substantial_capture",
+            "undetermined"
+          ]
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": { "$ref": "#/$defs/captureCriterion" }
+        },
+        "counter_evidence": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "legitimate_benefits": { "$ref": "#/$defs/stringArray" },
+        "conclusion": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "captureCriterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criterion", "status", "evidence_ids", "reason"],
+      "properties": {
+        "criterion": {
+          "enum": [
+            "knowledge_deficit",
+            "consent_failure",
+            "vulnerability_exploitation",
+            "unequal_distribution",
+            "disproportionate_power_or_profit",
+            "dependency_or_costly_exit",
+            "alternatives_suppressed",
+            "behavior_optimized_without_oversight",
+            "choice_architecture_constraint",
+            "data_repurposing",
+            "human_capacity_commercialized",
+            "classification_not_contestable",
+            "environmental_unavoidability"
+          ]
+        },
+        "status": {
+          "enum": ["present", "absent", "uncertain", "not_applicable"]
+        },
+        "evidence_ids": { "$ref": "#/$defs/stringArray" },
+        "reason": { "type": "string" }
+      }
+    },
+    "careControlTension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "care_claim",
+        "control_effects",
+        "interpretation",
+        "severity",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "care_claim": { "type": "string" },
+        "control_effects": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "interpretation": { "type": "string" },
+        "severity": { "type": "number", "minimum": 0, "maximum": 5 },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "scaleTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scales",
+        "immediate_effects",
+        "medium_term_adaptations",
+        "intergenerational_effects",
+        "historical_continuities",
+        "path_dependencies",
+        "future_feedback_loops"
+      ],
+      "properties": {
+        "scales": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "immediate_effects": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "medium_term_adaptations": { "$ref": "#/$defs/stringArray" },
+        "intergenerational_effects": { "$ref": "#/$defs/stringArray" },
+        "historical_continuities": { "$ref": "#/$defs/stringArray" },
+        "path_dependencies": { "$ref": "#/$defs/stringArray" },
+        "future_feedback_loops": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/futureLoop" }
+        }
+      }
+    },
+    "futureLoop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "timeframe",
+        "drivers",
+        "early_signals",
+        "falsified_if",
+        "rationale",
+        "probability"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "timeframe": { "type": "string" },
+        "drivers": { "$ref": "#/$defs/stringArray" },
+        "early_signals": { "$ref": "#/$defs/stringArray" },
+        "falsified_if": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "rationale": { "type": "string" },
+        "probability": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "distributionItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "population_id",
+        "benefits",
+        "burdens",
+        "protection",
+        "opportunity",
+        "recognition",
+        "profit",
+        "voice",
+        "risk",
+        "surveillance",
+        "discipline",
+        "displacement",
+        "illness_injury_death",
+        "axes",
+        "scale",
+        "time_horizon",
+        "outcome_character",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "population_id": { "type": "string" },
+        "benefits": { "$ref": "#/$defs/stringArray" },
+        "burdens": { "$ref": "#/$defs/stringArray" },
+        "protection": { "$ref": "#/$defs/stringArray" },
+        "opportunity": { "$ref": "#/$defs/stringArray" },
+        "recognition": { "$ref": "#/$defs/stringArray" },
+        "profit": { "$ref": "#/$defs/stringArray" },
+        "voice": { "$ref": "#/$defs/stringArray" },
+        "risk": { "$ref": "#/$defs/stringArray" },
+        "surveillance": { "$ref": "#/$defs/stringArray" },
+        "discipline": { "$ref": "#/$defs/stringArray" },
+        "displacement": { "$ref": "#/$defs/stringArray" },
+        "illness_injury_death": { "$ref": "#/$defs/stringArray" },
+        "axes": { "$ref": "#/$defs/stringArray" },
+        "scale": { "$ref": "#/$defs/stringArray" },
+        "time_horizon": { "type": "string" },
+        "outcome_character": {
+          "enum": ["intended", "tolerated", "concealed", "unforeseen", "uncertain"]
+        },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "inequalityDimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "axis",
+        "mechanism",
+        "affected_groups",
+        "evidence_ids",
+        "confidence"
+      ],
+      "properties": {
+        "axis": {
+          "enum": [
+            "class",
+            "race",
+            "gender",
+            "disability",
+            "age",
+            "citizenship",
+            "other"
+          ]
+        },
+        "mechanism": { "type": "string" },
+        "affected_groups": { "$ref": "#/$defs/stringArray" },
+        "evidence_ids": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "necropoliticalDimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "population_id",
+        "exposure",
+        "causal_character",
+        "visibility",
+        "protection_gap",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "population_id": { "type": "string" },
+        "exposure": { "type": "string" },
+        "causal_character": {
+          "enum": [
+            "deliberate",
+            "reckless_indifference",
+            "structural_exposure",
+            "administrative_failure",
+            "unintended_harm",
+            "uncertain"
+          ]
+        },
+        "visibility": { "type": "string" },
+        "protection_gap": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "consentExit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consent_status",
+        "informed",
+        "specific",
+        "revocable",
+        "comprehensible",
+        "materially_voluntary",
+        "exit_conditions",
+        "contestability",
+        "accountability"
+      ],
+      "properties": {
+        "consent_status": {
+          "enum": ["valid", "partial", "invalid", "not_applicable", "unknown"]
+        },
+        "informed": { "enum": ["yes", "partial", "no", "unknown"] },
+        "specific": { "enum": ["yes", "partial", "no", "unknown"] },
+        "revocable": { "enum": ["yes", "partial", "no", "unknown"] },
+        "comprehensible": { "enum": ["yes", "partial", "no", "unknown"] },
+        "materially_voluntary": { "enum": ["yes", "partial", "no", "unknown"] },
+        "exit_conditions": { "$ref": "#/$defs/stringArray" },
+        "contestability": { "$ref": "#/$defs/stringArray" },
+        "accountability": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "explanation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "relevance",
+        "evidentiary_status",
+        "claim",
+        "mechanism",
+        "supporting_evidence_ids",
+        "counter_evidence_ids",
+        "falsified_if",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "type": {
+          "enum": [
+            "official",
+            "public_interest",
+            "political_economy",
+            "institutional_inertia",
+            "security",
+            "cultural",
+            "technological",
+            "critical_biopolitical",
+            "actor_error_unintended_consequence"
+          ]
+        },
+        "relevance": { "enum": ["relevant", "not_relevant", "uncertain"] },
+        "evidentiary_status": {
+          "enum": [
+            "supported",
+            "plausible",
+            "disputed",
+            "unsupported",
+            "not_assessed"
+          ]
+        },
+        "claim": { "type": "string" },
+        "mechanism": { "type": "string" },
+        "supporting_evidence_ids": { "$ref": "#/$defs/stringArray" },
+        "counter_evidence_ids": { "$ref": "#/$defs/stringArray" },
+        "falsified_if": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "claim",
+        "epistemic_type",
+        "source_tier",
+        "source_title",
+        "source_url",
+        "source_locator",
+        "source_date",
+        "geography",
+        "population",
+        "measurement_method",
+        "denominator",
+        "sample_size",
+        "measurement_validity",
+        "causal_identification",
+        "replication_status",
+        "conflicts_of_interest",
+        "missing_data",
+        "selection_effects",
+        "relevant_comparison",
+        "cross_context_applicability",
+        "claim_source_fit",
+        "verification_status",
+        "verified_by",
+        "verification_date",
+        "uncertainty",
+        "limitations",
+        "counter_evidence",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "claim": { "type": "string" },
+        "epistemic_type": {
+          "enum": [
+            "verified_fact",
+            "quantitative_estimate",
+            "institutional_claim",
+            "scholarly_interpretation",
+            "political_narrative",
+            "legal_classification",
+            "ethical_judgment",
+            "plausible_inference",
+            "speculation",
+            "unsupported_allegation"
+          ]
+        },
+        "source_tier": {
+          "enum": [
+            "primary_legal_policy",
+            "official_dataset",
+            "systematic_review_meta_analysis",
+            "individual_peer_reviewed_study",
+            "historical_archive",
+            "investigative_reporting",
+            "reputable_organization_report",
+            "expert_commentary",
+            "first_person_testimony",
+            "social_media_discourse"
+          ]
+        },
+        "source_title": { "type": "string" },
+        "source_url": { "type": "string" },
+        "source_locator": { "type": "string" },
+        "source_date": { "type": "string" },
+        "geography": { "type": "string" },
+        "population": { "type": "string" },
+        "measurement_method": { "type": "string" },
+        "denominator": { "type": "string" },
+        "sample_size": { "type": "string" },
+        "measurement_validity": { "type": "string" },
+        "causal_identification": { "type": "string" },
+        "replication_status": {
+          "enum": ["replicated", "partly_replicated", "not_replicated", "not_applicable", "unknown"]
+        },
+        "conflicts_of_interest": { "type": "string" },
+        "missing_data": { "type": "string" },
+        "selection_effects": { "type": "string" },
+        "relevant_comparison": { "type": "string" },
+        "cross_context_applicability": { "type": "string" },
+        "claim_source_fit": {
+          "enum": ["direct", "indirect", "context_only", "mismatched", "unknown"]
+        },
+        "verification_status": {
+          "enum": ["verified", "partially_verified", "unverified", "disputed"]
+        },
+        "verified_by": { "type": "string" },
+        "verification_date": { "type": "string" },
+        "uncertainty": { "type": "string", "minLength": 1 },
+        "limitations": { "type": "string", "minLength": 1 },
+        "counter_evidence": { "type": "string", "minLength": 1 },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "verification_status": { "const": "verified" } },
+            "required": ["verification_status"]
+          },
+          "then": {
+            "properties": {
+              "source_title": { "type": "string", "minLength": 1 },
+              "source_date": { "type": "string", "minLength": 1 },
+              "verified_by": { "type": "string", "minLength": 1 },
+              "verification_date": { "type": "string", "minLength": 1 }
+            },
+            "anyOf": [
+              {
+                "properties": {
+                  "source_url": { "type": "string", "minLength": 1 }
+                },
+                "required": ["source_url"]
+              },
+              {
+                "properties": {
+                  "source_locator": { "type": "string", "minLength": 1 }
+                },
+                "required": ["source_locator"]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "assumption",
+        "risk",
+        "disproving_test",
+        "implication_if_wrong",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "assumption": { "type": "string" },
+        "risk": { "enum": ["low", "medium", "high"] },
+        "disproving_test": { "type": "string" },
+        "implication_if_wrong": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "resistance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "actor_or_population",
+        "form",
+        "mechanism",
+        "effect_on_system",
+        "constraints",
+        "confidence"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "actor_or_population": { "type": "string" },
+        "form": {
+          "enum": [
+            "refusal",
+            "protest",
+            "evasion",
+            "mutual_aid",
+            "counterknowledge",
+            "litigation",
+            "unionization",
+            "artistic_intervention",
+            "technological_adaptation",
+            "alternative_institution",
+            "other"
+          ]
+        },
+        "mechanism": { "type": "string" },
+        "effect_on_system": { "type": "string" },
+        "constraints": { "$ref": "#/$defs/stringArray" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "alternative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "level",
+        "proposal",
+        "mechanism",
+        "feasibility",
+        "tradeoffs",
+        "rights_safeguards",
+        "evidence_needed",
+        "lower_harm_rationale"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "level": {
+          "enum": [
+            "individual",
+            "community",
+            "institutional",
+            "national",
+            "transnational"
+          ]
+        },
+        "proposal": { "type": "string" },
+        "mechanism": { "type": "string" },
+        "feasibility": { "enum": ["high", "medium", "low"] },
+        "tradeoffs": { "$ref": "#/$defs/stringArray" },
+        "rights_safeguards": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "evidence_needed": { "$ref": "#/$defs/stringArray" },
+        "lower_harm_rationale": { "type": "string" }
+      }
+    },
+    "calibratedConclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strongly_supported",
+        "plausible_unconfirmed",
+        "disputed",
+        "unknown",
+        "evidence_that_would_change",
+        "overall_confidence"
+      ],
+      "properties": {
+        "strongly_supported": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "plausible_unconfirmed": { "$ref": "#/$defs/stringArray" },
+        "disputed": { "$ref": "#/$defs/stringArray" },
+        "unknown": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "evidence_that_would_change": { "$ref": "#/$defs/nonEmptyStringArray" },
+        "overall_confidence": { "$ref": "#/$defs/confidence" }
+      }
+    },
+    "selfAudit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "malicious_intent_without_evidence",
+        "institutional_claims_uncritically",
+        "metaphor_as_mechanism",
+        "human_function_identified",
+        "mechanism_explained",
+        "care_control_overlap",
+        "material_and_meaning",
+        "history_included",
+        "political_economy_included",
+        "inequality_dimensions",
+        "agency_resistance",
+        "competing_explanations",
+        "statistics_quotations_verified",
+        "uncertainty_stated",
+        "benefits_costs_identified",
+        "realistic_alternatives",
+        "stigmatization_risk_checked",
+        "falsifier_identified"
+      ],
+      "properties": {
+        "malicious_intent_without_evidence": { "$ref": "#/$defs/auditStatus" },
+        "institutional_claims_uncritically": { "$ref": "#/$defs/auditStatus" },
+        "metaphor_as_mechanism": { "$ref": "#/$defs/auditStatus" },
+        "human_function_identified": { "$ref": "#/$defs/auditStatus" },
+        "mechanism_explained": { "$ref": "#/$defs/auditStatus" },
+        "care_control_overlap": { "$ref": "#/$defs/auditStatus" },
+        "material_and_meaning": { "$ref": "#/$defs/auditStatus" },
+        "history_included": { "$ref": "#/$defs/auditStatus" },
+        "political_economy_included": { "$ref": "#/$defs/auditStatus" },
+        "inequality_dimensions": { "$ref": "#/$defs/auditStatus" },
+        "agency_resistance": { "$ref": "#/$defs/auditStatus" },
+        "competing_explanations": { "$ref": "#/$defs/auditStatus" },
+        "statistics_quotations_verified": { "$ref": "#/$defs/auditStatus" },
+        "uncertainty_stated": { "$ref": "#/$defs/auditStatus" },
+        "benefits_costs_identified": { "$ref": "#/$defs/auditStatus" },
+        "realistic_alternatives": { "$ref": "#/$defs/auditStatus" },
+        "stigmatization_risk_checked": { "$ref": "#/$defs/auditStatus" },
+        "falsifier_identified": { "$ref": "#/$defs/auditStatus" }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "relation", "mechanism", "confidence"],
+      "properties": {
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "relation": {
+          "enum": [
+            "causes",
+            "enables",
+            "constrains",
+            "classifies",
+            "legitimizes",
+            "commodifies",
+            "distributes",
+            "exposes",
+            "resists",
+            "feeds_back",
+            "contradicts"
+          ]
+        },
+        "mechanism": { "type": "string" },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    }
+  }
+}

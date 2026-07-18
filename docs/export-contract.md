@@ -1,76 +1,40 @@
-# Export Contract — v1.3.0-bio
+# Export Contract — 1.4.0-bio-alpha.4
 
-The deployable root app has one HTML export mode. The exported report must preserve the selected analytical lens so downstream review, archival, and browser evidence can distinguish Strategic and Biopolitical reports without inspecting app state.
+## Shared guarantees
 
-## Required exported report markers
-
-Every downloaded HTML report must include:
+Every HTML report carries app and lens metadata, and every analysis can also be downloaded as lossless JSON. The imported analysis language—not the current interface language—sets the report root language and direction.
 
 ```html
-<meta name="app-version" content="1.3.0-bio">
+<meta name="app-version" content="1.4.0-bio-alpha.4">
 <meta name="analysis-lens" content="strategic|biopolitical">
-<main class="shell" data-analysis-lens="strategic|biopolitical" data-app-version="1.3.0-bio">
+<main data-analysis-lens="strategic|biopolitical"
+      data-app-version="1.4.0-bio-alpha.4">
+<section data-export-contract-lens="strategic|biopolitical">
+<script type="application/json" id="canonical-analysis">…</script>
 ```
 
-## Strategic export expectations
+Arabic analyses use `lang="ar" dir="rtl"`; English and French analyses use `dir="ltr"`. Machine contract values remain locale-independent.
 
-A Strategic export must include the strategic report identity and layer chain:
+## Biopolitical report
 
-```text
-Strategic Analysis Report
-Interests → Actors → Tools → Narrative → Results → Feedback
+```html
+<meta name="analysis-contract" content="biopolitical-training-map-v2">
+<meta name="schema-version" content="2.1.0">
+<main data-analysis-contract="biopolitical-training-map-v2"
+      data-schema-version="2.1.0">
 ```
 
-It must not present the Biopolitical report identity or biopolitical layer contract.
+The human report includes all nine pillars, calibrated conclusion, localized 18-item audit, migration and publication blockers, and a complete canonical-contract appendix. The embedded JSON payload is semantically identical to the imported normalized analysis; `<` characters are JSON-escaped to prevent script termination.
 
-## Biopolitical export expectations
+The JSON download is the authoritative lossless transport for verification, re-import, and archival. The HTML view is a readable projection plus the same machine payload.
 
-A Biopolitical export must include the biopolitical report identity and lens-specific layers:
+## Strategic report
 
-```text
-Biopolitical Analysis Report
-Problematization
-Populations / Subjects
-Governance Techniques
-Norms / Subjectivation
-Embodied / Social Outcomes
-Resistance / Normalization Feedback
-```
+Strategic export preserves its own report title and six-layer chain. It must not be emitted through the Biopolitical renderer. Its HTML also embeds the normalized Strategic analysis payload and offers a JSON download.
 
-It must not present the Strategic report identity or strategic layer chain.
+## Browser proof
 
-## Browser evidence
-
-`tests/export-contract.spec.js` downloads both reports through the real browser UI, saves them as Playwright artifacts, and asserts the positive and negative token contracts above.
-
-
-## Locale determinism
-
-Browser export-contract tests must select the expected UI locale before loading a sample. Sample content is localized, while the lens contract metadata is locale-independent.
-
-
-## v1.3.0-bio scenario rationale coverage
-
-Downloaded HTML reports must preserve scenario rationale text, not only drivers, early signals, and falsifiers. This keeps the exported evidence contract aligned with the review model and prevents sample-token assertions such as `proof infrastructure` from failing when the rationale is omitted.
-
-## v1.3.0-bio import and locale coverage
-
-Alpha.4 extends the export contract with two additional browser gates:
-
-1. **Lens import contract** — imported JSON controls the final app lens. A Strategic JSON import cannot silently export as Biopolitical, and a Biopolitical JSON import cannot silently export as Strategic.
-2. **Cross-locale export contract** — Arabic, English, and French exports preserve `html lang`, `dir`, `app-version`, `analysis-lens`, `data-analysis-lens`, and `data-export-contract-lens`.
-
-The tests intentionally assert machine-readable metadata instead of relying only on localized visible text. This keeps the contract stable across Arabic, English, and French copy changes.
-
-## v1.3.0-bio review title lens contract
-
-The visible review heading now reflects the active/imported lens: Strategic imports render a Strategic review title, and Biopolitical imports render a Biopolitical review title. The stable `#reviewTitle` anchor remains available for browser contracts.
-
-## v1.3.0-bio CI/export lock
-
-The export contract remains browser-proven through `npm run test:browser:export` and as part of `npm run test:ci:browser`. The release lock adds CI-script and workspace hygiene gates so export evidence is generated from the root app, not from a preview track or patch staging folder.
-
-
-## v1.3.0-bio hosted/public UI evidence
-
-`tests/hosted-demo-evidence.spec.js` complements export-contract tests by capturing the public root UI before and after lens switching. It writes screenshots and visible-text snapshots to `HOSTED_DEMO_EVIDENCE_DIR` when set, or `hosted-demo-evidence-local/` for local runs. GitHub Actions uploads `hosted-demo-evidence` after the browser job.
+- `tests/export-contract.spec.js`: lens identities.
+- `tests/export-completeness.spec.js`: sentinel coverage across previously omitted high-value fields and JSON equivalence.
+- `tests/cross-locale-export-contract.spec.js`: three analysis languages and both lenses.
+- `tests/lens-import-contract.spec.js`: imported-lens authority and legacy disclosure.

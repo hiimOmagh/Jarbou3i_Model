@@ -1,5 +1,9 @@
 node_modules/
 playwright-report/
 test-results/
+hosted-demo-evidence/
+hosted-demo-evidence-local/
+visual-audit-evidence/
+visual-audit-evidence-local/
 .DS_Store
 *.log

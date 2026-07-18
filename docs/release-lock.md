@@ -1,87 +1,92 @@
-# Release Lock — v1.3.0-bio
+# Release Lock — 2.0.0-bio-rc.11
 
-This release locks the promoted root-only Jarbou3i Model biopolitical/strategic dual-lens branch.
+This document defines the audit-hardened release-candidate gate. It is not a stable release until automated evidence and the manual sign-off ledger are complete.
 
-## Required root state
+## Required source state
 
-The deployable app must live at repository root:
+The deployable root contains the app, both independent analysis contracts, the generated browser validator, fixtures, tests, and documentation. Historical standalone pages live only under `docs/archive/legacy-pages/`.
 
-- `index.html`
-- `src/app.js`
-- `src/styles.css`
-- `schema/strategic-analysis.schema.json`
-- `fixtures/*.json`
-- `tests/*.mjs`
-- `tests/*.spec.js`
+Generated evidence and reports must not be committed:
 
-The following paths must not exist in the release root:
-
-- `preview/`
-- `biopreview/`
-- `_patch-*`
-- `playwright-report/`
-- `test-results/`
-- `dist/`
-- `ci-artifacts/`
-- `hosted-demo-evidence/`
-- `hosted-demo-evidence-local/`
-- root patch ZIPs or package ZIPs
-
-## Required validation ladder
-
-No-browser:
-
-```bash
-npm run test:ci:no-browser
+```text
+playwright-report/
+test-results/
+hosted-demo-evidence/
+hosted-demo-evidence-local/
+visual-audit-evidence/
+visual-audit-evidence-local/
+dist/
+ci-artifacts/
+*.zip
 ```
 
-Browser:
+## Reproducible install and validation
+
+Use Node.js 20 and the committed npm lockfile:
 
 ```bash
+npm ci
+npm run upgrade:layout
 npx playwright install --with-deps
-npm run test:ci:browser
-```
-
-Full local release check:
-
-```bash
 npm run test:ci
 ```
 
-Focused browser contracts:
+`upgrade:layout` is idempotent. It is especially important when a release was
+overlaid onto an older directory; divergent legacy files are preserved and make
+the command fail for manual review.
+
+The full gate runs the no-browser contract suite first, followed by browser and hosted-evidence checks. Focused commands are:
 
 ```bash
-npm run test:browser:import
-npm run test:browser:locale
-npm run test:browser:export
+npm run test:ci:no-browser
+npm run test:browser:core
 npm run test:browser:hosted
+npm run test:browser:reflow
+npm run test:browser:visual-audit
 ```
 
-## GitHub Actions contract
+The core matrix is bounded to four workers and 60 seconds per test. This is a
+release-stability requirement, not an assertion relaxation: alpha.3 proved that
+16 simultaneous report/download/axe workloads could exhaust the 30-second test
+budget while the same contracts passed as the queue became lighter.
 
-The workflow must run the stable no-browser alias and the hardened pnpm browser fallback:
+To capture evidence from an actual deployment instead of the local static server:
 
-- `npm run test:ci:no-browser`
-- `pnpm exec playwright test`
+```bash
+PLAYWRIGHT_BASE_URL=https://example.invalid npm run test:browser:hosted
+```
 
-The browser job must depend on the no-browser job. CI no-browser gates run without dependency installation because they use first-party Node scripts only. The browser job uses Corepack + pnpm to avoid the GitHub npm install instability observed during alpha.6 remote locking. The browser job sets `HOSTED_DEMO_EVIDENCE_DIR=hosted-demo-evidence`, reviews that directory with `tests/hosted-demo-evidence-review-check.mjs`, and uploads it as a GitHub Actions artifact.
+`hosted-demo-metadata.json` must disclose whether the capture target was `deployed` or `local-test-server`.
 
 ## Lock criteria
 
-A release may be locked only when all are true:
+A candidate may be locked only when:
 
-- package version is `1.3.0-bio`
-- source-of-truth check passes
-- workspace hygiene check passes after cleanup
-- no-browser CI alias passes
-- browser CI alias passes
-- strategic import contract passes
-- biopolitical import contract passes
-- EN/AR/FR export metadata contracts pass
-- hosted-demo evidence capture passes
-- hosted-demo evidence review passes
-- no preview or biopreview folder exists at root
+- `package.json` and page metadata report `2.0.0-bio-rc.11`;
+- generated validators match the committed schemas;
+- canonical Biopolitical v2.1 fixtures pass strict JSON Schema and semantic validation;
+- migrated legacy material validates only as `biopolitical-migrated-draft-v1`;
+- exact 13-criterion, nine-explanation, and five-capture-level checks pass;
+- placeholder or unverified evidence cannot pass the publication gate;
+- EN, AR, and FR language checks pass;
+- import rejection, lossless export, keyboard, axe, RTL, and cross-browser checks pass;
+- hosted evidence is captured, reviewed, and labelled with its true target;
+- the 48-case reflow matrix passes and the 55-artifact visual-audit evidence set is captured and reviewed;
+- native assistive-technology, linguistic, physical-touch, zoom, print-preview, and epistemic findings are recorded in `docs/manual-release-audit.md`;
+- workspace hygiene passes after generated outputs are ignored or removed.
 
-## v1.3.0-bio stable release archive
+## CI contract
 
-The stable `v1.3.0-bio` pass promotes the locked release-candidate baseline to the stable release line. No product behavior changes are included. Use `docs/stable-release-archive.md` for tag, archive, and generated-artifact rules.
+GitHub Actions uses npm only:
+
+1. `npm ci`
+2. `npm run upgrade:layout`
+3. `npm run test:ci:no-browser`
+4. `npx playwright install --with-deps`
+5. `npm run test:ci:browser`
+
+The browser job depends on the no-browser job and uploads hosted evidence even when a browser assertion fails.
+
+## Feature freeze
+
+Do not add analytical or visualization capabilities during RC validation. Only release-blocking correctness, accessibility, localization, layout, evidence, or documentation fixes belong in this candidate.

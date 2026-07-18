@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jarbou3i.example/schema/biopolitical-migrated-draft-v1.schema.json",
+  "title": "Jarbou3i Biopolitical Migrated Draft Contract v1",
+  "description": "A deliberately incomplete review state produced from the historical six-layer Biopolitical format. It preserves source material and gaps without claiming canonical Training Map v2.1 validity.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "analysis_contract",
+    "contract_status",
+    "analysis_lens",
+    "analysis_id",
+    "language",
+    "subject",
+    "migration"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "analysis_contract": { "const": "biopolitical-migrated-draft-v1" },
+    "contract_status": { "const": "migrated_draft" },
+    "analysis_lens": { "const": "biopolitical" },
+    "analysis_id": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "language": { "enum": ["ar", "en", "fr"] },
+    "model_mode": { "type": "string" },
+    "subject": {
+      "type": "object",
+      "required": ["title", "context", "research_question", "executive_finding"],
+      "properties": {
+        "title": { "type": "string" },
+        "context": { "type": "string" },
+        "research_question": { "type": "string" },
+        "executive_finding": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "migration": {
+      "type": "object",
+      "required": ["from_schema", "adapter", "warnings", "canonical_target"],
+      "properties": {
+        "from_schema": { "type": "string" },
+        "adapter": { "const": "legacy-six-layer-to-biopolitical-draft-v1" },
+        "warnings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "canonical_target": { "const": "biopolitical-training-map-v2@2.1.0" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

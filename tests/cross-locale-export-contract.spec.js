@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 
-const EXPECTED_VERSION = '1.3.0-bio';
+const EXPECTED_VERSION = '2.0.0-bio-rc.11';
 
 const LOCALES = [
   { id: 'ar', button: '#langAr', dir: 'rtl' },
@@ -18,8 +18,16 @@ const LENSES = [
   },
   {
     id: 'biopolitical',
-    title: 'Biopolitical Analysis Report',
-    chain: 'Problematization → Populations / Subjects → Governance Techniques',
+    title: {
+      ar: 'تقرير التحليل الحيوسياسي — خريطة التدريب 2',
+      en: 'Biopolitical Analysis Report — Training Map v2',
+      fr: 'Rapport d’analyse biopolitique — Carte d’entraînement v2'
+    },
+    chain: {
+      ar: 'السؤال ← الوظيفة الإنسانية ← منظومة القوة',
+      en: 'Question → Human function → Power system',
+      fr: 'Question → Fonction humaine → Système de pouvoir'
+    },
     forbidden: 'Strategic Analysis Report'
   }
 ];
@@ -31,20 +39,27 @@ async function exportLocalizedSample(page, testInfo, locale, lens) {
   await page.locator(locale.button).click();
   await expect(page.locator('html')).toHaveAttribute('lang', locale.id);
   await expect(page.locator('html')).toHaveAttribute('dir', locale.dir);
+  await page.locator('#analysisLang').selectOption(locale.id);
 
   await page.locator(`[data-lens="${lens.id}"]`).click();
-  await expect(page.locator(`[data-lens="${lens.id}"]`)).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator(`[data-lens="${lens.id}"]`)).toHaveAttribute('aria-checked', 'true');
 
   await page.locator('#loadSampleBtn').click();
   await expect(page.locator('#reviewPanel')).toBeVisible();
   await expect(page.locator('#reviewContent')).toContainText(/\S/);
 
-  await page.locator('[data-review="exports"]').click();
+  const exportTab = page.locator(lens.id === 'biopolitical' ? '[data-bio-review="exports"]' : '[data-review="exports"]');
+  await expect(exportTab).toBeVisible();
+  await exportTab.focus();
+  await expect(exportTab).toBeFocused();
+  await exportTab.press('Enter');
+  await expect(exportTab).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#exportHtml')).toBeVisible();
 
-  const downloadPromise = page.waitForEvent('download');
-  await page.locator('#exportHtml').click();
-  const download = await downloadPromise;
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('#exportHtml').click()
+  ]);
   const filePath = testInfo.outputPath(`${locale.id}-${lens.id}-export.html`);
   await download.saveAs(filePath);
   await testInfo.attach(`${locale.id}-${lens.id}-export.html`, { path: filePath, contentType: 'text/html' });
@@ -62,8 +77,12 @@ test.describe('Cross-locale HTML export contract', () => {
         expect(html).toContain(`name="analysis-lens" content="${lens.id}"`);
         expect(html).toContain(`data-analysis-lens="${lens.id}"`);
         expect(html).toContain(`data-export-contract-lens="${lens.id}"`);
-        expect(html).toContain(lens.title);
-        expect(html).toContain(lens.chain);
+        expect(html).toContain(typeof lens.title === 'string' ? lens.title : lens.title[locale.id]);
+        expect(html).toContain(typeof lens.chain === 'string' ? lens.chain : lens.chain[locale.id]);
+        if (lens.id === 'biopolitical') {
+          expect(html).toContain('name="analysis-contract" content="biopolitical-training-map-v2"');
+          expect(html).toContain('name="schema-version" content="2.1.0"');
+        }
         expect(html).not.toContain(lens.forbidden);
       });
     }

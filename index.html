@@ -7,19 +7,18 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="description" content="Jarbou3i Model is a trilingual, client-side dual-lens analysis workbench for strategic and biopolitical analysis with schema-governed AI prompts, JSON import, diagnostics, contradictions, scenarios, and HTML report export." />
+<meta name="description" content="Jarbou3i Model is a trilingual, client-side workbench with independent Strategic v1.1 and Biopolitical Training Map v2 analysis contracts, evidence-calibrated JSON import, diagnostics, and HTML report export." />
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#255ee8" />
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#020817" />
 <meta name="color-scheme" content="light dark" />
 <meta property="og:title" content="Jarbou3i Model — Dual-Lens Analysis Workbench" />
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
-<meta property="og:image" content="assets/jarbou3i-mascot-512.png" />
-<meta property="og:image:width" content="512" />
-<meta property="og:image:height" content="512" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="1.3.0-bio" />
+<meta name="app-version" content="2.0.0-bio-rc.11" />
 <link rel="stylesheet" href="src/styles.css" />
+<link rel="stylesheet" href="src/relationship-explorer.css" />
+<link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
 </head>
 <body>
 <noscript><div style="margin:24px;padding:16px;border:1px solid #c8d4e5;border-radius:16px;background:#fff;color:#122033;font-family:system-ui,sans-serif">Jarbou3i Model requires JavaScript to run locally in your browser.</div></noscript>
@@ -33,10 +32,10 @@
       </div>
     </div>
     <div class="topActions">
-      <div class="segment" aria-label="Language selector" id="languageSegment">
-        <button class="segBtn active" id="langAr" type="button">عربي</button>
-        <button class="segBtn" id="langEn" type="button">EN</button>
-        <button class="segBtn" id="langFr" type="button">FR</button>
+      <div class="segment" role="radiogroup" aria-label="Language selector" id="languageSegment">
+        <button class="segBtn active" id="langAr" type="button" role="radio" aria-checked="true" tabindex="0">عربي</button>
+        <button class="segBtn" id="langEn" type="button" role="radio" aria-checked="false" tabindex="-1">EN</button>
+        <button class="segBtn" id="langFr" type="button" role="radio" aria-checked="false" tabindex="-1">FR</button>
       </div>
       <button class="btn iconBtn" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle">◐</button>
     </div>
@@ -51,7 +50,7 @@
         </div>
       </div>
       <div class="welcomeCard" id="welcomeCard">
-        <img class="welcomeMascot" src="assets/jarbou3i-mascot-512.png" width="118" height="118" decoding="async" fetchpriority="high" alt="">
+        <img class="welcomeMascot" src="assets/jarbou3i-mascot-512.png" width="118" height="118" decoding="sync" fetchpriority="high" alt="">
         <div class="welcomeText">
           <div class="welcomeEyebrow" data-i18n="welcomeEyebrow">Tool guide</div>
           <h3 class="welcomeTitle" data-i18n="welcomeTitle">Welcome to Jarbou3i Model</h3>
@@ -70,15 +69,11 @@
               <label class="label" for="analysisLang" data-i18n="analysisLang">لغة التحليل</label>
               <select id="analysisLang"><option value="ar" data-i18n-option="optionArabic">العربية</option><option value="en" data-i18n-option="optionEnglish">الإنجليزية</option><option value="fr" data-i18n-option="optionFrench">الفرنسية</option></select>
             </div>
-            <div class="field">
-              <label class="label" for="assistantPreset" data-i18n="assistantPreset">المساعد المفضل</label>
-              <select id="assistantPreset"><option value="chatgpt">ChatGPT</option><option value="claude">Claude</option><option value="gemini">Gemini</option><option value="perplexity">Perplexity</option><option value="custom">Custom</option></select>
-            </div>
             <div class="field lensField">
               <label class="label" for="analysisLens" data-i18n="analysisLens">عدسة التحليل</label>
               <div class="lensToggle" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
-                <button class="lensBtn active" type="button" data-lens="strategic" aria-pressed="true" data-i18n="lensStrategic">استراتيجي</button>
-                <button class="lensBtn" type="button" data-lens="biopolitical" aria-pressed="false" data-i18n="lensBiopolitical">حيوسياسي</button>
+                <button class="lensBtn active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0" data-i18n="lensStrategic">استراتيجي</button>
+                <button class="lensBtn" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1" data-i18n="lensBiopolitical">حيوسياسي</button>
               </div>
               <div class="lensHint" id="analysisLensHint">مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.</div>
             </div>
@@ -137,7 +132,7 @@
       </div>
       <div class="reviewShell">
         <nav class="sideNav" id="reviewNav" role="tablist" aria-label="Analysis review sections"></nav>
-        <div class="contentPanel" id="reviewContent" role="tabpanel" aria-live="polite"></div>
+        <div class="contentPanel" id="reviewContent" role="tabpanel" tabindex="0" aria-live="polite"></div>
       </div>
     </section>
   </main>
@@ -157,6 +152,14 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="src/biopolitics-schema-validator.js" defer></script>
+<script src="src/biopolitics-sample-i18n.js" defer></script>
+<script src="src/biopolitics.js" defer></script>
+<script src="src/biopolitics-integrity.js" defer></script>
+<script src="src/biopolitics-graph.js" defer></script>
+<script src="src/reference-ui.js" defer></script>
+<script src="src/relationship-explorer.js" defer></script>
+<script src="src/json-parser.js" defer></script>
 <script src="src/app.js" defer></script>
 </body>
 </html>

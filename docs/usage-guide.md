@@ -1,177 +1,130 @@
 # Usage Guide
 
-## 1. Enter a topic
+## Choose the lens before generating a prompt
 
-Write the event, conflict, trend, policy, actor, institution, life-process, population question, or governance problem you want to analyze.
+Use Strategic for interests, actors, instruments, narratives, results, feedback, contradictions, and scenarios.
 
-Strategic example:
+Use Biopolitical v2 when the question concerns how human capacities, bodies, populations, relations, environments, or systems of meaning become governed, measured, optimized, protected, commercialized, disciplined, excluded, or resisted.
 
-```text
-World War II outcomes, 1939–1947, international order
-```
+Switching lenses clears an imported analysis from the other contract so its fields cannot be reviewed or exported under the wrong method.
 
-Biopolitical example:
+## Generate the analysis
 
-```text
-Digital health passports and population risk classification, 2020–2022
-```
+1. Select the interface language and the analysis output language separately.
+2. Select the lens.
+3. Enter a specific topic.
+4. Add a time and geographic context where possible.
+5. Choose Focused, Expert, or Research.
+6. Preview or copy the prompt.
+7. Run it in the AI assistant of your choice.
+8. Copy the returned JSON.
 
-## 2. Choose language, lens, and mode
+Research mode asks for the strongest evidence metadata and causal links. Focused mode remains concise but does not omit intervention classification, rival explanations, calibrated judgment, or the self-audit.
 
-Select the analysis language, the analysis lens, and the prompt mode.
+## Import JSON
 
-### Strategic lens
+Paste the JSON into the import field. The app accepts plain JSON and commonly encountered code-fence or surrounding-text wrappers.
 
-Use this for geopolitical, institutional, strategic, or power-balance analysis.
-
-Model:
-
-```text
-Interests → Actors → Tools → Narrative → Results → Feedback
-```
-
-### Biopolitical lens
-
-Use this for analysis of how power governs life, bodies, populations, risk, norms, health, conduct, discipline, care, exclusion, and resistance.
-
-Model:
-
-```text
-Problematization → Populations → Governance Techniques → Norms/Subjectivation → Embodied Outcomes → Resistance/Feedback
-```
-
-### Prompt modes
-
-- **Focused** for a concise structured result.
-- **Expert** for evidence, assumptions, and causal links.
-- **Research** for source discipline, counter-evidence, uncertainty, and falsifiers.
-
-## 3. Copy the prompt
-
-Click **Copy prompt** and paste it into your preferred AI assistant.
-
-The prompt changes with the selected lens. Biopolitical mode explicitly asks for populations, governance techniques, normalization, subjectivation, embodied outcomes, resistance, and disconfirming conditions.
-
-## 4. Copy only the JSON result
-
-The AI should return valid JSON. Copy only the JSON object. If the AI wraps it in a code block or adds text around it, the tool will usually extract the JSON automatically.
-
-## 5. Import and review
-
-Paste the JSON into the import field and click **Import analysis**. Then inspect:
-
-- Overview
-- Layers / Governance layers
-- Contradictions
-- Scenarios
-- Evidence
-- Exports
-
-Old strategic JSON remains import-compatible. New biopolitical JSON should include:
+The imported `analysis_lens` controls the final lens:
 
 ```json
-"analysis_lens": "biopolitical"
+{"analysis_lens": "strategic"}
 ```
 
-## 6. Read the quality score
-
-Strategic mode keeps the original strategy-focused score: completeness, causal coherence, contradiction quality, scenario testability, evidence grounding, and readiness.
-
-Biopolitical mode uses the same visible score slots but changes the internal interpretation. It checks whether the analysis actually identifies:
-
-- problematization of a life/population process
-- populations or subjects being classified, measured, protected, optimized, disciplined, or excluded
-- concrete governance techniques
-- normalization and subjectivation
-- embodied or social outcomes
-- resistance, adaptation, normalization feedback, or institutional learning
-
-This prevents a cosmetic vocabulary shift where the app says “biopolitical” but still scores like a geopolitical model.
-
-## 7. Export
-
-Use **Export HTML report** to download a polished standalone report for sharing or archiving. The export subtitle and layer labels follow the active lens.
-
-## Preview/root caution
-
-Run release gates from the repository root. Passing tests inside a temporary `preview/` folder is useful for inspection, but it does not prove the deployable root app is green.
-
-## Important caution
-
-This tool structures analysis. It does not automatically verify facts. Always verify claims, sources, and interpretations independently.
-
-For biopolitical analysis, avoid assuming that every public-health, welfare, education, or security intervention is only domination. The stronger analysis distinguishes protection, care, optimization, discipline, exclusion, normalization, and resistance.
-
-
-## Export contract
-
-From v1.3.0-bio onward, downloaded HTML reports include explicit `app-version` and `analysis-lens` metadata. Use this to verify whether an archived report was generated under the Strategic or Biopolitical lens. The browser export contract test downloads both reports through the UI and attaches them as evidence artifacts.
-
-## Lens import contract
-
-From v1.3.0-bio onward, imported JSON is authoritative for the analysis lens. If a JSON result contains:
+or:
 
 ```json
-"analysis_lens": "strategic"
+{
+  "analysis_lens": "biopolitical",
+  "schema_version": "2.1.0",
+  "analysis_contract": "biopolitical-training-map-v2",
+  "contract_status": "canonical"
+}
 ```
 
-the app switches to the Strategic lens even if the UI toggle previously displayed Biopolitical. If it contains:
+A Biopolitical v1.1 six-array file becomes `biopolitical-migrated-draft-v1@1.0.0` and is visibly marked as non-canonical. The adapter does not fill unsupported conclusions. Unknown and future contract versions are rejected.
 
-```json
-"analysis_lens": "biopolitical"
-```
+## Review a Biopolitical v2 analysis
 
-the app switches to the Biopolitical lens even if the UI toggle previously displayed Strategic.
+### Overview
 
-This prevents a wrong-lens review/export caused by stale UI state.
+Read the executive finding, overall readiness, six diagnostic dimensions, missing requirements, and the next best action.
 
-## Cross-locale export QA
+The score combines:
 
-The browser QA now exports reports in Arabic, English, and French for both lenses. The tests verify the exported HTML language direction and the machine-readable report metadata:
+- 15% question and context;
+- 20% mechanism trace;
+- 20% evidence integrity;
+- 15% distribution and consent;
+- 15% explanatory pluralism;
+- 15% agency and alternatives.
+
+It is a readiness measure, not a truth probability.
+
+### Protocol
+
+Inspect all nine pillars:
+
+1. Question and context
+2. Human functions
+3. Actors and populations
+4. Mechanisms and infrastructure
+5. Meaning and classification
+6. Intervention and capture test
+7. Distribution and effects
+8. Evidence and explanations
+9. Agency and alternatives
+
+Key reading rule: an affected population is not automatically a governing actor. Likewise, a public benefit does not disprove control, and control does not by itself prove capture.
+
+### Evidence test
+
+Review each claim’s epistemic type, source tier, locator, measurement and causal design, replication, conflicts, missing data, selection, applicability, claim/source fit, verification state, limitations, uncertainty, confidence, and counter-evidence. Compare all nine rival explanation families and their falsifiers.
+
+Empty URLs or placeholder source titles in the bundled sample demonstrate structure only. Replace them with verified, case-specific evidence before publication.
+
+### Judgment
+
+The conclusion separates:
+
+- strongly supported;
+- plausible but unconfirmed;
+- disputed;
+- unknown;
+- evidence that would change the conclusion.
+
+Resolve every `concern` in the 18-point self-audit before treating the report as publication-ready.
+
+### Export
+
+Download the standalone HTML report for human review and canonical JSON for lossless verification, re-import, or archival. The HTML report also embeds the complete JSON payload. A Biopolitical v2.1 report carries:
 
 ```html
-<meta name="analysis-lens" content="strategic|biopolitical">
-<main data-analysis-lens="strategic|biopolitical">
-<section data-export-contract-lens="strategic|biopolitical">
+<meta name="analysis-lens" content="biopolitical">
+<meta name="analysis-contract" content="biopolitical-training-map-v2">
+<meta name="schema-version" content="2.1.0">
 ```
 
-Use `npm run test:browser:locale` for focused cross-locale export coverage.
+Report language and direction follow the imported analysis `language`, even if the interface is currently displayed in another language.
 
-## v1.3.0-bio review title lens contract
+Strategic reports retain their independent Strategic identity.
 
-The visible review heading now reflects the active/imported lens: Strategic imports render a Strategic review title, and Biopolitical imports render a Biopolitical review title. The stable `#reviewTitle` anchor remains available for browser contracts.
+## Verification
 
-## v1.3.0-bio release validation
-
-Before locking or pushing a release branch, clean generated artifacts and run the stable aliases from repository root:
+Run the no-browser contract suite:
 
 ```bash
 npm run test:ci:no-browser
-npm run test:ci:browser
 ```
 
-The deployable app is root-only. Do not keep `preview/`, `biopreview/`, patch staging folders, Playwright reports, test-results, or patch ZIPs in the release root.
-
-
-## v1.3.0-bio hosted demo evidence
-
-Run `npm run test:browser:hosted` to capture public UI evidence from the root app. The gate records desktop and mobile screenshots, Strategic and Biopolitical mode screenshots, visible-text snapshots for Arabic, English, and French, and a metadata file. Remove generated evidence folders before commit and run `npm run test:hygiene`.
-
-## v1.3.0-bio evidence artifact review
-
-The hosted-demo evidence artifact can now be reviewed independently after browser capture. Run:
+Run browser coverage:
 
 ```bash
-npm run test:browser:hosted
-node tests/hosted-demo-evidence-review-check.mjs hosted-demo-evidence-local
+npm run test:browser
 ```
 
-The review validates required screenshots, visible-text snapshots, metadata, app version, lens controls, Arabic RTL, and English/French LTR contracts.
+The suite checks both lenses, v2 and migrated imports, Arabic RTL, English/French LTR, mobile layout, accessibility, and cross-locale exports.
 
-## v1.3.0-bio final handoff
+## Analytical caution
 
-The Stable release freezes the dual-lens biopolitical baseline without feature expansion. Use `docs/final-handoff.md` as the operator handoff for source-of-truth rules, validation commands, evidence review, CI expectations, and release-freeze boundaries.
-
-## v1.3.0-bio stable release archive
-
-The stable `v1.3.0-bio` pass promotes the locked release-candidate baseline to the stable release line. No product behavior changes are included. Use `docs/stable-release-archive.md` for tag, archive, and generated-artifact rules.
+Do not infer malicious intent from system effects alone. Distinguish deliberate violence, reckless indifference, structural exposure, administrative failure, and unintended harm. Test public-interest and less critical explanations against political-economy and critical-biopolitical accounts. Verify all facts and sources independently.

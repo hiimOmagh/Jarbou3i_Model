@@ -1,22 +1,34 @@
 {
   "name": "jarbou3i-model",
-  "version": "1.3.0-bio",
+  "version": "2.0.0-bio-rc.11",
   "private": true,
-  "description": "Jarbou3i Model: a modular, client-side trilingual dual-lens workbench with stable evidence artifact review, hosted-demo public UI lock checks, CI hygiene, lens import contracts, cross-locale export QA, lens-aware strategic and biopolitical scoring, schema-governed prompts, and HTML report export.",
+  "description": "Jarbou3i Model: a trilingual dual-lens workbench with a preserved Strategic engine and a first-class Biopolitical Training Map v2.1 contract covering human functions, power systems, capture tests, distribution, evidence, agency, alternatives, and calibrated judgment.",
   "scripts": {
-    "dev": "http-server . -p 4173 -c-1",
-    "test": "npm run test:qa && npm run test:browser",
+    "dev": "node scripts/static-server.mjs",
+    "upgrade:layout": "node scripts/migrate-release-layout.mjs",
+    "test": "npm run test:ci",
+    "build:validator": "node scripts/generate-biopolitical-validator.mjs",
+    "build:fixtures:bio": "node scripts/generate-biopolitical-fixtures.mjs",
     "test:qa": "node tests/qa-check.mjs && node tests/source-of-truth-check.mjs",
     "test:ci:contract": "node tests/ci-script-contract-check.mjs",
     "test:static": "node tests/static-check.mjs",
+    "test:bio:v2": "node tests/biopolitical-v2-contract-check.mjs",
+    "test:bio:integrity": "node tests/biopolitical-integrity-check.mjs",
+    "test:bio:graph": "node tests/biopolitical-graph-check.mjs",
+    "test:parser": "node tests/json-parser-check.mjs",
+    "test:layout:migration": "node tests/release-layout-migration-check.mjs",
+    "test:i18n:bio": "node tests/biopolitical-language-check.mjs",
     "test:schema": "node tests/schema-check.mjs",
     "test:fixtures": "node tests/fixtures-check.mjs",
     "test:a11y:static": "node tests/a11y-static-check.mjs",
-    "test:ci:no-browser": "npm run test:qa && npm run test:static && npm run test:schema && npm run test:fixtures && npm run test:a11y:static && npm run test:ci:contract && npm run test:hygiene",
-    "test:browser:core": "playwright test tests/a11y.spec.js tests/smoke.spec.js tests/rtl-mobile.spec.js tests/export-contract.spec.js tests/lens-import-contract.spec.js tests/cross-locale-export-contract.spec.js",
-    "test:browser:hosted": "playwright test tests/hosted-demo-evidence.spec.js --workers=1",
-    "test:browser": "npm run test:browser:core && npm run test:browser:hosted",
-    "test:ci:browser": "npm run test:browser && npm run test:evidence:hosted",
+    "test:ci:no-browser": "npm run build:validator && npm run test:qa && npm run test:static && npm run test:bio:v2 && npm run test:bio:integrity && npm run test:bio:graph && npm run test:schema && npm run test:fixtures && npm run test:parser && npm run test:layout:migration && npm run test:i18n:bio && npm run test:a11y:static && npm run test:ci:contract && npm run test:hygiene",
+    "test:browser:audit": "playwright test tests/release-audit-matrix.spec.js",
+    "test:browser:reflow": "playwright test tests/reflow-audit.spec.js",
+    "test:browser:visual-audit": "playwright test tests/visual-audit-evidence.spec.js --project=chromium --workers=1 && npm run test:evidence:visual-audit",
+    "test:browser:core": "playwright test tests/a11y.spec.js tests/smoke.spec.js tests/rtl-mobile.spec.js tests/export-contract.spec.js tests/export-completeness.spec.js tests/lens-import-contract.spec.js tests/import-validation.spec.js tests/cross-locale-export-contract.spec.js tests/sample-language-contract.spec.js tests/reference-resolution.spec.js tests/relationship-explorer.spec.js tests/release-audit-matrix.spec.js tests/reflow-audit.spec.js",
+    "test:browser:hosted": "playwright test tests/hosted-demo-evidence.spec.js --project=chromium --project=mobile-chrome --workers=1 && npm run test:evidence:hosted",
+    "test:browser": "npm run test:browser:core && npm run test:browser:hosted && npm run test:browser:visual-audit",
+    "test:ci:browser": "npm run test:browser",
     "test:ci": "npm run test:ci:no-browser && npm run test:ci:browser",
     "test:e2e": "playwright test tests/smoke.spec.js",
     "test:rtl": "playwright test tests/rtl-mobile.spec.js",
@@ -25,10 +37,12 @@
     "test:hygiene": "node tests/workspace-hygiene-check.mjs",
     "test:browser:import": "playwright test tests/lens-import-contract.spec.js",
     "test:browser:locale": "playwright test tests/cross-locale-export-contract.spec.js",
-    "test:evidence:hosted": "node tests/hosted-demo-evidence-review-check.mjs"
+    "test:evidence:hosted": "node tests/hosted-demo-evidence-review-check.mjs",
+    "test:evidence:visual-audit": "node tests/visual-audit-evidence-review-check.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.56.0",
-    "http-server": "^14.1.1"
+    "ajv": "^8.17.1"
   }
 }

@@ -10,12 +10,8 @@ const root = process.cwd();
 const forbiddenPaths = [
   'preview',
   'biopreview',
-  'playwright-report',
-  'test-results',
   'dist',
-  'ci-artifacts',
-  'hosted-demo-evidence',
-  'hosted-demo-evidence-local'
+  'ci-artifacts'
 ];
 
 for (const name of forbiddenPaths) {

@@ -1,23 +1,41 @@
-# Security Policy
+# Security and Safety Policy
 
 ## Scope
 
-Strategic Analysis Workbench is a static client-side browser tool. It does not include a backend service, database, authentication system, or server-side processing.
+Jarbou3i Model is a static client-side tool. It has no backend, database, authentication, analytics, or server-side processing. The browser validator and semantic-integrity gate run locally.
 
-## Sensitive content warning
+## Sensitive content
 
-The tool generates prompts that users may paste into external AI assistants. Do not include confidential, personal, classified, legally sensitive, proprietary, or regulated information unless you understand the destination AI provider's privacy and retention policies.
+Generated prompts may be pasted into external AI assistants. Do not include confidential, classified, proprietary, personal, legally sensitive, or regulated information unless you are authorized and understand the destination provider’s retention and privacy policies.
 
-## Reporting issues
+Biopolitical analysis can involve health, disability, identity, movement, work, citizenship, and other sensitive domains. Do not use the tool to profile individuals, infer sensitive traits from weak proxies, convert group findings into individual predictions, target vulnerable groups, facilitate coercive surveillance, or produce operational guidance for repression or manipulation.
 
-Open a GitHub issue for:
+## Untrusted input boundary
 
-- XSS or unsafe HTML rendering concerns
-- privacy-sensitive behavior
-- unexpected network requests
-- export/download bugs
-- broken Arabic/RTL rendering that could misrepresent analysis
+Imported JSON is untrusted input. The application:
+
+- parses it conservatively without altering URLs or comment-like string content;
+- rejects unknown and future Biopolitical contracts;
+- validates canonical data before normalization;
+- checks global IDs and typed references;
+- escapes all rendered and exported human-readable values;
+- embeds export JSON with script-closing characters neutralized.
+
+The generated Biopolitical prompt also encloses topic and context as untrusted analytical material and instructs the model not to follow embedded commands.
+
+## Reporting
+
+Report security or safety issues for:
+
+- XSS, unsafe rendering, or unsafe JSON/HTML export;
+- schema-validation or contract-bypass behavior;
+- privacy-sensitive or discriminatory behavior;
+- unexpected network requests;
+- false publication-ready status or evidence-verification bypass;
+- broken Arabic/RTL rendering that could materially alter meaning.
+
+Include the app version, browser, minimal reproduction, expected result, and observed result. Do not include real sensitive data in a public report.
 
 ## Expected network behavior
 
-The deployed app is intended to run without backend calls. Any future external resource, analytics, or API dependency should be documented in the README and reviewed before release.
+The deployed application should function without runtime network calls. Any future analytics, API, font, CDN, or other external dependency must be documented and security-reviewed before release.

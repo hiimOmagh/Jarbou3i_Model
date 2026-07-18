@@ -1,148 +1,867 @@
 {
-  "schema_version": "1.1.0",
-  "analysis_id": "digital-health-passport-biopolitical",
-  "generated_at": "2026-06-07T00:00:00Z",
+  "schema_version": "2.1.0",
+  "analysis_contract": "biopolitical-training-map-v2",
+  "contract_status": "canonical",
+  "analysis_id": "health-pass-v2-en",
+  "generated_at": "2026-07-17T00:00:00Z",
+  "language": "en",
   "model_mode": "research",
   "analysis_lens": "biopolitical",
   "subject": {
-    "title": "Example: digital health passports",
-    "context": "2020–2022, mobility and public health",
-    "question": "How did digital health passports govern populations through risk, mobility, and proof of health status?",
-    "executive_thesis": "The health passport connected collective protection with differentiated control over mobility: it operationalized proof of health while normalizing classification of bodies by risk and compliance."
+    "title": "Digital health passes and conditional mobility",
+    "context": "2020–2022, selected European jurisdictions",
+    "research_question": "Under what conditions did digital health passes protect public health, and under what conditions did they create durable systems of classification and conditional mobility?",
+    "executive_finding": "Digital passes combined a legitimate public-health function with a new access-control infrastructure. Evidence supports a mixed intervention: protection and administrative coordination were real, while proportionality, reuse, unequal burdens, and practical exit varied by jurisdiction."
   },
-  "interests": [
-    {
-      "id": "P1",
-      "name": "Turn contagion into a verifiable mobility problem",
-      "type": "health",
-      "intensity": 5,
-      "horizon": "medium",
-      "stakes": "important",
-      "confidence": "high",
-      "rationale": "Movement became governable through certificates, risk thresholds, and proof of health status."
-    }
-  ],
-  "actors": [
-    {
-      "id": "POP1",
-      "name": "Vaccinated, tested, and uncertified persons",
-      "category": "population",
-      "financial": 2,
-      "decision_access": 1,
-      "disruption_capacity": 3,
-      "media_influence": 3,
-      "confidence": "high",
-      "rationale": "The population was segmented by proof status that conditioned access to selected spaces."
-    }
-  ],
-  "tools": [
-    {
-      "id": "GT1",
-      "name": "QR certificate and access control",
-      "type": "classification",
-      "cost": 3,
-      "risk": 4,
-      "speed": 5,
-      "reversibility": 3,
-      "deniability": 1,
-      "confidence": "high",
-      "rationale": "The QR code converted medical status into an authorization signal readable by institutions, platforms, and public venues."
-    }
-  ],
-  "narrative": [
-    {
-      "id": "N1",
-      "name": "Health responsibility as condition of participation",
-      "frame": "responsibility",
-      "coherence": 4,
-      "media_alignment": 4,
-      "public_acceptance": 3,
-      "confidence": "medium",
-      "rationale": "The responsible subject is framed as someone who makes health status verifiable to protect others."
-    }
-  ],
-  "results": [
-    {
-      "id": "O1",
-      "name": "Differentiated access to social space",
-      "type": "social",
-      "goal_achieved_pct": 65,
-      "cost_benefit": 3,
-      "power_balance_impact": "strengthened",
-      "confidence": "medium",
-      "rationale": "Access to work, transport, or leisure was modulated by health status, with both inclusionary and exclusionary effects."
-    }
-  ],
-  "feedback": [
-    {
-      "id": "RF1",
-      "description": "Legal contestation and validity-rule adaptation",
-      "adapts": "tools",
-      "speed": "fast",
-      "confidence": "high",
-      "rationale": "Resistance, litigation, and changing epidemiological conditions forced adjustments to validity periods, exemptions, and control conditions."
-    }
-  ],
-  "contradictions": {
-    "items": [
+  "framing": {
+    "contested_terms": [
       {
-        "id": "C1",
-        "rhetoric": "Collective protection",
-        "contradiction_type": "protection_vs_control",
-        "actions": [
-          "Condition ordinary access on health proof",
-          "Extend status checks beyond direct clinical care"
+        "term": "health pass",
+        "definitions": [
+          "A verifiable credential linking defined health information to an access decision."
         ],
-        "affected_layers": [
-          "tools",
-          "narrative",
-          "results"
+        "working_definition": "A verifiable credential linking defined health information to an access decision.",
+        "stakes": "The definition determines which practices count as health coordination versus generalized access control."
+      }
+    ],
+    "historical_context": {
+      "summary": "Pass systems emerged during an acute pandemic, building on pre-existing identity, vaccination, and border-control infrastructures.",
+      "turning_points": [
+        "Acute pandemic emergency",
+        "Deployment of interoperable credentials",
+        "Judicial and political review"
+      ],
+      "continuities": [
+        "Identity verification",
+        "Vaccination records",
+        "Border health controls"
+      ]
+    },
+    "official_problem_definition": "Verify defined health status to reduce avoidable transmission in selected settings.",
+    "critical_problem_definition": "Convert embodied status into an authorization condition for ordinary participation.",
+    "unknowns": [
+      "Long-term normalization effects cannot be inferred from short-term adoption alone."
+    ]
+  },
+  "legal_framework": {
+    "status": "assessed",
+    "jurisdictions": [
+      "2020–2022, selected European jurisdictions"
+    ],
+    "applicable_authorities": [
+      "Public-health law and data-protection law; exact instruments require jurisdiction-specific verification."
+    ],
+    "rights_engaged": [
+      "Privacy, non-discrimination, movement, work, and access to essential services."
+    ],
+    "safeguards_and_remedies": [
+      "Many schemes included sunset clauses, exemptions, free testing, judicial review, or were discontinued."
+    ],
+    "uncertainties": [
+      "Long-term normalization effects cannot be inferred from short-term adoption alone."
+    ]
+  },
+  "international_comparison": [
+    {
+      "id": "CMP1",
+      "jurisdiction_or_context": "2020–2022, selected European jurisdictions",
+      "comparison_basis": "Compare duration, exemptions, free alternatives, purpose limitation, appeal, and dismantling.",
+      "similarities": [
+        "Credential-based verification linked health information to access."
+      ],
+      "differences": [
+        "Many schemes included sunset clauses, exemptions, free testing, judicial review, or were discontinued."
+      ],
+      "transfer_limits": [
+        "Long-term normalization effects cannot be inferred from short-term adoption alone."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ],
+      "confidence": "low"
+    }
+  ],
+  "capture_levels": [
+    {
+      "level": "body",
+      "status": "present",
+      "finding": "The body level was explicitly considered; confidence remains limited by unverified fixture sources.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "level": "mind",
+      "status": "uncertain",
+      "finding": "The mind level was explicitly considered; confidence remains limited by unverified fixture sources.",
+      "evidence_ids": []
+    },
+    {
+      "level": "relationship",
+      "status": "uncertain",
+      "finding": "The relationship level was explicitly considered; confidence remains limited by unverified fixture sources.",
+      "evidence_ids": []
+    },
+    {
+      "level": "population",
+      "status": "present",
+      "finding": "The population level was explicitly considered; confidence remains limited by unverified fixture sources.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "level": "environment",
+      "status": "not_applicable",
+      "finding": "The environment level was explicitly considered; confidence remains limited by unverified fixture sources.",
+      "evidence_ids": []
+    }
+  ],
+  "theoretical_comparison": [
+    {
+      "id": "THEORY1",
+      "tradition": "Governmentality and political economy",
+      "contribution": "Governmentality traces classification and conduct; political economy tests ownership, labor, profit, and distributed costs.",
+      "limitations": [
+        "Neither tradition alone establishes intent, effectiveness, or proportionality."
+      ],
+      "relevance": "relevant",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    }
+  ],
+  "human_functions": [
+    {
+      "id": "HF1",
+      "domain": "biological",
+      "name": "Mobility, health protection, and social participation",
+      "scientific_definition": "Population-level infection risk interacts with individual health status and exposure.",
+      "lived_context": "People experienced the same credential as protection, administrative burden, exclusion, or reassurance depending on risk, work, and legal context.",
+      "governed_variation": "Different credentials and exemptions produced different access categories.",
+      "authority_defining_normality": "Public-health authorities",
+      "refusal_conditions": "Refusal was meaningful only where free alternatives and non-essential settings existed.",
+      "confidence": "medium"
+    }
+  ],
+  "power_map": {
+    "actors": [
+      {
+        "id": "ACT1",
+        "name": "Public-health authorities",
+        "role": "decision_maker",
+        "formal_mandate": "Protect public health under applicable law.",
+        "material_interests": [
+          "Administrative coordination",
+          "Institutional legitimacy"
         ],
-        "interpretation": "A protective logic also produced an infrastructure of sorting and conditional mobility.",
-        "severity": 4,
+        "authority_sources": [
+          "Public-health law",
+          "Expertise"
+        ],
+        "funding": [
+          "Public budget"
+        ],
+        "information_advantages": [
+          "Epidemiological data"
+        ],
+        "enforcement_capacities": [
+          "Access rules"
+        ],
+        "dependencies": [
+          "Legislative authority",
+          "Technical vendors"
+        ],
+        "stated_objectives": [
+          "Reduce transmission risk"
+        ],
+        "plausible_unstated_incentives": [
+          "Demonstrate governability during crisis"
+        ],
+        "internal_disagreements": [
+          "Scope and duration"
+        ],
+        "accountability": [
+          "Courts",
+          "Legislatures",
+          "Data-protection authorities"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "affected_populations": [
+      {
+        "id": "POP1",
+        "name": "Workers and residents subject to access checks",
+        "classification": "Eligible / temporarily ineligible for specified settings",
+        "exposure": [
+          "Access checks"
+        ],
+        "benefits": [
+          "Lower-friction verification during an acute health emergency."
+        ],
+        "burdens": [
+          "Exclusion and unequal burden where testing, vaccination, documentation, or appeal were inaccessible."
+        ],
+        "agency": "Litigation, protest, technical workarounds, and demands for sunset clauses changed implementation.",
+        "missing_from_record": false,
+        "confidence": "medium"
+      }
+    ],
+    "institutions": [
+      {
+        "id": "INST1",
+        "name": "Credential verification network",
+        "mandate": "Implement defined access rules.",
+        "role": "implementation",
+        "accountability": [
+          "Purpose limitation",
+          "Audit",
+          "Appeal"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "power_asymmetries": [
+      {
+        "id": "ASYM1",
+        "between": [
+          "ACT1",
+          "POP1"
+        ],
+        "resource": "infrastructure",
+        "effect": "Authorities and venues could condition access; individuals had uneven ability to contest errors.",
+        "confidence": "high"
+      }
+    ]
+  },
+  "mechanisms": {
+    "instruments": [
+      {
+        "id": "INS1",
+        "name": "QR credential and verification rule",
+        "type": "infrastructure",
+        "mechanism": "Transforms a defined health status into a machine-readable access decision.",
+        "scale": [
+          "individual",
+          "institutional",
+          "national"
+        ],
+        "stated_purpose": "Lower-friction verification during an acute health emergency.",
+        "ownership": "Mixed public rules and public/private technical infrastructure.",
+        "oversight": "Varied by jurisdiction.",
+        "confidence": "high"
+      }
+    ],
+    "infrastructures": [
+      {
+        "id": "INF1",
+        "name": "Credential issuance and verification infrastructure",
+        "owner": "Public authorities and contracted technical providers",
+        "dependency_created": "Access could depend on device, documentation, testing, or recognized credential.",
+        "actions_enabled_or_blocked": [
+          "Entry to regulated settings"
+        ],
+        "access_conditions": [
+          "Valid credential or recognized exemption"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "political_economy": [
+      {
+        "id": "PE1",
+        "ownership": "Mixed public and vendor control",
+        "labor": "Healthcare, administrative, and venue staff",
+        "profit": "Vendor contracts and compliance services",
+        "unpaid_care": "Households absorbed scheduling and documentation work",
+        "privatized_risks": [
+          "Time and access costs"
+        ],
+        "socialized_costs": [
+          "Public testing and administration"
+        ],
+        "scarcity_mechanism": "Unequal access to tests and documents",
+        "dependency_model": "Credential-dependent access",
+        "confidence": "medium"
+      }
+    ],
+    "power_modes": [
+      {
+        "mode": "biopower",
+        "mechanism": "Population risk was administered through individual credentials.",
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "high"
+      },
+      {
+        "mode": "datafication",
+        "mechanism": "Health status became standardized data used for access decisions.",
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "high"
+      }
+    ]
+  },
+  "meaning_systems": {
+    "norms": [
+      {
+        "id": "NORM1",
+        "name": "Responsible participation through verifiable status",
+        "definition": "Participation was framed as responsible when status could be verified.",
+        "authority": "Public-health authorities",
+        "subject_position": "The responsible, verifiable participant.",
+        "alternatives": [
+          "Universal precautions without status sorting"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "regimes_of_truth": [
+      {
+        "id": "RT1",
+        "claim": "Defined credentials were treated as operational proxies for lower risk.",
+        "authorizing_institutions": [
+          "Public-health authorities"
+        ],
+        "validation_procedure": "Policy and epidemiological review",
+        "funding_or_interest": "Public-health administration",
+        "excluded_knowledge": [
+          "Context-specific behavioral variation"
+        ],
+        "evidence_quality": "Mixed and time-sensitive",
+        "confidence": "medium"
+      }
+    ],
+    "classifications": [
+      {
+        "id": "CLASS1",
+        "category": "Eligible / temporarily ineligible for specified settings",
+        "definition": "Rule-based credential status",
+        "decision_use": "Access to specified settings",
+        "error_risks": [
+          "Outdated records",
+          "Unequal document access"
+        ],
+        "contestability": "Varied by jurisdiction",
+        "confidence": "high"
+      }
+    ],
+    "looping_effects": [
+      {
+        "id": "LOOP1",
+        "classification_id": "CLASS1",
+        "institutional_response": "Grant or deny access",
+        "altered_opportunity_or_identity": "Credential status became salient to participation",
+        "behavioral_adaptation": "Testing, vaccination, avoidance, protest, or workarounds",
+        "new_data": "Verification and uptake records",
+        "confirmation_or_revision": "Rules were extended, narrowed, or withdrawn",
+        "falsified_if": [
+          "No behavioral or institutional adaptation follows classification"
+        ],
         "confidence": "medium"
       }
     ]
   },
-  "scenarios": {
-    "items": [
+  "intervention_assessment": {
+    "interventions": [
       {
-        "id": "S1",
-        "name": "Durable normalization of risk proof",
-        "probability": 45,
-        "timeframe": "2–5 years",
-        "drivers": [
-          "Technical interoperability",
-          "Institutional acceptance",
-          "Recurring health crises"
+        "id": "IV1",
+        "name": "Conditional access using health evidence",
+        "target_function_ids": [
+          "HF1"
         ],
-        "early_signals": [
-          "Certificates reused for new risks",
-          "Extension into insurance or employment contexts"
+        "actor_ids": [
+          "ACT1"
         ],
-        "disproven_if": [
-          "Certificates are sunset without institutional reuse",
-          "Legal frameworks explicitly prohibit reuse"
+        "instrument_ids": [
+          "INS1"
         ],
-        "rationale": "A proof infrastructure can outlive the crisis that justified it."
+        "modality": "mixed",
+        "stated_benefit": "Lower-friction verification during an acute health emergency.",
+        "evidence_of_benefit": [
+          "E1"
+        ],
+        "documented_harms": [
+          "Exclusion and unequal burden where testing, vaccination, documentation, or appeal were inaccessible."
+        ],
+        "necessity": "partly_supported",
+        "proportionality": "mixed",
+        "dependency_created": "Credential or alternative proof could become necessary for participation.",
+        "consent": "Partial: participation and alternatives varied.",
+        "exit": "Stronger where sunset clauses and non-digital alternatives existed.",
+        "contestability": "Varied by appeal and correction mechanisms.",
+        "confidence": "medium"
+      }
+    ],
+    "capture_assessment": {
+      "status": "mixed_capture",
+      "criteria": [
+        {
+          "criterion": "knowledge_deficit",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "consent_failure",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "vulnerability_exploitation",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "unequal_distribution",
+          "status": "present",
+          "evidence_ids": [
+            "E1"
+          ],
+          "reason": "Access burdens varied with testing, documentation, work flexibility, and digital access."
+        },
+        {
+          "criterion": "disproportionate_power_or_profit",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "dependency_or_costly_exit",
+          "status": "present",
+          "evidence_ids": [
+            "E1"
+          ],
+          "reason": "Access to some settings depended on recognized proof or an available alternative."
+        },
+        {
+          "criterion": "alternatives_suppressed",
+          "status": "uncertain",
+          "evidence_ids": [
+            "E1",
+            "E2"
+          ],
+          "reason": "Testing, exemptions, and non-digital alternatives varied across jurisdictions."
+        },
+        {
+          "criterion": "behavior_optimized_without_oversight",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "choice_architecture_constraint",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "data_repurposing",
+          "status": "uncertain",
+          "evidence_ids": [
+            "E2"
+          ],
+          "reason": "Cross-domain reuse must be demonstrated rather than inferred from technical possibility."
+        },
+        {
+          "criterion": "human_capacity_commercialized",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "classification_not_contestable",
+          "status": "uncertain",
+          "evidence_ids": [],
+          "reason": "The structural fixture does not contain enough verified evidence for a firmer finding."
+        },
+        {
+          "criterion": "environmental_unavoidability",
+          "status": "not_applicable",
+          "evidence_ids": [],
+          "reason": "The case does not center an unavoidable environmental exposure."
+        }
+      ],
+      "counter_evidence": [
+        "Many schemes included sunset clauses, exemptions, free testing, judicial review, or were discontinued."
+      ],
+      "legitimate_benefits": [
+        "Lower-friction verification during an acute health emergency."
+      ],
+      "conclusion": "The intervention combined protection with conditional access. A capture finding depends on duration, alternatives, purpose limitation, reuse, and contestability.",
+      "confidence": "medium"
+    },
+    "care_control_tensions": [
+      {
+        "id": "TENSION1",
+        "care_claim": "Collective protection",
+        "control_effects": [
+          "Conditional access",
+          "Status verification"
+        ],
+        "interpretation": "Care and control overlapped without being identical.",
+        "severity": 3,
+        "confidence": "high"
       }
     ]
   },
+  "scale_time": {
+    "scales": [
+      "individual",
+      "institutional",
+      "national",
+      "transnational"
+    ],
+    "immediate_effects": [
+      "Faster status verification",
+      "Conditional access"
+    ],
+    "medium_term_adaptations": [
+      "Rule changes",
+      "Litigation",
+      "Behavioral adaptation"
+    ],
+    "intergenerational_effects": [],
+    "historical_continuities": [
+      "Identity and border health controls"
+    ],
+    "path_dependencies": [
+      "Investment in interoperable credential infrastructure"
+    ],
+    "future_feedback_loops": [
+      {
+        "id": "FUT1",
+        "name": "Cross-domain reuse",
+        "timeframe": "2–5 years",
+        "drivers": [
+          "Interoperability",
+          "Institutional sunk costs"
+        ],
+        "early_signals": [
+          "Use beyond the original health purpose"
+        ],
+        "falsified_if": [
+          "Infrastructure is dismantled and reuse is legally prohibited"
+        ],
+        "rationale": "Reusable infrastructure can outlast the emergency that justified it.",
+        "probability": 40
+      }
+    ]
+  },
+  "distribution": {
+    "items": [
+      {
+        "id": "DIST1",
+        "population_id": "POP1",
+        "benefits": [
+          "Lower-friction verification during an acute health emergency."
+        ],
+        "burdens": [
+          "Exclusion and unequal burden where testing, vaccination, documentation, or appeal were inaccessible."
+        ],
+        "protection": [
+          "Reduced exposure in some settings"
+        ],
+        "opportunity": [
+          "Access conditional on proof"
+        ],
+        "recognition": [
+          "Responsible participant identity"
+        ],
+        "profit": [
+          "Vendor and compliance revenue"
+        ],
+        "voice": [
+          "Uneven consultation"
+        ],
+        "risk": [
+          "Exclusion error"
+        ],
+        "surveillance": [
+          "Verification events"
+        ],
+        "discipline": [
+          "Behavior shaped by access conditions"
+        ],
+        "displacement": [],
+        "illness_injury_death": [
+          "Potential avoided infection; effect size context-dependent"
+        ],
+        "axes": [
+          "class",
+          "disability",
+          "age",
+          "citizenship"
+        ],
+        "scale": [
+          "individual",
+          "institutional"
+        ],
+        "time_horizon": "immediate and medium term",
+        "outcome_character": "uncertain",
+        "confidence": "medium"
+      }
+    ],
+    "inequality_dimensions": [
+      {
+        "axis": "class",
+        "mechanism": "Unequal access to testing, documentation, flexible work, and digital devices.",
+        "affected_groups": [
+          "Workers and residents subject to access checks"
+        ],
+        "evidence_ids": [
+          "E1"
+        ],
+        "confidence": "medium"
+      }
+    ],
+    "necropolitical_dimensions": []
+  },
+  "consent_exit": {
+    "consent_status": "partial",
+    "informed": "partial",
+    "specific": "partial",
+    "revocable": "partial",
+    "comprehensible": "partial",
+    "materially_voluntary": "partial",
+    "exit_conditions": [
+      "Free testing",
+      "Non-digital credential",
+      "Exemption",
+      "Sunset clause"
+    ],
+    "contestability": [
+      "Correction process",
+      "Administrative appeal",
+      "Judicial review"
+    ],
+    "accountability": [
+      "Data-protection oversight",
+      "Legislative review"
+    ]
+  },
+  "competing_explanations": [
+    {
+      "id": "EX1",
+      "type": "official",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "A temporary public-health coordination tool reduced avoidable transmission risk.",
+      "mechanism": "Risk verification and access coordination.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX2",
+      "type": "public_interest",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "The intervention sought a lower-friction way to protect shared spaces while reopening activity.",
+      "mechanism": "Collective-risk reduction through differentiated precautions.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX3",
+      "type": "political_economy",
+      "relevance": "relevant",
+      "evidentiary_status": "not_assessed",
+      "claim": "Contracting, compliance costs, and unequal work flexibility may have shaped implementation.",
+      "mechanism": "Costs and benefits are distributed through ownership, labor, and procurement.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX4",
+      "type": "institutional_inertia",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Reusable infrastructure can outlast the emergency that justified it.",
+      "mechanism": "Sunk costs and interoperability can favor continued institutional use.",
+      "supporting_evidence_ids": [
+        "E2"
+      ],
+      "counter_evidence_ids": [
+        "E1"
+      ],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX5",
+      "type": "security",
+      "relevance": "uncertain",
+      "evidentiary_status": "not_assessed",
+      "claim": "A broader security rationale may matter where health credentials intersect border control.",
+      "mechanism": "Identity and risk systems can converge at borders.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX6",
+      "type": "cultural",
+      "relevance": "relevant",
+      "evidentiary_status": "not_assessed",
+      "claim": "Norms of solidarity, responsibility, and bodily autonomy shaped acceptance and refusal.",
+      "mechanism": "Competing moral frames changed how the same rule was interpreted.",
+      "supporting_evidence_ids": [],
+      "counter_evidence_ids": [],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX7",
+      "type": "technological",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Interoperable QR infrastructure made rapid status verification administratively feasible.",
+      "mechanism": "Standardized credentials reduce verification cost and increase scalability.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX8",
+      "type": "critical_biopolitical",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "The pass normalized infrastructural classification of bodies and conditional participation.",
+      "mechanism": "Datafication and classification condition participation.",
+      "supporting_evidence_ids": [
+        "E1"
+      ],
+      "counter_evidence_ids": [
+        "E2"
+      ],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    },
+    {
+      "id": "EX9",
+      "type": "actor_error_unintended_consequence",
+      "relevance": "relevant",
+      "evidentiary_status": "plausible",
+      "claim": "Some exclusion may have resulted from implementation error rather than a coherent strategy of control.",
+      "mechanism": "Administrative complexity and uneven capacity.",
+      "supporting_evidence_ids": [
+        "E2"
+      ],
+      "counter_evidence_ids": [
+        "E1"
+      ],
+      "falsified_if": [
+        "Better comparative evidence contradicts the proposed mechanism."
+      ],
+      "confidence": "low"
+    }
+  ],
   "evidence": {
     "items": [
       {
         "id": "E1",
-        "claim": "Health certification linked medical status to social access.",
-        "basis": "source_based",
-        "source_title": "Public health certification frameworks, 2020–2022",
+        "claim": "Rules linked defined health credentials to access in specified settings.",
+        "epistemic_type": "verified_fact",
+        "source_tier": "primary_legal_policy",
+        "source_title": "Jurisdiction-specific health-pass law or regulation — replace with verified source",
         "source_url": "",
-        "source_date": "2022-01-01",
-        "source_type": "policy framework",
-        "source_note": "Verify against the studied country or jurisdiction.",
-        "evidence_strength": 3,
-        "uncertainty": "Jurisdictional rules differed significantly.",
-        "counter_evidence": "In some contexts, certificates were time-limited and removed after the crisis.",
+        "source_locator": "",
+        "source_date": "",
+        "geography": "2020–2022, selected European jurisdictions",
+        "population": "Workers and residents subject to access checks",
+        "measurement_method": "Legal and policy document review",
+        "denominator": "Not applicable",
+        "sample_size": "Not applicable",
+        "measurement_validity": "Requires verification against each jurisdiction's operative instrument.",
+        "causal_identification": "Descriptive legal-policy evidence only.",
+        "replication_status": "not_applicable",
+        "conflicts_of_interest": "Not assessed in this structural fixture.",
+        "missing_data": "Verified jurisdiction-specific sources are absent.",
+        "selection_effects": "Jurisdictions are illustrative, not sampled.",
+        "relevant_comparison": "Compare rules with and without free alternatives and sunset clauses.",
+        "cross_context_applicability": "Do not generalize across jurisdictions without verification.",
+        "claim_source_fit": "unknown",
+        "verification_status": "unverified",
+        "verified_by": "",
+        "verification_date": "",
+        "uncertainty": "Rules differed by jurisdiction and changed over time.",
+        "limitations": "The fixture demonstrates structure and does not supply a universal empirical conclusion.",
+        "counter_evidence": "Many schemes included sunset clauses, exemptions, free testing, judicial review, or were discontinued.",
         "confidence": "medium"
+      },
+      {
+        "id": "E2",
+        "claim": "Implementation and sunset conditions varied materially.",
+        "epistemic_type": "plausible_inference",
+        "source_tier": "reputable_organization_report",
+        "source_title": "Comparative implementation review — replace with verified source",
+        "source_url": "",
+        "source_locator": "",
+        "source_date": "",
+        "geography": "2020–2022, selected European jurisdictions",
+        "population": "Workers and residents subject to access checks",
+        "measurement_method": "Comparative policy review",
+        "denominator": "Not applicable",
+        "sample_size": "Not reported in this structural fixture",
+        "measurement_validity": "Unverified",
+        "causal_identification": "Descriptive comparison only",
+        "replication_status": "unknown",
+        "conflicts_of_interest": "Unknown",
+        "missing_data": "Underlying comparative sources are not supplied.",
+        "selection_effects": "Case selection is not documented.",
+        "relevant_comparison": "Rules across selected jurisdictions",
+        "cross_context_applicability": "Unknown until sources are verified",
+        "claim_source_fit": "unknown",
+        "verification_status": "unverified",
+        "verified_by": "",
+        "verification_date": "",
+        "uncertainty": "Incomplete cross-jurisdictional comparability.",
+        "limitations": "Requires verified jurisdiction-specific sourcing.",
+        "counter_evidence": "Some systems may have had weak oversight or durable technical reuse.",
+        "confidence": "low"
       }
     ]
   },
@@ -150,38 +869,125 @@
     "items": [
       {
         "id": "AS1",
-        "assumption": "Verification infrastructures can be reused for other risk regimes.",
+        "assumption": "Technical interoperability increases the possibility of reuse.",
         "risk": "medium",
-        "disproving_test": "No observable institutional reuse or extension after the crisis.",
-        "implication_if_wrong": "The passport remains a temporary crisis instrument rather than a durable governance infrastructure.",
+        "disproving_test": "Interoperable systems are dismantled or legally prevented from reuse.",
+        "implication_if_wrong": "Path-dependency concerns would be overstated.",
         "confidence": "medium"
       }
     ]
   },
+  "resistance_agency": {
+    "items": [
+      {
+        "id": "RES1",
+        "actor_or_population": "Workers and residents subject to access checks",
+        "form": "litigation",
+        "mechanism": "Litigation, protest, technical workarounds, and demands for sunset clauses changed implementation.",
+        "effect_on_system": "Narrowed, clarified, or terminated some rules.",
+        "constraints": [
+          "Cost",
+          "Unequal legal access"
+        ],
+        "confidence": "medium"
+      }
+    ]
+  },
+  "alternatives": {
+    "items": [
+      {
+        "id": "ALT1",
+        "level": "national",
+        "proposal": "Narrow, time-limited rules with free alternatives, strict purpose limitation, independent audit, and accessible appeal.",
+        "mechanism": "Preserve the protective objective while reducing dependency, exclusion, and function creep.",
+        "feasibility": "medium",
+        "tradeoffs": [
+          "Administrative cost",
+          "Potentially slower verification"
+        ],
+        "rights_safeguards": [
+          "Purpose limitation",
+          "Sunset clause",
+          "Appeal",
+          "Non-digital alternative"
+        ],
+        "evidence_needed": [
+          "Comparative effectiveness and burden data"
+        ],
+        "lower_harm_rationale": "Maintains proportional protection while preserving exit and contestability."
+      }
+    ]
+  },
+  "calibrated_conclusion": {
+    "strongly_supported": [
+      "The credential converted health information into an access-control signal."
+    ],
+    "plausible_unconfirmed": [
+      "Reusable infrastructure can outlast the emergency that justified it."
+    ],
+    "disputed": [
+      "The net epidemiological benefit and distributional cost varied by jurisdiction and period."
+    ],
+    "unknown": [
+      "Long-term normalization effects cannot be inferred from short-term adoption alone."
+    ],
+    "evidence_that_would_change": [
+      "Comparative evidence showing either durable cross-domain reuse or complete institutional dismantling."
+    ],
+    "overall_confidence": "medium"
+  },
+  "self_audit": {
+    "malicious_intent_without_evidence": "pass",
+    "institutional_claims_uncritically": "pass",
+    "metaphor_as_mechanism": "pass",
+    "human_function_identified": "pass",
+    "mechanism_explained": "pass",
+    "care_control_overlap": "pass",
+    "material_and_meaning": "pass",
+    "history_included": "pass",
+    "political_economy_included": "pass",
+    "inequality_dimensions": "pass",
+    "agency_resistance": "pass",
+    "competing_explanations": "pass",
+    "statistics_quotations_verified": "concern",
+    "uncertainty_stated": "pass",
+    "benefits_costs_identified": "pass",
+    "realistic_alternatives": "pass",
+    "stigmatization_risk_checked": "pass",
+    "falsifier_identified": "pass"
+  },
+  "self_audit_notes": [
+    "This fixture is a structural example; replace placeholder source titles with verified jurisdiction-specific evidence."
+  ],
   "links": [
     {
-      "from": "P1",
-      "to": "GT1",
+      "from": "HF1",
+      "to": "INS1",
       "relation": "enables",
-      "strength": 4
+      "mechanism": "Health risk became operational through credential verification.",
+      "confidence": "high"
     },
     {
-      "from": "GT1",
-      "to": "O1",
-      "relation": "causes",
-      "strength": 3
+      "from": "INS1",
+      "to": "CLASS1",
+      "relation": "classifies",
+      "mechanism": "Verification assigns access status.",
+      "confidence": "high"
     },
     {
-      "from": "RF1",
-      "to": "GT1",
-      "relation": "feeds_back",
-      "strength": 4
+      "from": "CLASS1",
+      "to": "DIST1",
+      "relation": "distributes",
+      "mechanism": "Status changes access and burden.",
+      "confidence": "high"
+    },
+    {
+      "from": "RES1",
+      "to": "IV1",
+      "relation": "resists",
+      "mechanism": "Contestation changes scope and duration.",
+      "confidence": "medium"
     }
   ],
-  "quality_gate": {
-    "publication_risk": "medium",
-    "weakest_layer": "evidence",
-    "next_improvement": "Add jurisdiction-specific legal and empirical sources."
-  },
-  "language": "en"
+  "migration": null
 }

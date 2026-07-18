@@ -1,143 +1,55 @@
-# QA Matrix
+# QA Matrix — 1.4.0-bio-alpha.4
 
-## Fast no-browser gate
+## No-browser gates
 
-Run before every commit:
+| Command | Coverage |
+|---|---|
+| `npm run test:qa` | source layout, version, runtime order, release-root hygiene |
+| `npm run test:static` | syntax, assets, generated validator, accessibility and export markers |
+| `npm run test:bio:v2` | method cardinality, prompt safety, strict routing, review coverage, migration identity |
+| `npm run test:bio:integrity` | duplicate IDs, broken references, 13/9/5 exactness, schema types, future versions, evidence gaming |
+| `npm run test:schema` | strict Ajv compile and canonical/draft fixture validation |
+| `npm run test:fixtures` | Strategic compatibility and trilingual Biopolitical fixture invariants |
+| `npm run test:parser` | URLs, string comment markers, fences, comments, trailing commas, invalid input |
+| `npm run test:i18n:bio` | Arabic/French analytical prose and language identity |
+| `npm run test:a11y:static` | static and generated semantic contracts |
+| `npm run test:ci:contract` | npm-only scripts/workflow alignment |
 
-```bash
-node tests/qa-check.mjs
-```
+Run them together with `npm run test:ci:no-browser`.
 
-This verifies:
+The cross-browser matrix defaults to four workers and a 60-second per-test
+budget. This prevents 16 simultaneous report renders, downloads, and axe scans
+from saturating a developer workstation and canceling otherwise valid browser
+operations at the old 30-second ceiling. The assertions remain fully parallel
+within that bounded pool. On a constrained machine, reduce concurrency without
+changing the contract:
 
-- JavaScript syntax for `src/app.js`
-- modular file layout
-- duplicate DOM IDs
-- runtime asset size limits
-- absence of removed legacy export/self-check paths
-- package/app version consistency
-- manifest icon coverage
-- schema governance requirements
-- `analysis_lens` schema support
-- fixture integrity for both strategic and biopolitical examples
-- static accessibility basics
-- biopolitical prompt ontology guard tokens
-- lens-aware biopolitical scoring diagnostics
-- preview/root source-of-truth decision document
-
-## Individual no-browser gates
-
-```bash
-npm run test:static
-npm run test:schema
-npm run test:fixtures
-npm run test:a11y:static
-```
-
-## Browser gate
-
-Run before release:
-
-```bash
-npm install
-npx playwright install --with-deps
+```powershell
+$env:PLAYWRIGHT_WORKERS=2
 npm run test:browser
 ```
 
-Coverage:
+## Browser gates
 
-- core user flow
-- language switching and RTL/LTR behavior
-- theme toggle
-- Strategic/Biopolitical lens toggle
-- prompt preview modal
-- biopolitical sample analysis import
-- review navigation
-- HTML-only export workflow
-- runtime accessibility smoke
-- Arabic mobile overflow smoke
+| Spec | Coverage |
+|---|---|
+| `a11y.spec.js` | axe serious/critical scan, radio-group and tab keyboards, semantic accordions, modal focus |
+| `smoke.spec.js` | main dual-lens workflow |
+| `rtl-mobile.spec.js` | Arabic RTL and 390 px overflow |
+| `import-validation.spec.js` | future contract, malformed type, duplicate ID, migrated draft |
+| `lens-import-contract.spec.js` | imported-lens authority |
+| `export-contract.spec.js` | report identities and metadata |
+| `export-completeness.spec.js` | lossless high-value field and JSON coverage |
+| `cross-locale-export-contract.spec.js` | AR/EN/FR analysis-language exports |
+| `hosted-demo-evidence.spec.js` | UI screenshots and visible-text evidence with a disclosed local/deployed target |
+
+`npm run test:browser` runs Chromium, Firefox, WebKit, mobile Chrome, and the hosted-evidence review. `npm test` runs the full no-browser and browser contract.
 
 ## Manual release gate
 
-- Inspect Arabic, English, and French UI.
-- Switch between Strategic and Biopolitical modes.
-- Confirm the title, placeholder, engine map, layer labels, sample, score formula, diagnostic warnings, and export copy change with the lens.
-- Confirm old strategic JSON imports still work.
-- Confirm biopolitical JSON imports with `analysis_lens: "biopolitical"` switch the UI lens.
-- Inspect light and dark modes.
-- Test mobile width near 390 px.
-- Export one HTML report from each lens and open it standalone.
-- Confirm `preview/` or `biopreview/` is not treated as the deployable source of truth after promotion.
-- Confirm the 2048 px source mascot is not loaded by the runtime page.
-
-
-## v1.3.0-bio-alpha.5 export contract coverage
-
-| Gate | Command | Purpose |
-|---|---|---|
-| Browser export contract | `npm run test:browser:export` | Downloads Strategic and Biopolitical reports, checks lens metadata and layer-token separation, and attaches exported HTML evidence. |
-| Full browser gate | `npm run test:browser` | Includes smoke, runtime accessibility, RTL mobile, and export-contract browser coverage. |
-
-
-## v1.3.0-bio-alpha.5 export rationale coverage
-
-- Static QA requires the HTML export renderer to include scenario rationale text.
-- Browser export contract continues to assert the English biopolitical sample token `proof infrastructure`, which appears in the scenario rationale.
-
-## v1.3.0-bio-alpha.5 lens import and cross-locale export QA
-
-New gates:
-
-- `npm run test:source` — rejects duplicate committed app tracks such as `preview/` or `biopreview/` in the release root.
-- `npm run test:hygiene` — optional pre-commit workspace cleanup guard for patch folders and Playwright output artifacts.
-- `npm run test:browser:import` — proves imported JSON `analysis_lens` overrides the previous UI toggle state.
-- `npm run test:browser:locale` — downloads Strategic and Biopolitical HTML reports across Arabic, English, and French and checks machine-readable lens metadata.
-
-Acceptance:
-
-- Strategic JSON imported while the Biopolitical toggle is active must render/export Strategic labels.
-- Biopolitical JSON imported while the Strategic toggle is active must render/export Biopolitical labels.
-- Arabic export must keep `lang="ar" dir="rtl"`.
-- English and French exports must keep `dir="ltr"`.
-- No duplicate preview source track may remain in the release root.
-
-## v1.3.0-bio-alpha.5 review title lens contract
-
-The visible review heading now reflects the active/imported lens: Strategic imports render a Strategic review title, and Biopolitical imports render a Biopolitical review title. The stable `#reviewTitle` anchor remains available for browser contracts.
-
-## v1.3.0-bio release lock and CI hygiene
-
-| Gate | Command | Purpose |
-|---|---|---|
-| No-browser CI | `npm run test:ci:no-browser` | QA, source-of-truth, static, schema, fixtures, accessibility-static, CI-script contract, workspace hygiene |
-| Browser CI | `npm run test:ci:browser` | Full Playwright suite |
-| CI script contract | `npm run test:ci:contract` | Ensures package scripts, workflow commands, and lockfile version stay aligned |
-| Workspace hygiene | `npm run test:hygiene` | Rejects duplicate preview tracks, Playwright output, patch folders, and root patch/package ZIPs |
-
-
-## v1.3.0-bio hosted demo evidence
-
-| Gate | Command | Purpose |
-|---|---|---|
-| Hosted demo evidence | `npm run test:browser:hosted` | Captures desktop/mobile screenshots, EN/AR/FR visible-text snapshots, and public UI metadata. |
-
-Evidence folders are generated artifacts and must not be committed:
-
-```text
-hosted-demo-evidence/
-hosted-demo-evidence-local/
-```
-
-GitHub Actions uploads `hosted-demo-evidence` from the browser job. Local validation should clean generated evidence folders before running `npm run test:hygiene`.
-
-## v1.3.0-bio evidence artifact review
-
-| Gate | Command | Purpose |
-|---|---|---|
-| Hosted evidence capture | `npm run test:browser:hosted` | Generates public UI screenshots and visible-text snapshots. |
-| Hosted evidence review | `node tests/hosted-demo-evidence-review-check.mjs hosted-demo-evidence-local` | Verifies required evidence files, metadata, locale direction, lens button visibility, and version alignment. |
-| CI browser evidence review | `node tests/hosted-demo-evidence-review-check.mjs hosted-demo-evidence` | Reviews the generated CI evidence directory before artifact upload. |
-
-## v1.3.0-bio stable release archive
-
-The stable `v1.3.0-bio` pass promotes the locked release-candidate baseline to the stable release line. No product behavior changes are included. Use `docs/stable-release-archive.md` for tag, archive, and generated-artifact rules.
+- Inspect light/dark and AR/EN/FR UI.
+- Verify interface-language changes do not overwrite imported analysis language.
+- Confirm raw enum codes remain in JSON while labels are localized in review/export.
+- Confirm every visible publication-ready status agrees with canonical, semantic, source, explanation, and self-audit blockers.
+- Open HTML and JSON downloads outside the app and compare payloads.
+- Confirm the two archived prototype pages are absent from the release root.

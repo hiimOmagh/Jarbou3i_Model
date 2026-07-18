@@ -15,18 +15,18 @@ for (const dir of forbiddenTracks) {
   }
 }
 
-for (const required of ['index.html', 'src/app.js', 'src/styles.css', 'tests/smoke.spec.js']) {
+for (const required of ['index.html', 'src/app.js', 'src/biopolitics.js', 'src/styles.css', 'schema/strategic-analysis.schema.json', 'schema/biopolitical-analysis.schema.json', 'tests/smoke.spec.js']) {
   if (!fs.existsSync(path.join(root, required))) {
     fail(`missing root source file: ${required}`);
   }
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-if (packageJson.version !== '1.3.0-bio') {
-  fail('root package version must be 1.3.0-bio');
+if (packageJson.version !== '2.0.0-bio-rc.11') {
+  fail('root package version must be 2.0.0-bio-rc.11');
 }
 
-for (const script of ['test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {
+for (const script of ['test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {
   if (!packageJson.scripts?.[script]) fail(`missing package script: ${script}`);
 }
 
