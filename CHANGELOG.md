@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.0-alpha.6 — Human Visual-Audit Closure
+
+- Localizes import-audit warning and schema-failure explanations in Arabic and French while preserving canonical JSON paths as isolated left-to-right technical tokens.
+- Removes orphanable middle-dot separators between named report references by rendering multi-reference values as responsive, gap-spaced groups.
+- Compacts phone result navigation into a two-column decision index so the active judgment reaches the first screen sooner without removing labels, counts, or keyboard semantics.
+- Makes standalone-report evidence wait for an actual top anchor instead of capturing during smooth scrolling.
+- Expands report evidence from one viewport per case to five deterministic surfaces: hero, first analytical pillar, relationship atlas, reference directory, and canonical appendix.
+- Raises the visual evidence contract from 96 screenshots and 115 artifacts to 120 screenshots and 139 artifacts.
+
 ## 2.1.0-alpha.5 — Deterministic Acceptance Hotfix
 
 - Synchronizes each release-matrix cell through the public language, analysis-language, and theme controls after startup, closing the isolated Chromium preload race that left one French-light cell in Arabic.

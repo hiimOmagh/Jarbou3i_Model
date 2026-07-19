@@ -38,7 +38,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
   const html = reportApi.build({
     analysis,
     lang,
-    version: "2.1.0-alpha.5",
+    version: "2.1.0-alpha.6",
     bio,
     graphApi,
   });
@@ -58,7 +58,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
 const html = reportApi.build({
   analysis: fixture,
   lang: "en",
-  version: "2.1.0-alpha.5",
+  version: "2.1.0-alpha.6",
   bio,
   graphApi,
 });
@@ -75,6 +75,8 @@ assert.ok(html.includes("independent human review"));
 assert.ok(html.includes("Analytical coverage"));
 assert.ok(html.includes("Source traceability"));
 assert.ok(html.includes("Not publication-ready"));
+assert.ok(html.includes('class="referenceGroup"'), "multiple named references must render as one responsive group");
+assert.ok(!html.includes("</a> · <a"), "reference groups must not emit an orphanable separator glyph");
 assert.ok(html.includes(".reportSection{box-shadow:none;break-inside:auto}"));
 assert.ok(!html.includes(".reportSection{break-inside:avoid}"));
 const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);

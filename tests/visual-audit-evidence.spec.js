@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.5";
+const EXPECTED_VERSION = "2.1.0-alpha.6";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl", button: "#langAr" },
@@ -17,6 +17,12 @@ const VIEWPORTS = [
 ];
 const REPORT_VIEWPORTS = VIEWPORTS.filter(({ id }) => id !== "tablet");
 const SCREENSHOT_KINDS = ["shell", "strategic-results", "biopolitical-results", "connections", "import-audit"];
+const REPORT_DETAIL_SURFACES = [
+  { id: "pillar", selector: "#pillar-question_context" },
+  { id: "relationships", selector: "#relationships" },
+  { id: "references", selector: "#references" },
+  { id: "canonical", selector: "#canonical" },
+];
 
 function evidencePath(fileName) {
   return path.join(process.cwd(), EVIDENCE_DIR, fileName);
@@ -239,8 +245,20 @@ test.describe("Release Candidate visual audit evidence", () => {
       expect(reportText).not.toMatch(/[\uE000-\uF8FF]/);
       const reportOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(reportOverflow).toBeLessThanOrEqual(2);
-      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.evaluate(() => {
+        document.documentElement.style.scrollBehavior = "auto";
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      });
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+      await expect(page.locator(".hero")).toBeInViewport();
       await saveScreenshot(page, testInfo, `report-${key}.png`);
+      for (const surface of REPORT_DETAIL_SURFACES) {
+        const section = page.locator(surface.selector);
+        await section.evaluate((details) => { details.open = true; });
+        await anchorViewport(page, surface.selector, 8);
+        await expect(section).toBeInViewport();
+        await saveScreenshot(page, testInfo, `report-${surface.id}-${key}.png`);
+      }
     });
   }
 
@@ -249,7 +267,13 @@ test.describe("Release Candidate visual audit evidence", () => {
       const key = `${locale.id}-${theme}-${viewport.id}`;
       return [...SCREENSHOT_KINDS.map((kind) => `${kind}-${key}.png`), `measurement-${key}.json`];
     });
-    const reportFiles = reportCases.map(({ locale, viewport }) => `report-${locale.id}-${viewport.id}.png`);
+    const reportFiles = reportCases.flatMap(({ locale, viewport }) => {
+      const key = `${locale.id}-${viewport.id}`;
+      return [
+        `report-${key}.png`,
+        ...REPORT_DETAIL_SURFACES.map((surface) => `report-${surface.id}-${key}.png`),
+      ];
+    });
     await ensureEvidenceDir();
     await fs.writeFile(evidencePath("visual-audit-metadata.json"), `${JSON.stringify({
       app_version: EXPECTED_VERSION,
@@ -258,6 +282,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       visual_assets_decoded: true,
       transient_ui_cleared: true,
       deterministic_viewport_anchors: true,
+      report_top_anchor_verified: true,
       phone_connections_target: "relationshipExplorerMount",
       generated_by: "tests/visual-audit-evidence.spec.js",
       projects: ["chromium"],
@@ -266,8 +291,9 @@ test.describe("Release Candidate visual audit evidence", () => {
       viewports: VIEWPORTS,
       case_count: cases.length,
       report_case_count: reportCases.length,
-      screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length,
-      coverage: ["shell", "strategic-results", "biopolitical-results", "connections", "import-audit", "standalone-report"],
+      report_surface_count: 1 + REPORT_DETAIL_SURFACES.length,
+      screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length * (1 + REPORT_DETAIL_SURFACES.length),
+      coverage: ["shell", "strategic-results", "biopolitical-results", "connections", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"],
       required_files: [...requiredFiles, ...reportFiles, "visual-audit-metadata.json"],
     }, null, 2)}\n`, "utf8");
   });

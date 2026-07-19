@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.5 — shared dual-lens application runtime */
+/* Jarbou3i Model v2.1.0-alpha.6 — shared dual-lens application runtime */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -1202,6 +1202,54 @@ function normalizeAnalysis(raw) {
 function extractJson(text) {
   return JSON_TOOLS.extractJson(text);
 }
+function localizedImportIssueMessage(issue = {}) {
+  const fallback = issue.message || issue.code || "";
+  if (state.lang === "en") return fallback;
+  const code = String(issue.code || "");
+  const messages = {
+    ar: {
+      INVALID_SOURCE_URL: "رابط المصدر ليس رابط HTTP(S) مطلقًا؛ يُسمح بالاستيراد للمراجعة، لكن يظل النشر محظورًا.",
+      EVIDENCE_NOT_PUBLICATION_READY: "الدليل عنصر نائب أو غير قابل للتتبع أو غير متحقق منه بالكامل.",
+      SELF_AUDIT_VERIFICATION_CONTRADICTION: "لا يمكن أن يجتاز تدقيق التحقق ما دامت أدلة غير متحقق منها؛ يُسمح بالاستيراد للمراجعة، لكن يظل النشر محظورًا.",
+      VERIFICATION_PROVENANCE_DOWNGRADED: "ادّعى سجل الدليل تحققًا كاملًا دون هوية المراجع وتاريخ التحقق؛ خُفِّضت حالته للمراجعة ولا يمكنه اجتياز بوابة النشر.",
+      UNTRACEABLE_VERIFIED_EVIDENCE: "لا يجوز أن يستخدم الدليل المعلَّم كمتحقق منه عنصرًا نائبًا؛ ويلزمه رابط أو محدد مصدر دقيق.",
+      UNJUSTIFIED_VERIFIED_EVIDENCE: "يتطلب الدليل المتحقق منه تقييمًا واضحًا لمدى ملاءمة المصدر للادعاء.",
+      UNREFERENCED_EVIDENCE: "سجل الدليل غير مستشهد به في ادعاء خضع للتقييم.",
+      QUANTITATIVE_METADATA_MISSING: "تتطلب الأدلة الكمية استكمال بيانات التصميم والقياس قبل النشر.",
+      MIGRATED_DRAFT_NOT_CANONICAL: "تحافظ هذه المسودة المُرحَّلة على المادة القديمة، لكنها ليست بيانات حيوية سياسية نظامية مكتملة.",
+      MISSING_EXPLANATION_FALSIFIER: "يلزم معيار قابل للاختبار يمكنه دحض هذا التفسير قبل النشر.",
+      NON_PORTABLE_CITATION_MARKERS_REMOVED: "أزيلت علامات استشهاد خاصة بواجهة المساعد من النسخة المطبّعة.",
+      DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف نظامي فريدًا في كامل التحليل.",
+      UNSUPPORTED_CONTRACT: "إصدار عقد التحليل غير مدعوم في هذه النسخة من الأداة.",
+      VALIDATOR_UNAVAILABLE: "مدقق عقد التحليل غير متاح.",
+    },
+    fr: {
+      INVALID_SOURCE_URL: "L’URL de la source n’est pas une URL HTTP(S) absolue ; l’import est autorisé pour révision, mais la publication reste bloquée.",
+      EVIDENCE_NOT_PUBLICATION_READY: "La preuve est un substitut, n’est pas traçable ou n’est pas entièrement vérifiée.",
+      SELF_AUDIT_VERIFICATION_CONTRADICTION: "L’audit de vérification ne peut pas être validé tant que des preuves restent non vérifiées ; l’import est autorisé pour révision, mais la publication reste bloquée.",
+      VERIFICATION_PROVENANCE_DOWNGRADED: "Une preuve déclarait une vérification complète sans identité du réviseur ni date de vérification ; son statut a été rétrogradé pour révision et ne peut pas franchir le contrôle de publication.",
+      UNTRACEABLE_VERIFIED_EVIDENCE: "Une preuve marquée comme vérifiée ne peut pas utiliser un substitut et doit fournir une URL ou un localisateur précis.",
+      UNJUSTIFIED_VERIFIED_EVIDENCE: "Une preuve vérifiée exige une évaluation explicite de l’adéquation entre la source et l’affirmation.",
+      UNREFERENCED_EVIDENCE: "Cette preuve n’est citée par aucune affirmation évaluée.",
+      QUANTITATIVE_METADATA_MISSING: "Les preuves quantitatives exigent des métadonnées complètes de conception et de mesure avant publication.",
+      MIGRATED_DRAFT_NOT_CANONICAL: "Ce brouillon migré conserve le contenu historique, mais ne constitue pas encore des données biopolitiques canoniques complètes.",
+      MISSING_EXPLANATION_FALSIFIER: "Un critère testable susceptible de réfuter cette explication est requis avant publication.",
+      NON_PORTABLE_CITATION_MARKERS_REMOVED: "Les marqueurs de citation propres à l’interface de l’assistant ont été retirés de la copie normalisée.",
+      DUPLICATE_GLOBAL_ID: "Chaque identifiant canonique doit être unique dans l’ensemble de l’analyse.",
+      UNSUPPORTED_CONTRACT: "Cette version du contrat d’analyse n’est pas prise en charge par cette version de l’outil.",
+      VALIDATOR_UNAVAILABLE: "Le validateur du contrat d’analyse n’est pas disponible.",
+    },
+  };
+  if (messages[state.lang]?.[code]) return messages[state.lang][code];
+  if (code.startsWith("SCHEMA_")) {
+    return state.lang === "ar"
+      ? "لا تطابق القيمة بنية عقد التحليل المطلوبة."
+      : "La valeur ne respecte pas la structure requise par le contrat d’analyse.";
+  }
+  return state.lang === "ar"
+    ? "تتطلب هذه المسألة مراجعة قبل النشر."
+    : "Ce point exige une révision avant publication.";
+}
 function importErrorText(error) {
   const first = error?.validation?.errors?.[0];
   if (!first) return t("jsonParseProblem");
@@ -1210,7 +1258,7 @@ function importErrorText(error) {
     "فشل التحقق من العقد",
     "Échec de validation du contrat",
   );
-  return `${prefix}: ${first.path || "/"} — ${first.message}`;
+  return `${prefix}: ${first.path || "/"} — ${localizedImportIssueMessage(first)}`;
 }
 function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
   const details = $("importAuditDetails");
@@ -1241,7 +1289,7 @@ function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
         .slice(0, 12)
         .map(
           (warning) =>
-            `<li><span class="importAuditPath">${escapeHtml(warning.path || "/")}</span> — ${escapeHtml(warning.message || warning.code || "")}</li>`,
+            `<li><span class="importAuditPath" dir="ltr">${escapeHtml(warning.path || "/")}</span> — ${escapeHtml(localizedImportIssueMessage(warning))}</li>`,
         )
         .join("")}</ul>`
     : `<p>${escapeHtml(labelText("No contract or integrity warnings.", "لا توجد تنبيهات عقد أو نزاهة.", "Aucun avertissement de contrat ou d’intégrité."))}</p>`;
@@ -3592,7 +3640,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.5";
+    "2.1.0-alpha.6";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4357,7 +4405,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.5";
+    "2.1.0-alpha.6";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,

@@ -106,4 +106,15 @@ for (const token of [
   if (!explorer.includes(token)) fail(`localized relationship token contract missing: ${token}`);
 }
 
+const app = fs.readFileSync("src/app.js", "utf8");
+for (const token of [
+  "رابط المصدر ليس رابط HTTP(S) مطلقًا",
+  "L’URL de la source n’est pas une URL HTTP(S) absolue",
+  "لا تطابق القيمة بنية عقد التحليل المطلوبة",
+  "La valeur ne respecte pas la structure requise",
+  'class="importAuditPath" dir="ltr"',
+]) {
+  if (!app.includes(token)) fail(`localized import-audit contract missing: ${token}`);
+}
+
 console.log("Biopolitical language checks passed.");

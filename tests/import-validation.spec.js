@@ -90,6 +90,45 @@ test.describe("Runtime import validation", () => {
     await expect(review).toContainText(/before publication/i);
   });
 
+  test("localizes import warnings and schema failures while isolating canonical paths", async ({
+    page,
+  }) => {
+    const cases = [
+      {
+        button: "#langAr",
+        fixture: "sample-analysis-bio-ar.json",
+        warning: "رابط المصدر ليس رابط HTTP(S) مطلقًا",
+        schema: "لا تطابق القيمة بنية عقد التحليل المطلوبة",
+      },
+      {
+        button: "#langFr",
+        fixture: "sample-analysis-bio-fr.json",
+        warning: "L’URL de la source n’est pas une URL HTTP(S) absolue",
+        schema: "La valeur ne respecte pas la structure requise",
+      },
+    ];
+    for (const current of cases) {
+      await page.goto("/");
+      await page.locator(current.button).click();
+      await page.locator('[data-lens="biopolitical"]').click();
+      const reviewable = await fixture(current.fixture);
+      reviewable.evidence.items[0].source_url = "not-a-url";
+      await page.locator("#jsonInput").fill(JSON.stringify(reviewable));
+      await expect(page.locator("#importBtn")).toBeEnabled();
+      const audit = page.locator("#importAuditDetails");
+      await audit.locator("summary").click();
+      await expect(audit).toContainText(current.warning);
+      await expect(audit).not.toContainText("Source URL is not an absolute HTTP(S) URL");
+      await expect(audit.locator(".importAuditPath").first()).toHaveAttribute("dir", "ltr");
+
+      const malformed = await fixture(current.fixture);
+      malformed.evidence.items[0].sample_size = 100;
+      await page.locator("#jsonInput").fill(JSON.stringify(malformed));
+      await expect(page.locator("#importBtn")).toBeDisabled();
+      await expect(page.locator("#jsonStatus")).toContainText(current.schema);
+    }
+  });
+
   test("rejects malformed provenance when evidence claims full verification", async ({
     page,
   }) => {
