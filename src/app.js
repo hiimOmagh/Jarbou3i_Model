@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.7 — shared dual-lens application runtime */
+/* Jarbou3i Model v2.1.0-alpha.8 — shared dual-lens application runtime */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -3487,7 +3487,7 @@ function metricCard(kind, label, value, hint) {
     : 0;
   const title = label || kind;
   const help = hint || "";
-  return `<div class="metricCard ${pctClass(safeValue)}" data-metric="${escapeHtml(kind)}"><div class="metricTop"><span>${escapeHtml(title)}</span><b>${safeValue}${t("outOfHundred")}</b></div>${ringMetric(safeValue, "sm")}<p>${escapeHtml(help)}</p></div>`;
+  return `<div class="scoreMetricCard ${pctClass(safeValue)}" data-metric="${escapeHtml(kind)}"><div class="metricHead"><strong>${escapeHtml(title)}</strong><b>${safeValue}${t("outOfHundred")}</b></div>${ringMetric(safeValue, "sm")}<p class="metricHint">${escapeHtml(help)}</p></div>`;
 }
 function scoreFormulaHtml() {
   const weights = scoreWeights();
@@ -3640,7 +3640,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.7";
+    "2.1.0-alpha.8";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4405,7 +4405,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.7";
+    "2.1.0-alpha.8";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,

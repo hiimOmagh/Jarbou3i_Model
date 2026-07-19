@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0-alpha.8 — Shared Score-Card Component Closure
+
+- Corrects the shared overview renderer to use the design-system `scoreMetricCard`, `metricHead`, and `metricHint` contracts.
+- Restores card containment and deliberate spacing between localized metric labels and `/100` values in both Strategic and Biopolitical results.
+- Adds a static regression contract rejecting the obsolete unstyled metric markup.
+- Changes presentation markup only; both analytical schemas, scoring formulas, evidence rules, imports, exports, and graph data remain unchanged.
+
 ## 2.1.0-alpha.7 — Arabic Product-Language and CI Runtime Polish
 
 - Replaces the Arabic title term `مِشرَحة` (morgue/dissection room) with the professional product phrase `مساحة عمل` across the shared shell and Biopolitical runtime.

@@ -246,15 +246,25 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.7") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.8") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.7"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.8"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.7"')) {
+if (!app.includes('"2.1.0-alpha.8"')) {
   fail("report fallback version is stale");
+}
+for (const token of [
+  'class="scoreMetricCard',
+  'class="metricHead"',
+  'class="metricHint"',
+]) {
+  if (!app.includes(token)) fail(`shared score-card markup missing: ${token}`);
+}
+for (const obsolete of ['class="metricCard ', 'class="metricTop"']) {
+  if (app.includes(obsolete)) fail(`obsolete unstyled score-card markup remains: ${obsolete}`);
 }
 for (const token of [
   "analysisLangFollowsUi",
