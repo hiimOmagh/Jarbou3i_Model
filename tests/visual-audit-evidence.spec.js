@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.7";
+const EXPECTED_VERSION = "2.1.0-alpha.8";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl", button: "#langAr" },
@@ -102,14 +102,14 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.locator("#loadSampleBtn").click();
       await expect(page.locator("#reviewPanel")).toBeVisible();
       await clearTransientUi(page);
-      await anchorViewport(page, "#reviewPanel", 12);
+      await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `strategic-results-${key}.png`);
 
       await page.locator('[data-lens="biopolitical"]').click();
       await page.locator("#loadSampleBtn").click();
       await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-selected", "true");
       await clearTransientUi(page);
-      await anchorViewport(page, "#reviewPanel", 12);
+      await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `biopolitical-results-${key}.png`);
 
       await page.locator('[data-bio-review="connections"]').click();
