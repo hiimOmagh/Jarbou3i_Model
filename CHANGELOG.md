@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0-bio-rc.17 — Firefox Spatial Saved-View Synchronization
+
+- Replaces the remaining pointer-dependent Spatial orbit, save, reset, and restore transitions in the release contract with focus-owned keyboard activation.
+- Asserts focus ownership and the persisted saved-view option before continuing, so each state transition has an observable completion boundary under parallel Firefox/Linux rendering.
+- Addresses the GitHub Actions failure in which either Reset or Restore was intermittently dropped while the Spatial scene was being replaced; the graph, saved-view implementation, analytical contracts, schemas, localization, and report output are unchanged.
+
 ## 2.0.0-bio-rc.16 — Reviewable Verification Repair and WebKit CI Synchronization
 
 - Downgrades evidence labelled `verified` without both a verifier identity and verification date to `partially_verified` when traceable, or `unverified` otherwise, with one field-level warning per repaired record.

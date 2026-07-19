@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.0.0-bio-rc.16 — client-side application logic */
+/* Jarbou3i Model v2.0.0-bio-rc.17 — client-side application logic */
 
 "use strict";
 const I18N = {
@@ -3461,7 +3461,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.16";
+    "2.0.0-bio-rc.17";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4223,7 +4223,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.16";
+    "2.0.0-bio-rc.17";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,

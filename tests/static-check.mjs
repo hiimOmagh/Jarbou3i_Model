@@ -218,14 +218,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.0.0-bio-rc.16") fail("package version mismatch");
+if (pkg.version !== "2.0.0-bio-rc.17") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.0.0-bio-rc.16"')) {
+if (!index.includes('name="app-version" content="2.0.0-bio-rc.17"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.0.0-bio-rc.16"')) {
+if (!app.includes('"2.0.0-bio-rc.17"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

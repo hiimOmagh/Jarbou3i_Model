@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '2.0.0-bio-rc.16';
+const EXPECTED_VERSION = '2.0.0-bio-rc.17';
 const EVIDENCE_DIR = process.env.HOSTED_DEMO_EVIDENCE_DIR || 'hosted-demo-evidence-local';
 const CAPTURE_TARGET = process.env.PLAYWRIGHT_BASE_URL?.trim() ? 'deployed' : 'local-test-server';
 const languageButtons = {

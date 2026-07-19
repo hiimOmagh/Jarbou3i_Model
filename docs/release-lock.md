@@ -1,4 +1,4 @@
-# Release Lock — 2.0.0-bio-rc.16
+# Release Lock — 2.0.0-bio-rc.17
 
 This document defines the audit-hardened release-candidate gate. It is not a stable release until automated evidence and the manual sign-off ledger are complete.
 
@@ -64,7 +64,7 @@ PLAYWRIGHT_BASE_URL=https://example.invalid npm run test:browser:hosted
 
 A candidate may be locked only when:
 
-- `package.json` and page metadata report `2.0.0-bio-rc.16`;
+- `package.json` and page metadata report `2.0.0-bio-rc.17`;
 - `@playwright/test` is exactly `1.61.1`, retaining the upstream worker-stop watchdog and preventing semver drift;
 - both desktop Chromium and mobile Chrome use `channel: 'chromium'`, avoiding Chrome Headless Shell’s known intermittent shutdown hang;
 - every lockfile tarball resolves through the public npm registry;
