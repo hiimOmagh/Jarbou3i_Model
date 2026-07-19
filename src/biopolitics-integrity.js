@@ -208,11 +208,12 @@
         ["evidence"],
       );
       if (!draft && item.relevance === "relevant" && !arr(item.falsified_if).length) {
-        errors.push(
+        warnings.push(
           issue(
             "MISSING_EXPLANATION_FALSIFIER",
             `/competing_explanations/${index}/falsified_if`,
-            `Relevant explanation ${item.type} requires a falsifier.`,
+            `Relevant explanation ${item.type} requires a falsifier before publication.`,
+            "warning",
           ),
         );
       }
@@ -293,18 +294,25 @@
       const verified = item.verification_status === "verified";
       if (!verified) hasUnverifiedEvidence = true;
       if (filled(item.source_url)) {
+        let validSourceUrl = true;
         try {
           const url = new URL(item.source_url);
           if (!["https:", "http:"].includes(url.protocol)) throw new Error("protocol");
         } catch {
-          errors.push(
+          validSourceUrl = false;
+          const collection = verified ? errors : warnings;
+          collection.push(
             issue(
               "INVALID_SOURCE_URL",
               `${path}/source_url`,
-              "Source URL must be an absolute HTTP(S) URL.",
+              verified
+                ? "Verified evidence requires an absolute HTTP(S) source URL."
+                : "Source URL is not an absolute HTTP(S) URL; import is allowed for review, but publication remains blocked.",
+              verified ? "error" : "warning",
             ),
           );
         }
+        if (!validSourceUrl) hasUnverifiedEvidence = true;
       }
       if (verified && (placeholder || !traceable)) {
         errors.push(
@@ -354,11 +362,12 @@
           "relevant_comparison",
         ]) {
           if (!filled(item[field])) {
-            errors.push(
+            warnings.push(
               issue(
                 "QUANTITATIVE_METADATA_MISSING",
                 `${path}/${field}`,
-                `Quantitative evidence requires ${field}.`,
+                `Quantitative evidence requires ${field} before publication.`,
+                "warning",
               ),
             );
           }
@@ -370,11 +379,12 @@
       a.self_audit?.statistics_quotations_verified === "pass" &&
       hasUnverifiedEvidence
     ) {
-      errors.push(
+      warnings.push(
         issue(
           "SELF_AUDIT_VERIFICATION_CONTRADICTION",
           "/self_audit/statistics_quotations_verified",
-          "The verification audit cannot pass while evidence remains unverified.",
+          "The verification audit cannot pass while evidence remains unverified; import is allowed for review, but publication remains blocked.",
+          "warning",
         ),
       );
     }
@@ -410,6 +420,8 @@
         warnings: [],
       };
     }
+    const nonPortableCitationCount =
+      BIO.countNonPortableCitationMarkers?.(raw) || 0;
     const routed = BIO.route(raw);
     if (!routed.supported) {
       return {
@@ -447,6 +459,30 @@
     }
     const normalized = BIO.normalize(candidate);
     const semantic = semanticValidate(normalized, { draft });
+    if (nonPortableCitationCount) {
+      semantic.warnings.unshift(
+        issue(
+          "NON_PORTABLE_CITATION_MARKERS_REMOVED",
+          "/",
+          `${nonPortableCitationCount} assistant-interface citation marker${nonPortableCitationCount === 1 ? " was" : "s were"} removed. Canonical evidence IDs and source URLs remain authoritative.`,
+          "warning",
+          { count: nonPortableCitationCount },
+        ),
+      );
+    }
+    if (semantic.valid) {
+      for (const warning of semantic.warnings) {
+        const invalidUrl = warning.path.match(
+          /^\/evidence\/items\/(\d+)\/source_url$/,
+        );
+        if (warning.code === "INVALID_SOURCE_URL" && invalidUrl) {
+          normalized.evidence.items[Number(invalidUrl[1])].source_url = "";
+        }
+        if (warning.code === "SELF_AUDIT_VERIFICATION_CONTRADICTION") {
+          normalized.self_audit.statistics_quotations_verified = "concern";
+        }
+      }
+    }
     return {
       ok: semantic.valid,
       state,

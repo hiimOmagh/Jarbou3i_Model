@@ -78,6 +78,12 @@ if (template.competing_explanations.length !== 9) {
 if (template.capture_levels.length !== 5) {
   fail("prompt template must enumerate all five capture levels");
 }
+if (
+  template.evidence.items[0].source_url !==
+  "absolute HTTP(S) URL or empty string"
+) {
+  fail("prompt template must make the source URL contract explicit");
+}
 
 for (const lang of ["ar", "en", "fr"]) {
   const prompt = bio.buildPrompt({
@@ -103,6 +109,14 @@ for (const lang of ["ar", "en", "fr"]) {
   }
   if (!/untrusted|غير[_ ]موثوق|non_fiable|non fiable/i.test(prompt)) {
     fail(`${lang} prompt must mark topic/context as untrusted data`);
+  }
+  for (const token of ["source_url", "statistics_quotations_verified", "http"] ) {
+    if (!prompt.includes(token)) {
+      fail(`${lang} prompt omits import-compatibility guidance: ${token}`);
+    }
+  }
+  if (!prompt.includes('""')) {
+    fail(`${lang} prompt must prescribe an empty string for missing source URLs`);
   }
 }
 

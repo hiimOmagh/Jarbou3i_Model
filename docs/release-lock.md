@@ -1,4 +1,4 @@
-# Release Lock — 2.0.0-bio-rc.11
+# Release Lock — 2.0.0-bio-rc.15
 
 This document defines the audit-hardened release-candidate gate. It is not a stable release until automated evidence and the manual sign-off ledger are complete.
 
@@ -22,7 +22,9 @@ ci-artifacts/
 
 ## Reproducible install and validation
 
-Use Node.js 20 and the committed npm lockfile:
+Use Node.js 24, Playwright Test 1.61.1, the new Chromium headless channel, and the committed npm lockfile. Every resolved package URL in
+the lockfile must use the public `registry.npmjs.org` host so a locally generated
+lockfile cannot leak an environment-specific package gateway into GitHub Actions:
 
 ```bash
 npm ci
@@ -62,13 +64,20 @@ PLAYWRIGHT_BASE_URL=https://example.invalid npm run test:browser:hosted
 
 A candidate may be locked only when:
 
-- `package.json` and page metadata report `2.0.0-bio-rc.11`;
+- `package.json` and page metadata report `2.0.0-bio-rc.15`;
+- `@playwright/test` is exactly `1.61.1`, retaining the upstream worker-stop watchdog and preventing semver drift;
+- both desktop Chromium and mobile Chrome use `channel: 'chromium'`, avoiding Chrome Headless Shell’s known intermittent shutdown hang;
+- every lockfile tarball resolves through the public npm registry;
 - generated validators match the committed schemas;
 - canonical Biopolitical v2.1 fixtures pass strict JSON Schema and semantic validation;
 - migrated legacy material validates only as `biopolitical-migrated-draft-v1`;
 - exact 13-criterion, nine-explanation, and five-capture-level checks pass;
 - placeholder or unverified evidence cannot pass the publication gate;
+- review-required canonical analyses import with warnings while verified evidence with invalid provenance remains rejected;
+- assistant-interface citation markers are removed with a disclosed warning and cannot reach review, JSON, or HTML outcomes;
+- standalone reports expose the publication gate independently from analytical readiness, preserve named references and portable source links, and keep oversized appendices collapsible and print-safe;
 - EN, AR, and FR language checks pass;
+- French authored punctuation survives sanitation and every localized phone control remains inside both the physical viewport and every clipping ancestor at 390px and the 320px/400%-equivalent boundary;
 - import rejection, lossless export, keyboard, axe, RTL, and cross-browser checks pass;
 - hosted evidence is captured, reviewed, and labelled with its true target;
 - the 48-case reflow matrix passes and the 55-artifact visual-audit evidence set is captured and reviewed;

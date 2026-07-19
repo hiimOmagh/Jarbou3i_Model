@@ -1,13 +1,13 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.0.0-bio-rc.11` is a static, trilingual workbench with two independent contracts:
+Version `2.0.0-bio-rc.15` is a static, trilingual workbench with two independent contracts:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
 
 The Strategic engine is preserved. Biopolitical analysis has its own schema, prompt, validator, semantic-integrity gate, diagnostics, review interface, export contract, and explicitly non-canonical legacy adapter.
 
-Biopolitical result references are resolved through a read-only relationship index. Review cards show the referenced record’s name alongside its stable canonical ID; selecting a reference opens its type, analytical pillar, confidence, and indexed incoming/outgoing relationships. Standalone HTML reports expand the same names and include a reference directory, while canonical JSON remains unchanged for re-import and verification.
+Biopolitical result references are resolved through a read-only relationship index. Review cards show the referenced record’s name alongside its stable canonical ID; selecting a reference opens its type, analytical pillar, confidence, and indexed incoming/outgoing relationships. Standalone HTML reports expand the same names and include a reference directory, while canonical JSON remains unchanged for re-import and verification. RC 12 removes assistant-interface citation artifacts during import, links valid public sources directly, and separates analytical readiness from the independent publication gate in the report hero. RC 13 preserves authored French punctuation; RC 14 completes content-safe Relationship Explorer containment at the 320px/400%-equivalent boundary.
 
 The Connections review tab uses three purpose-built deterministic views: Story presents numbered causal paths, Evidence Trail groups supporting and counter-evidence around the claim or analytical record, and Network exposes the complete nine-pillar topology. Guided mode prioritizes names and plain-language “Why connected?” explanations; Analyst mode reveals canonical IDs, confidence, provenance, source paths, filters, and layer controls. An equivalent accessible connections list remains available. Every visualization is session-only and never mutates canonical analysis data.
 
@@ -45,7 +45,7 @@ An 18-point self-audit covers intent attribution, institutional claims, mechanis
 | Migrated legacy draft | `1.0.0` | `biopolitical-migrated-draft-v1` | Always blocked until completed as a canonical analysis |
 | Strategic analysis | `1.1.0` | Strategic schema | Preserved behavior |
 
-Imported `analysis_lens`, contract, schema version, and status are authoritative. Unknown or future Biopolitical versions are rejected. Canonical input is validated against the generated browser validator before normalization, then checked for global ID uniqueness, typed references, exact 13/9/5 coverage, evidence traceability, placeholder misuse, and self-audit contradictions.
+Imported `analysis_lens`, contract, schema version, and status are authoritative. Unknown or future Biopolitical versions are rejected. Canonical input is validated against the generated browser validator before normalization, then checked for global ID uniqueness, typed references, exact 13/9/5 coverage, evidence traceability, placeholder misuse, and self-audit contradictions. Structurally canonical analyses with unresolved evidence or audit concerns may be imported for review with visible warnings, but those warnings keep publication blocked. Non-verified malformed source URLs are safely cleared and contradictory verification self-audits are corrected to `concern`; verified evidence with malformed provenance remains a hard error.
 
 Legacy six-array Biopolitical JSON is retained as a disclosed migrated draft. The adapter preserves recoverable records, does not invent governing actors or intervention modalities, and never stamps partial data as canonical v2.1.
 
@@ -74,7 +74,7 @@ Generated prompts treat the topic and context as untrusted analytical material. 
 3. Enter a topic and optional time/geographic context.
 4. Copy the generated prompt to an AI assistant.
 5. Paste the returned JSON into the workbench.
-6. Resolve field-level contract, semantic, and evidence warnings.
+6. Import structurally canonical work, then resolve every disclosed semantic and evidence warning before publication.
 7. Review the full analytical record.
 8. Export a human-readable HTML report and lossless canonical JSON.
 
@@ -87,6 +87,7 @@ index.html
 src/app.js
 src/biopolitics.js
 src/biopolitics-integrity.js
+src/biopolitical-report.js
 src/biopolitics-schema-validator.js
 src/biopolitics-sample-i18n.js
 src/json-parser.js

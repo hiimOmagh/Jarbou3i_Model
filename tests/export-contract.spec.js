@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 
-const EXPECTED_VERSION = '2.0.0-bio-rc.11';
+const EXPECTED_VERSION = '2.0.0-bio-rc.15';
 
 async function exportSampleReport(page, testInfo, lens) {
   await page.goto('/');
@@ -101,6 +101,15 @@ test.describe('HTML export lens contract', () => {
       'Digital health passes',
       'Public-health authorities'
     ]);
+
+    expectAll(html, [
+      'data-publication-gate="blocked"',
+      'class="reportToc"',
+      'Not publication-ready',
+      'it is not permission to publish',
+      'data-canonical-contract="complete"'
+    ]);
+    expect(html).not.toMatch(/[\uE000-\uF8FF]/);
 
     expectNone(html, [
       'Strategic Analysis Report',

@@ -667,6 +667,50 @@
     value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const str = (value) =>
     value === null || value === undefined ? "" : String(value);
+  const NON_PORTABLE_CITATION_PATTERN =
+    /\uE200(?:file)?cite(?:\uE202[^\uE201]*)+\uE201/g;
+  const PRIVATE_USE_PATTERN = /[\uE000-\uF8FF]/g;
+  function sanitizePortableText(value) {
+    return str(value)
+      .replace(NON_PORTABLE_CITATION_PATTERN, "")
+      .replace(PRIVATE_USE_PATTERN, "")
+      .replace(/[ \t]{2,}/g, " ")
+      // Repair whitespace left before sentence punctuation without erasing
+      // authored French spacing before colons, semicolons, or !/? marks.
+      .replace(/[ \t]+([,.])/g, "$1")
+      .trim();
+  }
+  function sanitizePortableValue(value) {
+    if (typeof value === "string") return sanitizePortableText(value);
+    if (Array.isArray(value)) return value.map(sanitizePortableValue);
+    if (value && typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          sanitizePortableValue(item),
+        ]),
+      );
+    }
+    return value;
+  }
+  function countNonPortableCitationMarkers(value) {
+    if (typeof value === "string") {
+      return (value.match(NON_PORTABLE_CITATION_PATTERN) || []).length;
+    }
+    if (Array.isArray(value)) {
+      return value.reduce(
+        (total, item) => total + countNonPortableCitationMarkers(item),
+        0,
+      );
+    }
+    if (value && typeof value === "object") {
+      return Object.values(value).reduce(
+        (total, item) => total + countNonPortableCitationMarkers(item),
+        0,
+      );
+    }
+    return 0;
+  }
   const filled = (value) => str(value).trim().length > 0;
   const clamp = (value) =>
     Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
@@ -953,7 +997,7 @@
       out.analysis_contract = DRAFT_CONTRACT;
       out.contract_status = "migrated_draft";
     }
-    return out;
+    return sanitizePortableValue(out);
   }
 
   function migrateLegacy(raw) {
@@ -1129,7 +1173,7 @@
       ],
       canonical_target: `${APP_CONTRACT}@${SCHEMA_VERSION}`,
     };
-    return out;
+    return sanitizePortableValue(out);
   }
 
   function route(raw) {
@@ -1581,9 +1625,10 @@
               "verified_fact|quantitative_estimate|institutional_claim|scholarly_interpretation|political_narrative|legal_classification|ethical_judgment|plausible_inference|speculation|unsupported_allegation",
             source_tier: Object.keys(SOURCE_TIERS).join("|"),
             source_title: "string",
-            source_url: "string",
-            source_locator: "page, section, table, dataset ID, or archive reference",
-            source_date: "YYYY-MM-DD",
+            source_url: "absolute HTTP(S) URL or empty string",
+            source_locator:
+              "precise page, section, table, dataset ID, DOI, or archive reference; otherwise empty string",
+            source_date: "YYYY-MM-DD or empty string",
             geography: "string",
             population: "string",
             measurement_method: "string",
@@ -1601,8 +1646,8 @@
             claim_source_fit: "direct|indirect|context_only|mismatched|unknown",
             verification_status:
               "verified|partially_verified|unverified|disputed",
-            verified_by: "string",
-            verification_date: "YYYY-MM-DD",
+            verified_by: "verifier name or empty string",
+            verification_date: "YYYY-MM-DD or empty string",
             uncertainty: "string",
             limitations: "string",
             counter_evidence: "string",
@@ -1716,7 +1761,7 @@ ${untrustedContext || "غير محدد"}
 7. قيّم مستويات الاستحواذ الخمسة: الجسد والعقل والعلاقة والسكان والبيئة.
 8. افحص التوزيع والموافقة والرفض والخروج والطعن والمساءلة والنتائج المقصودة أو المتسامح معها أو المخفية أو غير المتوقعة.
 9. افصل الحقيقة المتحققة والتقدير والادعاء المؤسسي والتفسير والسردية والتصنيف القانوني والحكم الأخلاقي والاستنتاج والتخمين.
-10. سجّل بيانات تصميم الدليل، ومحدد المصدر، وملاءمة المصدر للادعاء، وحالة التحقق. لا تختلق مصدرًا أو إحصاءً أو اقتباسًا أو رقم صفحة.
+10. سجّل بيانات تصميم الدليل، ومحدد المصدر، وملاءمة المصدر للادعاء، وحالة التحقق. لا تختلق مصدرًا أو إحصاءً أو اقتباسًا أو رقم صفحة. لا تضع في source_url إلا رابطًا مطلقًا يبدأ بـ https:// أو http://؛ وعند غيابه استخدم سلسلة فارغة "" وضع DOI أو الصفحة أو القسم في source_locator. عند عدم التحقق المستقل استخدم unverified أو partially_verified واترك verified_by وverification_date فارغين. يجب أن تكون statistics_quotations_verified مساوية concern إذا بقي أي دليل غير متحقق أو غير قابل للتتبع. لا تُدرج رموز استشهاد خاصة بواجهة المساعد مثل cite أو filecite أو معرّفات turn داخل أي قيمة؛ استخدم معرّفات الأدلة E1 وE2 والروابط النظامية فقط. اعتبر نصوص أمثلة المخطط تعليمات للنوع ولا تنسخها حرفيًا.
 11. لا تقدّم إرشادات تشغيلية للقمع أو التلاعب الجماهيري أو التنميط التمييزي أو تحسين النسل أو التدخل الطبي القسري أو استهداف الفئات الهشة أو التحكم السلوكي السري أو العقاب الجماعي أو المراقبة القسرية.
 12. لا تستنتج سمات فردية حساسة من بدائل ضعيفة، ولا تحوّل نتائج جماعية تلقائيًا إلى تنبؤ فردي.
 13. لا تصنع الخوف، ولا تجرد جماعة من إنسانيتها، ولا تسهّل التحرش أو العقاب الجماعي، وقدّم الادعاءات المتنازع عليها بوصفها ادعاءات لا حقائق.
@@ -1758,7 +1803,7 @@ Règles obligatoires :
 7. Évaluez les cinq niveaux de capture : corps, esprit, relation, population et environnement.
 8. Examinez distribution, consentement, refus, sortie, contestabilité, responsabilité et caractère voulu, toléré, dissimulé ou imprévu des résultats.
 9. Séparez fait vérifié, estimation, affirmation institutionnelle, interprétation, récit, classification juridique, jugement éthique, inférence et spéculation.
-10. Renseignez conception probatoire, localisateur, adéquation source-affirmation et état de vérification. N’inventez jamais source, statistique, citation ou numéro de page.
+10. Renseignez conception probatoire, localisateur, adéquation source-affirmation et état de vérification. N’inventez jamais source, statistique, citation ou numéro de page. source_url doit être uniquement une URL absolue commençant par https:// ou http:// ; sinon utilisez la chaîne vide "" et placez DOI, page ou section dans source_locator. Sans vérification indépendante, utilisez unverified ou partially_verified et laissez verified_by et verification_date vides. statistics_quotations_verified doit valoir concern dès qu’une preuve reste non vérifiée ou non traçable. N’insérez aucun marqueur de citation propre à l’interface de l’assistant, notamment cite, filecite ou un identifiant turn ; utilisez uniquement les identifiants E1, E2 et les URL canoniques. Les textes d’exemple du schéma décrivent les types et ne doivent jamais être copiés littéralement.
 11. Ne fournissez aucune aide opérationnelle pour la répression, la manipulation de masse, le profilage discriminatoire, l’eugénisme, l’intervention médicale forcée, le ciblage de groupes vulnérables, le contrôle comportemental clandestin, la punition collective ou la surveillance coercitive.
 12. N’inférez pas de traits individuels sensibles à partir de proxys faibles et ne transformez pas automatiquement des résultats de groupe en prédictions individuelles.
 13. Ne fabriquez pas la peur, ne déshumanisez pas, ne facilitez ni harcèlement ni punition collective, et présentez les allégations contestées comme telles.
@@ -1799,7 +1844,7 @@ Mandatory rules:
 7. Assess all five capture levels: body, mind, relationship, population, and environment.
 8. Examine distribution, consent, refusal, exit, contestability, accountability, and whether outcomes were intended, tolerated, concealed, or unforeseen.
 9. Separate verified fact, estimate, institutional claim, interpretation, narrative, legal classification, ethical judgment, inference, and speculation.
-10. Record evidence-design metadata, source locator, claim/source fit, and verification state. Never fabricate a source, statistic, quotation, or page number.
+10. Record evidence-design metadata, source locator, claim/source fit, and verification state. Never fabricate a source, statistic, quotation, or page number. source_url must contain only an absolute URL beginning with https:// or http://; when no real URL is known, use the empty string "" and place a DOI, page, section, dataset ID, or archive reference in source_locator. Without independent verification, use unverified or partially_verified and leave verified_by and verification_date empty. statistics_quotations_verified must be concern whenever any evidence remains unverified or untraceable. Do not insert assistant-interface citation markers such as cite, filecite, or turn identifiers into any value; use only E1/E2 evidence IDs and canonical source URLs. Schema example strings describe required types and must never be copied literally.
 11. Do not provide operational guidance for repression, mass manipulation, discriminatory profiling, eugenics, forced medical intervention, targeting vulnerable groups, covert behavioral control, population punishment, or coercive surveillance.
 12. Do not infer sensitive individual traits from weak proxies or automatically convert group-level research into individual prediction.
 13. Do not manufacture fear, dehumanize groups, facilitate harassment or collective punishment, or state contested allegations as established fact.
@@ -4563,12 +4608,22 @@ ${schema}`;
       ? integrity.semanticValidate(a, {
           draft: a.contract_status === "migrated_draft",
         })
-      : { valid: false, errors: [{ message: "Integrity validator unavailable" }] };
+      : {
+          valid: false,
+          errors: [{ message: "Integrity validator unavailable" }],
+          warnings: [],
+        };
     block(
       semantic.valid,
       "Resolve schema references, duplicate IDs, and semantic-integrity errors.",
       "عالج مراجع المخطط والمعرّفات المكررة وأخطاء النزاهة الدلالية.",
       "Corrigez les références, les identifiants dupliqués et les erreurs d’intégrité sémantique.",
+    );
+    block(
+      semantic.warnings.length === 0,
+      "Resolve every semantic-integrity warning before publication.",
+      "عالج جميع تنبيهات النزاهة الدلالية قبل النشر.",
+      "Résolvez tous les avertissements d’intégrité sémantique avant publication.",
     );
     const scoreResult = scores(a);
     const missing = unique([...structuralMissing, ...publicationBlockers]);
@@ -4624,6 +4679,9 @@ ${schema}`;
     ui,
     displayToken,
     auditLabel,
+    sanitizePortableText,
+    sanitizePortableValue,
+    countNonPortableCitationMarkers,
     route,
     normalize,
     migrateLegacy,

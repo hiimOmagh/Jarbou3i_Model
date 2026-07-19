@@ -29,9 +29,15 @@ export default defineConfig({
     trace: 'on-first-retry'
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], channel: 'chromium' }
+    },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } }
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'], channel: 'chromium' }
+    }
   ]
 });

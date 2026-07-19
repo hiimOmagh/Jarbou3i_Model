@@ -76,8 +76,8 @@ if (scriptOrder.some((position, index) => index && position <= scriptOrder[index
   fail("runtime scripts load in an unsafe order");
 }
 
-if (pkg.version !== "2.0.0-bio-rc.11") fail("package version is wrong");
-if (!index.includes('name="app-version" content="2.0.0-bio-rc.11"')) {
+if (pkg.version !== "2.0.0-bio-rc.15") fail("package version is wrong");
+if (!index.includes('name="app-version" content="2.0.0-bio-rc.15"')) {
   fail("app version metadata is wrong");
 }
 for (const token of [

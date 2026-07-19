@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.0.0-bio-rc.11 — client-side application logic */
+/* Jarbou3i Model v2.0.0-bio-rc.15 — client-side application logic */
 
 "use strict";
 const I18N = {
@@ -811,6 +811,8 @@ if (!BIO_INTEGRITY)
   throw new Error("Biopolitical integrity gate failed to load.");
 const BIO_GRAPH = window.Jarbou3iBiopoliticsGraph;
 if (!BIO_GRAPH) throw new Error("Biopolitical relationship index failed to load.");
+const BIO_REPORT = window.Jarbou3iBiopoliticalReport;
+if (!BIO_REPORT) throw new Error("Biopolitical report renderer failed to load.");
 const REFERENCE_UI = window.Jarbou3iReferenceUi;
 if (!REFERENCE_UI) throw new Error("Named-reference interface failed to load.");
 const RELATIONSHIP_EXPLORER = window.Jarbou3iRelationshipExplorer;
@@ -1113,14 +1115,14 @@ function normalizeArray(x) {
   return Array.isArray(x) ? x : [];
 }
 function normalizeAnalysis(raw) {
-  const a = raw && typeof raw === "object" ? raw : {};
+  const source = raw && typeof raw === "object" ? raw : {};
   const lens = ["strategic", "biopolitical"].includes(
-    a.analysis_lens || a.analysisLens,
+    source.analysis_lens || source.analysisLens,
   )
-    ? a.analysis_lens || a.analysisLens
+    ? source.analysis_lens || source.analysisLens
     : state.analysisLens;
   if (lens === "biopolitical") {
-    const validation = BIO_INTEGRITY.validateImport(a);
+    const validation = BIO_INTEGRITY.validateImport(source);
     state.importValidation = validation;
     if (!validation.ok) {
       const error = new Error(validation.errors[0]?.message || "invalid");
@@ -1129,6 +1131,23 @@ function normalizeAnalysis(raw) {
     }
     return validation.analysis;
   }
+  const citationCount = BIO.countNonPortableCitationMarkers(source);
+  const a = BIO.sanitizePortableValue(source);
+  state.importValidation = citationCount
+    ? {
+        ok: true,
+        state: "strategic",
+        warnings: [
+          {
+            code: "NON_PORTABLE_CITATION_MARKERS_REMOVED",
+            path: "/",
+            severity: "warning",
+            count: citationCount,
+            message: `${citationCount} non-portable citation marker${citationCount === 1 ? " was" : "s were"} removed.`,
+          },
+        ],
+      }
+    : null;
   const out = {
     schema_version: a.schema_version || a.schemaVersion || "1.0.0",
     analysis_id: a.analysis_id || a.analysisId || "",
@@ -1190,17 +1209,37 @@ function validateJsonInput() {
     state.jsonValid = true;
     $("importBtn").disabled = false;
     $("repairPromptBtn").disabled = false;
-    $("jsonStatus").className = "status good";
+    const warnings = state.importValidation?.warnings || [];
+    const citationRepair = warnings.find(
+      (warning) => warning.code === "NON_PORTABLE_CITATION_MARKERS_REMOVED",
+    );
+    const citationNotice = citationRepair
+      ? labelText(
+          `${citationRepair.count || 1} non-portable assistant citation marker${citationRepair.count === 1 ? " was" : "s were"} removed; canonical evidence IDs and source URLs were preserved.`,
+          `تمت إزالة ${citationRepair.count || 1} من علامات استشهاد المساعد غير القابلة للنقل؛ وحُفظت معرّفات الأدلة وروابط المصادر النظامية.`,
+          `${citationRepair.count || 1} marqueur${citationRepair.count === 1 ? " interne non portable a été supprimé" : "s internes non portables ont été supprimés"} ; les identifiants de preuve et URL de source canoniques ont été préservés.`,
+        )
+      : "";
+    $("jsonStatus").className = warnings.length ? "status warn" : "status good";
     const draft = state.importValidation?.state === "migrated_draft";
-    $("jsonStatus").textContent = draft
+    const validationMessage = draft
       ? labelText(
           "Legacy material is valid as a migrated draft; publication remains blocked until canonical completion.",
           "المادة القديمة صالحة كمسودة مُرحّلة، ويظل النشر محظورًا حتى استكمال العقد النظامي.",
           "Le contenu historique est valide comme brouillon migré ; la publication reste bloquée jusqu’à sa mise en conformité canonique.",
         )
-      : parsed.recovered
+      : warnings.length
+        ? labelText(
+            `Valid analysis with ${warnings.length} review warning${warnings.length === 1 ? "" : "s"}. Import is allowed; publication remains blocked until the evidence audit is resolved.`,
+            `التحليل صالح مع ${warnings.length} ${warnings.length === 1 ? "تنبيه للمراجعة" : "تنبيهات للمراجعة"}. الاستيراد مسموح، ويظل النشر محظورًا حتى معالجة تدقيق الأدلة.`,
+            `Analyse valide avec ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"} à examiner. L’importation est autorisée ; la publication reste bloquée jusqu’à la résolution de l’audit des preuves.`,
+          )
+        : parsed.recovered
         ? t("jsonAutoRecovered")
         : t("jsonValid");
+    $("jsonStatus").textContent = [validationMessage, citationNotice]
+      .filter(Boolean)
+      .join(" ");
     $("pasteCard").classList.add("ready");
     $("pasteCard").classList.remove("invalid");
     return analysis;
@@ -1436,6 +1475,7 @@ function buildPrompt() {
 قواعد مهمة:
 - اكتب كل محتوى التحليل باللغة العربية.
 - لا تُرجع أي شرح خارج JSON.
+- لا تستخدم علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم روابط HTTP(S) عامة وملاحظات مصادر قابلة للنقل فقط.
 - فرّق بين الملاحظة والاستنتاج والتقدير عندما يكون ذلك مطلوبًا.
 - في التناقضات: إذا كانت نفس السردية/الخطاب ينتج عدة أفعال متناقضة، اجعلها مجموعة واحدة تحتوي actions متعددة.
 - في السيناريوهات: أضف شروطًا واضحة تُضعف أو تُبطل السيناريو.
@@ -1453,6 +1493,7 @@ Mode : ${modeText}
 Règles :
 - Rédige tout le contenu de l’analyse en français.
 - Retourne uniquement du JSON. Aucun texte explicatif en dehors du JSON.
+- N’utilise aucun marqueur interne d’assistant tel que cite, filecite ou turn ; utilise uniquement des URL HTTP(S) publiques et des notes de source portables.
 - Sépare observation, inférence et estimation lorsque c’est pertinent.
 - Dans les contradictions : si la même rhétorique/hypothèse produit plusieurs actions contradictoires, conserve une seule entrée avec plusieurs actions.
 - Dans les scénarios : inclue des conditions claires qui affaibliraient ou réfuteraient chaque scénario.
@@ -1469,6 +1510,7 @@ Mode: ${modeText}
 Rules:
 - Write all analysis content in English.
 - Return JSON only. No explanation outside JSON.
+- Never use assistant-internal citation markers such as cite, filecite, or turn; use public HTTP(S) URLs and portable source notes only.
 - Separate observation, inference, and estimate where requested.
 - In contradictions: if the same rhetoric/hypothesis has multiple contradictory actions, keep it as one contradiction group with multiple actions.
 - In scenarios: include clear conditions that would weaken or disprove each scenario.
@@ -2373,6 +2415,20 @@ function escapeHtml(s) {
     /[&<>"]/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
   );
+}
+function safeHttpUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+function sourceAnchor(url, label = url) {
+  const safe = safeHttpUrl(url);
+  return safe
+    ? `<a class="sourceUrl ltr" href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label || safe)} <span aria-hidden="true">↗</span></a>`
+    : "";
 }
 function arr(v) {
   return Array.isArray(v) ? v.filter(Boolean) : [];
@@ -3375,7 +3431,7 @@ function renderEvidence() {
               .filter(Boolean)
               .join(" · ");
             const counter = e.counter_evidence || e.counterEvidence || "";
-            return `<div class="ledgerRow evidenceRow"><div class="evidenceClaim"><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<small class="muted"><br>${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</small>` : ""}</div><div>${pill(e.basis, "basis")}</div><div>${pill(e.confidence, "confidence")}${e.evidence_strength ? pill(`${escapeHtml(e.evidence_strength)}/5`) : ""}</div><div class="sourceNote">${escapeHtml(source || e.source_note || "—")}${e.source_url ? `<br><span class="ltr">${escapeHtml(e.source_url)}</span>` : ""}</div></div>`;
+            return `<div class="ledgerRow evidenceRow"><div class="evidenceClaim"><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<small class="muted"><br>${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</small>` : ""}</div><div>${pill(e.basis, "basis")}</div><div>${pill(e.confidence, "confidence")}${e.evidence_strength ? pill(`${escapeHtml(e.evidence_strength)}/5`) : ""}</div><div class="sourceNote">${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</div></div>`;
           })
           .join("")
       : `<div class="empty"><strong>${t("noItems")}</strong></div>`
@@ -3405,7 +3461,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.11";
+    "2.0.0-bio-rc.15";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -3543,7 +3599,7 @@ function htmlReport() {
           e.source_note ||
           "—";
         const counter = e.counter_evidence || e.counterEvidence || "";
-        return `<tr><td><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</span>` : ""}</td><td><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em></td><td>${escapeHtml(source)}${e.source_url ? `<br>${escapeHtml(e.source_url)}` : ""}</td></tr>`;
+        return `<tr><td><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</span>` : ""}</td><td><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em></td><td>${escapeHtml(source)}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
       })
       .join("") || `<tr><td colspan="4">${escapeHtml(t("noItems"))}</td></tr>`;
   const assumptions =
@@ -3875,9 +3931,9 @@ function bioGateHtml(a) {
       )
     : review
       ? labelText(
-          "The analysis is usable but requires targeted epistemic repair.",
-          "التحليل قابل للاستخدام لكنه يحتاج إصلاحًا إبستيميًا موجّهًا.",
-          "L’analyse est utilisable mais exige une correction épistémique ciblée.",
+          "The analysis is usable for review but is not publication-ready; it requires targeted epistemic repair.",
+          "التحليل قابل للاستخدام في المراجعة لكنه غير جاهز للنشر؛ ويحتاج إلى إصلاح إبستيمي موجّه.",
+          "L’analyse est utilisable pour la révision mais n’est pas prête à être publiée ; elle exige une correction épistémique ciblée.",
         )
       : labelText(
           "This analysis is not publication-ready; resolve the contract and evidence blockers first.",
@@ -4160,90 +4216,21 @@ function renderBiopoliticalReview() {
         "application/json",
       );
 }
-function htmlBiopoliticalReport() {
-  const a = state.analysis;
-  const scores = BIO.scores(a);
-  const health = BIO.health(a, a.language);
-  const reportLang = ["ar", "en", "fr"].includes(a.language)
-    ? a.language
-    : "en";
-  const reportText = (en, ar, fr) =>
-    reportLang === "ar" ? ar : reportLang === "fr" ? fr : en;
-  const rt = (key) => tFor(reportLang, key, "biopolitical");
-  const version =
-    document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.11";
-  const dir = reportLang === "ar" ? "rtl" : "ltr";
-  const labels = BIO.ui(reportLang, "pillars");
-  const relationshipGraph = BIO_GRAPH.build(a, reportLang);
-  const named = (value) => BIO_GRAPH.plainText(value, relationshipGraph);
-  const sections = BIO.PILLARS.map((pillar, index) => {
-    const records = BIO.recordsFor(pillar.key, a, reportLang);
-    return `<section class="section" data-biopolitical-pillar="${pillar.key}"><header><span>${String(index + 1).padStart(2, "0")}</span><div><h2>${escapeHtml(labels[pillar.key][0])}</h2><p>${escapeHtml(labels[pillar.key][1])}</p></div></header>${records.length ? records.map((item) => `<article><h3>${escapeHtml(named(item.title || "—"))}</h3>${item.summary ? `<p>${escapeHtml(named(item.summary))}</p>` : ""}${item.meta.length ? `<div class="tags">${item.meta.map((value) => `<em>${escapeHtml(BIO.displayToken(reportLang, value))}</em>`).join("")}</div>` : ""}${item.details.length ? `<dl>${item.details.map((detail) => `<div><dt>${escapeHtml(detail.label)}</dt><dd>${escapeHtml(named(detail.value))}</dd></div>`).join("")}</dl>` : ""}${item.lists.map((group) => `<div class="list"><b>${escapeHtml(group.label)}</b><ul>${group.items.map((value) => `<li>${escapeHtml(named(value))}</li>`).join("")}</ul></div>`).join("")}</article>`).join("") : `<p class="muted">${escapeHtml(BIO.ui(reportLang, "noRecords"))}</p>`}</section>`;
-  }).join("");
-  const conclusions = BIO.conclusionRecords(a, reportLang)
-    .map(
-      (group) =>
-        `<div><h3>${escapeHtml(group.label)}</h3><ul>${group.items.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div>`,
-    )
-    .join("");
-  const audit = BIO.SELF_AUDIT_KEYS.map(
-    (key) =>
-      `<li><span>${escapeHtml(BIO.auditLabel(reportLang, key))}</span><b>${escapeHtml(BIO.displayToken(reportLang, a.self_audit[key] || "concern"))}</b></li>`,
-  ).join("");
-  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="${escapeHtml(version)}"><meta name="analysis-lens" content="biopolitical"><meta name="analysis-contract" content="${escapeHtml(BIO.APP_CONTRACT)}"><meta name="schema-version" content="${escapeHtml(BIO.SCHEMA_VERSION)}"><title>${escapeHtml(t("generatedReport"))}</title><style>:root{--ink:#102033;--muted:#64748b;--line:#d9e4f1;--surface:#fff;--bg:#f2f6fb;--accent:#255ee8;--teal:#0f766e;--warn:#b45309}*{box-sizing:border-box}html{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 Inter,"Noto Sans Arabic","Segoe UI",Arial,sans-serif}.shell{max-width:1120px;margin:auto;padding:32px 20px 72px}.hero{padding:34px;border-radius:30px;background:linear-gradient(135deg,#08111f,#1d4ed8 58%,#0f766e);color:white}.heroGrid{display:grid;grid-template-columns:1fr 150px;gap:24px;align-items:center}.hero h1{font-size:34px;line-height:1.2;margin:0}.hero p{color:#dbeafe}.score{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#5eead4 calc(var(--v)*1%),rgba(255,255,255,.16) 0);position:relative}.score:before{content:"";position:absolute;inset:11px;border-radius:50%;background:#10203e}.score b{position:relative;font-size:30px}.contract{margin-top:16px;padding:16px 18px;border:1px solid #bfdbfe;border-radius:18px;background:#eff6ff}.section{margin-top:20px;padding:22px;border:1px solid var(--line);border-radius:24px;background:var(--surface);box-shadow:0 14px 34px rgba(15,23,42,.06)}.section>header{display:flex;gap:14px;border-bottom:1px solid var(--line);padding-bottom:14px}.section>header>span{width:38px;height:38px;border-radius:12px;background:#e8efff;color:var(--accent);display:grid;place-items:center;font-weight:900}.section h2,.section h3{margin:0}.section header p{margin:4px 0;color:var(--muted)}article{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:18px;background:#f8fafc}article p{margin:7px 0}.tags{display:flex;gap:6px;flex-wrap:wrap}.tags em{font-style:normal;border:1px solid var(--line);border-radius:999px;padding:4px 8px;background:white;font-size:12px;font-weight:800}dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}dl div{padding:10px;border-radius:12px;background:white;border:1px solid var(--line)}dt{font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:900}dd{margin:3px 0 0}.list{margin-top:10px}.conclusion{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.conclusion>div,.audit{padding:18px;border:1px solid var(--line);border-radius:18px;background:white}.audit li{display:flex;justify-content:space-between;gap:20px;padding:7px 0;border-bottom:1px solid var(--line)}.audit b{color:var(--teal)}.muted{color:var(--muted)}@media(max-width:760px){.heroGrid,.conclusion,dl{grid-template-columns:1fr}.shell{padding:16px 10px}.score{width:100px;height:100px}}@media print{@page{margin:14mm}body{background:white}.shell{padding:0}.hero,.section{box-shadow:none;break-inside:avoid}}</style></head><body><main class="shell" data-analysis-lens="biopolitical" data-analysis-contract="${escapeHtml(BIO.APP_CONTRACT)}" data-schema-version="${escapeHtml(BIO.SCHEMA_VERSION)}" data-app-version="${escapeHtml(version)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || t("generatedReport"))}</h1><p>${escapeHtml(t("generatedReport"))}</p><p>${escapeHtml(t("reportSubtitle"))}</p><p>${escapeHtml(a.subject.context)}</p></div><div class="score" style="--v:${scores.overall}"><b>${scores.overall}</b></div></div></section><section class="contract" data-export-contract-lens="biopolitical"><b>${escapeHtml(BIO.APP_CONTRACT)} · schema ${escapeHtml(BIO.SCHEMA_VERSION)}</b><p>${escapeHtml(a.subject.executive_finding || "—")}</p></section>${sections}<section class="section"><header><span>10</span><div><h2>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h2><p>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</p></div></header><div class="conclusion">${conclusions}</div><ul class="audit">${audit}</ul></section></main></body></html>`;
-}
 function buildLosslessBiopoliticalReport() {
   const analysis = state.analysis;
   const reportLang = ["ar", "en", "fr"].includes(analysis?.language)
     ? analysis.language
     : "en";
-  const previousLang = state.lang;
-  state.lang = reportLang;
-  try {
-    const report = htmlBiopoliticalReport();
-    const health = BIO.health(analysis, reportLang);
-    const reportText = (en, ar, fr) =>
-      reportLang === "ar" ? ar : reportLang === "fr" ? fr : en;
-    const blockers = arr(health.missing);
-    const migrationWarnings = arr(analysis?.migration?.warnings);
-    const auditNotes = arr(analysis?.self_audit_notes);
-    const relationshipGraph = BIO_GRAPH.build(analysis, reportLang);
-    const named = (value) => BIO_GRAPH.plainText(value, relationshipGraph);
-    const explicitRelationships = relationshipGraph.edges.filter(
-      (edge) => edge.provenance === "explicit",
-    );
-    const temporal = BIO_GRAPH.temporalProjection(analysis);
-    const comparisons = BIO_GRAPH.comparativeProjection(analysis);
-    const relationshipGroups = ["explicit", "evidence", "structural"].map((family) => ({
-      family,
-      edges: relationshipGraph.edges.filter((edge) => edge.family === family),
-    }));
-    const familyLabel = (family) => ({
-      explicit: reportText("Authored causal connections", "العلاقات السببية المؤلَّفة", "Connexions causales rédigées"),
-      evidence: reportText("Evidence connections", "علاقات الأدلة", "Connexions probatoires"),
-      structural: reportText("Structural references", "المراجع البنيوية", "Références structurelles"),
-    })[family] || family;
-    const timeLabel = (key) => ({
-      historical: reportText("Historical continuity", "الاستمرارية التاريخية", "Continuité historique"),
-      dated: reportText("Dated evidence", "الأدلة المؤرخة", "Preuves datées"),
-      immediate: reportText("Immediate effects", "الآثار الفورية", "Effets immédiats"),
-      medium: reportText("Medium-term adaptations and dependencies", "التكيفات والتبعيات متوسطة المدى", "Adaptations et dépendances à moyen terme"),
-      future: reportText("Future and intergenerational signals", "إشارات المستقبل وبين الأجيال", "Signaux futurs et intergénérationnels"),
-    })[key] || key;
-    const relationLabel = (relation) => BIO.displayToken(reportLang, relation);
-    const relationshipAtlas = `<section class="section relationshipAtlas" data-relationship-atlas="complete"><header><span>11</span><div><h2>${escapeHtml(reportText("Relationship and context atlas", "أطلس العلاقات والسياق", "Atlas des relations et du contexte"))}</h2><p>${escapeHtml(reportText("Named connections, canonical time signals, and comparison limits for human review.", "علاقات مسماة وإشارات زمنية نظامية وحدود مقارنة للمراجعة البشرية.", "Connexions nommées, signaux temporels canoniques et limites de comparaison pour la revue humaine."))}</p></div></header>${relationshipGroups.map((group) => `<div class="list" data-relationship-family="${group.family}"><b>${escapeHtml(familyLabel(group.family))} (${group.edges.length})</b><ul>${group.edges.map((edge) => `<li>${escapeHtml(named(edge.source))} → ${escapeHtml(named(edge.target))} — ${escapeHtml(relationLabel(edge.relation))}${edge.mechanism ? `: ${escapeHtml(edge.mechanism)}` : ""}</li>`).join("")}</ul></div>`).join("")}<div data-temporal-projection="canonical"><h3>${escapeHtml(reportText("Canonical time signals", "الإشارات الزمنية النظامية", "Signaux temporels canoniques"))}</h3><p class="muted">${escapeHtml(reportText("Analytical grouping only; no chronology is inferred.", "تجميع تحليلي فقط؛ لا يُستنتج تسلسل زمني.", "Regroupement analytique uniquement ; aucune chronologie n’est inférée."))}</p>${temporal.map((band) => `<article data-time-band="${escapeHtml(band.key)}"><h3>${escapeHtml(timeLabel(band.key))} <small>(${band.items.length})</small></h3>${band.items.length ? `<ul>${band.items.map((item) => `<li>${escapeHtml(item.label)}${item.detail ? ` — ${escapeHtml(item.detail)}` : ""}${item.id ? ` [${escapeHtml(item.id)}]` : ""}</li>`).join("")}</ul>` : `<p class="muted">—</p>`}</article>`).join("")}</div><div data-comparative-projection="canonical"><h3>${escapeHtml(reportText("International comparisons", "المقارنات الدولية", "Comparaisons internationales"))}</h3>${comparisons.length ? comparisons.map((item) => `<article data-comparison-id="${escapeHtml(item.id)}"><h3>${escapeHtml(item.context || item.id)}</h3><p><b>${escapeHtml(reportText("Basis", "الأساس", "Base"))}:</b> ${escapeHtml(item.basis)}</p><div class="list"><b>${escapeHtml(reportText("Similarities", "أوجه التشابه", "Similarités"))}</b><ul>${item.similarities.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div><div class="list"><b>${escapeHtml(reportText("Differences", "الاختلافات", "Différences"))}</b><ul>${item.differences.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div><div class="list"><b>${escapeHtml(reportText("Transfer limits", "حدود النقل", "Limites de transfert"))}</b><ul>${item.transferLimits.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div>${item.evidenceIds.length ? `<div class="list"><b>${escapeHtml(reportText("Named evidence", "الأدلة المسماة", "Preuves nommées"))}</b><ul>${item.evidenceIds.map((id) => `<li>${escapeHtml(named(id))}</li>`).join("")}</ul></div>` : ""}</article>`).join("") : `<p class="muted">—</p>`}</div></section>`;
-    const referenceDirectory = `<section class="section referenceDirectory" data-reference-directory="named"><header><span>12</span><div><h2>${escapeHtml(reportText("Reference directory", "دليل المراجع", "Répertoire des références"))}</h2><p>${escapeHtml(reportText("Human-readable names preserve every canonical identifier.", "تحافظ الأسماء المقروءة على كل معرّف نظامي.", "Les noms lisibles préservent chaque identifiant canonique."))}</p></div></header><div class="referenceIndex">${relationshipGraph.nodes.map((node) => `<article data-reference-id="${escapeHtml(node.id)}"><h3>${escapeHtml(node.label)} <small>[${escapeHtml(node.id)}]</small></h3><p>${escapeHtml(relationshipGraph.typeLabel(node.type))}${node.subtitle && node.subtitle !== node.label ? ` — ${escapeHtml(node.subtitle)}` : ""}</p></article>`).join("")}</div>${explicitRelationships.length ? `<div class="list"><b>${escapeHtml(reportText("Named relationships", "العلاقات المسماة", "Relations nommées"))}</b><ul>${explicitRelationships.map((edge) => `<li>${escapeHtml(named(edge.source))} → ${escapeHtml(named(edge.target))} — ${escapeHtml(relationLabel(edge.relation))}${edge.mechanism ? `: ${escapeHtml(edge.mechanism)}` : ""}</li>`).join("")}</ul></div>` : ""}</section>`;
-    const prettyJson = JSON.stringify(analysis, null, 2);
-    const scriptJson = JSON.stringify(analysis).replaceAll("<", "\\u003c");
-    const appendix = `<section class="section canonicalAppendix" data-canonical-contract="complete" data-contract-status="${escapeHtml(analysis.contract_status)}"><header><span>13</span><div><h2>${escapeHtml(reportText("Complete canonical contract", "العقد النظامي الكامل", "Contrat canonique complet"))}</h2><p>${escapeHtml(reportText("Lossless review appendix and machine-readable payload", "ملحق مراجعة كامل وحمولة قابلة للقراءة آليًا", "Annexe de revue sans perte et contenu lisible par machine"))}</p></div></header><p><b>${escapeHtml(reportText("Publication gate", "بوابة النشر", "Contrôle de publication"))}:</b> ${escapeHtml(health.publishable ? reportText("Passed", "مستوفاة", "Satisfait") : reportText("Blocked", "محظورة", "Bloqué"))}</p>${blockers.length ? `<div class="list"><b>${escapeHtml(reportText("Blocking findings", "العوائق", "Blocages"))}</b><ul>${blockers.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>` : ""}${migrationWarnings.length ? `<div class="list"><b>${escapeHtml(reportText("Migration warnings", "تحذيرات الترحيل", "Alertes de migration"))}</b><ul>${migrationWarnings.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>` : ""}${auditNotes.length ? `<div class="list"><b>${escapeHtml(reportText("Self-audit notes", "ملاحظات التدقيق الذاتي", "Notes d’auto-audit"))}</b><ul>${auditNotes.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>` : ""}<details><summary><b>${escapeHtml(reportText("Inspect canonical JSON", "افحص JSON النظامي", "Inspecter le JSON canonique"))}</b></summary><pre style="max-height:42rem;overflow:auto;padding:14px;border:1px solid var(--line);border-radius:14px;background:#07111f;color:#dbeafe;direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere">${escapeHtml(prettyJson)}</pre></details></section>`;
-    return report.replace(
-      "</main></body></html>",
-      `${relationshipAtlas}${referenceDirectory}${appendix}</main><script type="application/json" id="canonical-analysis">${scriptJson}</script></body></html>`,
-    );
-  } finally {
-    state.lang = previousLang;
-  }
+  const version =
+    document.querySelector('meta[name="app-version"]')?.content ||
+    "2.0.0-bio-rc.15";
+  return BIO_REPORT.build({
+    analysis,
+    lang: reportLang,
+    version,
+    bio: BIO,
+    graphApi: BIO_GRAPH,
+  });
 }
 function renderExports() {
   const d = {
@@ -4419,7 +4406,7 @@ function repairPrompt() {
   const fr = state.analysisLang === "fr";
   const bad = $("jsonInput").value.trim();
   if (ar)
-    return `أصلح النص التالي ليصبح JSON صالحًا فقط ومتوافقًا مع مخطط أداة التحليل. لا تكتب أي شرح خارج JSON.
+    return `أصلح النص التالي ليصبح JSON صالحًا فقط ومتوافقًا مع مخطط أداة التحليل. لا تكتب أي شرح خارج JSON. لا تدرج علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم معرّفات الأدلة النظامية وروابط HTTP(S) فقط. لا تضع في source_url إلا رابط HTTP(S) مطلقًا؛ استخدم "" عند غيابه. لا تعيّن statistics_quotations_verified إلى pass إذا بقي أي دليل unverified أو partially_verified أو disputed.
 
 النص:
 ${bad}
@@ -4427,14 +4414,14 @@ ${bad}
 المخطط المطلوب:
 ${buildSchema(state.analysisLang, state.promptMode)}`;
   if (fr)
-    return `Répare le texte suivant pour produire uniquement un JSON valide compatible avec le schéma de l’outil. N’écris aucune explication hors JSON.
+    return `Répare le texte suivant pour produire uniquement un JSON valide compatible avec le schéma de l’outil. N’écris aucune explication hors JSON. N’inclus aucun marqueur interne d’assistant tel que cite, filecite ou turn ; utilise uniquement les identifiants de preuve canoniques et des URL HTTP(S). source_url doit être une URL HTTP(S) absolue ou "". N’utilise pas pass pour statistics_quotations_verified si une preuve reste unverified, partially_verified ou disputed.
 
 Texte :
 ${bad}
 
 Schéma requis :
 ${buildSchema(state.analysisLang, state.promptMode)}`;
-  return `Repair the following text into valid JSON only, matching the analysis workbench schema. Do not write any explanation outside JSON.
+  return `Repair the following text into valid JSON only, matching the analysis workbench schema. Do not write any explanation outside JSON. Do not include assistant-internal citation markers such as cite, filecite, or turn; use canonical evidence IDs and HTTP(S) URLs only. source_url must be an absolute HTTP(S) URL or "". Do not set statistics_quotations_verified to pass while any evidence is unverified, partially_verified, or disputed.
 
 Text:
 ${bad}

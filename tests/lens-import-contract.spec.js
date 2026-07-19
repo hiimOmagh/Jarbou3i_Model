@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '2.0.0-bio-rc.11';
+const EXPECTED_VERSION = '2.0.0-bio-rc.15';
 
 async function readFixture(name) {
   const raw = await fs.readFile(path.join(process.cwd(), 'fixtures', name), 'utf8');
@@ -86,6 +86,23 @@ test.describe('Imported analysis lens contract', () => {
     expect(html).toContain('name="schema-version" content="2.1.0"');
     expect(html).toContain('Actors &amp; populations');
     expect(html).not.toContain('Strategic Analysis Report');
+  });
+
+  test('strategic imports remove non-portable assistant citations before export', async ({ page }, testInfo) => {
+    const data = await readFixture('sample-analysis-en.json');
+    data.subject.executive_thesis = 'Portable strategic thesis. \uE200cite\uE202turn8search1\uE201';
+    data.evidence.items[0].source_note = 'Portable source note. \uE200filecite\uE202turn0file0\uE202L2-L4\uE201';
+    await page.goto('/');
+    await page.locator('#langEn').click();
+    await page.locator('#jsonInput').fill(JSON.stringify(data));
+    await expect(page.locator('#importBtn')).toBeEnabled();
+    await expect(page.locator('#jsonStatus')).toContainText(/2 non-portable assistant citation markers were removed/i);
+    await page.locator('#importBtn').click();
+    const html = await exportCurrentReport(page, testInfo, 'strategic');
+    expect(html).toContain('Portable strategic thesis.');
+    expect(html).toContain('Portable source note.');
+    expect(html).not.toMatch(/[\uE000-\uF8FF]/);
+    expect(html).not.toMatch(/turn8search1|turn0file0|filecite/);
   });
 
   test('legacy six-layer biopolitical JSON is migrated without hiding its gaps', async ({ page }) => {

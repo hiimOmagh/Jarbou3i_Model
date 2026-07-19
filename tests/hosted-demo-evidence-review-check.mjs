@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '2.0.0-bio-rc.11';
+const EXPECTED_VERSION = '2.0.0-bio-rc.15';
 
 const fail = (message) => {
   console.error(`Hosted demo evidence review failed: ${message}`);

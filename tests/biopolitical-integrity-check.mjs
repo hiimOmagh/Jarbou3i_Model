@@ -92,13 +92,78 @@ expectError(
   "UNTRACEABLE_VERIFIED_EVIDENCE",
   "placeholder score-gaming defense",
 );
+const reviewRequired = clone(fixture);
+reviewRequired.evidence.items[0].source_url = "not-a-url";
+reviewRequired.self_audit.statistics_quotations_verified = "pass";
+const reviewRequiredResult = integrity.validateImport(reviewRequired);
+if (!reviewRequiredResult.ok || !reviewRequiredResult.canonical) {
+  fail(`review-required canonical analysis was rejected: ${JSON.stringify(reviewRequiredResult.errors)}`);
+}
+for (const code of [
+  "INVALID_SOURCE_URL",
+  "SELF_AUDIT_VERIFICATION_CONTRADICTION",
+]) {
+  if (!reviewRequiredResult.warnings.some((warning) => warning.code === code)) {
+    fail(`review-required import omitted warning ${code}`);
+  }
+}
+if (bio.health(reviewRequiredResult.analysis, "en").publishable) {
+  fail("review-required import must remain blocked from publication");
+}
+if (
+  reviewRequiredResult.analysis.evidence.items[0].source_url !== "" ||
+  reviewRequiredResult.analysis.self_audit.statistics_quotations_verified !==
+    "concern"
+) {
+  fail("safe review-state contradictions were not normalized on import");
+}
+
 expectError(
   (data) => {
-    data.self_audit.statistics_quotations_verified = "pass";
+    const item = data.evidence.items[0];
+    item.source_url = "not-a-url";
+    item.source_locator = "section 1";
+    item.source_title = "Reviewed source";
+    item.source_date = "2026-01-01";
+    item.verification_status = "verified";
+    item.verified_by = "QA reviewer";
+    item.verification_date = "2026-07-17";
+    item.claim_source_fit = "direct";
   },
-  "SELF_AUDIT_VERIFICATION_CONTRADICTION",
-  "self-audit consistency",
+  "INVALID_SOURCE_URL",
+  "verified evidence provenance",
 );
+
+for (const [label, mutator, code] of [
+  [
+    "missing explanation falsifier",
+    (data) => {
+      const explanation = data.competing_explanations.find(
+        (item) => item.relevance === "relevant",
+      );
+      explanation.falsified_if = [];
+    },
+    "MISSING_EXPLANATION_FALSIFIER",
+  ],
+  [
+    "incomplete quantitative design metadata",
+    (data) => {
+      data.evidence.items[0].epistemic_type = "quantitative_estimate";
+      data.evidence.items[0].sample_size = "";
+    },
+    "QUANTITATIVE_METADATA_MISSING",
+  ],
+]) {
+  const data = clone(fixture);
+  mutator(data);
+  const result = integrity.validateImport(data);
+  if (!result.ok || !result.warnings.some((warning) => warning.code === code)) {
+    fail(`${label}: review-required analysis was not imported with ${code}`);
+  }
+  if (bio.health(result.analysis, "en").publishable) {
+    fail(`${label}: review-required analysis passed the publication gate`);
+  }
+}
 
 const malformed = clone(fixture);
 malformed.evidence.items[0].sample_size = 25;
@@ -132,6 +197,39 @@ if (!draft.warnings.some((warning) => warning.code === "MIGRATED_DRAFT_NOT_CANON
 const health = bio.health(valid.analysis, "en");
 if (health.publishable || health.evidence.verification !== 0) {
   fail("unverified placeholder fixtures must never pass the publication gate");
+}
+
+const citationPolluted = clone(fixture);
+citationPolluted.subject.executive_finding =
+  "Portable finding. \uE200cite\uE202turn7search2\uE201";
+citationPolluted.evidence.items[0].limitations =
+  "Traceable limit \uE200filecite\uE202turn0file0\uE202L5-L10\uE201.";
+const citationResult = integrity.validateImport(citationPolluted);
+if (!citationResult.ok) {
+  fail("non-portable assistant citations should be repaired without rejecting valid analysis");
+}
+const citationWarning = citationResult.warnings.find(
+  (warning) => warning.code === "NON_PORTABLE_CITATION_MARKERS_REMOVED",
+);
+if (!citationWarning || citationWarning.count !== 2) {
+  fail("citation repair must disclose the exact number of removed markers");
+}
+const repairedText = JSON.stringify(citationResult.analysis);
+if (/[\uE000-\uF8FF]/.test(repairedText) || /turn7search2|turn0file0/.test(repairedText)) {
+  fail("citation repair leaked assistant-interface identifiers or private-use glyphs");
+}
+if (!repairedText.includes("Portable finding.") || !repairedText.includes("Traceable limit.")) {
+  fail("citation repair removed authored analytical text");
+}
+for (const phrase of [
+  "Exemple : résultat",
+  "Constat ; réserve",
+  "Attention !",
+  "Pourquoi ?",
+]) {
+  if (bio.sanitizePortableText(phrase) !== phrase) {
+    fail(`citation repair changed authored French punctuation: ${phrase}`);
+  }
 }
 
 console.log("Biopolitical integrity checks passed.");

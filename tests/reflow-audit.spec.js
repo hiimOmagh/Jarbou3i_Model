@@ -22,6 +22,26 @@ async function expectNoPageOverflow(page) {
   expect(overflow).toBe(false);
 }
 
+async function clippedRelationshipControls(page) {
+  return page.locator(".relationshipCommandBar button:visible").evaluateAll((buttons) =>
+    buttons
+      .map((button) => {
+        const rect = button.getBoundingClientRect();
+        let visibleLeft = 0;
+        let visibleRight = innerWidth;
+        for (let parent = button.parentElement; parent; parent = parent.parentElement) {
+          if (!/(hidden|clip|auto|scroll)/.test(getComputedStyle(parent).overflowX)) continue;
+          const parentRect = parent.getBoundingClientRect();
+          visibleLeft = Math.max(visibleLeft, parentRect.left);
+          visibleRight = Math.min(visibleRight, parentRect.right);
+        }
+        return { label: button.textContent?.trim(), rect, visibleLeft, visibleRight };
+      })
+      .filter(({ rect, visibleLeft, visibleRight }) => rect.left < visibleLeft - 1 || rect.right > visibleRight + 1)
+      .map(({ label, rect, visibleLeft, visibleRight }) => ({ label, left: rect.left, right: rect.right, visibleLeft, visibleRight })),
+  );
+}
+
 test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
   for (const locale of LOCALES) {
     for (const theme of THEMES) {
@@ -63,6 +83,9 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-pressed", "true");
           await expect(page.locator('[data-map-view="spatial"]')).toBeDisabled();
           await expectNoPageOverflow(page);
+
+          const clippedControls = await clippedRelationshipControls(page);
+          expect(clippedControls, JSON.stringify(clippedControls, null, 2)).toEqual([]);
 
           const visibleRecord = page.locator('.relationshipList [data-map-node]').first();
           await expect(visibleRecord).toBeVisible();

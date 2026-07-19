@@ -12,6 +12,7 @@ const app = read("src/app.js");
 const bio = read("src/biopolitics.js");
 const integrity = read("src/biopolitics-integrity.js");
 const graph = read("src/biopolitics-graph.js");
+const bioReport = read("src/biopolitical-report.js");
 const referenceUi = read("src/reference-ui.js");
 const explorer = read("src/relationship-explorer.js");
 const explorerStyles = read("src/relationship-explorer.css");
@@ -20,11 +21,25 @@ const validator = read("src/biopolitics-schema-validator.js");
 const pkg = JSON.parse(read("package.json"));
 const lock = JSON.parse(read("package-lock.json"));
 
+for (const [name, entry] of Object.entries(lock.packages || {})) {
+  if (!entry?.resolved) continue;
+  let resolved;
+  try {
+    resolved = new URL(entry.resolved);
+  } catch {
+    fail(`lockfile contains an invalid resolved URL for ${name || "root"}`);
+  }
+  if (resolved.hostname !== "registry.npmjs.org") {
+    fail(`lockfile contains a non-public registry URL for ${name || "root"}`);
+  }
+}
+
 for (const [file, source] of [
   ["src/app.js", app],
   ["src/biopolitics.js", bio],
   ["src/biopolitics-integrity.js", integrity],
   ["src/biopolitics-graph.js", graph],
+  ["src/biopolitical-report.js", bioReport],
   ["src/reference-ui.js", referenceUi],
   ["src/relationship-explorer.js", explorer],
   ["src/json-parser.js", parser],
@@ -47,6 +62,7 @@ for (const file of [
   "schema/biopolitical-migrated-draft.schema.json",
   "tests/biopolitical-integrity-check.mjs",
   "tests/biopolitical-graph-check.mjs",
+  "tests/biopolitical-report-check.mjs",
   "tests/reference-resolution.spec.js",
   "tests/relationship-explorer.spec.js",
   "tests/json-parser-check.mjs",
@@ -113,8 +129,22 @@ for (const token of [
 for (const token of ["temporalProjection", "comparativeProjection"]) {
   if (!graph.includes(token)) fail(`Phase 3 projection contract missing: ${token}`);
 }
-if (!app.includes('data-relationship-atlas="complete"')) {
+if (!bioReport.includes('data-relationship-atlas="complete"')) {
   fail("Phase 3 standalone relationship atlas missing");
+}
+for (const token of [
+  'data-publication-gate="${gate}"',
+  'class="reportToc"',
+  'data-canonical-contract="complete"',
+  'target="_blank" rel="noopener noreferrer"',
+  ".reportSection{box-shadow:none;break-inside:auto}",
+]) {
+  if (!bioReport.includes(token)) {
+    fail(`standalone report resilience contract missing: ${token}`);
+  }
+}
+if (!index.includes('src/biopolitical-report.js')) {
+  fail("standalone report renderer is not loaded by the release shell");
 }
 for (const token of [
   "data-relationship-spatial",
@@ -188,14 +218,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.0.0-bio-rc.11") fail("package version mismatch");
+if (pkg.version !== "2.0.0-bio-rc.15") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.0.0-bio-rc.11"')) {
+if (!index.includes('name="app-version" content="2.0.0-bio-rc.15"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.0.0-bio-rc.11"')) {
+if (!app.includes('"2.0.0-bio-rc.15"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

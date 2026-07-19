@@ -1,7 +1,43 @@
 # Changelog
 
+## 2.0.0-bio-rc.15 — Deterministic Playwright Worker Shutdown
+
+- Moves desktop Chromium and mobile Chrome from Chrome Headless Shell to Playwright’s newer real-Chrome headless mode, directly avoiding the process Microsoft identified in the RC 13/14 Windows shutdown failures.
+- Pins Playwright Test 1.61.1, retaining the upstream worker-stop watchdog so any future unresponsive browser process is force-terminated and reported as a failed run instead of silently losing a queued test.
+- Adds CI contract guards for both Chromium projects’ headless channel and the exact runner version, preventing configuration or semver drift.
+- Leaves application behavior, analytical logic, schemas, canonical fixtures, report rendering, localization, and responsive presentation unchanged from RC 14.
+
+## 2.0.0-bio-rc.14 — True 320px Containment and Lens Transition Synchronization
+
+- Constrains the Relationship Explorer’s implicit grid track so localized min-content widths cannot enlarge the whole explorer behind an `overflow: hidden` ancestor.
+- Makes all three saved-view columns genuinely shrinkable and allows long localized actions to wrap without clipping at the 320px/400%-equivalent boundary.
+- Upgrades visual and reflow assertions to intersect each control with every clipping ancestor as well as the viewport, closing the blind spot that allowed the 390px evidence checker to miss partially hidden controls.
+- Synchronizes the sample-language browser contract on the selected lens state before loading a sample, eliminating the isolated Firefox transition race seen only in the full parallel matrix.
+- Preserves RC 13’s French punctuation correction; analytical logic, schemas, canonical fixtures, graph projections, and report output remain unchanged.
+
+## 2.0.0-bio-rc.13 — French Localization and Phone Control Containment
+
+- Preserves authored French spacing before colons, semicolons, exclamation marks, and question marks during recursive citation sanitation.
+- Fixes the French Strategic sample title across Chromium, Firefox, WebKit, and mobile Chrome while retaining whitespace repair before commas and full stops.
+- Reflows every Relationship Explorer control family onto its own content-safe row at phone widths, preventing longer French labels from being visually clipped despite page-level overflow remaining hidden.
+- Adds no-browser punctuation coverage plus viewport-bound control assertions to visual and 200%/400%-equivalent reflow gates; schemas, analytical logic, canonical fixtures, graph projections, and report structure are unchanged.
+
+## 2.0.0-bio-rc.12 — Portable Citations and Outcome Report Remediation
+
+- Removes non-portable assistant-interface citation markers and private-use glyphs recursively during both Strategic and Biopolitical import while preserving authored analytical text, canonical evidence IDs, and valid public source URLs.
+- Discloses every citation repair as an import warning and hardens all generated and repair prompts in Arabic, English, and French against `cite`, `filecite`, and `turn` artifacts.
+- Replaces the monolithic Biopolitical HTML export with a dedicated, dependency-free report renderer featuring a concise executive layer, explicit publication-gate status, separately labelled analytical readiness, evidence-verification metrics, named reference links, and portable source links.
+- Adds a report contents landmark, skip link, keyboard-operable expand/collapse/print controls, progressive disclosure for all 13 sections, responsive reading measures, focus visibility, and print-safe section fragmentation.
+- Keeps the complete canonical contract losslessly embedded for re-import and archival while lazily rendering the human JSON appendix, avoiding a second always-visible copy of the largest payload.
+- Adds trilingual standalone-report, citation-repair, source-link, publication-gate, canonical-payload, reference-resolution, responsive, and print regression guards.
+- Remediates the supplied Tunisia report outcome: 1,261 private-use glyphs are eliminated, 30 encoded assistant citation clusters are disclosed and removed, sources become directly accessible, and the blocked publication state is visually unambiguous beside the 99% analytical-readiness score.
+
 ## 2.0.0-bio-rc.11 — Language-Linked Sample Loading
 
+- Hotfix: restores reproducible GitHub Actions installs by replacing environment-specific lockfile tarball URLs with the public npm registry and moving the workflow actions/runtime to Node 24.
+- Hotfix: separates canonical import validity from publication readiness. Review-required evidence now imports with explicit warnings while malformed contracts, broken references, and falsely verified provenance remain rejected.
+- Hotfix: safely clears non-HTTP(S) URLs on non-verified evidence and corrects contradictory verification self-audits to `concern`; neither condition can pass the publication gate.
+- Hotfix: strengthens generated and repair prompts in Arabic, English, and French with exact URL, locator, verification, and self-audit rules.
 - Makes the selected interface language the default language for both Strategic and Biopolitical sample topics, while preserving a deliberately different Analysis language as an expert override.
 - Persists whether Analysis language follows the interface language; selecting the matching language relinks them, and imported analyses remain authoritative for their declared language.
 - Adds cross-engine coverage for all three languages and both lenses, plus override persistence and relinking, increasing the browser core from 208 to 216 cases.

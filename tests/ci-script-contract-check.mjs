@@ -16,6 +16,7 @@ for (const gate of [
   "test:static",
   "test:bio:v2",
   "test:bio:integrity",
+  "test:bio:report",
   "test:schema",
   "test:fixtures",
   "test:parser",
@@ -84,12 +85,17 @@ for (const token of [
     fail(`Playwright resource contract is missing: ${token}`);
   }
 }
+if ((playwright.match(/channel: 'chromium'/g) || []).length !== 2) {
+  fail("desktop and mobile Chromium projects must use new headless mode");
+}
 
 for (const token of [
   "name: No-browser gates",
   "name: Browser gates",
   "needs: no-browser",
-  "node-version: 20",
+  "actions/checkout@v5",
+  "actions/setup-node@v5",
+  "node-version: 24",
   "cache: npm",
   "npm ci",
   "npm run test:ci:no-browser",
@@ -108,8 +114,11 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.0.0-bio-rc.11") {
-  fail("package version must be 2.0.0-bio-rc.11");
+if (pkg.version !== "2.0.0-bio-rc.15") {
+  fail("package version must be 2.0.0-bio-rc.15");
+}
+if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
+  fail("@playwright/test must remain pinned to 1.61.1");
 }
 
 console.log("CI script contract check passed.");

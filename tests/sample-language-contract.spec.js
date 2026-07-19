@@ -44,7 +44,9 @@ test("sample topics follow the chosen interface language for both lenses", async
     await expect(page.locator("#analysisLang")).toHaveValue(locale.id);
 
     for (const lens of LENSES) {
-      await page.locator(`[data-lens="${lens}"]`).click();
+      const lensButton = page.locator(`[data-lens="${lens}"]`);
+      await lensButton.click();
+      await expect(lensButton).toHaveAttribute("aria-checked", "true");
       await page.locator("#loadSampleBtn").click();
 
       const sample = await readLoadedSample(page);

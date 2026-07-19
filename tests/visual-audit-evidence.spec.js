@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.0.0-bio-rc.11";
+const EXPECTED_VERSION = "2.0.0-bio-rc.15";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl" },
@@ -84,7 +84,26 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.locator(viewport.id === "phone" ? "#relationshipExplorerMount" : "#reviewPanel").scrollIntoViewIfNeeded();
       await saveScreenshot(page, testInfo, `connections-${key}.png`);
 
-      const measurement = await page.evaluate(() => ({
+      const clippedRelationshipControls = await page.locator(".relationshipCommandBar button:visible").evaluateAll((buttons) =>
+        buttons
+          .map((button) => {
+            const rect = button.getBoundingClientRect();
+            let visibleLeft = 0;
+            let visibleRight = innerWidth;
+            for (let parent = button.parentElement; parent; parent = parent.parentElement) {
+              if (!/(hidden|clip|auto|scroll)/.test(getComputedStyle(parent).overflowX)) continue;
+              const parentRect = parent.getBoundingClientRect();
+              visibleLeft = Math.max(visibleLeft, parentRect.left);
+              visibleRight = Math.min(visibleRight, parentRect.right);
+            }
+            return { label: button.textContent?.trim(), rect, visibleLeft, visibleRight };
+          })
+          .filter(({ rect, visibleLeft, visibleRight }) => rect.left < visibleLeft - 1 || rect.right > visibleRight + 1)
+          .map(({ label, rect, visibleLeft, visibleRight }) => ({ label, left: rect.left, right: rect.right, visibleLeft, visibleRight })),
+      );
+      expect(clippedRelationshipControls, JSON.stringify(clippedRelationshipControls, null, 2)).toEqual([]);
+
+      const measurement = await page.evaluate((clippedControlCount) => ({
         app_version: document.querySelector('meta[name="app-version"]')?.content,
         html_lang: document.documentElement.lang,
         html_dir: document.documentElement.dir,
@@ -93,7 +112,8 @@ test.describe("Release Candidate visual audit evidence", () => {
         page_client_width: document.documentElement.clientWidth,
         body_text_length: document.body.innerText.length,
         visible_buttons: [...document.querySelectorAll("button")].filter((button) => button.getClientRects().length).length,
-      }));
+        clipped_relationship_controls: clippedControlCount,
+      }), clippedRelationshipControls.length);
       expect(measurement.page_scroll_width).toBeLessThanOrEqual(measurement.page_client_width + 1);
       expect(measurement.body_text_length).toBeGreaterThan(1000);
       await writeJson(testInfo, `measurement-${key}.json`, measurement);
