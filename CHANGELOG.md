@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.0-bio-rc.16 — Reviewable Verification Repair and WebKit CI Synchronization
+
+- Downgrades evidence labelled `verified` without both a verifier identity and verification date to `partially_verified` when traceable, or `unverified` otherwise, with one field-level warning per repaired record.
+- Keeps every downgraded analysis importable for review while preserving the strict publication block; malformed provenance that still claims complete verification remains rejected.
+- Strengthens Arabic, English, and French analysis and JSON-repair prompts so `verified` is forbidden unless both audit-provenance fields are non-empty.
+- Adds direct regression coverage for the supplied Tunisia analysis failure mode and confirms portable citation sanitation still removes all assistant-interface markers.
+- Replaces unstable pointer clicks in the four GitHub WebKit timeout paths with focus-owned keyboard activation and explicit selected/pressed-state assertions.
+- Leaves both analytical schemas, canonical fixture meaning, graph projections, and report structure unchanged.
+
 ## 2.0.0-bio-rc.15 — Deterministic Playwright Worker Shutdown
 
 - Moves desktop Chromium and mobile Chrome from Chrome Headless Shell to Playwright’s newer real-Chrome headless mode, directly avoiding the process Microsoft identified in the RC 13/14 Windows shutdown failures.

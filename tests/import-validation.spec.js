@@ -102,6 +102,37 @@ test.describe("Runtime import validation", () => {
     await expect(page.locator("#jsonStatus")).toContainText(/absolute HTTP\(S\)/i);
   });
 
+  test("downgrades missing verification provenance into a reviewable draft", async ({
+    page,
+  }) => {
+    await openBiopoliticalImport(page);
+    const data = await fixture("sample-analysis-bio-en.json");
+    Object.assign(data.evidence.items[0], {
+      source_title: "Reviewed source",
+      source_url: "https://example.org/reviewed-source",
+      source_locator: "section 1",
+      source_date: "2026-01-01",
+      verification_status: "verified",
+      verified_by: "",
+      verification_date: "",
+      claim_source_fit: "direct",
+    });
+    data.self_audit.statistics_quotations_verified = "pass";
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#jsonStatus")).toContainText(/review warning/i);
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#reviewContent")).toContainText(
+      /Quality gate:\s*Review needed/i,
+    );
+    const evidenceTab = page.locator('[data-bio-review="evidence"]');
+    await evidenceTab.focus();
+    await expect(evidenceTab).toBeFocused();
+    await evidenceTab.press("Enter");
+    await expect(evidenceTab).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator("#reviewContent")).toContainText(/Partially verified/i);
+  });
+
   test("repairs assistant-interface citation markers before review and export", async ({
     page,
   }, testInfo) => {

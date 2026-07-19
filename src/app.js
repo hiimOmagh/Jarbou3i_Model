@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.0.0-bio-rc.15 — client-side application logic */
+/* Jarbou3i Model v2.0.0-bio-rc.16 — client-side application logic */
 
 "use strict";
 const I18N = {
@@ -3461,7 +3461,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.15";
+    "2.0.0-bio-rc.16";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4223,7 +4223,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.15";
+    "2.0.0-bio-rc.16";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4406,7 +4406,7 @@ function repairPrompt() {
   const fr = state.analysisLang === "fr";
   const bad = $("jsonInput").value.trim();
   if (ar)
-    return `أصلح النص التالي ليصبح JSON صالحًا فقط ومتوافقًا مع مخطط أداة التحليل. لا تكتب أي شرح خارج JSON. لا تدرج علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم معرّفات الأدلة النظامية وروابط HTTP(S) فقط. لا تضع في source_url إلا رابط HTTP(S) مطلقًا؛ استخدم "" عند غيابه. لا تعيّن statistics_quotations_verified إلى pass إذا بقي أي دليل unverified أو partially_verified أو disputed.
+    return `أصلح النص التالي ليصبح JSON صالحًا فقط ومتوافقًا مع مخطط أداة التحليل. لا تكتب أي شرح خارج JSON. لا تدرج علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم معرّفات الأدلة النظامية وروابط HTTP(S) فقط. لا تضع في source_url إلا رابط HTTP(S) مطلقًا؛ استخدم "" عند غيابه. لا تستخدم verified ما لم يكن verified_by وverification_date غير فارغين؛ وإلا استخدم partially_verified أو unverified واتركهما فارغين. لا تعيّن statistics_quotations_verified إلى pass إذا بقي أي دليل unverified أو partially_verified أو disputed.
 
 النص:
 ${bad}
@@ -4414,14 +4414,14 @@ ${bad}
 المخطط المطلوب:
 ${buildSchema(state.analysisLang, state.promptMode)}`;
   if (fr)
-    return `Répare le texte suivant pour produire uniquement un JSON valide compatible avec le schéma de l’outil. N’écris aucune explication hors JSON. N’inclus aucun marqueur interne d’assistant tel que cite, filecite ou turn ; utilise uniquement les identifiants de preuve canoniques et des URL HTTP(S). source_url doit être une URL HTTP(S) absolue ou "". N’utilise pas pass pour statistics_quotations_verified si une preuve reste unverified, partially_verified ou disputed.
+    return `Répare le texte suivant pour produire uniquement un JSON valide compatible avec le schéma de l’outil. N’écris aucune explication hors JSON. N’inclus aucun marqueur interne d’assistant tel que cite, filecite ou turn ; utilise uniquement les identifiants de preuve canoniques et des URL HTTP(S). source_url doit être une URL HTTP(S) absolue ou "". N’utilise verified que si verified_by et verification_date sont tous deux non vides ; sinon utilise partially_verified ou unverified et laisse-les vides. N’utilise pas pass pour statistics_quotations_verified si une preuve reste unverified, partially_verified ou disputed.
 
 Texte :
 ${bad}
 
 Schéma requis :
 ${buildSchema(state.analysisLang, state.promptMode)}`;
-  return `Repair the following text into valid JSON only, matching the analysis workbench schema. Do not write any explanation outside JSON. Do not include assistant-internal citation markers such as cite, filecite, or turn; use canonical evidence IDs and HTTP(S) URLs only. source_url must be an absolute HTTP(S) URL or "". Do not set statistics_quotations_verified to pass while any evidence is unverified, partially_verified, or disputed.
+  return `Repair the following text into valid JSON only, matching the analysis workbench schema. Do not write any explanation outside JSON. Do not include assistant-internal citation markers such as cite, filecite, or turn; use canonical evidence IDs and HTTP(S) URLs only. source_url must be an absolute HTTP(S) URL or "". Use verified only when verified_by and verification_date are both non-empty; otherwise use partially_verified or unverified and leave them empty. Do not set statistics_quotations_verified to pass while any evidence is unverified, partially_verified, or disputed.
 
 Text:
 ${bad}

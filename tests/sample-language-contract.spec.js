@@ -45,9 +45,15 @@ test("sample topics follow the chosen interface language for both lenses", async
 
     for (const lens of LENSES) {
       const lensButton = page.locator(`[data-lens="${lens}"]`);
-      await lensButton.click();
+      await lensButton.focus();
+      await expect(lensButton).toBeFocused();
+      await lensButton.press("Enter");
       await expect(lensButton).toHaveAttribute("aria-checked", "true");
-      await page.locator("#loadSampleBtn").click();
+      const loadSample = page.locator("#loadSampleBtn");
+      await loadSample.focus();
+      await expect(loadSample).toBeFocused();
+      await loadSample.press("Enter");
+      await expect(page.locator("#reviewPanel")).toBeVisible();
 
       const sample = await readLoadedSample(page);
       expect(sample.language).toBe(locale.id);

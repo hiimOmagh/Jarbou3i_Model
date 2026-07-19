@@ -40,7 +40,11 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
 
 test("search, filters, node inspection, and edge details stay synchronized", async ({ page }) => {
   await openExplorer(page);
-  await page.locator('[data-map-mode="network"]').click();
+  const networkMode = page.locator('[data-map-mode="network"]');
+  await networkMode.focus();
+  await expect(networkMode).toBeFocused();
+  await networkMode.press("Enter");
+  await expect(networkMode).toHaveAttribute("aria-checked", "true");
 
   await page.locator("#relationshipSearch").fill("Public-health authorities");
   await expect(page.locator(".relationshipCount")).toContainText("1 records");
@@ -51,10 +55,18 @@ test("search, filters, node inspection, and edge details stay synchronized", asy
   await page.keyboard.press("Escape");
 
   await page.locator("[data-map-reset]").click();
-  await page.locator('[data-map-mode="network"]').click();
-  await page.locator('[data-map-view="list"]').click();
+  await networkMode.focus();
+  await networkMode.press("Enter");
+  await expect(networkMode).toHaveAttribute("aria-checked", "true");
+  const listView = page.locator('[data-map-view="list"]');
+  await listView.focus();
+  await expect(listView).toBeFocused();
+  await listView.press("Enter");
+  await expect(listView).toHaveAttribute("aria-pressed", "true");
   const edge = page.locator("[data-map-edge]").first();
-  await edge.click();
+  await edge.focus();
+  await expect(edge).toBeFocused();
+  await edge.press("Enter");
   await expect(page.locator(".relationshipEdgeDetails")).toBeVisible();
   await expect(page.locator(".relationshipEdgeDetails")).toContainText("Why connected?");
 });
@@ -183,7 +195,11 @@ test("capability-gated Spatial view preserves the complete graph and accessible 
   await expect(page.locator("#referenceInspectorTitle")).toHaveText("Public-health authorities");
   await page.keyboard.press("Escape");
 
-  await page.locator('[data-map-view="list"]').click();
+  const listView = page.locator('[data-map-view="list"]');
+  await listView.focus();
+  await expect(listView).toBeFocused();
+  await listView.press("Enter");
+  await expect(listView).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".relationshipList")).toBeVisible();
   await expect(page.locator("[data-relationship-spatial]")).toHaveCount(0);
 });

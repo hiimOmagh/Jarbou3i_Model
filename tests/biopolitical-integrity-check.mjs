@@ -118,6 +118,40 @@ if (
   fail("safe review-state contradictions were not normalized on import");
 }
 
+const missingVerifier = clone(fixture);
+Object.assign(missingVerifier.evidence.items[0], {
+  source_title: "Reviewed source",
+  source_url: "https://example.org/reviewed-source",
+  source_locator: "section 1",
+  source_date: "2026-01-01",
+  verification_status: "verified",
+  verified_by: "",
+  verification_date: "",
+  claim_source_fit: "direct",
+});
+missingVerifier.self_audit.statistics_quotations_verified = "pass";
+const missingVerifierResult = integrity.validateImport(missingVerifier);
+if (!missingVerifierResult.ok || !missingVerifierResult.canonical) {
+  fail(`missing-verifier evidence was not imported for review: ${JSON.stringify(missingVerifierResult.errors)}`);
+}
+if (
+  missingVerifierResult.analysis.evidence.items[0].verification_status !==
+  "partially_verified"
+) {
+  fail("full verification without audit provenance was not downgraded");
+}
+for (const code of [
+  "VERIFICATION_PROVENANCE_DOWNGRADED",
+  "SELF_AUDIT_VERIFICATION_CONTRADICTION",
+]) {
+  if (!missingVerifierResult.warnings.some((warning) => warning.code === code)) {
+    fail(`missing-verifier import omitted warning ${code}`);
+  }
+}
+if (bio.health(missingVerifierResult.analysis, "en").publishable) {
+  fail("downgraded verification provenance must remain publication-blocked");
+}
+
 expectError(
   (data) => {
     const item = data.evidence.items[0];

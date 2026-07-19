@@ -22,8 +22,8 @@ for (const required of ['index.html', 'src/app.js', 'src/biopolitics.js', 'src/s
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-if (packageJson.version !== '2.0.0-bio-rc.15') {
-  fail('root package version must be 2.0.0-bio-rc.15');
+if (packageJson.version !== '2.0.0-bio-rc.16') {
+  fail('root package version must be 2.0.0-bio-rc.16');
 }
 
 for (const script of ['test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.0.0-bio-rc.15";
+const EXPECTED_VERSION = "2.0.0-bio-rc.16";
 const fail = (message) => {
   console.error(`Visual audit evidence review failed: ${message}`);
   process.exit(1);

@@ -27,6 +27,32 @@
     );
   }
 
+  function prepareReviewableVerification(raw) {
+    const candidate = JSON.parse(JSON.stringify(raw));
+    const warnings = [];
+    arr(candidate?.evidence?.items).forEach((item, index) => {
+      if (item?.verification_status !== "verified") return;
+      if (filled(item.verified_by) && filled(item.verification_date)) return;
+
+      const traceable =
+        filled(item.source_title) &&
+        filled(item.source_date) &&
+        (filled(item.source_url) || filled(item.source_locator));
+      item.verification_status = traceable ? "partially_verified" : "unverified";
+      item.verified_by = "";
+      item.verification_date = "";
+      warnings.push(
+        issue(
+          "VERIFICATION_PROVENANCE_DOWNGRADED",
+          `/evidence/items/${index}/verification_status`,
+          `Evidence ${str(item.id).trim() || index + 1} claimed full verification without both verifier identity and verification date; it was downgraded to ${item.verification_status} for review and cannot pass the publication gate.`,
+          "warning",
+        ),
+      );
+    });
+    return { candidate, warnings };
+  }
+
   function collectRecords(analysis) {
     const a = object(analysis);
     return [
@@ -445,6 +471,8 @@
       candidate = BIO.migrateLegacy(raw);
       state = "migrated_draft";
     }
+    const verificationRepair = prepareReviewableVerification(candidate);
+    candidate = verificationRepair.candidate;
     const draft = state === "migrated_draft";
     const schemaValidator = draft ? validators.migratedDraft : validators.canonical;
     const schemaValid = schemaValidator(candidate);
@@ -459,6 +487,7 @@
     }
     const normalized = BIO.normalize(candidate);
     const semantic = semanticValidate(normalized, { draft });
+    semantic.warnings.unshift(...verificationRepair.warnings);
     if (nonPortableCitationCount) {
       semantic.warnings.unshift(
         issue(

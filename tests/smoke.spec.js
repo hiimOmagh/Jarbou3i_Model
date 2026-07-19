@@ -39,7 +39,11 @@ test('Jarbou3i Model core flow', async ({ page }) => {
   await expect(page.locator('[aria-current="step"]')).toContainText('Review');
 
   for (const tab of ['overview', 'pillars', 'evidence', 'conclusion', 'exports']) {
-    await page.locator(`[data-bio-review="${tab}"]`).click();
+    const reviewTab = page.locator(`[data-bio-review="${tab}"]`);
+    await reviewTab.focus();
+    await expect(reviewTab).toBeFocused();
+    await reviewTab.press('Enter');
+    await expect(reviewTab).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#reviewContent')).toBeVisible();
   }
 

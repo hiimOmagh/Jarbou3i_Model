@@ -114,8 +114,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.0.0-bio-rc.15") {
-  fail("package version must be 2.0.0-bio-rc.15");
+if (pkg.version !== "2.0.0-bio-rc.16") {
+  fail("package version must be 2.0.0-bio-rc.16");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");
