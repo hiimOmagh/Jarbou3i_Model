@@ -38,6 +38,20 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
   await expect(page.locator(".relationshipEdge--explicit")).toHaveCount(4);
 });
 
+test("localized relationship views never leak English relation enums or raw resistance forms", async ({ page }) => {
+  const expectations = {
+    ar: ["يمكّن", "يصنّف", "يوزّع", "يقاوم", "عمال وسكان خاضعون لفحوص الوصول"],
+    fr: ["Permet", "Classe", "Distribue", "Résiste", "Travailleurs et résidents soumis aux contrôles d’accès"],
+  };
+  for (const [locale, labels] of Object.entries(expectations)) {
+    await openExplorer(page, locale);
+    await page.locator('[data-map-view="map"]').click();
+    const explorer = page.locator("#relationshipExplorerMount");
+    for (const label of labels) await expect(explorer).toContainText(label);
+    await expect(explorer).not.toContainText(/\b(?:Enables|Classifies|Distributes|Resists|litigation)\b/);
+  }
+});
+
 test("search, filters, node inspection, and edge details stay synchronized", async ({ page }) => {
   await openExplorer(page);
   const networkMode = page.locator('[data-map-mode="network"]');

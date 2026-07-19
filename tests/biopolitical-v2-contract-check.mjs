@@ -84,6 +84,13 @@ if (
 ) {
   fail("prompt template must make the source URL contract explicit");
 }
+if (
+  template.evidence.items[0].verification_status !== "unverified" ||
+  template.evidence.items[0].verified_by !== "" ||
+  template.evidence.items[0].verification_date !== ""
+) {
+  fail("AI output must remain unverified until independent workbench review");
+}
 
 for (const lang of ["ar", "en", "fr"]) {
   const prompt = bio.buildPrompt({
@@ -117,6 +124,9 @@ for (const lang of ["ar", "en", "fr"]) {
   }
   if (!prompt.includes('""')) {
     fail(`${lang} prompt must prescribe an empty string for missing source URLs`);
+  }
+  if (!prompt.includes("unverified")) {
+    fail(`${lang} prompt must prohibit model-authored publication verification`);
   }
 }
 

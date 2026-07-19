@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import vm from "node:vm";
+import { execFileSync } from "node:child_process";
 
 const fail = (message) => {
   console.error(`Static check failed: ${message}`);
@@ -17,6 +17,11 @@ const referenceUi = read("src/reference-ui.js");
 const explorer = read("src/relationship-explorer.js");
 const explorerStyles = read("src/relationship-explorer.css");
 const parser = read("src/json-parser.js");
+const platformState = read("src/core/platform-state.js");
+const persistence = read("src/core/persistence.js");
+const localization = read("src/core/localization.js");
+const renderRegions = read("src/core/render-regions.js");
+const provenance = read("src/core/provenance.js");
 const validator = read("src/biopolitics-schema-validator.js");
 const pkg = JSON.parse(read("package.json"));
 const lock = JSON.parse(read("package-lock.json"));
@@ -43,11 +48,17 @@ for (const [file, source] of [
   ["src/reference-ui.js", referenceUi],
   ["src/relationship-explorer.js", explorer],
   ["src/json-parser.js", parser],
+  ["src/core/platform-state.js", platformState],
+  ["src/core/persistence.js", persistence],
+  ["src/core/localization.js", localization],
+  ["src/core/render-regions.js", renderRegions],
+  ["src/core/provenance.js", provenance],
 ]) {
   try {
-    new vm.Script(source, { filename: file });
+    void source;
+    execFileSync(process.execPath, ["--check", file], { stdio: "pipe" });
   } catch (error) {
-    fail(`${file}: ${error.message}`);
+    fail(`${file}: ${error.stderr?.toString().trim() || error.message}`);
   }
 }
 
@@ -73,6 +84,17 @@ for (const file of [
   "tests/reflow-audit.spec.js",
   "tests/visual-audit-evidence.spec.js",
   "tests/visual-audit-evidence-review-check.mjs",
+  "tests/platform-architecture-check.mjs",
+  "tests/platform-services-check.mjs",
+  "tests/provenance-check.mjs",
+  "src/core/lens-registry.js",
+  "src/core/platform-state.js",
+  "src/core/persistence.js",
+  "src/core/localization.js",
+  "src/core/render-regions.js",
+  "src/core/provenance.js",
+  "src/lenses/strategic/adapter.js",
+  "src/lenses/biopolitical/adapter.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
   "scripts/migrate-release-layout.mjs",
@@ -143,7 +165,7 @@ for (const token of [
     fail(`standalone report resilience contract missing: ${token}`);
   }
 }
-if (!index.includes('src/biopolitical-report.js')) {
+if (!app.includes('import "./biopolitical-report.js";')) {
   fail("standalone report renderer is not loaded by the release shell");
 }
 for (const token of [
@@ -167,7 +189,7 @@ for (const token of ["@media (forced-colors:active)", ":focus,:focus-visible", "
   if (!styles.includes(token)) fail(`final audit visual resilience contract missing: ${token}`);
 }
 const releaseAudit = read("tests/release-audit-matrix.spec.js");
-for (const token of ['matchMedia("print").matches', "expect.poll"]) {
+for (const token of ['matchMedia("print").matches', "expect.poll", "synchronizeAuditState", 'languageButton.press("Enter")', 'themeButton.press("Enter")']) {
   if (!releaseAudit.includes(token)) fail(`final audit synchronization contract missing: ${token}`);
 }
 const relationshipBrowser = read("tests/relationship-explorer.spec.js");
@@ -195,8 +217,14 @@ for (const token of ["flex:0 0 32px", "min-width:32px"]) {
   if (!explorerStyles.includes(token)) fail(`Firefox reflow target contract missing: ${token}`);
 }
 const visualAudit = read("tests/visual-audit-evidence.spec.js");
-for (const token of ["screenshot_count: cases.length * 2", 'capture_set: "final-language-theme-viewport-audit"', "waitForVisualAssets", "clearTransientUi", "rect.top >= window.innerHeight", 'viewport.id === "phone" ? "#relationshipExplorerMount"']) {
+for (const token of ["screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length", 'capture_set: "final-language-theme-viewport-audit"', "waitForVisualAssets", "clearTransientUi", "anchorViewport", "story_geometry", "standalone-report", 'viewport.id === "phone" ? "#relationshipExplorerMount"', 'locator(".relationshipStoryFlow").count() === 0', 'mapView.press("Enter")']) {
   if (!visualAudit.includes(token)) fail(`RC visual evidence contract missing: ${token}`);
+}
+for (const token of ["minmax(132px,1fr)", "overflow-x:auto", "scrollbar-width:thin", "scroll-snap-type:inline proximity"]) {
+  if (!explorerStyles.includes(token)) fail(`story-path visibility contract missing: ${token}`);
+}
+for (const token of ["visual acceptance repair", ".navBtn.active .badge", "grid-template-columns:64px minmax(0,1fr)"]) {
+  if (!styles.includes(token)) fail(`alpha.4 visual repair contract missing: ${token}`);
 }
 for (const token of ['rel="preload" as="image" href="assets/jarbou3i-mascot-512.png"', 'decoding="sync"']) {
   if (!index.includes(token)) fail(`critical visual asset contract missing: ${token}`);
@@ -218,14 +246,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.0.0-bio-rc.17") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.5") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.0.0-bio-rc.17"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.5"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.0.0-bio-rc.17"')) {
+if (!app.includes('"2.1.0-alpha.5"')) {
   fail("report fallback version is stale");
 }
 for (const token of [
@@ -234,6 +262,16 @@ for (const token of [
   "setAnalysisLanguage($(\"analysisLang\").value)",
 ]) {
   if (!app.includes(token)) fail(`sample-language linkage contract missing: ${token}`);
+}
+for (const token of [
+  "createPlatformState",
+  "createSettingsRepository",
+  "createLocalizationService",
+  "createRegionRenderer",
+  "PLATFORM_RENDERER.renderAll()",
+  "Jarbou3iProvenance",
+]) {
+  if (!app.includes(token)) fail(`shared platform service missing: ${token}`);
 }
 if (!fs.existsSync("tests/sample-language-contract.spec.js")) {
   fail("sample-language browser contract is missing");
@@ -244,6 +282,9 @@ if (!bio.includes('const SCHEMA_VERSION = "2.1.0"')) {
 
 for (const token of [
   "test:bio:integrity",
+  "test:platform",
+  "test:platform:services",
+  "test:provenance",
   "test:bio:graph",
   "test:parser",
   "upgrade:layout",

@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.0.0-bio-rc.17" />
+<meta name="app-version" content="2.1.0-alpha.5" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -108,6 +108,10 @@
             <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
           </div>
           <div class="status" id="jsonStatus" role="status" aria-live="polite" data-i18n="jsonWaiting">الصق نتيجة JSON للتحقق.</div>
+          <details class="importAudit" id="importAuditDetails" hidden>
+            <summary id="importAuditSummary">Import review details</summary>
+            <div class="importAuditBody" id="importAuditBody"></div>
+          </details>
         </div>
       </div>
     </section>
@@ -152,15 +156,6 @@
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="src/biopolitics-schema-validator.js" defer></script>
-<script src="src/biopolitics-sample-i18n.js" defer></script>
-<script src="src/biopolitics.js" defer></script>
-<script src="src/biopolitics-integrity.js" defer></script>
-<script src="src/biopolitics-graph.js" defer></script>
-<script src="src/biopolitical-report.js" defer></script>
-<script src="src/reference-ui.js" defer></script>
-<script src="src/relationship-explorer.js" defer></script>
-<script src="src/json-parser.js" defer></script>
-<script src="src/app.js" defer></script>
+<script type="module" src="src/app.js"></script>
 </body>
 </html>

@@ -84,6 +84,11 @@ for (const pillar of canonicalPillars) {
 
 assert.equal(graph.resolve("ACT1")?.label, "Public-health authorities");
 assert.match(graph.resolve("E1")?.label || "", /Rules linked defined health credentials/i);
+assert.equal(
+  graph.resolve("RES1")?.label,
+  "Workers and residents subject to access checks",
+  "resistance nodes must lead with a named actor or population, not a canonical form enum",
+);
 assert.equal(graph.resolve("missing"), null);
 
 const explicit = graph.edges.filter((edge) => edge.provenance === "explicit");
@@ -106,5 +111,12 @@ const arabic = api.build(
 );
 assert.equal(arabic.typeLabel("evidence"), "دليل");
 assert.ok(arabic.resolve("E1")?.label, "localized fixtures must retain resolvable names");
+assert.equal(arabic.resolve("RES1")?.label, "عمال وسكان خاضعون لفحوص الوصول");
+
+const french = api.build(
+  JSON.parse(fs.readFileSync("fixtures/sample-analysis-bio-fr.json", "utf8")),
+  "fr",
+);
+assert.equal(french.resolve("RES1")?.label, "Travailleurs et résidents soumis aux contrôles d’accès");
 
 console.log("Biopolitical relationship graph checks passed.");

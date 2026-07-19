@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import vm from "node:vm";
+import { execFileSync } from "node:child_process";
 
 const fail = (message) => {
   console.error(`QA check failed: ${message}`);
@@ -28,9 +28,10 @@ for (const [file, source] of [
   ["src/app.js", app],
 ]) {
   try {
-    new vm.Script(source, { filename: file });
+    void source;
+    execFileSync(process.execPath, ["--check", file], { stdio: "pipe" });
   } catch (error) {
-    fail(`${file} syntax error: ${error.message}`);
+    fail(`${file} syntax error: ${error.stderr?.toString().trim() || error.message}`);
   }
 }
 
@@ -46,6 +47,7 @@ for (const file of [
   "src/biopolitics.js",
   "src/biopolitics-integrity.js",
   "src/biopolitics-graph.js",
+  "src/biopolitical-report.js",
   "src/reference-ui.js",
   "src/relationship-explorer.js",
   "src/relationship-explorer.css",
@@ -53,6 +55,14 @@ for (const file of [
   "src/biopolitics-sample-i18n.js",
   "src/json-parser.js",
   "src/styles.css",
+  "src/core/lens-registry.js",
+  "src/core/platform-state.js",
+  "src/core/persistence.js",
+  "src/core/localization.js",
+  "src/core/render-regions.js",
+  "src/core/provenance.js",
+  "src/lenses/strategic/adapter.js",
+  "src/lenses/biopolitical/adapter.js",
   "schema/strategic-analysis.schema.json",
   "schema/biopolitical-analysis.schema.json",
   "schema/biopolitical-migrated-draft.schema.json",
@@ -60,24 +70,28 @@ for (const file of [
   if (!fs.existsSync(file)) fail(`missing required file: ${file}`);
 }
 
+if (!index.includes('<script type="module" src="src/app.js"></script>')) {
+  fail("native module entry point is missing");
+}
 const scriptOrder = [
   "src/biopolitics-schema-validator.js",
   "src/biopolitics-sample-i18n.js",
+  "src/core/provenance.js",
   "src/biopolitics.js",
   "src/biopolitics-integrity.js",
   "src/biopolitics-graph.js",
+  "src/biopolitical-report.js",
   "src/reference-ui.js",
   "src/relationship-explorer.js",
   "src/json-parser.js",
-  "src/app.js",
-].map((file) => index.indexOf(`src="${file}" defer`));
-if (scriptOrder.some((position) => position < 0)) fail("runtime script is missing");
+].map((file) => app.indexOf(`import "./${file.slice(4)}";`));
+if (scriptOrder.some((position) => position < 0)) fail("runtime side-effect import is missing");
 if (scriptOrder.some((position, index) => index && position <= scriptOrder[index - 1])) {
-  fail("runtime scripts load in an unsafe order");
+  fail("runtime side-effect imports load in an unsafe order");
 }
 
-if (pkg.version !== "2.0.0-bio-rc.17") fail("package version is wrong");
-if (!index.includes('name="app-version" content="2.0.0-bio-rc.17"')) {
+if (pkg.version !== "2.1.0-alpha.5") fail("package version is wrong");
+if (!index.includes('name="app-version" content="2.1.0-alpha.5"')) {
   fail("app version metadata is wrong");
 }
 for (const token of [
@@ -114,6 +128,10 @@ for (const script of [
   "test:bio:v2",
   "test:bio:integrity",
   "test:bio:graph",
+  "test:bio:report",
+  "test:platform",
+  "test:platform:services",
+  "test:provenance",
   "test:parser",
   "test:i18n:bio",
   "test:ci:no-browser",

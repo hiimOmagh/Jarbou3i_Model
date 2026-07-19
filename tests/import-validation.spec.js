@@ -75,7 +75,15 @@ test.describe("Runtime import validation", () => {
     data.self_audit.statistics_quotations_verified = "pass";
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeEnabled();
-    await expect(page.locator("#jsonStatus")).toContainText(/review warning/i);
+    await expect(page.locator("#jsonStatus")).toContainText(
+      /reviewable draft|publication is blocked/i,
+    );
+    const audit = page.locator("#importAuditDetails");
+    await expect(audit).toBeVisible();
+    await audit.locator("summary").click();
+    await expect(audit).toContainText(/Blocking/i);
+    await expect(audit).toContainText(/Review required/i);
+    await expect(audit).toContainText(/original pasted text is preserved/i);
     await page.locator("#importBtn").click();
     const review = page.locator("#reviewContent");
     await expect(review).toContainText(/Quality gate:\s*Review needed/i);
@@ -120,7 +128,9 @@ test.describe("Runtime import validation", () => {
     data.self_audit.statistics_quotations_verified = "pass";
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeEnabled();
-    await expect(page.locator("#jsonStatus")).toContainText(/review warning/i);
+    await expect(page.locator("#jsonStatus")).toContainText(
+      /reviewable draft|publication is blocked/i,
+    );
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewContent")).toContainText(
       /Quality gate:\s*Review needed/i,

@@ -88,7 +88,7 @@
     ["explanation", "evidence_explanations", "/competing_explanations", (a) => a.competing_explanations, ["claim", "mechanism"]],
     ["evidence", "evidence_explanations", "/evidence/items", (a) => a.evidence?.items, ["claim", "source_title"]],
     ["assumption", "evidence_explanations", "/assumptions/items", (a) => a.assumptions?.items, ["assumption", "disproving_test"]],
-    ["resistance", "agency_alternatives", "/resistance_agency/items", (a) => a.resistance_agency?.items, ["form", "actor_or_population", "mechanism"]],
+    ["resistance", "agency_alternatives", "/resistance_agency/items", (a) => a.resistance_agency?.items, ["actor_or_population", "form", "mechanism"]],
     ["alternative", "agency_alternatives", "/alternatives/items", (a) => a.alternatives?.items, ["proposal", "mechanism"]],
     ["international_comparison", "question_context", "/international_comparison", (a) => a.international_comparison, ["jurisdiction_or_context", "comparison_basis"]],
     ["theoretical_comparison", "meaning_classification", "/theoretical_comparison", (a) => a.theoretical_comparison, ["tradition", "contribution"]],

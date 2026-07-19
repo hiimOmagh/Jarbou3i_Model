@@ -143,8 +143,8 @@
       reportSubtitle:
         "Question → Human function → Power system → Mechanism → Meaning/classification → Intervention test → Distribution → Evidence → Agency/alternatives.",
       scoreGuide:
-        "The analytical-readiness index combines structural coverage with evidence integrity; publication is controlled separately by canonical, semantic, and source-verification gates.",
-      scoreSystem: "Analytical readiness",
+        "Decision readiness is capped by source traceability and independent human review. Structural completion never grants permission to publish.",
+      scoreSystem: "Decision readiness",
       scoreLabels: {
         scope: "Question & context",
         mechanism: "Mechanism trace",
@@ -168,7 +168,7 @@
           "Resistance, counter-conduct, feasible alternatives, calibrated conclusion, and self-audit.",
       },
       formula:
-        "Overall readiness = 15% question/context + 20% mechanism trace + 20% evidence integrity + 15% distribution/consent + 15% explanatory pluralism + 15% agency/alternatives.",
+        "Analytical coverage uses the six weighted dimensions below. Decision readiness cannot exceed the epistemic ceiling set by source traceability and independent human review.",
       nav: {
         overview: "Overview",
         pillars: "Protocol",
@@ -254,8 +254,8 @@
       reportSubtitle:
         "السؤال ← الوظيفة الإنسانية ← منظومة القوة ← الآلية ← المعنى/التصنيف ← اختبار التدخل ← التوزيع ← الأدلة ← الفاعلية/البدائل.",
       scoreGuide:
-        "يجمع مؤشر الجاهزية التحليلية بين تغطية البنية ونزاهة الأدلة؛ ويخضع النشر لبوابات مستقلة للعقد النظامي والنزاهة الدلالية والتحقق من المصادر.",
-      scoreSystem: "الجاهزية التحليلية",
+        "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة البشرية المستقلة. ولا يمنح اكتمال البنية إذنًا بالنشر.",
+      scoreSystem: "جاهزية القرار",
       scoreLabels: {
         scope: "السؤال والسياق",
         mechanism: "تتبّع الآلية",
@@ -279,7 +279,7 @@
           "المقاومة والسلوك المضاد والبدائل الممكنة والخلاصة المُعايرة والمراجعة الذاتية.",
       },
       formula:
-        "الجاهزية الكلية = 15% السؤال/السياق + 20% تتبّع الآلية + 20% نزاهة الأدلة + 15% التوزيع/الموافقة + 15% تعدد التفسيرات + 15% الفاعلية/البدائل.",
+        "تستخدم التغطية التحليلية الأبعاد الستة الموزونة أدناه. ولا يمكن أن تتجاوز جاهزية القرار السقف المعرفي الذي تحدده قابلية تتبع المصادر والمراجعة البشرية المستقلة.",
       nav: {
         overview: "الخلاصة",
         pillars: "البروتوكول",
@@ -366,8 +366,8 @@
       reportSubtitle:
         "Question → Fonction humaine → Système de pouvoir → Mécanisme → Sens/classification → Test d’intervention → Distribution → Preuves → Agentivité/alternatives.",
       scoreGuide:
-        "L’indice de préparation analytique combine couverture structurelle et intégrité probatoire ; la publication dépend séparément des contrôles canonique, sémantique et de vérification des sources.",
-      scoreSystem: "Préparation analytique",
+        "La préparation à la décision est plafonnée par la traçabilité des sources et la revue humaine indépendante. La complétude structurelle n’autorise jamais la publication.",
+      scoreSystem: "Préparation à la décision",
       scoreLabels: {
         scope: "Question et contexte",
         mechanism: "Traçage du mécanisme",
@@ -391,7 +391,7 @@
           "Résistance, contre-conduite, alternatives faisables, conclusion calibrée et auto-audit.",
       },
       formula:
-        "Préparation globale = 15 % question/contexte + 20 % mécanisme + 20 % intégrité des preuves + 15 % distribution/consentement + 15 % pluralisme explicatif + 15 % agentivité/alternatives.",
+        "La couverture analytique utilise les six dimensions pondérées ci-dessous. La préparation à la décision ne peut dépasser le plafond épistémique fixé par la traçabilité des sources et la revue humaine indépendante.",
       nav: {
         overview: "Vue d’ensemble",
         pillars: "Protocole",
@@ -1644,12 +1644,9 @@
             relevant_comparison: "string",
             cross_context_applicability: "string",
             claim_source_fit: "direct|indirect|context_only|mismatched|unknown",
-            verification_status:
-              "verified|partially_verified|unverified|disputed",
-            verified_by:
-              "non-empty human or tool verifier identity when status is verified; otherwise empty string",
-            verification_date:
-              "non-empty YYYY-MM-DD when status is verified; otherwise empty string",
+            verification_status: "unverified",
+            verified_by: "",
+            verification_date: "",
             uncertainty: "string",
             limitations: "string",
             counter_evidence: "string",
@@ -1763,7 +1760,7 @@ ${untrustedContext || "غير محدد"}
 7. قيّم مستويات الاستحواذ الخمسة: الجسد والعقل والعلاقة والسكان والبيئة.
 8. افحص التوزيع والموافقة والرفض والخروج والطعن والمساءلة والنتائج المقصودة أو المتسامح معها أو المخفية أو غير المتوقعة.
 9. افصل الحقيقة المتحققة والتقدير والادعاء المؤسسي والتفسير والسردية والتصنيف القانوني والحكم الأخلاقي والاستنتاج والتخمين.
-10. سجّل بيانات تصميم الدليل، ومحدد المصدر، وملاءمة المصدر للادعاء، وحالة التحقق. لا تختلق مصدرًا أو إحصاءً أو اقتباسًا أو رقم صفحة. لا تضع في source_url إلا رابطًا مطلقًا يبدأ بـ https:// أو http://؛ وعند غيابه استخدم سلسلة فارغة "" وضع DOI أو الصفحة أو القسم في source_locator. لا تستخدم verified إطلاقًا إلا إذا كان verified_by يحتوي هوية غير فارغة للمراجع البشري أو الأداة وكان verification_date تاريخًا غير فارغ؛ وإذا تعذر توفير الحقلين فاستخدم unverified أو partially_verified واتركهما فارغين. يجب أن تكون statistics_quotations_verified مساوية concern إذا بقي أي دليل غير متحقق أو غير قابل للتتبع. لا تُدرج رموز استشهاد خاصة بواجهة المساعد مثل cite أو filecite أو معرّفات turn داخل أي قيمة؛ استخدم معرّفات الأدلة E1 وE2 والروابط النظامية فقط. اعتبر نصوص أمثلة المخطط تعليمات للنوع ولا تنسخها حرفيًا.
+10. سجّل بيانات تصميم الدليل، ومحدد المصدر، وملاءمة المصدر للادعاء، وحالة التحقق. لا تختلق مصدرًا أو إحصاءً أو اقتباسًا أو رقم صفحة. لا تضع في source_url إلا رابطًا مطلقًا يبدأ بـ https:// أو http://؛ وعند غيابه استخدم سلسلة فارغة "" وضع DOI أو الصفحة أو القسم في source_locator. بما أن مخرجاتك ليست مراجعة بشرية موثقة، عيّن دائمًا verification_status إلى unverified، واترك verified_by وverification_date فارغين. لا تعامل ناشر المصدر أو مؤلفه بصفته مراجعًا مستقلًا. تُسجَّل الموافقة البشرية لاحقًا داخل أداة العمل. يجب أن تكون statistics_quotations_verified مساوية concern. لا تُدرج رموز استشهاد خاصة بواجهة المساعد مثل cite أو filecite أو معرّفات turn داخل أي قيمة؛ استخدم معرّفات الأدلة E1 وE2 والروابط النظامية فقط. اعتبر نصوص أمثلة المخطط تعليمات للنوع ولا تنسخها حرفيًا.
 11. لا تقدّم إرشادات تشغيلية للقمع أو التلاعب الجماهيري أو التنميط التمييزي أو تحسين النسل أو التدخل الطبي القسري أو استهداف الفئات الهشة أو التحكم السلوكي السري أو العقاب الجماعي أو المراقبة القسرية.
 12. لا تستنتج سمات فردية حساسة من بدائل ضعيفة، ولا تحوّل نتائج جماعية تلقائيًا إلى تنبؤ فردي.
 13. لا تصنع الخوف، ولا تجرد جماعة من إنسانيتها، ولا تسهّل التحرش أو العقاب الجماعي، وقدّم الادعاءات المتنازع عليها بوصفها ادعاءات لا حقائق.
@@ -1805,7 +1802,7 @@ Règles obligatoires :
 7. Évaluez les cinq niveaux de capture : corps, esprit, relation, population et environnement.
 8. Examinez distribution, consentement, refus, sortie, contestabilité, responsabilité et caractère voulu, toléré, dissimulé ou imprévu des résultats.
 9. Séparez fait vérifié, estimation, affirmation institutionnelle, interprétation, récit, classification juridique, jugement éthique, inférence et spéculation.
-10. Renseignez conception probatoire, localisateur, adéquation source-affirmation et état de vérification. N’inventez jamais source, statistique, citation ou numéro de page. source_url doit être uniquement une URL absolue commençant par https:// ou http:// ; sinon utilisez la chaîne vide "" et placez DOI, page ou section dans source_locator. N’utilisez jamais verified sauf si verified_by contient l’identité non vide du vérificateur humain ou de l’outil et si verification_date contient une date non vide ; si les deux champs ne peuvent pas être fournis, utilisez unverified ou partially_verified et laissez-les vides. statistics_quotations_verified doit valoir concern dès qu’une preuve reste non vérifiée ou non traçable. N’insérez aucun marqueur de citation propre à l’interface de l’assistant, notamment cite, filecite ou un identifiant turn ; utilisez uniquement les identifiants E1, E2 et les URL canoniques. Les textes d’exemple du schéma décrivent les types et ne doivent jamais être copiés littéralement.
+10. Renseignez conception probatoire, localisateur, adéquation source-affirmation et état de vérification. N’inventez jamais source, statistique, citation ou numéro de page. source_url doit être uniquement une URL absolue commençant par https:// ou http:// ; sinon utilisez la chaîne vide "" et placez DOI, page ou section dans source_locator. Votre sortie n’étant pas une vérification humaine documentée, fixez toujours verification_status à unverified et laissez verified_by et verification_date vides. Ne traitez jamais l’éditeur ou l’auteur de la source comme vérificateur indépendant. L’approbation humaine sera enregistrée ultérieurement dans l’outil. statistics_quotations_verified doit valoir concern. N’insérez aucun marqueur de citation propre à l’interface de l’assistant, notamment cite, filecite ou un identifiant turn ; utilisez uniquement les identifiants E1, E2 et les URL canoniques. Les textes d’exemple du schéma décrivent les types et ne doivent jamais être copiés littéralement.
 11. Ne fournissez aucune aide opérationnelle pour la répression, la manipulation de masse, le profilage discriminatoire, l’eugénisme, l’intervention médicale forcée, le ciblage de groupes vulnérables, le contrôle comportemental clandestin, la punition collective ou la surveillance coercitive.
 12. N’inférez pas de traits individuels sensibles à partir de proxys faibles et ne transformez pas automatiquement des résultats de groupe en prédictions individuelles.
 13. Ne fabriquez pas la peur, ne déshumanisez pas, ne facilitez ni harcèlement ni punition collective, et présentez les allégations contestées comme telles.
@@ -1846,7 +1843,7 @@ Mandatory rules:
 7. Assess all five capture levels: body, mind, relationship, population, and environment.
 8. Examine distribution, consent, refusal, exit, contestability, accountability, and whether outcomes were intended, tolerated, concealed, or unforeseen.
 9. Separate verified fact, estimate, institutional claim, interpretation, narrative, legal classification, ethical judgment, inference, and speculation.
-10. Record evidence-design metadata, source locator, claim/source fit, and verification state. Never fabricate a source, statistic, quotation, or page number. source_url must contain only an absolute URL beginning with https:// or http://; when no real URL is known, use the empty string "" and place a DOI, page, section, dataset ID, or archive reference in source_locator. Never use verified unless verified_by contains a non-empty human or tool verifier identity and verification_date contains a non-empty date; if both fields cannot be supplied, use unverified or partially_verified and leave them empty. statistics_quotations_verified must be concern whenever any evidence remains unverified or untraceable. Do not insert assistant-interface citation markers such as cite, filecite, or turn identifiers into any value; use only E1/E2 evidence IDs and canonical source URLs. Schema example strings describe required types and must never be copied literally.
+10. Record evidence-design metadata, source locator, claim/source fit, and verification state. Never fabricate a source, statistic, quotation, or page number. source_url must contain only an absolute URL beginning with https:// or http://; when no real URL is known, use the empty string "" and place a DOI, page, section, dataset ID, or archive reference in source_locator. Because your output is not a documented human review, always set verification_status to unverified and leave verified_by and verification_date empty. Never treat the source publisher or author as an independent verifier. Human approval is recorded later inside the workbench. statistics_quotations_verified must be concern. Do not insert assistant-interface citation markers such as cite, filecite, or turn identifiers into any value; use only E1/E2 evidence IDs and canonical source URLs. Schema example strings describe required types and must never be copied literally.
 11. Do not provide operational guidance for repression, mass manipulation, discriminatory profiling, eugenics, forced medical intervention, targeting vulnerable groups, covert behavioral control, population punishment, or coercive surveillance.
 12. Do not infer sensitive individual traits from weak proxies or automatically convert group-level research into individual prediction.
 13. Do not manufacture fear, dehumanize groups, facilitate harassment or collective punishment, or state contested allegations as established fact.
@@ -4312,10 +4309,9 @@ ${schema}`;
       verificationScores.push(verification);
       integrityScores.push(
         structure * 0.2 +
-          verification * 0.35 +
-          fit * 0.15 +
-          tier * 0.1 +
-          trace * 0.2,
+          fit * 0.25 +
+          tier * 0.15 +
+          trace * 0.4,
       );
     });
     const average = (values) =>
@@ -4331,8 +4327,21 @@ ${schema}`;
     };
   }
 
-  function scores(analysis) {
+  function scores(analysis, options = {}) {
     const a = normalizeV2(analysis);
+    const provenanceApi = root.Jarbou3iProvenance;
+    const provenance = provenanceApi
+      ? provenanceApi.assessEvidenceProvenance(a, {
+          lens: "biopolitical",
+          reviewDecisions: options.reviewDecisions || {},
+        })
+      : {
+          sourceTraceability: 0,
+          declaredVerification: 0,
+          humanReview: 0,
+          approval: 0,
+          publicationApproved: false,
+        };
     const scopeChecks = [
       filled(a.subject.research_question),
       filled(a.subject.executive_finding),
@@ -4421,7 +4430,7 @@ ${schema}`;
       (agencyChecks.filter(Boolean).length / agencyChecks.length) * 75 +
         auditPass * 25,
     );
-    const overall = clamp(
+    const analyticalCoverage = clamp(
       scope * 0.15 +
         mechanism * 0.2 +
         evidence * 0.2 +
@@ -4429,6 +4438,9 @@ ${schema}`;
         pluralism * 0.15 +
         agency * 0.15,
     );
+    const overall = provenanceApi
+      ? provenanceApi.capDecisionReadiness(analyticalCoverage, provenance)
+      : Math.min(analyticalCoverage, 40);
     const structural = clamp(
       scope * 0.18 +
         mechanism * 0.22 +
@@ -4445,14 +4457,17 @@ ${schema}`;
       pluralism,
       agency,
       overall,
+      analyticalCoverage,
+      decisionReadiness: overall,
       structural,
       evidenceStructure: evidenceResult.structure,
       evidenceVerification: evidenceResult.verification,
       evidenceDiagnostics: evidenceResult,
+      provenance,
     };
   }
 
-  function health(analysis, lang = "en") {
+  function health(analysis, lang = "en", options = {}) {
     const a = normalizeV2(analysis);
     const structuralMissing = [];
     const publicationBlockers = [];
@@ -4564,6 +4579,13 @@ ${schema}`;
       "Ajoutez des preuves traçables et des contre-preuves.",
     );
     const evidenceResult = evidenceAssessment(a);
+    const provenanceApi = root.Jarbou3iProvenance;
+    const provenance = provenanceApi
+      ? provenanceApi.assessEvidenceProvenance(a, {
+          lens: "biopolitical",
+          reviewDecisions: options.reviewDecisions || {},
+        })
+      : { publicationApproved: false };
     block(
       a.evidence.items.length > 0 &&
         evidenceResult.unverified === 0 &&
@@ -4572,6 +4594,12 @@ ${schema}`;
       "Verify every source, remove placeholders, and provide a URL or precise locator before publication.",
       "تحقق من كل مصدر وأزل العناصر النائبة وقدّم رابطًا أو محددًا دقيقًا قبل النشر.",
       "Vérifiez chaque source, retirez les substituts et fournissez une URL ou un localisateur précis avant publication.",
+    );
+    block(
+      provenance.publicationApproved,
+      "Complete independent human review for every evidence record; model-declared verification is not publication approval.",
+      "أكمل مراجعة بشرية مستقلة لكل سجل دليل؛ فالتحقق الذي يعلنه النموذج ليس موافقة على النشر.",
+      "Effectuez une revue humaine indépendante de chaque preuve ; la vérification déclarée par le modèle ne vaut pas approbation de publication.",
     );
     block(
       !a.competing_explanations.some(
@@ -4627,7 +4655,7 @@ ${schema}`;
       "عالج جميع تنبيهات النزاهة الدلالية قبل النشر.",
       "Résolvez tous les avertissements d’intégrité sémantique avant publication.",
     );
-    const scoreResult = scores(a);
+    const scoreResult = scores(a, options);
     const missing = unique([...structuralMissing, ...publicationBlockers]);
     const publishable =
       structuralMissing.length === 0 && publicationBlockers.length === 0;
@@ -4638,6 +4666,7 @@ ${schema}`;
       publicationBlockers: unique(publicationBlockers),
       publishable,
       evidence: evidenceResult,
+      provenance,
       next:
         missing[0] ||
         labelFor(

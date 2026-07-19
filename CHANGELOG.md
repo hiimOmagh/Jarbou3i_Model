@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.1.0-alpha.5 — Deterministic Acceptance Hotfix
+
+- Synchronizes each release-matrix cell through the public language, analysis-language, and theme controls after startup, closing the isolated Chromium preload race that left one French-light cell in Arabic.
+- Preserves the intended accessible Connections-list screenshot on phones, then opens Map only for the Story-geometry measurement required by the evidence reviewer.
+- Keeps the alpha.4 application, analytical contracts, localization, responsive styling, imports, exports, and report presentation unchanged.
+
+## 2.1.0-alpha.4 — Visual Acceptance Repair
+
+- Localizes canonical Relationship Explorer relation, confidence, verification, and edge-family labels in Arabic and French without changing stored enum values.
+- Names resistance nodes with the authored actor or population before the canonical resistance form, removing raw values such as `litigation` from localized story views.
+- Fits four-step Story paths at desktop widths and exposes an explicit, keyboard-scrollable, snap-aligned horizontal surface at intermediate widths instead of silently clipping nodes.
+- Restores readable active navigation badges in light and dark themes and compacts the phone header, guide card, and stage rail so the primary task enters the first viewport sooner.
+- Makes hosted and audit screenshots deterministically anchored and distinguishes local public-surface evidence from a true deployed-site gate.
+- Expands visual evidence from 36 screenshots to 96 across the shell, both analysis lenses, Biopolitical results, Connections, import audit, and standalone reports.
+- Adds graph-label, localization, story-geometry, badge, capture-coverage, and deployed-target regression contracts.
+
+## 2.1.0-alpha.3 — Evidence-Provenance and Decision-Readiness Foundation
+
+- Rebased the shared dual-lens platform work on the verified RC17 source.
+- Separates model-declared verification from independent human review and publication approval.
+- Caps decision readiness using source traceability and independent review, without hiding analytical coverage.
+- Promotes the publication gate above diagnostic scores in both lens overviews and the Biopolitical report.
+- Preserves the original pasted payload and normalization audit in presentation state.
+- Requires generated Biopolitical evidence to remain unverified until reviewed in the workbench.
+
 ## 2.0.0-bio-rc.17 — Firefox Spatial Saved-View Synchronization
 
 - Replaces the remaining pointer-dependent Spatial orbit, save, reset, and restore transitions in the release contract with focus-owned keyboard activation.

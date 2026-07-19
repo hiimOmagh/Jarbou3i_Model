@@ -1,4 +1,21 @@
-/* Jarbou3i Model v2.0.0-bio-rc.17 — client-side application logic */
+/* Jarbou3i Model v2.1.0-alpha.5 — shared dual-lens application runtime */
+import "./biopolitics-schema-validator.js";
+import "./biopolitics-sample-i18n.js";
+import "./core/provenance.js";
+import "./biopolitics.js";
+import "./biopolitics-integrity.js";
+import "./biopolitics-graph.js";
+import "./biopolitical-report.js";
+import "./reference-ui.js";
+import "./relationship-explorer.js";
+import "./json-parser.js";
+import { createLensRegistry } from "./core/lens-registry.js";
+import { createLocalizationService } from "./core/localization.js";
+import { createSettingsRepository } from "./core/persistence.js";
+import { createPlatformState } from "./core/platform-state.js";
+import { createRegionRenderer } from "./core/render-regions.js";
+import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
+import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
 "use strict";
 const I18N = {
@@ -820,32 +837,38 @@ if (!RELATIONSHIP_EXPLORER)
   throw new Error("Relationship explorer failed to load.");
 const JSON_TOOLS = window.Jarbou3iJson;
 if (!JSON_TOOLS) throw new Error("Conservative JSON parser failed to load.");
+const PROVENANCE = window.Jarbou3iProvenance;
+if (!PROVENANCE) throw new Error("Evidence provenance service failed to load.");
 const SETTINGS_KEY = "jarbou3i-model-settings";
 const SUPPORTED_LANGUAGES = ["ar", "en", "fr"];
-const isSupportedLanguage = (lang) => SUPPORTED_LANGUAGES.includes(lang);
+const SETTINGS = createSettingsRepository(window.localStorage, SETTINGS_KEY);
 function readSettings() {
-  try {
-    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") || {};
-  } catch {
-    return {};
-  }
+  return SETTINGS.read();
 }
 function writeSettings(patch) {
-  try {
-    localStorage.setItem(
-      SETTINGS_KEY,
-      JSON.stringify({ ...readSettings(), ...patch }),
-    );
-  } catch {}
+  SETTINGS.update(patch);
 }
 const savedSettings = readSettings();
+const LOCALIZATION = createLocalizationService({
+  catalogs: I18N,
+  supportedLanguages: SUPPORTED_LANGUAGES,
+  fallbackLanguage: "en",
+  resolve: ({ language, key, context, raw }) => {
+    if (context.lens !== "biopolitical") return undefined;
+    const contractValue = BIO.ui(language, key);
+    if (contractValue !== undefined) return contractValue;
+    const alias = LENS_KEY_ALIASES[key];
+    return alias ? raw(alias) : undefined;
+  },
+});
+const isSupportedLanguage = LOCALIZATION.isSupported;
 const savedInterfaceLanguage = isSupportedLanguage(savedSettings.lang)
   ? savedSettings.lang
   : "ar";
 const savedAnalysisLanguage = isSupportedLanguage(savedSettings.analysisLang)
   ? savedSettings.analysisLang
   : savedInterfaceLanguage;
-let state = {
+const PLATFORM_STATE = createPlatformState({
   lang: savedInterfaceLanguage,
   stage: "topic",
   topic: "",
@@ -868,8 +891,10 @@ let state = {
   activePillar: null,
   lastPrompt: "",
   importValidation: null,
+  importAudit: null,
   modalInvoker: null,
-};
+});
+const state = PLATFORM_STATE.state;
 const $ = (id) => document.getElementById(id);
 const LENS_KEY_ALIASES = {
   appTitle: "appTitleBiopolitical",
@@ -892,23 +917,31 @@ const LENS_KEY_ALIASES = {
   sampleLoaded: "sampleLoadedBiopolitical",
   pillars: "pillarsBiopolitical",
 };
+const LENS_REGISTRY = createLensRegistry([
+  createStrategicLensAdapter({
+    buildPrompt: buildStrategicPrompt,
+    createSample: ({ lang, mode }) => sampleStrategicAnalysis(lang, mode),
+    renderEngineNav,
+    renderReview,
+  }),
+  createBiopoliticalLensAdapter({
+    buildPrompt: (options) => BIO.buildPrompt(options),
+    createSample: ({ lang, mode }) => BIO.sample(lang, mode),
+    renderEngineNav: renderBiopoliticalEngineNav,
+    renderReview: renderBiopoliticalReview,
+  }),
+]);
+function activeLensAdapter() {
+  return LENS_REGISTRY.get(state.analysisLens);
+}
 function rawTFor(lang, key) {
-  return key.split(".").reduce((value, part) => value && value[part], I18N[lang]);
+  return LOCALIZATION.raw(lang, key);
 }
 function rawT(key) {
   return rawTFor(state.lang, key);
 }
 function tFor(lang, key, lens = state.analysisLens) {
-  const safeLang = ["ar", "en", "fr"].includes(lang) ? lang : "en";
-  if (lens === "biopolitical") {
-    const contractValue = BIO.ui(safeLang, key);
-    if (contractValue !== undefined) return contractValue;
-    if (LENS_KEY_ALIASES[key]) {
-      const lensValue = rawTFor(safeLang, LENS_KEY_ALIASES[key]);
-      if (lensValue !== undefined) return lensValue;
-    }
-  }
-  return rawTFor(safeLang, key) ?? key;
+  return LOCALIZATION.translate(lang, key, { lens });
 }
 function t(k) {
   return tFor(state.lang, k);
@@ -1007,11 +1040,7 @@ function renderLensToggle() {
         : t("lensStrategicHint");
 }
 function setAnalysisLens(lens) {
-  if (
-    !["strategic", "biopolitical"].includes(lens) ||
-    state.analysisLens === lens
-  )
-    return;
+  if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
   const contractChanged =
     state.analysis && state.analysis.analysis_lens !== lens;
   state.analysisLens = lens;
@@ -1183,15 +1212,73 @@ function importErrorText(error) {
   );
   return `${prefix}: ${first.path || "/"} — ${first.message}`;
 }
+function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
+  const details = $("importAuditDetails");
+  const summary = $("importAuditSummary");
+  const body = $("importAuditBody");
+  if (!details || !summary || !body) return;
+  if (!parsed && !provenance && !warnings.length) {
+    details.hidden = true;
+    details.open = false;
+    body.textContent = "";
+    return;
+  }
+  const citationRepair = warnings.find(
+    (warning) => warning.code === "NON_PORTABLE_CITATION_MARKERS_REMOVED",
+  );
+  const blocking = provenance?.total
+    ? provenance.total - provenance.approved
+    : 0;
+  const repairCount = (parsed?.recovered ? 1 : 0) +
+    (citationRepair?.count || 0);
+  summary.textContent = labelText(
+    `Review details · ${blocking} blocking · ${warnings.length} review · ${repairCount} repaired`,
+    `تفاصيل المراجعة · ${blocking} عوائق · ${warnings.length} للمراجعة · ${repairCount} إصلاحات`,
+    `Détails · ${blocking} blocages · ${warnings.length} à revoir · ${repairCount} réparations`,
+  );
+  const warningItems = warnings.length
+    ? `<ul>${warnings
+        .slice(0, 12)
+        .map(
+          (warning) =>
+            `<li><span class="importAuditPath">${escapeHtml(warning.path || "/")}</span> — ${escapeHtml(warning.message || warning.code || "")}</li>`,
+        )
+        .join("")}</ul>`
+    : `<p>${escapeHtml(labelText("No contract or integrity warnings.", "لا توجد تنبيهات عقد أو نزاهة.", "Aucun avertissement de contrat ou d’intégrité."))}</p>`;
+  const repairs = [
+    parsed?.recovered
+      ? labelText(
+          "JSON wrappers, comments, or trailing punctuation were conservatively repaired.",
+          "تم إصلاح أغلفة JSON أو التعليقات أو علامات الترقيم اللاحقة بصورة محافظة.",
+          "Les enveloppes JSON, commentaires ou ponctuations finales ont été réparés de façon conservative.",
+        )
+      : "",
+    citationRepair
+      ? labelText(
+          `${citationRepair.count || 1} non-portable citation markers were removed from the normalized copy.`,
+          `أزيلت ${citationRepair.count || 1} من علامات الاستشهاد غير القابلة للنقل من النسخة المطبّعة.`,
+          `${citationRepair.count || 1} marqueurs de citation non portables ont été retirés de la copie normalisée.`,
+        )
+      : "",
+  ].filter(Boolean);
+  body.innerHTML = `${
+    provenance?.total
+      ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Blocking", "العوائق", "Blocage"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Model-declared verification remains untrusted.`, `${blocking} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. La vérification déclarée par le modèle reste non fiable.`))}</p></section>`
+      : ""
+  }<section class="importAuditGroup"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="importAuditGroup"><h4>${escapeHtml(labelText("Automatic repair", "الإصلاح التلقائي", "Réparation automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic content repair was required.", "لم يلزم إصلاح تلقائي للمحتوى.", "Aucune réparation automatique du contenu n’a été nécessaire."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>`;
+  details.hidden = false;
+}
 function validateJsonInput() {
   const text = $("jsonInput").value.trim();
   if (!text) {
     state.jsonValid = false;
+    state.importAudit = null;
     $("importBtn").disabled = true;
     $("repairPromptBtn").disabled = true;
     $("jsonStatus").className = "status";
     $("jsonStatus").textContent = t("jsonWaiting");
     $("pasteCard").classList.remove("ready", "invalid");
+    renderImportAuditDetails();
     return null;
   }
   try {
@@ -1210,6 +1297,9 @@ function validateJsonInput() {
     $("importBtn").disabled = false;
     $("repairPromptBtn").disabled = false;
     const warnings = state.importValidation?.warnings || [];
+    const provenance = PROVENANCE.assessEvidenceProvenance(analysis, {
+      lens: analysis.analysis_lens,
+    });
     const citationRepair = warnings.find(
       (warning) => warning.code === "NON_PORTABLE_CITATION_MARKERS_REMOVED",
     );
@@ -1220,7 +1310,22 @@ function validateJsonInput() {
           `${citationRepair.count || 1} marqueur${citationRepair.count === 1 ? " interne non portable a été supprimé" : "s internes non portables ont été supprimés"} ; les identifiants de preuve et URL de source canoniques ont été préservés.`,
         )
       : "";
-    $("jsonStatus").className = warnings.length ? "status warn" : "status good";
+    state.importAudit = Object.freeze({
+      originalText: text,
+      parsedSource: parsed.source,
+      recovered: parsed.recovered,
+      warnings: Object.freeze([...warnings]),
+      provenance,
+    });
+    renderImportAuditDetails({ warnings, parsed, provenance });
+    const needsIndependentReview =
+      analysis.analysis_lens === "biopolitical" &&
+      provenance.total > 0 &&
+      provenance.humanReview < 100;
+    $("jsonStatus").className =
+      warnings.length || parsed.recovered || needsIndependentReview
+        ? "status warn"
+        : "status good";
     const draft = state.importValidation?.state === "migrated_draft";
     const validationMessage = draft
       ? labelText(
@@ -1228,12 +1333,18 @@ function validateJsonInput() {
           "المادة القديمة صالحة كمسودة مُرحّلة، ويظل النشر محظورًا حتى استكمال العقد النظامي.",
           "Le contenu historique est valide comme brouillon migré ; la publication reste bloquée jusqu’à sa mise en conformité canonique.",
         )
-      : warnings.length
+      : needsIndependentReview
         ? labelText(
-            `Valid analysis with ${warnings.length} review warning${warnings.length === 1 ? "" : "s"}. Import is allowed; publication remains blocked until the evidence audit is resolved.`,
-            `التحليل صالح مع ${warnings.length} ${warnings.length === 1 ? "تنبيه للمراجعة" : "تنبيهات للمراجعة"}. الاستيراد مسموح، ويظل النشر محظورًا حتى معالجة تدقيق الأدلة.`,
-            `Analyse valide avec ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"} à examiner. L’importation est autorisée ; la publication reste bloquée jusqu’à la résolution de l’audit des preuves.`,
+            `Reviewable draft. Blocking: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${warnings.length} contract or integrity warning${warnings.length === 1 ? "" : "s"}. Import is allowed; publication is blocked.`,
+            `مسودة قابلة للمراجعة. العوائق: ${provenance.total - provenance.approved} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. المراجعة: ${warnings.length} ${warnings.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. الاستيراد مسموح والنشر محظور.`,
+            `Brouillon révisable. Blocage : ${provenance.total - provenance.approved} preuves sur ${provenance.total} sans approbation indépendante. Révision : ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"} de contrat ou d’intégrité. L’import est permis ; la publication est bloquée.`,
           )
+        : warnings.length
+          ? labelText(
+              `Valid analysis with ${warnings.length} review warning${warnings.length === 1 ? "" : "s"}. Import is allowed; publication remains blocked until review is complete.`,
+              `التحليل صالح مع ${warnings.length} ${warnings.length === 1 ? "تنبيه للمراجعة" : "تنبيهات للمراجعة"}. الاستيراد مسموح، ويظل النشر محظورًا حتى اكتمال المراجعة.`,
+              `Analyse valide avec ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"}. L’import est permis ; la publication reste bloquée jusqu’à la fin de la révision.`,
+            )
         : parsed.recovered
         ? t("jsonAutoRecovered")
         : t("jsonValid");
@@ -1244,6 +1355,15 @@ function validateJsonInput() {
     $("pasteCard").classList.remove("invalid");
     return analysis;
   } catch (e) {
+    state.importAudit = Object.freeze({
+      originalText: text,
+      error: importErrorText(e),
+    });
+    renderImportAuditDetails({
+      warnings: e?.validation?.errors || [],
+      parsed: null,
+      provenance: null,
+    });
     state.jsonValid = false;
     $("importBtn").disabled = true;
     $("repairPromptBtn").disabled = false;
@@ -1431,30 +1551,17 @@ function buildSchema(
   }
   return `${label}\n${JSON.stringify(schema, null, 2)}`;
 }
-function buildPrompt() {
-  const lang = $("analysisLang").value;
-  setAnalysisLanguage(lang);
-  state.promptMode = $("promptMode").value;
-  state.topic = $("topicInput").value.trim();
-  state.context = $("timeframeInput").value.trim();
+function buildStrategicPrompt({ lang, mode, topic, context }) {
   const ar = lang === "ar";
   const fr = lang === "fr";
-  const isBio = state.analysisLens === "biopolitical";
-  if (isBio)
-    return BIO.buildPrompt({
-      lang,
-      mode: state.promptMode,
-      topic: state.topic,
-      context: state.context,
-    });
   const modeText =
-    state.promptMode === "research"
+    mode === "research"
       ? ar
         ? "بحثي: أضف أدلة مصدرية، أدلة مضادة، عدم يقين، وروابط سببية مرقمة."
         : fr
           ? "Recherche : ajoute des preuves sourcées, des contre-preuves, de l’incertitude et des liens causaux identifiés."
           : "Research: include source-grounded evidence, counter-evidence, uncertainty, and ID-based causal links."
-      : state.promptMode === "expert"
+      : mode === "expert"
         ? ar
           ? "خبير: أضف الأدلة، الافتراضات، والروابط السببية."
           : fr
@@ -1468,8 +1575,8 @@ function buildPrompt() {
   if (ar)
     return `أنت محلل استراتيجي صارم. حلّل الموضوع التالي باستخدام نموذج: مصالح → فاعلون → أدوات → سردية → نتائج → تغذية راجعة.
 
-الموضوع: ${state.topic}
-السياق: ${state.context || "غير محدد"}
+الموضوع: ${topic}
+السياق: ${context || "غير محدد"}
 النمط: ${modeText}
 
 قواعد مهمة:
@@ -1482,12 +1589,12 @@ function buildPrompt() {
 - قبل إخراج JSON النهائي، راجع داخليًا: الفاعلين المفقودين، السببية الأحادية، الافتراضات غير المدعومة، ضعف الأدلة، غياب الأدلة المضادة، وغياب شروط الإبطال.
 - لا تكتب مراجعتك الداخلية؛ أخرج JSON المصحح فقط.
 
-${buildSchema(lang, state.promptMode, "strategic")}`;
+${buildSchema(lang, mode, "strategic")}`;
   if (fr)
     return `Tu es un analyste stratégique rigoureux. Analyse le sujet suivant avec le modèle : Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.
 
-Sujet : ${state.topic}
-Contexte : ${state.context || "non précisé"}
+Sujet : ${topic}
+Contexte : ${context || "non précisé"}
 Mode : ${modeText}
 
 Règles :
@@ -1500,11 +1607,11 @@ Règles :
 - Avant le JSON final, audite silencieusement : acteurs manquants, monocausalité, hypothèses non étayées, preuves faibles, absence de contre-preuves et absence de réfutateurs.
 - Ne montre pas cet audit interne ; retourne uniquement le JSON corrigé.
 
-${buildSchema(lang, state.promptMode, "strategic")}`;
+${buildSchema(lang, mode, "strategic")}`;
   return `You are a rigorous strategic analyst. Analyze the following topic using the model: Interests → Actors → Tools → Narrative → Results → Feedback.
 
-Topic: ${state.topic}
-Context: ${state.context || "not specified"}
+Topic: ${topic}
+Context: ${context || "not specified"}
 Mode: ${modeText}
 
 Rules:
@@ -1517,15 +1624,28 @@ Rules:
 - Before final JSON, silently audit for missing actors, monocausal reasoning, unsupported assumptions, weak evidence, absent counter-evidence, and missing falsifiers.
 - Do not reveal the audit. Return only the corrected JSON.
 
-${buildSchema(lang, state.promptMode, "strategic")}`;
+${buildSchema(lang, mode, "strategic")}`;
 }
-function sampleStrategicAnalysis(lang = state.lang) {
+function buildPrompt() {
+  const lang = $("analysisLang").value;
+  setAnalysisLanguage(lang);
+  state.promptMode = $("promptMode").value;
+  state.topic = $("topicInput").value.trim();
+  state.context = $("timeframeInput").value.trim();
+  return activeLensAdapter().buildPrompt({
+    lang,
+    mode: state.promptMode,
+    topic: state.topic,
+    context: state.context,
+  });
+}
+function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
   const metadata = {
     schema_version: "1.1.0",
     analysis_id: `sample-strategic-${lang}`,
     generated_at: "2026-07-17T00:00:00Z",
     language: lang,
-    model_mode: state.promptMode,
+    model_mode: mode,
     analysis_lens: "strategic",
   };
   const fr = lang === "fr";
@@ -2189,27 +2309,27 @@ function qualityGate(a = state.analysis) {
   const h = schemaHealth(a);
   const hard = [];
   if (h.missing.length) hard.push(...h.missing.slice(0, 3));
-  if (b.overall >= 90 && !hard.length)
+  if (b.provenance.publicationApproved && !hard.length)
     return {
       status: t("publishReady"),
       cls: "pct-excellent",
       tone: "var(--success)",
       summary: labelText(
-        "The analysis passes the structural gate and is ready for export.",
-        "التحليل يجتاز بوابة البنية وجاهز للتصدير.",
-        "L’analyse franchit le contrôle structurel et est prête à être exportée.",
+        "Structural and independent evidence-review gates passed; final editorial verification remains required.",
+        "اجتاز التحليل بوابة البنية ومراجعة الأدلة المستقلة؛ وتبقى المراجعة التحريرية النهائية مطلوبة.",
+        "Les contrôles structurel et indépendant des preuves sont satisfaits ; la vérification éditoriale finale reste requise.",
       ),
       issues: [],
     };
-  if (b.overall >= 72)
+  if (!hard.length)
     return {
       status: t("reviewNeeded"),
       cls: "pct-mid",
       tone: "var(--warn)",
       summary: labelText(
-        "Usable draft. Improve the weakest diagnostic sections before publication.",
-        "مسودة قابلة للاستخدام. حسّن أضعف أقسام التشخيص قبل النشر.",
-        "Brouillon utilisable. Améliorez les sections diagnostiques les plus faibles avant publication.",
+        "Structurally reviewable, but publication is blocked until every evidence record receives independent human approval.",
+        "المسودة قابلة للمراجعة بنيويًا، لكن النشر محظور حتى يعتمد مراجع بشري مستقل كل سجل دليل.",
+        "Brouillon structurellement révisable, mais publication bloquée tant que chaque preuve n’a pas reçu une approbation humaine indépendante.",
       ),
       issues: hard,
     };
@@ -2321,9 +2441,10 @@ function renderStages() {
 }
 
 function sampleAnalysis(lang = state.lang) {
-  return state.analysisLens === "biopolitical"
-    ? BIO.sample(lang, state.promptMode)
-    : sampleStrategicAnalysis(lang);
+  return activeLensAdapter().createSample({
+    lang,
+    mode: state.promptMode,
+  });
 }
 function countFor(p) {
   return state.analysis ? normalizeArray(state.analysis[p]).length : 0;
@@ -2959,13 +3080,20 @@ function scoreBreakdown(a = state.analysis) {
     ),
   );
   const weights = scoreWeights(a);
-  const overall = Math.round(
+  const analyticalCoverage = Math.round(
     completeness * (weights.completeness / 100) +
       coherence * (weights.coherence / 100) +
       contradictions * (weights.contradictions / 100) +
       falsifiability * (weights.falsifiability / 100) +
       evidence * (weights.evidence / 100) +
       readiness * (weights.readiness / 100),
+  );
+  const provenance = PROVENANCE.assessEvidenceProvenance(a, {
+    lens: "strategic",
+  });
+  const overall = PROVENANCE.capDecisionReadiness(
+    analyticalCoverage,
+    provenance,
   );
   return {
     completeness,
@@ -2975,6 +3103,8 @@ function scoreBreakdown(a = state.analysis) {
     evidence,
     readiness,
     overall,
+    analyticalCoverage,
+    provenance,
   };
 }
 function scoreDiagnostic(key, val, a = state.analysis) {
@@ -3298,9 +3428,9 @@ function scoreWeightLabel(k) {
 }
 function scoreFormulaText() {
   return labelText(
-    "Overall score = 25% completeness + 20% coherence + 15% contradiction quality + 15% scenario testability + 15% evidence grounding + 10% share readiness.",
-    "المؤشر الكلي = 25% اكتمال الطبقات + 20% التماسك السببي + 15% جودة التناقضات + 15% قابلية اختبار السيناريوهات + 15% ارتكاز الأدلة + 10% جاهزية المشاركة.",
-    "Score global = 25 % complétude + 20 % cohérence + 15 % qualité des contradictions + 15 % testabilité des scénarios + 15 % ancrage des preuves + 10 % préparation au partage.",
+    "Analytical coverage uses the six weighted diagnostics. Decision readiness is capped by source traceability and independent human review.",
+    "تستخدم التغطية التحليلية المؤشرات الستة الموزونة. وتُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة البشرية المستقلة.",
+    "La couverture analytique utilise les six diagnostics pondérés. La préparation à la décision est plafonnée par la traçabilité des sources et la revue humaine indépendante.",
   );
 }
 function metricCard(kind, label, value, hint) {
@@ -3346,7 +3476,8 @@ function renderOverview() {
         .map((w) => `<div class="warning">${escapeHtml(w)}</div>`)
         .join("")
     : `<div class="warning good">${escapeHtml(t("healthGood"))}</div>`;
-  return `<h3>${t("overview")}</h3><div class="summaryGrid"><div class="intelBrief"><div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}${qualityGateHtml(a)}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${t("completeness")}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div><div class="healthCard ${pctClass(b.coherence)}"><div class="healthCardValue">${b.coherence}%</div><span>${t("scoreCoherence")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${pctClass(b.overall)}"><div class="sectionKicker">${t("scoreSystem")}</div><div class="scoreOrbWrap">${ringMetric(b.overall, "lg")}</div><div class="scoreLbl">${t("overallScore")}</div><div class="scoreHelp">${t("scoreGuide")}</div><div class="scoreMiniNote">${escapeHtml(labelText("Weighted diagnostic index", "مؤشر تشخيصي موزون"))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
+  const gate = qualityGate(a);
+  return `<h3>${t("overview")}</h3><div class="summaryGrid"><div class="intelBrief">${qualityGateHtml(a)}<div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(b.provenance.sourceTraceability)}"><div class="healthCardValue">${b.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(b.provenance.humanReview)}"><div class="healthCardValue">${b.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${gate.cls}"><div class="sectionKicker">${t("qualityGate")}</div><div class="publicationState ${b.provenance.publicationApproved ? "approved" : "blocked"}">${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</div><div class="decisionMetric"><strong>${b.overall}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="decisionMetric"><strong>${b.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -3461,7 +3592,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.17";
+    "2.1.0-alpha.5";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4004,7 +4135,10 @@ function renderBiopoliticalOverview() {
         .map((value) => `<div class="warning">${escapeHtml(value)}</div>`)
         .join("")
     : `<div class="warning good">${escapeHtml(health.next)}</div>`;
-  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}<div class="summaryGrid"><div class="intelBrief"><div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Readiness formula", "معادلة الجاهزية", "Formule de préparation"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div>${bioGateHtml(a)}<div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(t("completeness"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div><div class="healthCard ${pctClass(scores.evidence)}"><div class="healthCardValue">${scores.evidence}%</div><span>${escapeHtml(labels.evidence)}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${pctClass(scores.overall)}"><div class="sectionKicker">${escapeHtml(t("scoreSystem"))}</div><div class="scoreOrbWrap">${ringMetric(scores.overall, "lg")}</div><div class="scoreLbl">${escapeHtml(t("overallScore"))}</div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
+  const gateLabel = health.publishable
+    ? labelText("Approved", "معتمد", "Approuvé")
+    : labelText("Blocked", "محظور", "Bloqué");
+  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}<div class="summaryGrid"><div class="intelBrief">${bioGateHtml(a)}<div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div><div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(scores.provenance.sourceTraceability)}"><div class="healthCardValue">${scores.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(scores.provenance.humanReview)}"><div class="healthCardValue">${scores.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${health.publishable ? "pct-excellent" : "pct-low"}"><div class="sectionKicker">${escapeHtml(t("qualityGate"))}</div><div class="publicationState ${health.publishable ? "approved" : "blocked"}">${escapeHtml(gateLabel)}</div><div class="decisionMetric"><strong>${scores.overall}%</strong><span>${escapeHtml(t("scoreSystem"))}</span></div><div class="decisionMetric"><strong>${scores.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");
@@ -4223,7 +4357,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.0.0-bio-rc.17";
+    "2.1.0-alpha.5";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4345,22 +4479,28 @@ function renderReview() {
       );
   }
 }
+const PLATFORM_RENDERER = createRegionRenderer({
+  shell() {
+    applyI18n();
+    renderLensToggle();
+  },
+  workflow() {
+    $("analysisLang").value = state.analysisLang;
+    $("promptMode").value = state.promptMode;
+    $("timeframeInput").value = state.context;
+    $("topicInput").value = state.topic;
+    renderGuide();
+    renderStages();
+  },
+  engine() {
+    activeLensAdapter().renderEngineNav();
+  },
+  review() {
+    activeLensAdapter().renderReview();
+  },
+});
 function renderAll() {
-  applyI18n();
-  $("analysisLang").value = state.analysisLang;
-  $("promptMode").value = state.promptMode;
-  $("timeframeInput").value = state.context;
-  $("topicInput").value = state.topic;
-  renderLensToggle();
-  renderGuide();
-  renderStages();
-  if (state.analysisLens === "biopolitical") {
-    renderBiopoliticalEngineNav();
-    renderBiopoliticalReview();
-  } else {
-    renderEngineNav();
-    renderReview();
-  }
+  PLATFORM_RENDERER.renderAll();
 }
 function showModal(title, content, invoker = document.activeElement) {
   state.modalInvoker = invoker;

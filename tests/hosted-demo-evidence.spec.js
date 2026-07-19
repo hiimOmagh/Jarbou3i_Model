@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '2.0.0-bio-rc.17';
+const EXPECTED_VERSION = '2.1.0-alpha.5';
 const EVIDENCE_DIR = process.env.HOSTED_DEMO_EVIDENCE_DIR || 'hosted-demo-evidence-local';
 const CAPTURE_TARGET = process.env.PLAYWRIGHT_BASE_URL?.trim() ? 'deployed' : 'local-test-server';
 const languageButtons = {
@@ -84,15 +84,18 @@ test.describe('Hosted demo public UI evidence', () => {
     await expect(page.locator('[data-lens="strategic"]')).toHaveAttribute('aria-checked', 'true');
 
     if (testInfo.project.name === 'chromium') {
+      await page.evaluate(() => window.scrollTo(0, 0));
       await captureScreenshot(page, testInfo, 'desktop-first-screen.png');
 
       await selectLanguage(page, 'en');
       await expect(page.locator('h1')).toContainText('Strategic');
+      await page.evaluate(() => window.scrollTo(0, 0));
       await captureScreenshot(page, testInfo, 'strategic-mode.png');
 
       await page.locator('[data-lens="biopolitical"]').click();
       await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute('aria-checked', 'true');
       await expect(page.locator('h1')).toContainText('Biopolitical');
+      await page.evaluate(() => window.scrollTo(0, 0));
       await captureScreenshot(page, testInfo, 'biopolitical-mode.png');
 
       for (const lang of ['ar', 'en', 'fr']) {
@@ -139,6 +142,7 @@ test.describe('Hosted demo public UI evidence', () => {
     }
 
     if (testInfo.project.name === 'mobile-chrome') {
+      await page.evaluate(() => window.scrollTo(0, 0));
       await captureScreenshot(page, testInfo, 'mobile-first-screen.png');
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(2);

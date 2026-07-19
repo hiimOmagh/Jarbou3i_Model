@@ -108,6 +108,44 @@
     },
   };
 
+  // Canonical enum values remain stable in the analysis contract. This table
+  // localizes only their presentation inside the explorer.
+  const tokenCopy = {
+    en: {
+      causes: "Causes", enables: "Enables", constrains: "Constrains", classifies: "Classifies",
+      legitimizes: "Legitimizes", commodifies: "Commodifies", distributes: "Distributes",
+      exposes: "Exposes", resists: "Resists", feeds_back: "Feeds back", contradicts: "Contradicts",
+      supports: "Supports", supported_by: "Supported by", countered_by: "Countered by",
+      references: "References", contains: "Contains", targets: "Targets", affects: "Affects",
+      applies_to: "Applies to", benefits: "Benefits", burdens: "Burdens", produces: "Produces",
+      depends_on: "Depends on", high: "High", medium: "Medium", low: "Low",
+      verified: "Verified", unverified: "Unverified", partially_verified: "Partially verified",
+      explicit: "Authored", evidence: "Evidence", structural: "Structural",
+    },
+    ar: {
+      causes: "يسبّب", enables: "يمكّن", constrains: "يقيّد", classifies: "يصنّف",
+      legitimizes: "يضفي الشرعية", commodifies: "يحوّل إلى سلعة", distributes: "يوزّع",
+      exposes: "يعرّض", resists: "يقاوم", feeds_back: "يرتدّ تأثيره", contradicts: "يناقض",
+      supports: "يؤيد", supported_by: "مدعوم بـ", countered_by: "تعارضه أدلة",
+      references: "يشير إلى", contains: "يتضمن", targets: "يستهدف", affects: "يؤثر في",
+      applies_to: "ينطبق على", benefits: "يفيد", burdens: "يحمّل أعباء", produces: "ينتج",
+      depends_on: "يعتمد على", high: "عالية", medium: "متوسطة", low: "منخفضة",
+      verified: "مُتحقَّق منه", unverified: "غير مُتحقَّق", partially_verified: "مُتحقَّق منه جزئيًا",
+      explicit: "مؤلَّفة", evidence: "أدلة", structural: "بنيوية",
+    },
+    fr: {
+      causes: "Cause", enables: "Permet", constrains: "Contraint", classifies: "Classe",
+      legitimizes: "Légitime", commodifies: "Marchandise", distributes: "Distribue",
+      exposes: "Expose", resists: "Résiste", feeds_back: "Rétroagit", contradicts: "Contredit",
+      supports: "Appuie", supported_by: "Appuyé par", countered_by: "Contredit par",
+      references: "Référence", contains: "Contient", targets: "Cible", affects: "Affecte",
+      applies_to: "S’applique à", benefits: "Bénéficie à", burdens: "Fait peser sur", produces: "Produit",
+      depends_on: "Dépend de", high: "Élevée", medium: "Moyenne", low: "Faible",
+      verified: "Vérifiée", unverified: "Non vérifiée", partially_verified: "Partiellement vérifiée",
+      explicit: "Rédigée", evidence: "Preuve", structural: "Structurelle",
+    },
+  };
+
   let container = null;
   let graph = null;
   let analysis = null;
@@ -137,7 +175,10 @@
   const c = () => copy[lang] || copy.en;
   const unique = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const option = (value, label, selected) => `<option value="${escapeHtml(value)}"${selected === value ? " selected" : ""}>${escapeHtml(label)}</option>`;
-  const tokenLabel = (value) => String(value || "").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const tokenLabel = (value) => {
+    const token = String(value || "");
+    return tokenCopy[lang]?.[token] || tokenCopy.en[token] || token.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
   const pillarLabels = () => root.Jarbou3iBiopolitics?.ui(lang, "pillars") || {};
   const finiteNumber = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const normalizeYaw = (value) => ((finiteNumber(value, -18) + 180) % 360 + 360) % 360 - 180;

@@ -91,4 +91,19 @@ for (const [lang, fixture] of Object.entries(fixtures)) {
   }
 }
 
+const explorer = fs.readFileSync("src/relationship-explorer.js", "utf8");
+for (const token of [
+  'enables: "يمكّن"',
+  'classifies: "يصنّف"',
+  'distributes: "يوزّع"',
+  'resists: "يقاوم"',
+  'enables: "Permet"',
+  'classifies: "Classe"',
+  'distributes: "Distribue"',
+  'resists: "Résiste"',
+  "tokenCopy[lang]?.[token]",
+]) {
+  if (!explorer.includes(token)) fail(`localized relationship token contract missing: ${token}`);
+}
+
 console.log("Biopolitical language checks passed.");

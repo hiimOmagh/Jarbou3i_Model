@@ -38,7 +38,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
   const html = reportApi.build({
     analysis,
     lang,
-    version: "2.0.0-bio-rc.17",
+    version: "2.1.0-alpha.5",
     bio,
     graphApi,
   });
@@ -58,7 +58,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
 const html = reportApi.build({
   analysis: fixture,
   lang: "en",
-  version: "2.0.0-bio-rc.17",
+  version: "2.1.0-alpha.5",
   bio,
   graphApi,
 });
@@ -70,8 +70,10 @@ assert.ok(
   ),
   "human-readable references must preserve their canonical IDs",
 );
-assert.ok(html.includes("Analytical readiness"));
-assert.ok(html.includes("it is not permission to publish"));
+assert.ok(html.includes("Decision readiness"));
+assert.ok(html.includes("independent human review"));
+assert.ok(html.includes("Analytical coverage"));
+assert.ok(html.includes("Source traceability"));
 assert.ok(html.includes("Not publication-ready"));
 assert.ok(html.includes(".reportSection{box-shadow:none;break-inside:auto}"));
 assert.ok(!html.includes(".reportSection{break-inside:avoid}"));

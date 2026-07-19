@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.0.0-bio-rc.17` is a static, trilingual workbench with two independent contracts:
+Version `2.1.0-alpha.5` is the protected post-RC17 visual-acceptance track for a static, trilingual workbench with two independent contracts:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -20,6 +20,8 @@ Phase 4 adds an optional Spatial view for capable desktop browsers. It projects 
 The final hardening phase adds an explicit 24-cell language/theme/runtime intersection gate, plus cross-engine keyboard-focus and Chromium forced-colors checks. Every cell exercises localized rejection of an unsupported future schema, valid sample recovery, relationship presentation, serious/critical accessibility findings, duplicate IDs, horizontal overflow, reduced motion, responsive Spatial fallback, and a theme-neutral print palette. Dark-theme printing and forced-colors state visibility are hardened in the production stylesheet; the canonical analysis contracts remain unchanged.
 
 RC 1 adds a 48-case 200%/400% equivalent reflow matrix at 640px and 320px across every language, theme, and browser profile. It also captures 36 deterministic visual-review screenshots—shell and Connections views across three languages, two themes, and desktop/tablet/phone viewports—and validates 18 machine-readable measurement records through a 55-artifact evidence manifest. Native screen-reader, human linguistic, physical touch, browser-zoom, print-preview, and epistemic sign-off remain intentionally human review tasks.
+
+Alpha 4 expands visual acceptance evidence to 96 deterministic screenshots: shell, Strategic results, Biopolitical results, Connections, and import-audit states across all language/theme/viewport cells, plus localized desktop and phone standalone reports. `npm run test:browser:hosted` remains a local public-surface gate when no URL is supplied; a release deployment must additionally pass `PLAYWRIGHT_BASE_URL=https://… npm run test:browser:deployed` so local evidence cannot be mistaken for deployed validation.
 
 ## Biopolitical protocol
 
@@ -108,6 +110,8 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:4173`.
+
+For the alpha.5 verification sequence, see [`docs/alpha5-acceptance-hotfix.md`](docs/alpha5-acceptance-hotfix.md). The full alpha.4 visual-acceptance scope and separate deployed-site gate remain documented in [`docs/alpha4-visual-acceptance.md`](docs/alpha4-visual-acceptance.md).
 
 When applying this release over an older working directory, run the safe layout
 migration once before testing:

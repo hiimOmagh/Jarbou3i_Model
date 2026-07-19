@@ -70,6 +70,14 @@ for (const token of [
 ]) {
   if (!hosted.includes(token)) fail(`hosted browser script is missing ${token}`);
 }
+const deployed = pkg.scripts?.["test:browser:deployed"] || "";
+for (const token of ["scripts/require-deployed-base-url.mjs", "npm run test:browser:hosted"]) {
+  if (!deployed.includes(token)) fail(`deployed browser gate is missing ${token}`);
+}
+const deployedGuard = fs.readFileSync("scripts/require-deployed-base-url.mjs", "utf8");
+for (const token of ["PLAYWRIGHT_BASE_URL", "new URL", "HTTP or HTTPS"]) {
+  if (!deployedGuard.includes(token)) fail(`deployed target guard is missing ${token}`);
+}
 if (pkg.scripts?.test !== "npm run test:ci") {
   fail("default npm test must execute the complete CI contract");
 }
@@ -114,8 +122,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.0.0-bio-rc.17") {
-  fail("package version must be 2.0.0-bio-rc.17");
+if (pkg.version !== "2.1.0-alpha.5") {
+  fail("package version must be 2.1.0-alpha.5");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

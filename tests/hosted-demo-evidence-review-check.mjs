@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '2.0.0-bio-rc.17';
+const EXPECTED_VERSION = '2.1.0-alpha.5';
 
 const fail = (message) => {
   console.error(`Hosted demo evidence review failed: ${message}`);
@@ -126,4 +126,5 @@ for (const [lang, dir] of Object.entries(localeExpectations)) {
   }
 }
 
-console.log(`Hosted demo evidence review passed: ${path.relative(root, evidencePath) || evidencePath}`);
+const label = metadata.capture_target === 'deployed' ? 'Deployed demo' : 'Local public-surface';
+console.log(`${label} evidence review passed: ${path.relative(root, evidencePath) || evidencePath}`);

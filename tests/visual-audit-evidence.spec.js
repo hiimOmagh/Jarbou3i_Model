@@ -2,12 +2,12 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.0.0-bio-rc.17";
+const EXPECTED_VERSION = "2.1.0-alpha.5";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
-  { id: "ar", dir: "rtl" },
-  { id: "en", dir: "ltr" },
-  { id: "fr", dir: "ltr" },
+  { id: "ar", dir: "rtl", button: "#langAr" },
+  { id: "en", dir: "ltr", button: "#langEn" },
+  { id: "fr", dir: "ltr", button: "#langFr" },
 ];
 const THEMES = ["light", "dark"];
 const VIEWPORTS = [
@@ -15,6 +15,8 @@ const VIEWPORTS = [
   { id: "tablet", width: 834, height: 1112 },
   { id: "phone", width: 390, height: 844 },
 ];
+const REPORT_VIEWPORTS = VIEWPORTS.filter(({ id }) => id !== "tablet");
+const SCREENSHOT_KINDS = ["shell", "strategic-results", "biopolitical-results", "connections", "import-audit"];
 
 function evidencePath(fileName) {
   return path.join(process.cwd(), EVIDENCE_DIR, fileName);
@@ -46,6 +48,14 @@ async function clearTransientUi(page) {
   })).toBe(true);
 }
 
+async function anchorViewport(page, selector, offset = 16) {
+  await page.locator(selector).evaluate((element, topOffset) => {
+    const top = element.getBoundingClientRect().top + window.scrollY - topOffset;
+    window.scrollTo({ top: Math.max(0, top), left: 0, behavior: "instant" });
+  }, offset);
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
+
 async function writeJson(testInfo, fileName, value) {
   await ensureEvidenceDir();
   const filePath = evidencePath(fileName);
@@ -53,9 +63,14 @@ async function writeJson(testInfo, fileName, value) {
   await testInfo.attach(fileName, { path: filePath, contentType: "application/json" });
 }
 
+async function fixture(name) {
+  return JSON.parse(await fs.readFile(path.join(process.cwd(), "fixtures", name), "utf8"));
+}
+
 const cases = LOCALES.flatMap((locale) => THEMES.flatMap((theme) =>
   VIEWPORTS.map((viewport) => ({ locale, theme, viewport })),
 ));
+const reportCases = LOCALES.flatMap((locale) => REPORT_VIEWPORTS.map((viewport) => ({ locale, viewport })));
 
 test.describe("Release Candidate visual audit evidence", () => {
   for (const auditCase of cases) {
@@ -74,14 +89,27 @@ test.describe("Release Candidate visual audit evidence", () => {
       await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
       await expect(page.locator("html")).toHaveAttribute("dir", locale.dir);
       await waitForVisualAssets(page);
+      await page.evaluate(() => window.scrollTo(0, 0));
       await saveScreenshot(page, testInfo, `shell-${key}.png`);
+
+      await page.locator('[data-lens="strategic"]').click();
+      await page.locator("#loadSampleBtn").click();
+      await expect(page.locator("#reviewPanel")).toBeVisible();
+      await clearTransientUi(page);
+      await anchorViewport(page, "#reviewPanel", 12);
+      await saveScreenshot(page, testInfo, `strategic-results-${key}.png`);
 
       await page.locator('[data-lens="biopolitical"]').click();
       await page.locator("#loadSampleBtn").click();
+      await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-selected", "true");
+      await clearTransientUi(page);
+      await anchorViewport(page, "#reviewPanel", 12);
+      await saveScreenshot(page, testInfo, `biopolitical-results-${key}.png`);
+
       await page.locator('[data-bio-review="connections"]').click();
       await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
       await clearTransientUi(page);
-      await page.locator(viewport.id === "phone" ? "#relationshipExplorerMount" : "#reviewPanel").scrollIntoViewIfNeeded();
+      await anchorViewport(page, viewport.id === "phone" ? "#relationshipExplorerMount" : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `connections-${key}.png`);
 
       const clippedRelationshipControls = await page.locator(".relationshipCommandBar button:visible").evaluateAll((buttons) =>
@@ -103,7 +131,62 @@ test.describe("Release Candidate visual audit evidence", () => {
       );
       expect(clippedRelationshipControls, JSON.stringify(clippedRelationshipControls, null, 2)).toEqual([]);
 
-      const measurement = await page.evaluate((clippedControlCount) => ({
+      // Phone evidence intentionally captures the accessible list. Open Map
+      // only after that screenshot so every measurement still audits Story
+      // geometry instead of treating the correct list fallback as missing data.
+      if (await page.locator(".relationshipStoryFlow").count() === 0) {
+        const mapView = page.locator('[data-map-view="map"]');
+        await mapView.focus();
+        await expect(mapView).toBeFocused();
+        await mapView.press("Enter");
+        await expect(mapView).toHaveAttribute("aria-pressed", "true");
+        await expect(page.locator(".relationshipStoryFlow").first()).toBeVisible();
+      }
+      const storyGeometry = await page.locator(".relationshipStoryFlow").evaluateAll((flows) => flows.map((flow) => {
+        const rect = flow.getBoundingClientRect();
+        const overflowX = getComputedStyle(flow).overflowX;
+        const childrenOutside = [...flow.children].filter((child) => {
+          const childRect = child.getBoundingClientRect();
+          return childRect.left < rect.left - 1 || childRect.right > rect.right + 1;
+        }).length;
+        return { overflowX, scrollWidth: flow.scrollWidth, clientWidth: flow.clientWidth, childrenOutside };
+      }));
+      for (const flow of storyGeometry) {
+        const exposesScrollSurface = ["auto", "scroll"].includes(flow.overflowX) && flow.scrollWidth > flow.clientWidth;
+        expect(flow.childrenOutside === 0 || exposesScrollSurface, JSON.stringify(flow)).toBe(true);
+      }
+
+      const activeBadge = page.locator('[data-bio-review="connections"] .badge');
+      const activeBadgeContrast = await activeBadge.evaluate((badge) => {
+        const parseColor = (value) => {
+          const numbers = value.match(/[\d.]+/g)?.map(Number) || [];
+          if (value.startsWith("color(srgb") && numbers.length >= 3) return numbers.slice(0, 3).map((number) => number * 255);
+          if (value.startsWith("rgb") && numbers.length >= 3) return numbers.slice(0, 3);
+          return null;
+        };
+        const luminance = (rgb) => {
+          const channels = rgb.map((channel) => {
+            const value = channel / 255;
+            return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+        };
+        const style = getComputedStyle(badge);
+        const foreground = parseColor(style.color);
+        const background = parseColor(style.backgroundColor);
+        if (!foreground || !background) return 0;
+        const [lighter, darker] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+        return (lighter + 0.05) / (darker + 0.05);
+      });
+      expect(activeBadgeContrast).toBeGreaterThanOrEqual(4.5);
+
+      const relationshipText = await page.locator("#relationshipExplorerMount").innerText();
+      if (locale.id !== "en") {
+        expect(relationshipText).not.toMatch(/\b(?:Enables|Classifies|Distributes|Resists)\b/);
+        expect(relationshipText).not.toContain("litigation");
+      }
+
+      const measurement = await page.evaluate(({ clippedControlCount, story }) => ({
         app_version: document.querySelector('meta[name="app-version"]')?.content,
         html_lang: document.documentElement.lang,
         html_dir: document.documentElement.dir,
@@ -113,18 +196,60 @@ test.describe("Release Candidate visual audit evidence", () => {
         body_text_length: document.body.innerText.length,
         visible_buttons: [...document.querySelectorAll("button")].filter((button) => button.getClientRects().length).length,
         clipped_relationship_controls: clippedControlCount,
-      }), clippedRelationshipControls.length);
+        story_geometry: story,
+      }), { clippedControlCount: clippedRelationshipControls.length, story: storyGeometry });
       expect(measurement.page_scroll_width).toBeLessThanOrEqual(measurement.page_client_width + 1);
       expect(measurement.body_text_length).toBeGreaterThan(1000);
       await writeJson(testInfo, `measurement-${key}.json`, measurement);
+
+      const draft = await fixture(`sample-analysis-bio-${locale.id}.json`);
+      draft.evidence.items[0].source_url = "not-a-url";
+      draft.self_audit.statistics_quotations_verified = "pass";
+      await page.locator("#jsonInput").fill(JSON.stringify(draft));
+      await expect(page.locator("#importBtn")).toBeEnabled();
+      await expect(page.locator("#importAuditDetails")).toBeVisible();
+      await page.locator("#importAuditDetails").evaluate((details) => { details.open = true; });
+      await anchorViewport(page, "#pasteCard", 12);
+      await saveScreenshot(page, testInfo, `import-audit-${key}.png`);
+    });
+  }
+
+  for (const reportCase of reportCases) {
+    const { locale, viewport } = reportCase;
+    const key = `${locale.id}-${viewport.id}`;
+    test(`standalone-report-${key}`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto("/");
+      await page.locator(locale.button).click();
+      await page.locator("#analysisLang").selectOption(locale.id);
+      await page.locator('[data-lens="biopolitical"]').click();
+      await page.locator("#loadSampleBtn").click();
+      await page.locator('[data-bio-review="exports"]').click();
+      const [download] = await Promise.all([
+        page.waitForEvent("download"),
+        page.locator("#exportHtml").click(),
+      ]);
+      const downloadPath = testInfo.outputPath(`report-${key}.html`);
+      await download.saveAs(downloadPath);
+      const html = await fs.readFile(downloadPath, "utf8");
+      await page.setContent(html, { waitUntil: "load" });
+      await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
+      await expect(page.locator('[data-analysis-lens="biopolitical"]')).toBeVisible();
+      const reportText = await page.locator("body").innerText();
+      expect(reportText).not.toMatch(/[\uE000-\uF8FF]/);
+      const reportOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(reportOverflow).toBeLessThanOrEqual(2);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await saveScreenshot(page, testInfo, `report-${key}.png`);
     });
   }
 
   test.afterAll(async () => {
     const requiredFiles = cases.flatMap(({ locale, theme, viewport }) => {
       const key = `${locale.id}-${theme}-${viewport.id}`;
-      return [`shell-${key}.png`, `connections-${key}.png`, `measurement-${key}.json`];
+      return [...SCREENSHOT_KINDS.map((kind) => `${kind}-${key}.png`), `measurement-${key}.json`];
     });
+    const reportFiles = reportCases.map(({ locale, viewport }) => `report-${locale.id}-${viewport.id}.png`);
     await ensureEvidenceDir();
     await fs.writeFile(evidencePath("visual-audit-metadata.json"), `${JSON.stringify({
       app_version: EXPECTED_VERSION,
@@ -132,6 +257,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       capture_set: "final-language-theme-viewport-audit",
       visual_assets_decoded: true,
       transient_ui_cleared: true,
+      deterministic_viewport_anchors: true,
       phone_connections_target: "relationshipExplorerMount",
       generated_by: "tests/visual-audit-evidence.spec.js",
       projects: ["chromium"],
@@ -139,8 +265,10 @@ test.describe("Release Candidate visual audit evidence", () => {
       themes: THEMES,
       viewports: VIEWPORTS,
       case_count: cases.length,
-      screenshot_count: cases.length * 2,
-      required_files: [...requiredFiles, "visual-audit-metadata.json"],
+      report_case_count: reportCases.length,
+      screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length,
+      coverage: ["shell", "strategic-results", "biopolitical-results", "connections", "import-audit", "standalone-report"],
+      required_files: [...requiredFiles, ...reportFiles, "visual-audit-metadata.json"],
     }, null, 2)}\n`, "utf8");
   });
 });

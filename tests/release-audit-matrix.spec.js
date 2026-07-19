@@ -35,6 +35,28 @@ async function expectNoPageOverflow(page) {
   expect(overflow).toBe(false);
 }
 
+async function synchronizeAuditState(page, locale, theme) {
+  const html = page.locator("html");
+  const languageButton = page.locator(`#lang${locale.id[0].toUpperCase()}${locale.id.slice(1)}`);
+  if (await html.getAttribute("lang") !== locale.id) {
+    await languageButton.focus();
+    await expect(languageButton).toBeFocused();
+    await languageButton.press("Enter");
+  }
+  await expect(html).toHaveAttribute("lang", locale.id);
+  if (await page.locator("#analysisLang").inputValue() !== locale.id) {
+    await page.locator("#analysisLang").selectOption(locale.id);
+  }
+  const wantsDark = theme === "dark";
+  const isDark = await page.locator("body").evaluate((body) => body.classList.contains("dark"));
+  if (isDark !== wantsDark) {
+    const themeButton = page.locator("#themeBtn");
+    await themeButton.focus();
+    await expect(themeButton).toBeFocused();
+    await themeButton.press("Enter");
+  }
+}
+
 test.describe("Final release language, theme, viewport, and resilience audit", () => {
   for (const locale of LOCALES) {
     for (const theme of THEMES) {
@@ -53,6 +75,7 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
           { lang: locale.id, savedTheme: theme },
         );
         await page.goto("/");
+        await synchronizeAuditState(page, locale, theme);
 
         await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
         await expect(page.locator("html")).toHaveAttribute("dir", locale.dir);

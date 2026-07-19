@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.0.0-bio-rc.17";
+const EXPECTED_VERSION = "2.1.0-alpha.5";
 const fail = (message) => {
   console.error(`Visual audit evidence review failed: ${message}`);
   process.exit(1);
@@ -18,10 +18,14 @@ if (metadata.app_version !== EXPECTED_VERSION || metadata.evidence_version !== E
 if (metadata.capture_set !== "final-language-theme-viewport-audit") fail("unexpected capture_set");
 if (metadata.visual_assets_decoded !== true) fail("critical visual assets were not decode-gated");
 if (metadata.transient_ui_cleared !== true) fail("transient UI was not cleared before capture");
+if (metadata.deterministic_viewport_anchors !== true) fail("viewport captures were not deterministically anchored");
 if (metadata.phone_connections_target !== "relationshipExplorerMount") fail("phone Connections evidence does not target the explorer");
 if (metadata.generated_by !== "tests/visual-audit-evidence.spec.js") fail("unexpected evidence generator");
-if (metadata.case_count !== 18 || metadata.screenshot_count !== 36) fail("visual evidence counts must be 18 cases and 36 screenshots");
-if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 55) fail("required_files must contain 55 artifacts");
+if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.screenshot_count !== 96) fail("visual evidence counts must be 18 matrix cases, 6 report cases, and 96 screenshots");
+if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 115) fail("required_files must contain 115 artifacts");
+for (const target of ["shell", "strategic-results", "biopolitical-results", "connections", "import-audit", "standalone-report"]) {
+  if (!metadata.coverage?.includes(target)) fail(`coverage must include ${target}`);
+}
 
 for (const fileName of metadata.required_files) {
   const filePath = path.join(evidencePath, fileName);
@@ -39,8 +43,13 @@ for (const locale of ["ar", "en", "fr"]) {
       if (value.page_scroll_width > value.page_client_width + 1) fail(`${fileName} records horizontal overflow`);
       if (!Number.isInteger(value.body_text_length) || value.body_text_length < 1000) fail(`${fileName} lacks substantial visible text`);
       if (!Number.isInteger(value.visible_buttons) || value.visible_buttons < 10) fail(`${fileName} lacks visible controls`);
+      if (!Array.isArray(value.story_geometry) || value.story_geometry.length < 1) fail(`${fileName} lacks story geometry evidence`);
+      for (const flow of value.story_geometry) {
+        const exposesScroll = ["auto", "scroll"].includes(flow.overflowX) && flow.scrollWidth > flow.clientWidth;
+        if (flow.childrenOutside > 0 && !exposesScroll) fail(`${fileName} contains clipped story nodes without a scroll surface`);
+      }
     }
   }
 }
 
-console.log(`Visual audit evidence review passed: 18 cases, 36 screenshots, ${metadata.required_files.length} artifacts`);
+console.log(`Visual audit evidence review passed: 18 matrix cases, 6 report cases, 96 screenshots, ${metadata.required_files.length} artifacts`);

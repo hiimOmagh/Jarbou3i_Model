@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.0.0-bio-rc.17 — source stylesheet */
+/* Jarbou3i Model v2.1.0-alpha.5 — source stylesheet */
 
 :root{
   --bg:#eef2f8;
@@ -115,7 +115,9 @@ textarea,input,select{width:100%;border:1px solid var(--line);background:var(--s
 .miniGuide{margin-top:14px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 92%,transparent),color-mix(in srgb,var(--surface-soft) 92%,transparent));padding:14px 15px;box-shadow:var(--shadow-xs)}
 .miniGuide h4{margin:0 0 8px;color:var(--strong);font-size:14px;font-weight:1000;letter-spacing:-.01em}
 .miniGuide ol{margin:0;padding-inline-start:22px;color:var(--muted);font-size:13.5px}.miniGuide li{margin:4px 0}.miniGuide strong{color:var(--text)}
-.healthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.healthCard{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 88%,transparent));padding:15px;box-shadow:var(--shadow-xs)}
+.healthGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.healthCard{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-soft) 88%,transparent));padding:15px;box-shadow:var(--shadow-xs)}
+.publicationState{width:100%;border-radius:18px;padding:16px;font-size:22px;font-weight:1000;letter-spacing:.04em;text-transform:uppercase}.publicationState.blocked{color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 38%,var(--line));background:color-mix(in srgb,var(--danger) 8%,var(--surface-solid))}.publicationState.approved{color:var(--success);border:1px solid color-mix(in srgb,var(--success) 38%,var(--line));background:color-mix(in srgb,var(--success) 8%,var(--surface-solid))}.decisionMetric{width:100%;display:flex;align-items:baseline;justify-content:space-between;gap:14px;border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--surface-solid);text-align:start}.decisionMetric strong{font-size:25px;color:var(--strong)}.decisionMetric span{font-size:12.5px;font-weight:900;color:var(--muted);text-align:end}
+.importAudit{margin-top:12px;border:1px solid var(--line);border-radius:18px;background:var(--surface-soft);overflow:hidden}.importAudit>summary{cursor:pointer;padding:12px 14px;color:var(--strong);font-size:13px;font-weight:950}.importAuditBody{display:grid;gap:10px;padding:0 14px 14px}.importAuditGroup{border:1px solid var(--line);border-radius:14px;padding:11px;background:var(--surface-solid)}.importAuditGroup h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em}.importAuditGroup p,.importAuditGroup li{margin:4px 0;color:var(--muted);font-size:12.5px;line-height:1.45}.importAuditGroup ul{margin:0;padding-inline-start:20px}.importAuditPath{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--strong)}
 .healthCard strong{display:block;color:var(--strong);font-size:24px;line-height:1;font-weight:1000;margin-bottom:6px}.healthCard span{color:var(--muted);font-size:12.5px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
 .nextAction{border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-inline-start:5px solid var(--accent);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 9%,transparent),color-mix(in srgb,var(--accent-2) 7%,transparent));padding:14px 16px;margin:12px 0;color:var(--text);box-shadow:var(--shadow-xs)}
 .nextAction strong{color:var(--strong)}
@@ -665,3 +667,47 @@ body.bio-v2 .engineCard:nth-child(3n) .flowArrow{display:none;}
 .referenceInspectorFooter .btn{width:100%;}
 @media(max-width:620px){.referenceInspector{inset-block-start:auto;width:100%;height:min(78vh,680px);border-start-start-radius:24px;border-start-end-radius:24px;box-shadow:0 -18px 60px rgba(2,8,23,.25);}.referenceInspectorHead{padding:19px 18px}.referenceInspectorBody{padding:18px}.referenceInspectorFooter{grid-template-columns:1fr;padding:13px 18px}.referenceChip{grid-template-columns:1fr auto;}}
 @media(prefers-reduced-motion:reduce){.referenceChip{transition:none}.referenceChip:hover{transform:none}}
+
+/* 2.1.0-alpha.4 — visual acceptance repair */
+.navBtn.active .badge{
+  background:color-mix(in srgb,var(--navTone) 16%,var(--surface-solid));
+  color:var(--strong);
+  border-color:color-mix(in srgb,var(--navTone) 34%,var(--line));
+  box-shadow:0 1px 0 color-mix(in srgb,var(--surface-solid) 80%,transparent);
+}
+@media(max-width:480px){
+  .app{padding:10px 10px 48px}
+  .top{position:relative;top:auto;gap:10px;margin-bottom:12px;padding:11px 12px;border-radius:22px}
+  .logo{width:44px;height:44px;border-radius:14px}
+  .brand h1{font-size:19px;line-height:1.08}
+  .brand p{display:-webkit-box;max-width:100%;overflow:hidden;font-size:11.5px;line-height:1.32;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+  .commandPanel{padding:14px;border-radius:24px}
+  .commandPanel .panelHeader{margin-bottom:10px}
+  .commandPanel .panelHeader h2{font-size:24px;line-height:1.05}
+  .commandPanel .panelHeader p{margin-top:6px;font-size:12.5px;line-height:1.45}
+  .welcomeCard,
+  html[dir="rtl"] .welcomeCard{
+    grid-template-columns:64px minmax(0,1fr) !important;
+    grid-template-areas:"mascot text" !important;
+    gap:12px !important;
+    min-height:0 !important;
+    padding:12px !important;
+    text-align:start !important;
+  }
+  html[dir="rtl"] .welcomeCard{grid-template-columns:minmax(0,1fr) 64px !important;grid-template-areas:"text mascot" !important}
+  .welcomeMascot{width:64px !important;height:64px !important;border-radius:18px !important}
+  .welcomeText,
+  html[dir="rtl"] .welcomeText{justify-self:stretch !important;text-align:start !important}
+  html[dir="rtl"] .welcomeText{text-align:right !important}
+  .welcomeEyebrow{display:none}
+  .welcomeTitle{font-size:18px !important;line-height:1.12 !important;text-wrap:pretty !important}
+  .welcomeBody{margin-top:5px !important;font-size:12px !important;line-height:1.4 !important}
+  .stage{margin:10px 0 12px;padding:4px}
+  .stageItem{gap:5px;padding:7px 4px;font-size:10.5px}
+  .stageItem .num{width:22px;height:22px;font-size:10px}
+}
+
+/* Epistemic status layout: four independent dimensions, collapsing progressively. */
+.healthGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:920px){.healthGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.healthGrid{grid-template-columns:1fr}.decisionMetric{align-items:flex-start;flex-direction:column}.decisionMetric span{text-align:start}}
