@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.6 — shared dual-lens application runtime */
+/* Jarbou3i Model v2.1.0-alpha.7 — shared dual-lens application runtime */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -20,7 +20,7 @@ import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js"
 "use strict";
 const I18N = {
   ar: {
-    appTitle: "مِشرَحة التحليل الاستراتيجي",
+    appTitle: "مساحة عمل التحليل الاستراتيجي",
     appSubtitle:
       "مساحة تحليل استراتيجية منظّمة: برومبت ذكي، استيراد واضح، ومراجعة قابلة للتصفح.",
     welcomeEyebrow: "دليل الأداة",
@@ -198,7 +198,7 @@ const I18N = {
     sectionSummary: "خلاصة القسم",
     compactView: "عرض مركز",
     detailedView: "عرض تفصيلي",
-    appTitleBiopolitical: "مِشرَحة التحليل الحيوسياسي",
+    appTitleBiopolitical: "مساحة عمل التحليل الحيوسياسي",
     appSubtitleBiopolitical:
       "مساحة تحليل لفهم كيف تُدار الأجساد والسكان والمعايير والمخاطر والسلوك.",
     workflowSubtitleBiopolitical:
@@ -3640,7 +3640,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.6";
+    "2.1.0-alpha.7";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4405,7 +4405,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.6";
+    "2.1.0-alpha.7";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,

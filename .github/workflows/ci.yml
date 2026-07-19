@@ -56,14 +56,14 @@ jobs:
           HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence
           VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: hosted-demo-evidence
           path: hosted-demo-evidence
           if-no-files-found: warn
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: visual-audit-evidence

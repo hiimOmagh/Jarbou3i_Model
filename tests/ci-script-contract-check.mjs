@@ -112,7 +112,7 @@ for (const token of [
   "HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence",
   "VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence",
   "name: visual-audit-evidence",
-  "actions/upload-artifact@v4",
+  "actions/upload-artifact@v5",
 ]) {
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
 }
@@ -122,8 +122,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.6") {
-  fail("package version must be 2.1.0-alpha.6");
+if (pkg.version !== "2.1.0-alpha.7") {
+  fail("package version must be 2.1.0-alpha.7");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

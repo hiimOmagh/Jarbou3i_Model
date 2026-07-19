@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0-alpha.7 — Arabic Product-Language and CI Runtime Polish
+
+- Replaces the Arabic title term `مِشرَحة` (morgue/dissection room) with the professional product phrase `مساحة عمل` across the shared shell and Biopolitical runtime.
+- Adds a language-contract regression gate that rejects the former term and requires both Arabic lens titles.
+- Upgrades GitHub artifact publishing to `actions/upload-artifact@v5`, removing the remaining Node 20 action-runtime warning.
+- Preserves all Alpha.6 report, import-audit, mobile-density, and visual-evidence contracts without changing either analytical schema.
+
 ## 2.1.0-alpha.6 — Human Visual-Audit Closure
 
 - Localizes import-audit warning and schema-failure explanations in Arabic and French while preserving canonical JSON paths as isolated left-to-right technical tokens.

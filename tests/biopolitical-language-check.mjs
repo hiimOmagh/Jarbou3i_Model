@@ -108,6 +108,8 @@ for (const token of [
 
 const app = fs.readFileSync("src/app.js", "utf8");
 for (const token of [
+  'appTitle: "مساحة عمل التحليل الاستراتيجي"',
+  'appTitleBiopolitical: "مساحة عمل التحليل الحيوسياسي"',
   "رابط المصدر ليس رابط HTTP(S) مطلقًا",
   "L’URL de la source n’est pas une URL HTTP(S) absolue",
   "لا تطابق القيمة بنية عقد التحليل المطلوبة",
@@ -115,6 +117,12 @@ for (const token of [
   'class="importAuditPath" dir="ltr"',
 ]) {
   if (!app.includes(token)) fail(`localized import-audit contract missing: ${token}`);
+}
+for (const file of ["index.html", "src/app.js", "src/biopolitics.js"]) {
+  const source = fs.readFileSync(file, "utf8");
+  if (source.includes("مِشرَحة")) {
+    fail(`${file} uses a morgue/dissection-room term for the Arabic workbench title`);
+  }
 }
 
 console.log("Biopolitical language checks passed.");

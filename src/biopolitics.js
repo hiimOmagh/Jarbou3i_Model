@@ -234,7 +234,7 @@
       changeEvidence: "Evidence that would change the conclusion",
     },
     ar: {
-      appTitle: "مِشرَحة التحليل الحيوسياسي",
+      appTitle: "مساحة عمل التحليل الحيوسياسي",
       appSubtitle:
         "نظام قائم على الأسئلة لتتبّع كيفية إخضاع وظائف الإنسان والمؤسسات والبنى التحتية والتصنيفات والمعاني للحكم.",
       workflowSubtitle:
