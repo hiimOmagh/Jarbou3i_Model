@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 
-const EXPECTED_VERSION = '2.1.0-alpha.14';
+const EXPECTED_VERSION = '2.1.0-alpha.17';
 
 const LOCALES = [
   { id: 'ar', button: '#langAr', dir: 'rtl' },

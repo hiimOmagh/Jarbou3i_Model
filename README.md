@@ -1,9 +1,11 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.14` completes the first shared-platform foundation while preserving the verified Alpha.8 visual and analytical baseline for a static, trilingual workbench with two independent contracts:
+Version `2.1.0-alpha.17` starts the premium application-shell phase while preserving the fully verified Alpha.14 analytical baseline for a static, trilingual workbench with two independent contracts:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
+
+Alpha.15 adds the shared Set up → Model → Review application frame, live lens context, truthful local-processing status, and persisted comfortable/compact density. These are presentation-only changes: schemas, prompts, imports, scoring, evidence, relationships, and exports remain unchanged. See [`docs/phase2-premium-application-shell.md`](docs/phase2-premium-application-shell.md).
 
 The Strategic engine is preserved. Biopolitical analysis has its own schema, prompt, validator, semantic-integrity gate, diagnostics, review interface, export contract, and explicitly non-canonical legacy adapter.
 

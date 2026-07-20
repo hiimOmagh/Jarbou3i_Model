@@ -139,8 +139,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.14") {
-  fail("package version must be 2.1.0-alpha.14");
+if (pkg.version !== "2.1.0-alpha.17") {
+  fail("package version must be 2.1.0-alpha.17");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

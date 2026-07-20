@@ -22,8 +22,8 @@ for (const required of ['index.html', 'src/app.js', 'src/core/lens-registry.js',
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-if (packageJson.version !== '2.1.0-alpha.14') {
-  fail('root package version must be 2.1.0-alpha.14');
+if (packageJson.version !== '2.1.0-alpha.17') {
+  fail('root package version must be 2.1.0-alpha.17');
 }
 
 for (const script of ['test:platform', 'test:platform:services', 'test:platform:runtime', 'test:performance', 'test:provenance', 'test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {

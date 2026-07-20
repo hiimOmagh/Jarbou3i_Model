@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.14 — shared dual-lens platform runtime */
+/* Jarbou3i Model v2.1.0-alpha.17 — shared dual-lens platform runtime */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -10,6 +10,7 @@ import "./reference-ui.js";
 import "./relationship-explorer.js";
 import "./json-parser.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
+import { createShellPreferences, normalizeShellDensity } from "./core/shell-preferences.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
@@ -40,6 +41,24 @@ const I18N = {
     optionFrench: "الفرنسية",
     themeTitle: "تبديل الوضع",
     languageLabel: "اختيار اللغة",
+    skipToWorkspace: "انتقل إلى مساحة العمل",
+    productEyebrow: "Jarbou3i / استخبارات بحثية",
+    lensContextStrategic: "العدسة الاستراتيجية",
+    lensContextBiopolitical: "العدسة البيوسياسية",
+    densityTitle: "تبديل كثافة العرض",
+    densityComfortable: "مريح",
+    densityCompact: "مضغوط",
+    workspaceNavigation: "التنقل في مساحة العمل",
+    workspaceSectionSetup: "الإعداد",
+    workspaceSectionSetupHint: "حدّد الموضوع واستورد التحليل",
+    workspaceSectionModel: "النموذج",
+    workspaceSectionModelHint: "افهم البنية التحليلية",
+    workspaceSectionReview: "المراجعة",
+    workspaceSectionReviewHint: "افحص النتيجة والأدلة",
+    localProcessing: "المعالجة محليًا في المتصفح",
+    workflowEyebrow: "01 / إعداد التحليل",
+    engineEyebrow: "02 / بنية النموذج",
+    reviewEyebrow: "03 / فحص النتيجة",
     severity: "الشدة",
     severityShort: "شدة",
     timeframeLabel: "السياق الزمني/الجغرافي",
@@ -290,6 +309,24 @@ const I18N = {
     optionFrench: "French",
     themeTitle: "Toggle theme",
     languageLabel: "Language selector",
+    skipToWorkspace: "Skip to workspace",
+    productEyebrow: "Jarbou3i / Research Intelligence",
+    lensContextStrategic: "Strategic lens",
+    lensContextBiopolitical: "Biopolitical lens",
+    densityTitle: "Toggle display density",
+    densityComfortable: "Comfortable",
+    densityCompact: "Compact",
+    workspaceNavigation: "Workspace navigation",
+    workspaceSectionSetup: "Set up",
+    workspaceSectionSetupHint: "Define and import the analysis",
+    workspaceSectionModel: "Model",
+    workspaceSectionModelHint: "Understand the analytical structure",
+    workspaceSectionReview: "Review",
+    workspaceSectionReviewHint: "Inspect the result and evidence",
+    localProcessing: "Processed locally in your browser",
+    workflowEyebrow: "01 / Configure analysis",
+    engineEyebrow: "02 / Model structure",
+    reviewEyebrow: "03 / Inspect outcome",
     severity: "Severity",
     severityShort: "S",
     timeframeLabel: "Time/geographic context",
@@ -551,6 +588,24 @@ const I18N = {
     optionFrench: "Français",
     themeTitle: "Changer de thème",
     languageLabel: "Sélecteur de langue",
+    skipToWorkspace: "Aller à l’espace de travail",
+    productEyebrow: "Jarbou3i / Intelligence de recherche",
+    lensContextStrategic: "Perspective stratégique",
+    lensContextBiopolitical: "Perspective biopolitique",
+    densityTitle: "Changer la densité d’affichage",
+    densityComfortable: "Confortable",
+    densityCompact: "Compacte",
+    workspaceNavigation: "Navigation de l’espace de travail",
+    workspaceSectionSetup: "Préparer",
+    workspaceSectionSetupHint: "Définir et importer l’analyse",
+    workspaceSectionModel: "Modèle",
+    workspaceSectionModelHint: "Comprendre la structure analytique",
+    workspaceSectionReview: "Revue",
+    workspaceSectionReviewHint: "Examiner le résultat et les preuves",
+    localProcessing: "Traitement local dans votre navigateur",
+    workflowEyebrow: "01 / Configurer l’analyse",
+    engineEyebrow: "02 / Structure du modèle",
+    reviewEyebrow: "03 / Examiner le résultat",
     severity: "Sévérité",
     severityShort: "S",
     timeframeLabel: "Contexte temporel/géographique",
@@ -907,6 +962,8 @@ const PLATFORM = createPlatformRuntime({
       analysisLens: ["strategic", "biopolitical"].includes(settings.analysisLens)
         ? settings.analysisLens
         : "strategic",
+      density: normalizeShellDensity(settings.density),
+      shellSection: "workflow",
       analysis: null,
       jsonValid: false,
       activeReview: "overview",
@@ -921,6 +978,7 @@ const PLATFORM = createPlatformRuntime({
     shell() {
       applyI18n();
       renderLensToggle();
+      renderApplicationShell();
     },
     workflow() {
       $("analysisLang").value = state.analysisLang;
@@ -946,6 +1004,11 @@ const LENS_REGISTRY = PLATFORM.registry;
 const PLATFORM_RENDERER = PLATFORM.renderer;
 const state = PLATFORM_STATE.state;
 const $ = (id) => document.getElementById(id);
+const SHELL_PREFERENCES = createShellPreferences({
+  document,
+  settings: SETTINGS,
+  initialDensity: state.density,
+});
 const isSupportedLanguage = LOCALIZATION.isSupported;
 function readSettings() {
   return SETTINGS.read();
@@ -1067,6 +1130,63 @@ function renderLensToggle() {
         ? t("lensBiopoliticalHint")
         : t("lensStrategicHint");
 }
+function renderApplicationShell() {
+  const density = SHELL_PREFERENCES.current();
+  const compact = density === "compact";
+  const densityLabel = compact ? t("densityCompact") : t("densityComfortable");
+  const densityButton = $("densityBtn");
+  if (densityButton) {
+    densityButton.setAttribute("aria-pressed", compact ? "true" : "false");
+    densityButton.setAttribute("aria-label", `${t("densityTitle")}: ${densityLabel}`);
+    densityButton.title = `${t("densityTitle")}: ${densityLabel}`;
+  }
+  if ($("densityLabel")) $("densityLabel").textContent = densityLabel;
+  if ($("lensContextLabel")) {
+    $("lensContextLabel").textContent = t(
+      state.analysisLens === "biopolitical"
+        ? "lensContextBiopolitical"
+        : "lensContextStrategic",
+    );
+  }
+  for (const id of ["workspaceBar", "workspaceNav"]) {
+    $(id)?.setAttribute("aria-label", t("workspaceNavigation"));
+  }
+
+  const reviewAvailable = Boolean(state.analysis);
+  const reviewShortcut = $("reviewNavShortcut");
+  if (reviewShortcut) reviewShortcut.disabled = !reviewAvailable;
+  if (state.shellSection === "review" && !reviewAvailable) {
+    state.shellSection = "workflow";
+  }
+  document.querySelectorAll("[data-shell-nav]").forEach((button) => {
+    const active = button.dataset.shellNav === state.shellSection;
+    button.classList.toggle("active", active);
+    if (active) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  });
+}
+function setDensity(value, persist = true) {
+  state.density = SHELL_PREFERENCES.apply(value, { persist });
+  renderApplicationShell();
+}
+function navigateShell(section) {
+  const targets = {
+    workflow: "workflowPanel",
+    engine: "enginePanel",
+    review: "reviewPanel",
+  };
+  if (!targets[section] || (section === "review" && !state.analysis)) return;
+  state.shellSection = section;
+  renderApplicationShell();
+  requestAnimationFrame(() =>
+    $(targets[section])?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
+      block: "start",
+    }),
+  );
+}
 function setAnalysisLens(lens) {
   if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
   const contractChanged =
@@ -1079,6 +1199,7 @@ function setAnalysisLens(lens) {
     state.activeReview = "overview";
     state.activePillar = null;
     state.jsonValid = false;
+    state.shellSection = "workflow";
     const input = $("jsonInput");
     if (input) input.value = "";
   }
@@ -3668,7 +3789,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.14";
+    "2.1.0-alpha.17";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4433,7 +4554,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.14";
+    "2.1.0-alpha.17";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4640,6 +4761,11 @@ bindRadioGroupKeyboard("#analysisLens [role=radio]", (button) =>
 );
 $("themeBtn").onclick = () =>
   setTheme(!document.body.classList.contains("dark"));
+$("densityBtn").onclick = () =>
+  setDensity(SHELL_PREFERENCES.current() === "compact" ? "comfortable" : "compact");
+document.querySelectorAll("[data-shell-nav]").forEach((button) => {
+  button.onclick = () => navigateShell(button.dataset.shellNav);
+});
 $("copyPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
   state.topic = $("topicInput").value.trim();
@@ -4672,6 +4798,7 @@ $("previewPromptBtn").onclick = (event) => {
 };
 $("editTopicBtn").onclick = () => {
   state.stage = "topic";
+  state.shellSection = "workflow";
   renderAll();
 };
 $("jsonInput").addEventListener("input", validateJsonInput);
@@ -4689,6 +4816,7 @@ $("importBtn").onclick = () => {
     writeSettings({ analysisLens: state.analysisLens });
   }
   state.stage = "review";
+  state.shellSection = "review";
   state.activeReview = "overview";
   state.activePillar = null;
   $("topicInput").value = a.subject.title || state.topic;
@@ -4726,6 +4854,7 @@ $("loadSampleBtn").onclick = () => {
   state.analysisLens = a.analysis_lens || state.analysisLens;
   writeSettings({ analysisLens: state.analysisLens });
   state.stage = "review";
+  state.shellSection = "review";
   state.activeReview = "overview";
   state.activePillar = null;
   state.topic = a.subject.title;
@@ -4776,6 +4905,7 @@ PLATFORM.performance.measure(
   "boot.initialize",
   () => {
     initializeTheme();
+    setDensity(state.density, false);
     renderAll();
     validateJsonInput();
   },

@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.1.0-alpha.17 — Responsive Shell Test Contract Correction
+
+- Removed a new browser assertion that incorrectly required the desktop active-step fill at the intentional 320 px transparent mobile treatment.
+- Retained the behaviorally relevant shell checks: 44 px theme target, dark-mode activation, visible active step, persisted density, localization, and lens parity.
+- Kept the independent cross-browser axe matrix as the authoritative colour-contrast gate; all 28 release-audit cases passed on Alpha.16.
+- No product CSS, runtime behavior, schema, prompt, analysis, evidence, relationship, or export logic changed from Alpha.16.
+
+## 2.1.0-alpha.16 — Shell Reflow and Accessibility Closure
+
+- Restored the theme control’s 44 px minimum target across every 200%/400%-equivalent reflow cell.
+- Replaced the dark-theme active step number with a WCAG AA contrast-safe treatment.
+- Hardened new shell navigation under forced colours using system Canvas, CanvasText, and Highlight values.
+- Scoped the legacy workflow-stage assertion so the valid application-shell `aria-current` marker does not create strict-locator ambiguity.
+- Added focused browser regression assertions for the 320 px theme target and dark active-step colour.
+
+## 2.1.0-alpha.15 — Premium Application Shell, Slice 1
+
+- Added one shared Set up → Model → Review application frame across both lenses.
+- Added localized live lens context and truthful client-side processing status.
+- Added persistent comfortable and compact display density without touching canonical analysis state.
+- Added skip navigation, reduced-motion-aware section movement, forced-colours styling, and responsive shell reflow.
+- Added pure shell-preference contracts plus browser coverage for orientation, persistence, localization, and lens parity.
+- Preserved every Strategic v1.1 and Biopolitical v2.1 schema, prompt, import, score, evidence, relationship, and export contract.
+
 ## 2.1.0-alpha.14 — Idempotent Explorer Event Lifecycle
 
 - Makes explorer click binding idempotent across non-destructive search-result renders.

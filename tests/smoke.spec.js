@@ -44,7 +44,7 @@ test('Jarbou3i Model core flow', async ({ page }) => {
   await page.locator('#loadSampleBtn').click();
   await expect(page.locator('#reviewPanel')).toBeVisible();
   await expect(page.locator('#reviewContent')).toContainText(/Digital health passes/i);
-  await expect(page.locator('[aria-current="step"]')).toContainText('Review');
+  await expect(page.locator('.stageItem[aria-current="step"]')).toContainText('Review');
 
   for (const tab of ['overview', 'pillars', 'evidence', 'conclusion', 'exports']) {
     const reviewTab = page.locator(`[data-bio-review="${tab}"]`);

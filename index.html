@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.14" />
+<meta name="app-version" content="2.1.0-alpha.17" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -23,28 +23,57 @@
 <body>
 <noscript><div style="margin:24px;padding:16px;border:1px solid #c8d4e5;border-radius:16px;background:#fff;color:#122033;font-family:system-ui,sans-serif">Jarbou3i Model requires JavaScript to run locally in your browser.</div></noscript>
 <div class="app">
-  <header class="top">
+  <a class="skipLink" href="#workflowPanel" data-i18n="skipToWorkspace">انتقل إلى مساحة العمل</a>
+  <header class="top" id="appHeader">
     <div class="brand">
       <div class="logo" aria-hidden="true"><img src="assets/jarbou3i-mascot-192.png" width="54" height="54" decoding="async" alt=""></div>
-      <div>
+      <div class="brandCopy">
+        <div class="productEyebrow" data-i18n="productEyebrow">Jarbou3i / Research Intelligence</div>
         <h1 data-i18n="appTitle">مساحة عمل التحليل الاستراتيجي</h1>
         <p data-i18n="appSubtitle">مسار واضح مع بقاء نموذج التحليل الكامل مرئيًا وقابلًا للتصفح.</p>
       </div>
     </div>
     <div class="topActions">
+      <div class="lensContext" id="lensContext" aria-live="polite">
+        <span class="lensContextSignal" aria-hidden="true"></span>
+        <span id="lensContextLabel">العدسة الاستراتيجية</span>
+      </div>
       <div class="segment" role="radiogroup" aria-label="Language selector" id="languageSegment">
         <button class="segBtn active" id="langAr" type="button" role="radio" aria-checked="true" tabindex="0">عربي</button>
         <button class="segBtn" id="langEn" type="button" role="radio" aria-checked="false" tabindex="-1">EN</button>
         <button class="segBtn" id="langFr" type="button" role="radio" aria-checked="false" tabindex="-1">FR</button>
       </div>
+      <button class="btn shellControl" id="densityBtn" type="button" aria-pressed="false" title="تبديل كثافة العرض">
+        <span class="shellControlIcon" aria-hidden="true">↕</span>
+        <span class="shellControlLabel" id="densityLabel">مريح</span>
+      </button>
       <button class="btn iconBtn" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle">◐</button>
     </div>
   </header>
+
+  <div class="workspaceBar" role="region" aria-label="التنقل في مساحة العمل" id="workspaceBar">
+    <nav class="workspaceNav" id="workspaceNav" aria-label="التنقل في مساحة العمل">
+      <button class="workspaceNavItem active" type="button" data-shell-nav="workflow" aria-current="step">
+        <span class="workspaceNavIndex" aria-hidden="true">01</span>
+        <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionSetup">الإعداد</strong><small data-i18n="workspaceSectionSetupHint">حدّد الموضوع واستورد التحليل</small></span>
+      </button>
+      <button class="workspaceNavItem" type="button" data-shell-nav="engine">
+        <span class="workspaceNavIndex" aria-hidden="true">02</span>
+        <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionModel">النموذج</strong><small data-i18n="workspaceSectionModelHint">افهم البنية التحليلية</small></span>
+      </button>
+      <button class="workspaceNavItem" id="reviewNavShortcut" type="button" data-shell-nav="review" disabled>
+        <span class="workspaceNavIndex" aria-hidden="true">03</span>
+        <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionReview">المراجعة</strong><small data-i18n="workspaceSectionReviewHint">افحص النتيجة والأدلة</small></span>
+      </button>
+    </nav>
+    <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span></div>
+  </div>
 
   <main class="shell">
     <section class="panel commandPanel" id="workflowPanel">
       <div class="panelHeader">
         <div>
+          <div class="sectionEyebrow" data-i18n="workflowEyebrow">01 / إعداد التحليل</div>
           <h2 data-i18n="workflowTitle">مسار التحليل</h2>
           <p data-i18n="workflowSubtitle">اتبع الخطوات، لكن ابقَ قادرًا على رؤية بنية النموذج والتنقل بين طبقاته.</p>
         </div>
@@ -119,6 +148,7 @@
     <section class="panel" id="enginePanel">
       <div class="panelHeader">
         <div>
+          <div class="sectionEyebrow" data-i18n="engineEyebrow">02 / بنية النموذج</div>
           <h2 data-i18n="engineTitle">خريطة محرك التحليل</h2>
           <p data-i18n="engineSubtitle">هذه ليست أزرارًا زائدة؛ هذه طبقات النموذج نفسها. بعد الاستيراد تصبح كل طبقة قابلة للفحص.</p>
         </div>
@@ -130,6 +160,7 @@
     <section class="panel hide" id="reviewPanel">
       <div class="panelHeader">
         <div>
+          <div class="sectionEyebrow" data-i18n="reviewEyebrow">03 / فحص النتيجة</div>
           <h2 id="reviewTitle" data-i18n="reviewTitle">مراجعة التحليل الاستراتيجي</h2>
           <p data-i18n="reviewSubtitle">تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.</p>
         </div>

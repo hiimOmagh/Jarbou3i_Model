@@ -16,8 +16,12 @@ const bioReport = read("src/biopolitical-report.js");
 const referenceUi = read("src/reference-ui.js");
 const explorer = read("src/relationship-explorer.js");
 const explorerStyles = read("src/relationship-explorer.css");
+const styles = read("src/styles.css");
+const smokeBrowser = read("tests/smoke.spec.js");
+const applicationShellBrowser = read("tests/application-shell.spec.js");
 const parser = read("src/json-parser.js");
 const platformState = read("src/core/platform-state.js");
+const shellPreferences = read("src/core/shell-preferences.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -49,6 +53,7 @@ for (const [file, source] of [
   ["src/relationship-explorer.js", explorer],
   ["src/json-parser.js", parser],
   ["src/core/platform-state.js", platformState],
+  ["src/core/shell-preferences.js", shellPreferences],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -89,12 +94,15 @@ for (const file of [
   "tests/provenance-check.mjs",
   "src/core/lens-registry.js",
   "src/core/platform-state.js",
+  "src/core/shell-preferences.js",
   "src/core/persistence.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
   "src/core/provenance.js",
   "src/lenses/strategic/adapter.js",
   "src/lenses/biopolitical/adapter.js",
+  "tests/shell-preferences-check.mjs",
+  "tests/application-shell.spec.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
   "scripts/migrate-release-layout.mjs",
@@ -112,6 +120,47 @@ for (const token of [
   'aria-modal="true"',
 ]) {
   if (!index.includes(token)) fail(`index accessibility token missing: ${token}`);
+}
+for (const token of [
+  'class="skipLink"',
+  'id="workspaceBar"',
+  'id="densityBtn"',
+  'data-shell-nav="workflow"',
+  'data-shell-nav="engine"',
+  'data-shell-nav="review"',
+]) {
+  if (!index.includes(token)) fail(`Phase 2 application-shell token missing: ${token}`);
+}
+for (const token of [
+  "createShellPreferences",
+  "renderApplicationShell",
+  "navigateShell",
+  "SHELL_PREFERENCES.apply",
+  "state.shellSection = \"review\"",
+]) {
+  if (!app.includes(token)) fail(`Phase 2 shell runtime token missing: ${token}`);
+}
+for (const token of [
+  'body[data-density="compact"]',
+  ".workspaceNavItem.active",
+  ".sectionEyebrow",
+  ".skipLink:focus",
+]) {
+  if (!styles.includes(token)) fail(`Phase 2 shell stylesheet token missing: ${token}`);
+}
+for (const token of [
+  "body.dark .workspaceNavItem.active .workspaceNavIndex",
+  "background:#1d4ed8",
+  ".topActions .iconBtn,.topActions .shellControl",
+  "min-width:44px",
+]) {
+  if (!styles.includes(token)) fail(`Alpha.16 shell closure token missing: ${token}`);
+}
+if (!smokeBrowser.includes('.stageItem[aria-current="step"]')) {
+  fail("workflow smoke assertion is not scoped to the workflow stage");
+}
+if (applicationShellBrowser.includes('"rgb(29, 78, 216)"')) {
+  fail("responsive shell test must not require the desktop active-step fill at 320 px");
 }
 for (const token of [
   'role="tab"',
@@ -184,7 +233,6 @@ if (!graph.includes("spatialProjection")) {
 if (!explorer.includes('event.code === "Space"')) {
   fail("cross-browser Space-key activation contract missing");
 }
-const styles = read("src/styles.css");
 for (const token of ["@media (forced-colors:active)", ":focus,:focus-visible", "color-scheme:light", "HighlightText", "translateY(calc(100% + 48px))"]) {
   if (!styles.includes(token)) fail(`final audit visual resilience contract missing: ${token}`);
 }
@@ -262,14 +310,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.14") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.17") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.14"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.17"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.14"')) {
+if (!app.includes('"2.1.0-alpha.17"')) {
   fail("report fallback version is stale");
 }
 for (const token of [
@@ -319,6 +367,7 @@ for (const token of [
   "test:bio:integrity",
   "test:platform",
   "test:platform:services",
+  "test:shell",
   "test:provenance",
   "test:bio:graph",
   "test:parser",
