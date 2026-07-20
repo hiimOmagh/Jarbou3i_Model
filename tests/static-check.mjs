@@ -22,6 +22,7 @@ const applicationShellBrowser = read("tests/application-shell.spec.js");
 const parser = read("src/json-parser.js");
 const platformState = read("src/core/platform-state.js");
 const shellPreferences = read("src/core/shell-preferences.js");
+const shellNavigation = read("src/core/shell-navigation.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -54,6 +55,7 @@ for (const [file, source] of [
   ["src/json-parser.js", parser],
   ["src/core/platform-state.js", platformState],
   ["src/core/shell-preferences.js", shellPreferences],
+  ["src/core/shell-navigation.js", shellNavigation],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -95,6 +97,7 @@ for (const file of [
   "src/core/lens-registry.js",
   "src/core/platform-state.js",
   "src/core/shell-preferences.js",
+  "src/core/shell-navigation.js",
   "src/core/persistence.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
@@ -102,6 +105,7 @@ for (const file of [
   "src/lenses/strategic/adapter.js",
   "src/lenses/biopolitical/adapter.js",
   "tests/shell-preferences-check.mjs",
+  "tests/shell-navigation-check.mjs",
   "tests/application-shell.spec.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
@@ -125,6 +129,8 @@ for (const token of [
   'class="skipLink"',
   'id="workspaceBar"',
   'id="densityBtn"',
+  'id="shellNextAction"',
+  'id="shellAnnouncement"',
   'data-shell-nav="workflow"',
   'data-shell-nav="engine"',
   'data-shell-nav="review"',
@@ -135,6 +141,8 @@ for (const token of [
   "createShellPreferences",
   "renderApplicationShell",
   "navigateShell",
+  "bindWorkspaceNavigation",
+  "resolveShellCommand",
   "SHELL_PREFERENCES.apply",
   "state.shellSection = \"review\"",
 ]) {
@@ -144,6 +152,8 @@ for (const token of [
   'body[data-density="compact"]',
   ".workspaceNavItem.active",
   ".sectionEyebrow",
+  ".shellNextAction",
+  ".commandActions",
   ".skipLink:focus",
 ]) {
   if (!styles.includes(token)) fail(`Phase 2 shell stylesheet token missing: ${token}`);
@@ -244,6 +254,12 @@ const relationshipBrowser = read("tests/relationship-explorer.spec.js");
 for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFocused()', 'saveView.press("Enter")', 'restoreView.press("Enter")', 'openSelected.press("Enter")']) {
   if (!relationshipBrowser.includes(token)) fail(`Firefox explorer stabilization contract missing: ${token}`);
 }
+for (const token of ["preventScroll: true", 'deleteView.press("Enter")']) {
+  if (!relationshipBrowser.includes(token)) fail(`saved-view keyboard regression token missing: ${token}`);
+}
+if (/html,body\{[^}]*scroll-behavior:smooth/.test(styles)) {
+  fail("global smooth scrolling must not block browser actionability scrolling");
+}
 const staticServer = read("scripts/static-server.mjs");
 for (const token of ["const parentPid = process.ppid", "process.kill(parentPid, 0)", "process.once(\"SIGTERM\", shutdown)"]) {
   if (!staticServer.includes(token)) fail(`static server lifecycle contract missing: ${token}`);
@@ -310,14 +326,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.17") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.19") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.17"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.19"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.17"')) {
+if (!app.includes('"2.1.0-alpha.19"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

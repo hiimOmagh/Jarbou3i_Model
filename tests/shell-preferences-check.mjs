@@ -53,6 +53,13 @@ for (const key of [
   "workspaceSectionModel",
   "workspaceSectionReview",
   "localProcessing",
+  "nextActionLabel",
+  "shellActionTopic",
+  "shellActionImport",
+  "shellActionReview",
+  "shellMovedToSetup",
+  "shellMovedToModel",
+  "shellMovedToReview",
 ]) {
   const occurrences = app.match(new RegExp(`\\b${key}:`, "g"))?.length || 0;
   assert(occurrences === 3, `${key} must exist once in every interface language`);

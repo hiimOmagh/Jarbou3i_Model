@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0-alpha.19
+
+- Consolidated Phase 2 Slice 2 with the Alpha.17 GitHub Actions incident correction.
+- Removed global smooth scrolling that could prevent WebKit actionability scrolling from settling.
+- Hardened saved-view deletion through its keyboard activation contract.
+- Bounded GitHub browser execution to two workers while retaining four-worker local defaults.
+- Added conditional evidence uploads and failure-only Playwright trace/report artifacts.
+
+## 2.1.0-alpha.18
+
+- Added a responsive, state-aware topic → import → review shell command.
+- Added locale-direction-aware roving keyboard navigation for workspace sections.
+- Added explicit primary/secondary command hierarchy and 320 px responsive coverage.
+- Added live destination announcements and focus continuity for shell commands.
+- Preserved all analytical, schema, import, evidence, graph, report, and export contracts.
+
 ## 2.1.0-alpha.17 — Responsive Shell Test Contract Correction
 
 - Removed a new browser assertion that incorrectly required the desktop active-step fill at the intentional 320 px transparent mobile treatment.

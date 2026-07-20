@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.17 — shared dual-lens platform runtime */
+/* Jarbou3i Model v2.1.0-alpha.19 — responsive shell with bounded browser gates */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -11,6 +11,7 @@ import "./relationship-explorer.js";
 import "./json-parser.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { createShellPreferences, normalizeShellDensity } from "./core/shell-preferences.js";
+import { nextShellSection, resolveShellCommand } from "./core/shell-navigation.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
@@ -56,6 +57,13 @@ const I18N = {
     workspaceSectionReview: "المراجعة",
     workspaceSectionReviewHint: "افحص النتيجة والأدلة",
     localProcessing: "المعالجة محليًا في المتصفح",
+    nextActionLabel: "الإجراء التالي",
+    shellActionTopic: "ابدأ بالموضوع",
+    shellActionImport: "تابع إلى الاستيراد",
+    shellActionReview: "راجع التحليل",
+    shellMovedToSetup: "تم الانتقال إلى إعداد التحليل.",
+    shellMovedToModel: "تم الانتقال إلى بنية النموذج.",
+    shellMovedToReview: "تم الانتقال إلى مراجعة التحليل.",
     workflowEyebrow: "01 / إعداد التحليل",
     engineEyebrow: "02 / بنية النموذج",
     reviewEyebrow: "03 / فحص النتيجة",
@@ -324,6 +332,13 @@ const I18N = {
     workspaceSectionReview: "Review",
     workspaceSectionReviewHint: "Inspect the result and evidence",
     localProcessing: "Processed locally in your browser",
+    nextActionLabel: "Next action",
+    shellActionTopic: "Start with a topic",
+    shellActionImport: "Continue to import",
+    shellActionReview: "Review analysis",
+    shellMovedToSetup: "Moved to analysis setup.",
+    shellMovedToModel: "Moved to model structure.",
+    shellMovedToReview: "Moved to analysis review.",
     workflowEyebrow: "01 / Configure analysis",
     engineEyebrow: "02 / Model structure",
     reviewEyebrow: "03 / Inspect outcome",
@@ -603,6 +618,13 @@ const I18N = {
     workspaceSectionReview: "Revue",
     workspaceSectionReviewHint: "Examiner le résultat et les preuves",
     localProcessing: "Traitement local dans votre navigateur",
+    nextActionLabel: "Action suivante",
+    shellActionTopic: "Commencer par un sujet",
+    shellActionImport: "Continuer vers l’import",
+    shellActionReview: "Examiner l’analyse",
+    shellMovedToSetup: "Navigation vers la préparation de l’analyse.",
+    shellMovedToModel: "Navigation vers la structure du modèle.",
+    shellMovedToReview: "Navigation vers la revue de l’analyse.",
     workflowEyebrow: "01 / Configurer l’analyse",
     engineEyebrow: "02 / Structure du modèle",
     reviewEyebrow: "03 / Examiner le résultat",
@@ -1161,15 +1183,36 @@ function renderApplicationShell() {
   document.querySelectorAll("[data-shell-nav]").forEach((button) => {
     const active = button.dataset.shellNav === state.shellSection;
     button.classList.toggle("active", active);
+    button.tabIndex = active && !button.disabled ? 0 : -1;
     if (active) button.setAttribute("aria-current", "step");
     else button.removeAttribute("aria-current");
   });
+
+  const command = resolveShellCommand({
+    stage: state.stage,
+    hasAnalysis: reviewAvailable,
+  });
+  const commandLabel = t(
+    {
+      topic: "shellActionTopic",
+      import: "shellActionImport",
+      review: "shellActionReview",
+    }[command.id],
+  );
+  const nextAction = $("shellNextAction");
+  if (nextAction) {
+    nextAction.dataset.shellCommand = command.id;
+    nextAction.setAttribute("aria-label", `${t("nextActionLabel")}: ${commandLabel}`);
+  }
+  if ($("shellNextActionLabel")) $("shellNextActionLabel").textContent = commandLabel;
+  const nextIcon = nextAction?.querySelector(".shellNextActionIcon");
+  if (nextIcon) nextIcon.textContent = state.lang === "ar" ? "←" : "→";
 }
 function setDensity(value, persist = true) {
   state.density = SHELL_PREFERENCES.apply(value, { persist });
   renderApplicationShell();
 }
-function navigateShell(section) {
+function navigateShell(section, { focusTarget = null, announce = true } = {}) {
   const targets = {
     workflow: "workflowPanel",
     engine: "enginePanel",
@@ -1178,14 +1221,40 @@ function navigateShell(section) {
   if (!targets[section] || (section === "review" && !state.analysis)) return;
   state.shellSection = section;
   renderApplicationShell();
-  requestAnimationFrame(() =>
+  requestAnimationFrame(() => {
     $(targets[section])?.scrollIntoView({
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "auto"
         : "smooth",
       block: "start",
-    }),
-  );
+    });
+    if (focusTarget) $(focusTarget)?.focus({ preventScroll: true });
+    if (announce && $("shellAnnouncement")) {
+      $("shellAnnouncement").textContent = t(
+        {
+          workflow: "shellMovedToSetup",
+          engine: "shellMovedToModel",
+          review: "shellMovedToReview",
+        }[section],
+      );
+    }
+  });
+}
+function bindWorkspaceNavigation() {
+  const buttons = [...document.querySelectorAll("[data-shell-nav]")];
+  buttons.forEach((button) => {
+    button.onclick = () => navigateShell(button.dataset.shellNav);
+    button.addEventListener("keydown", (event) => {
+      const section = nextShellSection(button.dataset.shellNav, event.key, {
+        reviewAvailable: Boolean(state.analysis),
+        direction: document.documentElement.dir,
+      });
+      if (!section) return;
+      event.preventDefault();
+      navigateShell(section);
+      document.querySelector(`[data-shell-nav="${section}"]`)?.focus();
+    });
+  });
 }
 function setAnalysisLens(lens) {
   if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
@@ -3789,7 +3858,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.17";
+    "2.1.0-alpha.19";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4554,7 +4623,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.17";
+    "2.1.0-alpha.19";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4763,9 +4832,14 @@ $("themeBtn").onclick = () =>
   setTheme(!document.body.classList.contains("dark"));
 $("densityBtn").onclick = () =>
   setDensity(SHELL_PREFERENCES.current() === "compact" ? "comfortable" : "compact");
-document.querySelectorAll("[data-shell-nav]").forEach((button) => {
-  button.onclick = () => navigateShell(button.dataset.shellNav);
-});
+bindWorkspaceNavigation();
+$("shellNextAction").onclick = () => {
+  const command = resolveShellCommand({
+    stage: state.stage,
+    hasAnalysis: Boolean(state.analysis),
+  });
+  navigateShell(command.section, { focusTarget: command.focusTarget });
+};
 $("copyPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
   state.topic = $("topicInput").value.trim();

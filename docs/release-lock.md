@@ -47,7 +47,8 @@ npm run test:browser:reflow
 npm run test:browser:visual-audit
 ```
 
-The core matrix is bounded to four workers and 60 seconds per test. This is a
+The local core matrix is bounded to four workers and 60 seconds per test; the
+GitHub Actions browser job uses two workers. This is a
 release-stability requirement, not an assertion relaxation: alpha.3 proved that
 16 simultaneous report/download/axe workloads could exhaust the 30-second test
 budget while the same contracts passed as the queue became lighter.

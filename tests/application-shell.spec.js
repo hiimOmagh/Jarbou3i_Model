@@ -39,3 +39,54 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
   await expect(page.locator("#workspaceNav")).toHaveAttribute("aria-label", "Navigation de l’espace de travail");
   await expect(page.locator("#densityLabel")).toContainText("Compacte");
 });
+
+test("responsive commands and workspace navigation preserve keyboard continuity", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#langEn").click();
+
+  const nextAction = page.locator("#shellNextAction");
+  await expect(nextAction).toHaveAttribute("data-shell-command", "topic");
+  await expect(page.locator("#shellNextActionLabel")).toHaveText("Start with a topic");
+  await nextAction.click();
+  await expect(page.locator("#topicInput")).toBeFocused();
+
+  const workflowNav = page.locator('[data-shell-nav="workflow"]');
+  const engineNav = page.locator('[data-shell-nav="engine"]');
+  await workflowNav.focus();
+  await workflowNav.press("ArrowRight");
+  await expect(engineNav).toBeFocused();
+  await expect(engineNav).toHaveAttribute("aria-current", "step");
+  await engineNav.press("ArrowRight");
+  await expect(workflowNav).toBeFocused();
+  await expect(page.locator("#reviewNavShortcut")).toHaveAttribute("tabindex", "-1");
+
+  await page.locator("#topicInput").fill("Regional water governance, 2024–2026");
+  await page.locator("#copyPromptBtn").click();
+  if (await page.locator("#modalBackdrop.show").isVisible()) {
+    await page.locator("#modalClose").click();
+  }
+  await expect(nextAction).toHaveAttribute("data-shell-command", "import");
+  await expect(page.locator("#shellNextActionLabel")).toHaveText("Continue to import");
+  await nextAction.click();
+  await expect(page.locator("#jsonInput")).toBeFocused();
+
+  await page.locator("#loadSampleBtn").click();
+  await expect(nextAction).toHaveAttribute("data-shell-command", "review");
+  await expect(page.locator("#shellNextActionLabel")).toHaveText("Review analysis");
+  await nextAction.click();
+  await expect(page.locator("#reviewTitle")).toBeFocused();
+
+  await workflowNav.focus();
+  await workflowNav.press("End");
+  await expect(page.locator("#reviewNavShortcut")).toBeFocused();
+  await expect(page.locator("#reviewNavShortcut")).toHaveAttribute("aria-current", "step");
+
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.locator("#workspaceBar").scrollIntoViewIfNeeded();
+  const shellBounds = await nextAction.boundingBox();
+  expect(shellBounds).not.toBeNull();
+  expect(shellBounds.x).toBeGreaterThanOrEqual(0);
+  expect(shellBounds.x + shellBounds.width).toBeLessThanOrEqual(320);
+  await expect(page.locator(".topicCommand .commandPrimary")).toBeVisible();
+  await expect(page.locator(".topicCommand .commandSecondary")).toBeVisible();
+});

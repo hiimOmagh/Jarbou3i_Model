@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.17" />
+<meta name="app-version" content="2.1.0-alpha.19" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -66,7 +66,14 @@
         <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionReview">المراجعة</strong><small data-i18n="workspaceSectionReviewHint">افحص النتيجة والأدلة</small></span>
       </button>
     </nav>
-    <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span></div>
+    <div class="workspaceCommands">
+      <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span></div>
+      <button class="btn primary shellNextAction" id="shellNextAction" type="button">
+        <span class="shellNextActionCopy"><small data-i18n="nextActionLabel">الإجراء التالي</small><strong id="shellNextActionLabel">ابدأ بالموضوع</strong></span>
+        <span class="shellNextActionIcon" aria-hidden="true">←</span>
+      </button>
+    </div>
+    <div class="srOnly" id="shellAnnouncement" role="status" aria-live="polite" aria-atomic="true"></div>
   </div>
 
   <main class="shell">
@@ -115,11 +122,13 @@
               <input id="timeframeInput" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: 2022–2026، أوروبا" />
             </div>
           </div>
-          <div class="actions">
-            <button class="btn primary" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button>
-            <button class="btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة البرومبت</button>
-            <button class="btn" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
-            <button class="btn ghost hide" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
+          <div class="actions commandActions">
+            <div class="commandPrimary"><button class="btn primary" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button></div>
+            <div class="commandSecondary">
+              <button class="btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة البرومبت</button>
+              <button class="btn" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
+              <button class="btn ghost hide" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
+            </div>
           </div>
           <div class="status helper" id="topicStatus" role="status" aria-live="polite" data-i18n="topicStatusStart">أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.</div>
           <div class="miniGuide" id="miniGuide"><h4 data-i18n="guideTitle">كيف تستخدم الأداة؟</h4><ol id="guideSteps"></ol></div>
@@ -131,10 +140,12 @@
             <label class="label" for="jsonInput" data-i18n="jsonLabel">نتيجة JSON</label>
             <textarea id="jsonInput" class="pasteArea" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
           </div>
-          <div class="actions">
-            <button class="btn primary" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button>
-            <button class="btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">برومبت إصلاح JSON</button>
-            <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
+          <div class="actions commandActions">
+            <div class="commandPrimary"><button class="btn primary" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button></div>
+            <div class="commandSecondary">
+              <button class="btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">برومبت إصلاح JSON</button>
+              <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
+            </div>
           </div>
           <div class="status" id="jsonStatus" role="status" aria-live="polite" data-i18n="jsonWaiting">الصق نتيجة JSON للتحقق.</div>
           <details class="importAudit" id="importAuditDetails" hidden>
@@ -161,7 +172,7 @@
       <div class="panelHeader">
         <div>
           <div class="sectionEyebrow" data-i18n="reviewEyebrow">03 / فحص النتيجة</div>
-          <h2 id="reviewTitle" data-i18n="reviewTitle">مراجعة التحليل الاستراتيجي</h2>
+          <h2 id="reviewTitle" data-i18n="reviewTitle" tabindex="-1">مراجعة التحليل الاستراتيجي</h2>
           <p data-i18n="reviewSubtitle">تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.</p>
         </div>
       </div>

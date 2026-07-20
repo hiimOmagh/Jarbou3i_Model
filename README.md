@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.17` starts the premium application-shell phase while preserving the fully verified Alpha.14 analytical baseline for a static, trilingual workbench with two independent contracts:
+Version `2.1.0-alpha.19` delivers the responsive command and navigation slice of the premium application shell with bounded cross-browser CI execution, while preserving the fully verified Alpha.14 analytical baseline for a static, trilingual workbench with two independent contracts:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -142,10 +142,11 @@ npm run test:browser
 
 `npm test` runs the complete CI contract. Browser coverage includes Chromium, Firefox, WebKit, mobile Chrome, accessibility scanning, both lenses, EN/AR/FR exports, RTL/mobile layout, strict imports, legacy-draft disclosure, and lossless HTML/JSON export.
 
-The browser matrix uses four workers and a 60-second test budget by default to
-keep simultaneous report rendering, downloads, and axe scans stable. On a
-resource-constrained Windows host, set `$env:PLAYWRIGHT_WORKERS=2` before
-running `npm run test:browser`.
+The local browser matrix uses four workers and a 60-second test budget by
+default. GitHub Actions uses two workers to keep WebKit rendering, report
+downloads, and accessibility scans within that budget. On a resource-constrained
+Windows host, set `$env:PLAYWRIGHT_WORKERS=2` before running
+`npm run test:browser`.
 
 ## Deployment and privacy
 

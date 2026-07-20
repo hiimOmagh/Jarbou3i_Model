@@ -172,7 +172,10 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await openExplorer(page);
   await expect(page.locator(`#relationshipSavedView option[value="${savedId}"]`)).toHaveCount(1);
   await page.locator("#relationshipSavedView").selectOption(savedId);
-  await page.locator("[data-delete-view]").click();
+  const deleteView = page.locator("[data-delete-view]");
+  await deleteView.evaluate((button) => button.focus({ preventScroll: true }));
+  await expect(deleteView).toBeFocused();
+  await deleteView.press("Enter");
   await expect(page.locator("#relationshipSavedView option")).toHaveCount(1);
   await expect(page.locator("[data-restore-view]")).toBeDisabled();
 });

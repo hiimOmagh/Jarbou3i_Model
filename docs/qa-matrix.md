@@ -17,11 +17,11 @@
 
 Run them together with `npm run test:ci:no-browser`.
 
-The cross-browser matrix defaults to four workers and a 60-second per-test
-budget. This prevents 16 simultaneous report renders, downloads, and axe scans
-from saturating a developer workstation and canceling otherwise valid browser
-operations at the old 30-second ceiling. The assertions remain fully parallel
-within that bounded pool. On a constrained machine, reduce concurrency without
+The local cross-browser matrix defaults to four workers and a 60-second
+per-test budget. GitHub Actions sets `PLAYWRIGHT_WORKERS=2` after the Alpha.17
+run showed WebKit actionability scrolling and a Firefox report download exceed
+the budget under concurrent load. The assertions remain fully parallel within
+that bounded pool. On a constrained machine, use the same setting without
 changing the contract:
 
 ```powershell

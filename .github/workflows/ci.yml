@@ -53,19 +53,29 @@ jobs:
       - name: Run browser gates and review evidence
         run: npm run test:ci:browser
         env:
+          PLAYWRIGHT_WORKERS: 2
           HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence
           VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence
 
       - uses: actions/upload-artifact@v5
-        if: always()
+        if: ${{ always() && hashFiles('hosted-demo-evidence/**') != '' }}
         with:
           name: hosted-demo-evidence
           path: hosted-demo-evidence
           if-no-files-found: warn
 
       - uses: actions/upload-artifact@v5
-        if: always()
+        if: ${{ always() && hashFiles('visual-audit-evidence/**') != '' }}
         with:
           name: visual-audit-evidence
           path: visual-audit-evidence
           if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v5
+        if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
+        with:
+          name: browser-debug
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore
