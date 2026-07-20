@@ -1,6 +1,6 @@
 # Phase 3, Slice 1 — Results orientation
 
-Release: `2.1.0-alpha.23`
+Release: `2.1.0-alpha.25`
 
 ## Scope
 

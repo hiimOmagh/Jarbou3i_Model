@@ -20,11 +20,13 @@ const styles = read("src/styles.css");
 const smokeBrowser = read("tests/smoke.spec.js");
 const applicationShellBrowser = read("tests/application-shell.spec.js");
 const resultsWorkspaceBrowser = read("tests/results-workspace.spec.js");
+const resultsExplanationBrowser = read("tests/results-explanation.spec.js");
 const parser = read("src/json-parser.js");
 const platformState = read("src/core/platform-state.js");
 const shellPreferences = read("src/core/shell-preferences.js");
 const shellNavigation = read("src/core/shell-navigation.js");
 const resultsOrientation = read("src/core/results-orientation.js");
+const resultsExplanation = read("src/core/results-explanation.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -59,6 +61,7 @@ for (const [file, source] of [
   ["src/core/shell-preferences.js", shellPreferences],
   ["src/core/shell-navigation.js", shellNavigation],
   ["src/core/results-orientation.js", resultsOrientation],
+  ["src/core/results-explanation.js", resultsExplanation],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -102,6 +105,7 @@ for (const file of [
   "src/core/shell-preferences.js",
   "src/core/shell-navigation.js",
   "src/core/results-orientation.js",
+  "src/core/results-explanation.js",
   "src/core/persistence.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
@@ -111,7 +115,9 @@ for (const file of [
   "tests/shell-preferences-check.mjs",
   "tests/shell-navigation-check.mjs",
   "tests/results-orientation-check.mjs",
+  "tests/results-explanation-check.mjs",
   "tests/results-workspace.spec.js",
+  "tests/results-explanation.spec.js",
   "tests/application-shell.spec.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
@@ -303,6 +309,61 @@ if (resultsWorkspaceBrowser.includes("orientation).toHaveAttribute('data-lens'")
 if (resultsWorkspaceBrowser.includes("Replace generic historical notes")) {
   fail("results workspace test must not substitute fixture text for runtime authority");
 }
+for (const token of [
+  "createResultsExplanation",
+  "RESULTS_EXPLANATION_KEYS",
+  "sourceItems.slice(0, 2)",
+  "Object.freeze",
+]) {
+  if (!resultsExplanation.includes(token)) fail(`Phase 3 results-explanation model token missing: ${token}`);
+}
+for (const token of [
+  "strategicResultsExplanation",
+  "biopoliticalResultsExplanation",
+  "resultsExplanationHtml",
+  "wireResultsExplanation",
+  "data-results-explanation",
+  "data-explanation-open",
+  "data-analysis-lens=",
+]) {
+  if (!app.includes(token)) fail(`Phase 3 results-explanation runtime token missing: ${token}`);
+}
+if (app.includes('data-results-explanation data-lens=')) {
+  fail("results explanation must not reuse the interactive lens-control namespace");
+}
+for (const token of [
+  ".resultsExplanation",
+  ".explanationGrid",
+  ".explanationCard",
+  ".explanationInspect",
+  "min-height:44px",
+]) {
+  if (!styles.includes(token)) fail(`Phase 3 results-explanation style token missing: ${token}`);
+}
+for (const token of [
+  'toHaveCount(5)',
+  'strategicMechanisms.press("Enter")',
+  "strategicEvidenceName",
+  'strategicEvidence.press("Enter")',
+  'biopoliticalEffects.press("Enter")',
+  "biopoliticalEvidenceName",
+  'biopoliticalEvidence.press("Enter")',
+  'locator("#reviewContent")).toContainText',
+  'data-acc="tools"',
+  'data-bio-acc="distribution_effects"',
+  "Comment la conclusion est construite",
+  "width: 320",
+]) {
+  if (!resultsExplanationBrowser.includes(token)) fail(`results explanation browser contract missing: ${token}`);
+}
+for (const fixtureOnlyText of [
+  "Historical power distribution reference",
+  "Jurisdiction-specific health-pass law",
+]) {
+  if (resultsExplanationBrowser.includes(fixtureOnlyText)) {
+    fail(`results explanation browser test must use runtime authority instead of fixture text: ${fixtureOnlyText}`);
+  }
+}
 if (/html,body\{[^}]*scroll-behavior:smooth/.test(styles)) {
   fail("global smooth scrolling must not block browser actionability scrolling");
 }
@@ -372,14 +433,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.23") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.25") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.23"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.25"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.23"')) {
+if (!app.includes('"2.1.0-alpha.25"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

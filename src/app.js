@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.23 — results-orientation browser contract correction */
+/* Jarbou3i Model v2.1.0-alpha.25 — shared results explanation hierarchy */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -13,6 +13,7 @@ import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { createShellPreferences, normalizeShellDensity } from "./core/shell-preferences.js";
 import { nextShellSection, resolveShellCommand } from "./core/shell-navigation.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
+import { createResultsExplanation } from "./core/results-explanation.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
@@ -3733,9 +3734,253 @@ function scoreFormulaHtml() {
 function itemCard(obj, extra = "") {
   return `<article class="item"><div class="itemTitle">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</div><div class="itemMeta">${pill(obj.type || obj.category || obj.frame || obj.basis)}${pill(obj.confidence, "confidence")}${pill(obj.horizon || obj.timeframe)}${pill(obj.stakes)}</div>${obj.rationale ? `<div class="itemText">${escapeHtml(obj.rationale)}</div>` : ""}${extra}</article>`;
 }
-function resultsOrientationHtml(model) {
+function resultsOrientationHtml(model, explanation) {
   const gateClass = model.publication.approved ? "approved" : "blocked";
-  return `<section class="resultsOrientation" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="resultsOrientationHeader"><div><div class="sectionKicker">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</div><h3 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h3><p>${escapeHtml(model.topic)}</p></div><div class="orientationGate ${gateClass}"><span>${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong>${escapeHtml(model.publication.label)}</strong></div></header><div class="orientationMain"><article class="orientationConclusion"><span>${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></article><div class="orientationMetrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}"><div class="orientationMetric ${pctClass(model.readiness)}"><strong>${model.readiness}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="orientationMetric ${pctClass(model.coverage)}"><strong>${model.coverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div></div></div><div class="orientationSignals"><article class="orientationSignal uncertainty"><span>${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></article><article class="orientationSignal action"><span>${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></article></div></section><div class="diagnosticsDivider"><span>${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</span></div>`;
+  return `<section class="resultsOrientation" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="resultsOrientationHeader"><div><div class="sectionKicker">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</div><h3 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h3><p>${escapeHtml(model.topic)}</p></div><div class="orientationGate ${gateClass}"><span>${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong>${escapeHtml(model.publication.label)}</strong></div></header><div class="orientationMain"><article class="orientationConclusion"><span>${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></article><div class="orientationMetrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}"><div class="orientationMetric ${pctClass(model.readiness)}"><strong>${model.readiness}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="orientationMetric ${pctClass(model.coverage)}"><strong>${model.coverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div></div></div><div class="orientationSignals"><article class="orientationSignal uncertainty"><span>${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></article><article class="orientationSignal action"><span>${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></article></div></section>${resultsExplanationHtml(explanation)}<div class="diagnosticsDivider"><span>${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</span></div>`;
+}
+function authoredText(...values) {
+  for (const value of values) {
+    const normalized = Array.isArray(value)
+      ? value.map((item) => String(item ?? "").trim()).filter(Boolean).join(" · ")
+      : String(value ?? "").trim();
+    if (normalized) return normalized;
+  }
+  return "";
+}
+function explanationCopy(key) {
+  const copy = {
+    actors: {
+      label: labelText("Actors & affected groups", "الفاعلون والفئات المتأثرة", "Acteurs et groupes concernés"),
+      description: labelText(
+        "Who holds decision power and who bears the consequences.",
+        "من يملك سلطة القرار ومن يتحمّل النتائج.",
+        "Qui détient le pouvoir de décision et qui en supporte les conséquences.",
+      ),
+    },
+    mechanisms: {
+      label: labelText("Mechanisms & instruments", "الآليات والأدوات", "Mécanismes et instruments"),
+      description: labelText(
+        "Which instruments, infrastructures, and causal pathways produce the outcome.",
+        "ما الأدوات والبنى التحتية والمسارات السببية التي تنتج النتيجة.",
+        "Quels instruments, infrastructures et chemins causaux produisent le résultat.",
+      ),
+    },
+    evidence: {
+      label: labelText("Evidence & counter-evidence", "الأدلة والأدلة المضادة", "Preuves et contre-preuves"),
+      description: labelText(
+        "Which claims are supported, challenged, or still unverified.",
+        "ما الادعاءات المدعومة أو المطعون فيها أو التي لم تُتحقق بعد.",
+        "Quels énoncés sont étayés, contestés ou restent à vérifier.",
+      ),
+    },
+    tensions: {
+      label: labelText("Tensions & contradictions", "التوترات والتناقضات", "Tensions et contradictions"),
+      description: labelText(
+        "Where rhetoric, care, control, intentions, and actions diverge.",
+        "أين يتباعد الخطاب والرعاية والضبط والنوايا والأفعال.",
+        "Où divergent discours, soin, contrôle, intentions et actions.",
+      ),
+    },
+    effects: {
+      label: labelText("Effects & distribution", "الآثار والتوزيع", "Effets et distribution"),
+      description: labelText(
+        "Who benefits, who bears costs, and how power or access changes.",
+        "من يستفيد ومن يتحمّل الأعباء وكيف تتغيّر السلطة أو إمكانية الوصول.",
+        "Qui bénéficie, qui supporte les coûts et comment évoluent le pouvoir ou l’accès.",
+      ),
+    },
+  };
+  return copy[key];
+}
+function explanationSection(key, items, target) {
+  const copy = explanationCopy(key);
+  return {
+    ...copy,
+    items,
+    total: items.length,
+    target,
+    actionLabel: labelText("Inspect details", "افحص التفاصيل", "Examiner les détails"),
+    emptyLabel: labelText(
+      "No authored signals in this section.",
+      "لا توجد إشارات مؤلفة في هذا القسم.",
+      "Aucun signal rédigé dans cette section.",
+    ),
+  };
+}
+function strategicResultsExplanation(a) {
+  const evidenceItems = arr(a.evidence?.items).map((item) => ({
+    name: authoredText(item.source_title, item.claim),
+    summary: authoredText(
+      item.counter_evidence
+        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}: ${item.counter_evidence}`
+        : item.claim,
+      item.source_note,
+      item.uncertainty,
+    ),
+    meta: [item.basis, item.confidence],
+  }));
+  const sections = {
+    actors: explanationSection(
+      "actors",
+      arr(a.actors).map((item) => ({
+        name: authoredText(item.name, item.title),
+        summary: authoredText(item.rationale, item.role),
+        meta: [item.category, item.confidence],
+      })),
+      { review: "pillars", pillar: "actors" },
+    ),
+    mechanisms: explanationSection(
+      "mechanisms",
+      arr(a.tools).map((item) => ({
+        name: authoredText(item.name, item.title),
+        summary: authoredText(item.rationale, item.description),
+        meta: [item.type, item.confidence],
+      })),
+      { review: "pillars", pillar: "tools" },
+    ),
+    evidence: explanationSection("evidence", evidenceItems, { review: "evidence" }),
+    tensions: explanationSection(
+      "tensions",
+      arr(a.contradictions?.items).map((item) => ({
+        name: authoredText(item.rhetoric, item.name, item.title),
+        summary: authoredText(item.interpretation, item.actions),
+        meta: [item.contradiction_type || item.type, item.confidence],
+      })),
+      { review: "contradictions" },
+    ),
+    effects: explanationSection(
+      "effects",
+      arr(a.results).map((item) => ({
+        name: authoredText(item.name, item.title),
+        summary: authoredText(item.rationale, item.description),
+        meta: [item.type, item.confidence],
+      })),
+      { review: "pillars", pillar: "results" },
+    ),
+  };
+  return createResultsExplanation({ lens: "strategic", sections });
+}
+function biopoliticalResultsExplanation(a) {
+  const actors = [
+    ...arr(a.power_map?.actors).map((item) => ({
+      name: authoredText(item.name),
+      summary: authoredText(item.formal_mandate, item.stated_objectives),
+      meta: [item.role, item.confidence],
+    })),
+    ...arr(a.power_map?.affected_populations).map((item) => ({
+      name: authoredText(item.name),
+      summary: authoredText(item.burdens, item.benefits, item.agency),
+      meta: [labelText("Affected population", "فئة متأثرة", "Population concernée"), item.confidence],
+    })),
+    ...arr(a.power_map?.institutions).map((item) => ({
+      name: authoredText(item.name),
+      summary: authoredText(item.mandate, item.accountability),
+      meta: [item.role, item.confidence],
+    })),
+  ];
+  const mechanisms = [
+    ...arr(a.mechanisms?.instruments).map((item) => ({
+      name: authoredText(item.name, item.type),
+      summary: authoredText(item.mechanism, item.stated_purpose),
+      meta: [item.type, item.confidence],
+    })),
+    ...arr(a.mechanisms?.infrastructures).map((item) => ({
+      name: authoredText(item.name, item.owner),
+      summary: authoredText(item.dependency_created, item.actions_enabled_or_blocked),
+      meta: [labelText("Infrastructure", "بنية تحتية", "Infrastructure"), item.confidence],
+    })),
+    ...arr(a.mechanisms?.political_economy).map((item) => ({
+      name: authoredText(item.ownership, item.dependency_model),
+      summary: authoredText(item.scarcity_mechanism, item.dependency_model),
+      meta: [labelText("Political economy", "الاقتصاد السياسي", "Économie politique"), item.confidence],
+    })),
+    ...arr(a.mechanisms?.power_modes).map((item) => ({
+      name: authoredText(displayEnum(item.mode), item.mode),
+      summary: authoredText(item.mechanism),
+      meta: [item.confidence],
+    })),
+  ];
+  const evidenceItems = arr(a.evidence?.items).map((item) => ({
+    name: authoredText(item.source_title, item.claim),
+    summary: authoredText(
+      item.counter_evidence
+        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}: ${item.counter_evidence}`
+        : item.claim,
+      item.limitations,
+      item.uncertainty,
+    ),
+    meta: [item.verification_status, item.confidence],
+  }));
+  const populationNames = new Map(
+    arr(a.power_map?.affected_populations).map((item) => [item.id, item.name]),
+  );
+  const sections = {
+    actors: explanationSection("actors", actors, { review: "pillars", pillar: "actors_institutions" }),
+    mechanisms: explanationSection("mechanisms", mechanisms, { review: "pillars", pillar: "mechanisms_infrastructure" }),
+    evidence: explanationSection("evidence", evidenceItems, { review: "evidence" }),
+    tensions: explanationSection(
+      "tensions",
+      arr(a.intervention_assessment?.care_control_tensions).map((item) => ({
+        name: authoredText(item.care_claim, item.id),
+        summary: authoredText(item.interpretation, item.control_effects),
+        meta: [item.confidence],
+      })),
+      { review: "pillars", pillar: "intervention_capture" },
+    ),
+    effects: explanationSection(
+      "effects",
+      arr(a.distribution?.items).map((item) => ({
+        name: authoredText(populationNames.get(item.population_id), item.population_id),
+        summary: authoredText(item.burdens, item.benefits, item.risk),
+        meta: [item.outcome_character, item.confidence],
+      })),
+      { review: "pillars", pillar: "distribution_effects" },
+    ),
+  };
+  return createResultsExplanation({ lens: "biopolitical", sections });
+}
+function resultsExplanationHtml(model) {
+  if (!model) return "";
+  const cards = model.sections
+    .map((section, index) => {
+      const items = section.items.length
+        ? `<ol class="explanationItems">${section.items
+            .map(
+              (item) =>
+                `<li><strong>${escapeHtml(item.name)}</strong>${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ""}${item.meta.length ? `<div class="explanationMeta">${item.meta.map((value) => pill(value)).join("")}</div>` : ""}</li>`,
+            )
+            .join("")}</ol>`
+        : `<p class="explanationEmpty">${escapeHtml(section.emptyLabel)}</p>`;
+      return `<article class="explanationCard" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header><span class="explanationIndex">${String(index + 1).padStart(2, "0")}</span><div><h4 id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h4><p>${escapeHtml(section.description)}</p></div><span class="explanationCount" aria-label="${escapeHtml(`${section.total} ${itemsWord()}`)}">${section.total}</span></header>${items}<button class="explanationInspect" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article>`;
+    })
+    .join("");
+  return `<section class="resultsExplanation" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="resultsExplanationHeader"><div><div class="sectionKicker">${escapeHtml(labelText("Explanation", "الشرح", "Explication"))}</div><h3 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h3></div><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></header><div class="explanationGrid">${cards}</div></section>`;
+}
+function wireResultsExplanation(lens) {
+  document.querySelectorAll("[data-explanation-open]").forEach((button) => {
+    button.onclick = () => {
+      const review = button.dataset.explanationReview;
+      const pillar = button.dataset.explanationPillar || null;
+      if (!review) return;
+      state.activeReview = review;
+      state.activePillar = pillar;
+      const biopolitical = lens === "biopolitical";
+      if (biopolitical) renderBiopoliticalReview();
+      else renderReview();
+      requestAnimationFrame(() => {
+        const selector = pillar
+          ? biopolitical
+            ? `[data-bio-acc="${CSS.escape(pillar)}"]`
+            : `[data-acc="${CSS.escape(pillar)}"]`
+          : biopolitical
+            ? `[data-bio-review="${CSS.escape(review)}"]`
+            : `[data-review="${CSS.escape(review)}"]`;
+        const target = document.querySelector(selector);
+        target?.scrollIntoView({ behavior: "auto", block: "nearest" });
+        target?.focus({ preventScroll: true });
+      });
+    };
+  });
 }
 function renderOverview() {
   const a = state.analysis;
@@ -3760,7 +4005,7 @@ function renderOverview() {
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: a.quality_gate?.next_improvement || h.next,
   });
-  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation)}<div class="summaryGrid"><div class="intelBrief">${qualityGateHtml(a)}<div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(b.provenance.sourceTraceability)}"><div class="healthCardValue">${b.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(b.provenance.humanReview)}"><div class="healthCardValue">${b.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${gate.cls}"><div class="sectionKicker">${t("qualityGate")}</div><div class="publicationState ${b.provenance.publicationApproved ? "approved" : "blocked"}">${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</div><div class="decisionMetric"><strong>${b.overall}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="decisionMetric"><strong>${b.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
+  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="summaryGrid"><div class="intelBrief">${qualityGateHtml(a)}<div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(b.provenance.sourceTraceability)}"><div class="healthCardValue">${b.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(b.provenance.humanReview)}"><div class="healthCardValue">${b.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${gate.cls}"><div class="sectionKicker">${t("qualityGate")}</div><div class="publicationState ${b.provenance.publicationApproved ? "approved" : "blocked"}">${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</div><div class="decisionMetric"><strong>${b.overall}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="decisionMetric"><strong>${b.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -3875,7 +4120,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.23";
+    "2.1.0-alpha.25";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4434,7 +4679,7 @@ function renderBiopoliticalOverview() {
     uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: health.next,
   });
-  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation)}<div class="summaryGrid"><div class="intelBrief">${bioGateHtml(a)}<div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div><div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(scores.provenance.sourceTraceability)}"><div class="healthCardValue">${scores.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(scores.provenance.humanReview)}"><div class="healthCardValue">${scores.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${health.publishable ? "pct-excellent" : "pct-low"}"><div class="sectionKicker">${escapeHtml(t("qualityGate"))}</div><div class="publicationState ${health.publishable ? "approved" : "blocked"}">${escapeHtml(gateLabel)}</div><div class="decisionMetric"><strong>${scores.overall}%</strong><span>${escapeHtml(t("scoreSystem"))}</span></div><div class="decisionMetric"><strong>${scores.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
+  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="summaryGrid"><div class="intelBrief">${bioGateHtml(a)}<div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div><div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(scores.provenance.sourceTraceability)}"><div class="healthCardValue">${scores.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(scores.provenance.humanReview)}"><div class="healthCardValue">${scores.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${health.publishable ? "pct-excellent" : "pct-low"}"><div class="sectionKicker">${escapeHtml(t("qualityGate"))}</div><div class="publicationState ${health.publishable ? "approved" : "blocked"}">${escapeHtml(gateLabel)}</div><div class="decisionMetric"><strong>${scores.overall}%</strong><span>${escapeHtml(t("scoreSystem"))}</span></div><div class="decisionMetric"><strong>${scores.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");
@@ -4596,6 +4841,7 @@ function renderBiopoliticalReview() {
     "aria-labelledby",
     `bio-review-tab-${state.activeReview}`,
   );
+  wireResultsExplanation("biopolitical");
   REFERENCE_UI.bind(currentBiopoliticalGraph(), {
     lang: state.lang,
     onOpenRecord: openBiopoliticalRecord,
@@ -4653,7 +4899,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.23";
+    "2.1.0-alpha.25";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4743,6 +4989,7 @@ function renderReview() {
       `review-tab-${state.activeReview}`,
     );
   }
+  wireResultsExplanation("strategic");
   document.querySelectorAll("[data-acc]").forEach(
     (b) =>
       (b.onclick = () => {

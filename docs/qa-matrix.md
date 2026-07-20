@@ -38,6 +38,7 @@ npm run test:browser
 | `rtl-mobile.spec.js` | Arabic RTL and 390 px overflow |
 | `import-validation.spec.js` | future contract, malformed type, duplicate ID, migrated draft |
 | `lens-import-contract.spec.js` | imported-lens authority |
+| `results-explanation.spec.js` | shared explanation hierarchy and cross-lens keyboard drill-down |
 | `export-contract.spec.js` | report identities and metadata |
 | `export-completeness.spec.js` | lossless high-value field and JSON coverage |
 | `cross-locale-export-contract.spec.js` | AR/EN/FR analysis-language exports |

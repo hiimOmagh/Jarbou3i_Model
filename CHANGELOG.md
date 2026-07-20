@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0-alpha.25 — Results Explanation Runtime-Authority Contract
+
+- Replaced fixture-file evidence-title assertions with runtime-rendered evidence names for both lenses.
+- Verified that each promoted evidence name survives keyboard drill-down into the authoritative detailed record.
+- Added a static guard that rejects fixture-only evidence phrases in the browser contract.
+- Preserved the complete Alpha.24 product implementation unchanged.
+
+## 2.1.0-alpha.24 — Phase 3 Results Explanation Hierarchy
+
+- Added one shared explanation hierarchy for actors, mechanisms, evidence, tensions, and effects across both analytical lenses.
+- Added concise authored previews with complete-record counts and keyboard-accessible drill-down into existing detail views.
+- Added an immutable lens-neutral explanation view model that never retains canonical analysis objects.
+- Added trilingual, RTL, compact-density, forced-colours, print, and 320 px responsive presentation.
+- Added cross-lens unit, static, and browser regression contracts.
+- Preserved all schemas, scoring, prompts, imports, relationship graphs, standalone reports, and exports.
+
 ## 2.1.0-alpha.23 — Results Namespace Browser Contract Correction
 
 - Updated both Results Workspace metadata assertions to the isolated `data-analysis-lens` contract.
