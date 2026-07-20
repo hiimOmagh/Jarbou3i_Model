@@ -19,10 +19,12 @@ const explorerStyles = read("src/relationship-explorer.css");
 const styles = read("src/styles.css");
 const smokeBrowser = read("tests/smoke.spec.js");
 const applicationShellBrowser = read("tests/application-shell.spec.js");
+const resultsWorkspaceBrowser = read("tests/results-workspace.spec.js");
 const parser = read("src/json-parser.js");
 const platformState = read("src/core/platform-state.js");
 const shellPreferences = read("src/core/shell-preferences.js");
 const shellNavigation = read("src/core/shell-navigation.js");
+const resultsOrientation = read("src/core/results-orientation.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -56,6 +58,7 @@ for (const [file, source] of [
   ["src/core/platform-state.js", platformState],
   ["src/core/shell-preferences.js", shellPreferences],
   ["src/core/shell-navigation.js", shellNavigation],
+  ["src/core/results-orientation.js", resultsOrientation],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -98,6 +101,7 @@ for (const file of [
   "src/core/platform-state.js",
   "src/core/shell-preferences.js",
   "src/core/shell-navigation.js",
+  "src/core/results-orientation.js",
   "src/core/persistence.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
@@ -106,6 +110,8 @@ for (const file of [
   "src/lenses/biopolitical/adapter.js",
   "tests/shell-preferences-check.mjs",
   "tests/shell-navigation-check.mjs",
+  "tests/results-orientation-check.mjs",
+  "tests/results-workspace.spec.js",
   "tests/application-shell.spec.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
@@ -257,6 +263,46 @@ for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFoc
 for (const token of ["preventScroll: true", 'deleteView.press("Enter")']) {
   if (!relationshipBrowser.includes(token)) fail(`saved-view keyboard regression token missing: ${token}`);
 }
+for (const token of [
+  "createResultsOrientation",
+  "resultsOrientationHtml",
+  'data-results-orientation',
+  'data-results-orientation data-analysis-lens=',
+  'lens: "strategic"',
+  'lens: "biopolitical"',
+]) {
+  if (!app.includes(token)) fail(`Phase 3 results-orientation runtime token missing: ${token}`);
+}
+if (app.includes('data-results-orientation data-lens=')) {
+  fail("results metadata must not reuse the interactive lens-control namespace");
+}
+if ((app.match(/querySelectorAll\("#analysisLens \[data-lens\]"\)/g) || []).length !== 2) {
+  fail("lens-control rendering and event binding must remain scoped to #analysisLens");
+}
+for (const token of [
+  ".resultsOrientation",
+  ".orientationConclusion",
+  ".orientationGate",
+  ".orientationSignals",
+  ".diagnosticsDivider",
+]) {
+  if (!styles.includes(token)) fail(`Phase 3 results-orientation style token missing: ${token}`);
+}
+for (const token of [
+  "promotedNextAction",
+  ".intelBrief .nextAction",
+  "toContainText(promotedNextAction)",
+  "toHaveAttribute('data-analysis-lens', 'strategic')",
+  "toHaveAttribute('data-analysis-lens', 'biopolitical')",
+]) {
+  if (!resultsWorkspaceBrowser.includes(token)) fail(`results authority assertion missing: ${token}`);
+}
+if (resultsWorkspaceBrowser.includes("orientation).toHaveAttribute('data-lens'")) {
+  fail("results browser contract must not assert the reserved lens-control attribute");
+}
+if (resultsWorkspaceBrowser.includes("Replace generic historical notes")) {
+  fail("results workspace test must not substitute fixture text for runtime authority");
+}
 if (/html,body\{[^}]*scroll-behavior:smooth/.test(styles)) {
   fail("global smooth scrolling must not block browser actionability scrolling");
 }
@@ -326,14 +372,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.19") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.23") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.19"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.23"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.19"')) {
+if (!app.includes('"2.1.0-alpha.23"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

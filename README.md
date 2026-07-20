@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.19` delivers the responsive command and navigation slice of the premium application shell with bounded cross-browser CI execution, while preserving the fully verified Alpha.14 analytical baseline for a static, trilingual workbench with two independent contracts:
+Version `2.1.0-alpha.23` begins the Results Workspace with a shared decision-orientation layer, corrected browser contracts, and isolated lens-control metadata namespace, while preserving the approved Alpha.19 shell and the fully verified analytical baseline for a static, trilingual workbench with two independent contracts:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.

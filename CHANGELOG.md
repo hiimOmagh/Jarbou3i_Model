@@ -1,5 +1,34 @@
 # Changelog
 
+## 2.1.0-alpha.23 — Results Namespace Browser Contract Correction
+
+- Updated both Results Workspace metadata assertions to the isolated `data-analysis-lens` contract.
+- Added a static guard that rejects the obsolete results-region `data-lens` assertion.
+- Preserved the complete Alpha.22 product implementation unchanged.
+- Added no analytical, schema, scoring, layout, localization, import, report, or export changes.
+
+## 2.1.0-alpha.22 — Results Lens Namespace Isolation
+
+- Reserved `data-lens` for the interactive lens radio controls and moved results metadata to `data-analysis-lens`.
+- Scoped lens rendering and event binding to the `#analysisLens` control group.
+- Restored import-contract selector determinism across Chromium, Firefox, WebKit, and mobile Chromium.
+- Added a static regression gate for control/metadata namespace separation.
+- Preserved analytical, schema, scoring, localization, import, report, and export behavior.
+
+## 2.1.0-alpha.21 — Results Orientation Test Authority Correction
+
+- Replaced an over-specific fixture-text assertion with a direct comparison against the runtime health engine’s rendered next action.
+- Preserved the complete Alpha.20 product implementation unchanged.
+- Added no analytical, schema, scoring, layout, localization, import, report, or export changes.
+
+## 2.1.0-alpha.20 — Phase 3 Results Orientation
+
+- Added one shared orientation hierarchy across Strategic and Biopolitical results.
+- Promoted conclusion, publication gate, decision readiness, analytical coverage, principal uncertainty, and recommended next action above detailed diagnostics.
+- Added an immutable lens-neutral results-orientation view model without canonical analysis references.
+- Added trilingual, RTL, forced-colours, print, compact-density, and 320 px responsive presentation.
+- Preserved all schemas, scoring, prompts, imports, evidence, graphs, reports, and exports.
+
 ## 2.1.0-alpha.19
 
 - Consolidated Phase 2 Slice 2 with the Alpha.17 GitHub Actions incident correction.

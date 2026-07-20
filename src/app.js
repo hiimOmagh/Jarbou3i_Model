@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.19 — responsive shell with bounded browser gates */
+/* Jarbou3i Model v2.1.0-alpha.23 — results-orientation browser contract correction */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -12,6 +12,7 @@ import "./json-parser.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { createShellPreferences, normalizeShellDensity } from "./core/shell-preferences.js";
 import { nextShellSection, resolveShellCommand } from "./core/shell-navigation.js";
+import { createResultsOrientation } from "./core/results-orientation.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
@@ -1139,7 +1140,7 @@ function renderLensToggle() {
     "bio-v2",
     state.analysisLens === "biopolitical",
   );
-  document.querySelectorAll("[data-lens]").forEach((btn) => {
+  document.querySelectorAll("#analysisLens [data-lens]").forEach((btn) => {
     const active = btn.dataset.lens === state.analysisLens;
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-checked", active ? "true" : "false");
@@ -3732,6 +3733,10 @@ function scoreFormulaHtml() {
 function itemCard(obj, extra = "") {
   return `<article class="item"><div class="itemTitle">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</div><div class="itemMeta">${pill(obj.type || obj.category || obj.frame || obj.basis)}${pill(obj.confidence, "confidence")}${pill(obj.horizon || obj.timeframe)}${pill(obj.stakes)}</div>${obj.rationale ? `<div class="itemText">${escapeHtml(obj.rationale)}</div>` : ""}${extra}</article>`;
 }
+function resultsOrientationHtml(model) {
+  const gateClass = model.publication.approved ? "approved" : "blocked";
+  return `<section class="resultsOrientation" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="resultsOrientationHeader"><div><div class="sectionKicker">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</div><h3 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h3><p>${escapeHtml(model.topic)}</p></div><div class="orientationGate ${gateClass}"><span>${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong>${escapeHtml(model.publication.label)}</strong></div></header><div class="orientationMain"><article class="orientationConclusion"><span>${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></article><div class="orientationMetrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}"><div class="orientationMetric ${pctClass(model.readiness)}"><strong>${model.readiness}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="orientationMetric ${pctClass(model.coverage)}"><strong>${model.coverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div></div></div><div class="orientationSignals"><article class="orientationSignal uncertainty"><span>${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></article><article class="orientationSignal action"><span>${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></article></div></section><div class="diagnosticsDivider"><span>${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</span></div>`;
+}
 function renderOverview() {
   const a = state.analysis;
   const warnings = getWarnings(a);
@@ -3743,7 +3748,19 @@ function renderOverview() {
         .join("")
     : `<div class="warning good">${escapeHtml(t("healthGood"))}</div>`;
   const gate = qualityGate(a);
-  return `<h3>${t("overview")}</h3><div class="summaryGrid"><div class="intelBrief">${qualityGateHtml(a)}<div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(b.provenance.sourceTraceability)}"><div class="healthCardValue">${b.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(b.provenance.humanReview)}"><div class="healthCardValue">${b.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${gate.cls}"><div class="sectionKicker">${t("qualityGate")}</div><div class="publicationState ${b.provenance.publicationApproved ? "approved" : "blocked"}">${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</div><div class="decisionMetric"><strong>${b.overall}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="decisionMetric"><strong>${b.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
+  const authoredUncertainty = arr(a.evidence?.items).find((item) => String(item.uncertainty || "").trim())?.uncertainty;
+  const orientation = createResultsOrientation({
+    lens: "strategic",
+    topic: a.subject.title || state.topic,
+    conclusion: a.subject.executive_thesis || a.subject.question || a.subject.title,
+    publicationApproved: b.provenance.publicationApproved,
+    publicationLabel: b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"),
+    readiness: b.overall,
+    coverage: b.analyticalCoverage,
+    uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
+    nextAction: a.quality_gate?.next_improvement || h.next,
+  });
+  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation)}<div class="summaryGrid"><div class="intelBrief">${qualityGateHtml(a)}<div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(b.provenance.sourceTraceability)}"><div class="healthCardValue">${b.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(b.provenance.humanReview)}"><div class="healthCardValue">${b.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${gate.cls}"><div class="sectionKicker">${t("qualityGate")}</div><div class="publicationState ${b.provenance.publicationApproved ? "approved" : "blocked"}">${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</div><div class="decisionMetric"><strong>${b.overall}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="decisionMetric"><strong>${b.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -3858,7 +3875,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.19";
+    "2.1.0-alpha.23";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4404,7 +4421,20 @@ function renderBiopoliticalOverview() {
   const gateLabel = health.publishable
     ? labelText("Approved", "معتمد", "Approuvé")
     : labelText("Blocked", "محظور", "Bloqué");
-  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}<div class="summaryGrid"><div class="intelBrief">${bioGateHtml(a)}<div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div><div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(scores.provenance.sourceTraceability)}"><div class="healthCardValue">${scores.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(scores.provenance.humanReview)}"><div class="healthCardValue">${scores.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${health.publishable ? "pct-excellent" : "pct-low"}"><div class="sectionKicker">${escapeHtml(t("qualityGate"))}</div><div class="publicationState ${health.publishable ? "approved" : "blocked"}">${escapeHtml(gateLabel)}</div><div class="decisionMetric"><strong>${scores.overall}%</strong><span>${escapeHtml(t("scoreSystem"))}</span></div><div class="decisionMetric"><strong>${scores.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
+  const authoredUncertainty = arr(a.calibrated_conclusion?.unknown)[0]
+    || arr(a.evidence?.items).find((item) => String(item.uncertainty || "").trim())?.uncertainty;
+  const orientation = createResultsOrientation({
+    lens: "biopolitical",
+    topic: a.subject.title || state.topic,
+    conclusion: a.subject.executive_finding || a.subject.research_question || a.subject.title,
+    publicationApproved: health.publishable,
+    publicationLabel: gateLabel,
+    readiness: scores.overall,
+    coverage: scores.analyticalCoverage,
+    uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
+    nextAction: health.next,
+  });
+  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation)}<div class="summaryGrid"><div class="intelBrief">${bioGateHtml(a)}<div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div><div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(scores.provenance.sourceTraceability)}"><div class="healthCardValue">${scores.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(scores.provenance.humanReview)}"><div class="healthCardValue">${scores.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${health.publishable ? "pct-excellent" : "pct-low"}"><div class="sectionKicker">${escapeHtml(t("qualityGate"))}</div><div class="publicationState ${health.publishable ? "approved" : "blocked"}">${escapeHtml(gateLabel)}</div><div class="decisionMetric"><strong>${scores.overall}%</strong><span>${escapeHtml(t("scoreSystem"))}</span></div><div class="decisionMetric"><strong>${scores.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");
@@ -4623,7 +4653,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.19";
+    "2.1.0-alpha.23";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4819,7 +4849,7 @@ $("langAr").onclick = () => setLang("ar");
 $("langEn").onclick = () => setLang("en");
 $("langFr").onclick = () => setLang("fr");
 document
-  .querySelectorAll("[data-lens]")
+  .querySelectorAll("#analysisLens [data-lens]")
   .forEach((btn) => (btn.onclick = () => setAnalysisLens(btn.dataset.lens)));
 bindRadioGroupKeyboard("#languageSegment [role=radio]", (button) => {
   const lang = { langAr: "ar", langEn: "en", langFr: "fr" }[button.id];

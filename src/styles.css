@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.19 — source stylesheet */
+/* Jarbou3i Model v2.1.0-alpha.23 — source stylesheet */
 
 :root{
   --bg:#eef2f8;
@@ -854,3 +854,18 @@ body[data-density="compact"] .contentPanel{padding:20px}
   .workspaceNavItem.active,.workspaceNavItem.active .workspaceNavIndex{background:Canvas;color:CanvasText;outline:2px solid Highlight}
   .lensContextSignal,.workspaceTrustDot{background:CanvasText;box-shadow:none}
 }
+
+/* Phase 3, Slice 1 — shared results orientation */
+.resultsOrientation{position:relative;display:grid;gap:16px;max-width:100%;margin:0 0 18px;padding:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:28px;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 8%,var(--surface-solid)),color-mix(in srgb,var(--accent-2) 5%,var(--surface-solid)) 48%,color-mix(in srgb,var(--accent-3) 6%,var(--surface-solid)));box-shadow:0 22px 46px rgba(37,94,232,.09)}
+.resultsOrientation::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:5px;background:linear-gradient(180deg,var(--accent),var(--accent-3))}
+.resultsOrientationHeader{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:18px}.resultsOrientationHeader>div{min-width:0}.resultsOrientationHeader h3{margin:3px 0 4px!important;font-size:clamp(20px,2.2vw,28px)!important}.resultsOrientationHeader p{margin:0;color:var(--muted);font-size:12.5px;font-weight:850;overflow-wrap:anywhere}
+.orientationGate{min-width:132px;display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:16px;background:var(--surface-solid)}.orientationGate span{color:var(--muted);font-size:9.5px;font-weight:1000;text-transform:uppercase;letter-spacing:.07em}.orientationGate strong{font-size:14px}.orientationGate.approved{border-color:color-mix(in srgb,var(--success) 40%,var(--line));color:var(--success)}.orientationGate.blocked{border-color:color-mix(in srgb,var(--danger) 36%,var(--line));color:var(--danger)}
+.orientationMain{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,300px);gap:14px;align-items:stretch}.orientationConclusion,.orientationSignal,.orientationMetric{min-width:0;border:1px solid color-mix(in srgb,var(--accent) 12%,var(--line));background:color-mix(in srgb,var(--surface-solid) 92%,transparent);box-shadow:var(--shadow-xs)}.orientationConclusion{display:grid;align-content:center;gap:7px;padding:18px;border-radius:21px}.orientationConclusion span,.orientationSignal span{color:var(--muted);font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.07em}.orientationConclusion p{margin:0;color:var(--strong);font-size:16px;font-weight:850;line-height:1.55;overflow-wrap:anywhere}
+.orientationMetrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}.orientationMetric{display:grid;align-content:center;gap:5px;padding:14px;border-radius:19px;text-align:center}.orientationMetric strong{color:var(--strong);font-size:28px;line-height:1}.orientationMetric span{color:var(--muted);font-size:10.5px;font-weight:900;line-height:1.35}.orientationMetric::after{content:"";height:5px;margin-top:4px;border-radius:999px;background:var(--ringTone,var(--accent))}
+.orientationSignals{display:grid;grid-template-columns:1fr 1fr;gap:10px}.orientationSignal{padding:14px 15px;border-radius:18px}.orientationSignal p{margin:5px 0 0;color:var(--text);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.orientationSignal.uncertainty{border-inline-start:4px solid var(--warn)}.orientationSignal.action{border-inline-start:4px solid var(--accent)}
+.diagnosticsDivider{display:flex;align-items:center;gap:12px;margin:3px 0 14px;color:var(--muted);font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.08em}.diagnosticsDivider::before,.diagnosticsDivider::after{content:"";height:1px;flex:1;background:var(--line)}
+body[data-density="compact"] .resultsOrientation{gap:12px;padding:16px}body[data-density="compact"] .orientationConclusion{padding:14px}
+@media(max-width:760px){.resultsOrientation{padding:16px;border-radius:22px}.resultsOrientationHeader,.orientationMain,.orientationSignals{grid-template-columns:1fr}.orientationGate{width:100%;min-width:0}.orientationMetrics{grid-template-columns:1fr 1fr}.orientationConclusion p{font-size:14.5px}}
+@media(max-width:420px){.orientationMetrics{grid-template-columns:1fr}.orientationMetric{grid-template-columns:auto minmax(0,1fr);align-items:center;text-align:start}.orientationMetric::after{grid-column:1/-1}}
+@media print{.resultsOrientation{box-shadow:none;break-inside:avoid}.diagnosticsDivider{display:none}}
+@media (forced-colors:active){.resultsOrientation,.orientationGate,.orientationConclusion,.orientationSignal,.orientationMetric{border:1px solid CanvasText;background:Canvas}.resultsOrientation::before,.orientationMetric::after{background:Highlight}.orientationGate.approved,.orientationGate.blocked{color:CanvasText}}
