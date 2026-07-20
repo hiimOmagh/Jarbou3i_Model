@@ -21,12 +21,14 @@ const smokeBrowser = read("tests/smoke.spec.js");
 const applicationShellBrowser = read("tests/application-shell.spec.js");
 const resultsWorkspaceBrowser = read("tests/results-workspace.spec.js");
 const resultsExplanationBrowser = read("tests/results-explanation.spec.js");
+const resultsInspectionBrowser = read("tests/results-inspection.spec.js");
 const parser = read("src/json-parser.js");
 const platformState = read("src/core/platform-state.js");
 const shellPreferences = read("src/core/shell-preferences.js");
 const shellNavigation = read("src/core/shell-navigation.js");
 const resultsOrientation = read("src/core/results-orientation.js");
 const resultsExplanation = read("src/core/results-explanation.js");
+const resultsInspection = read("src/core/results-inspection.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -62,6 +64,7 @@ for (const [file, source] of [
   ["src/core/shell-navigation.js", shellNavigation],
   ["src/core/results-orientation.js", resultsOrientation],
   ["src/core/results-explanation.js", resultsExplanation],
+  ["src/core/results-inspection.js", resultsInspection],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -106,6 +109,7 @@ for (const file of [
   "src/core/shell-navigation.js",
   "src/core/results-orientation.js",
   "src/core/results-explanation.js",
+  "src/core/results-inspection.js",
   "src/core/persistence.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
@@ -116,8 +120,10 @@ for (const file of [
   "tests/shell-navigation-check.mjs",
   "tests/results-orientation-check.mjs",
   "tests/results-explanation-check.mjs",
+  "tests/results-inspection-check.mjs",
   "tests/results-workspace.spec.js",
   "tests/results-explanation.spec.js",
+  "tests/results-inspection.spec.js",
   "tests/application-shell.spec.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
@@ -364,6 +370,57 @@ for (const fixtureOnlyText of [
     fail(`results explanation browser test must use runtime authority instead of fixture text: ${fixtureOnlyText}`);
   }
 }
+for (const token of [
+  "createResultsInspectionIndex",
+  "STRATEGIC_DESCRIPTORS",
+  "collectOccurrences",
+  "supporting_evidence_ids",
+  "counter_evidence_ids",
+  "approvalEligible",
+  "Object.freeze",
+]) {
+  if (!resultsInspection.includes(token)) fail(`Phase 3 inspection model token missing: ${token}`);
+}
+for (const token of [
+  "currentResultsInspectionIndex",
+  "renderInspectionDirectory",
+  "bindResultsInspection",
+  "openInspectionOccurrence",
+  "data-results-inspection",
+  "data-inspection-id",
+  'state.activeReview === "inspection"',
+]) {
+  if (!app.includes(token)) fail(`Phase 3 inspection runtime token missing: ${token}`);
+}
+for (const token of [
+  "data-inspection-section=\"provenance\"",
+  "data-inspection-section=\"evidence\"",
+  "data-inspection-section=\"audit\"",
+  "data-reference-occurrence",
+  "onOpenOccurrence",
+  "if (rootElement.hidden) returnFocus",
+]) {
+  if (!referenceUi.includes(token)) fail(`Phase 3 inspector interaction token missing: ${token}`);
+}
+for (const token of [
+  ".inspectionDirectory",
+  ".inspectionDirectoryMetrics",
+  ".referenceInspectorSection",
+  ".referenceOccurrences",
+  ".referenceEvidenceGrid",
+]) {
+  if (!styles.includes(token)) fail(`Phase 3 inspection style token missing: ${token}`);
+}
+for (const token of [
+  'data-review="inspection"',
+  'data-bio-review="inspection"',
+  'data-inspection-section="provenance"',
+  'data-inspection-section="occurrences"',
+  'data-inspection-id="E1"',
+  'page.keyboard.press("Escape")',
+]) {
+  if (!resultsInspectionBrowser.includes(token)) fail(`results inspection browser contract missing: ${token}`);
+}
 if (/html,body\{[^}]*scroll-behavior:smooth/.test(styles)) {
   fail("global smooth scrolling must not block browser actionability scrolling");
 }
@@ -433,14 +490,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.25") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.27") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.25"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.27"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.25"')) {
+if (!app.includes('"2.1.0-alpha.27"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

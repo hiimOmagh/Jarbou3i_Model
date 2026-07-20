@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.25 — shared results explanation hierarchy */
+/* Jarbou3i Model v2.1.0-alpha.27 — shared results inspection layer */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -14,6 +14,7 @@ import { createShellPreferences, normalizeShellDensity } from "./core/shell-pref
 import { nextShellSection, resolveShellCommand } from "./core/shell-navigation.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
 import { createResultsExplanation } from "./core/results-explanation.js";
+import { createResultsInspectionIndex } from "./core/results-inspection.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
@@ -104,7 +105,7 @@ const I18N = {
     stateImported: "تحليل مستورد",
     reviewTitle: "مراجعة التحليل الاستراتيجي",
     reviewSubtitle:
-      "تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.",
+      "تنقل بين الخلاصة، الطبقات، التناقضات، السيناريوهات، الأدلة، الفحص، والتصدير.",
     overview: "الخلاصة",
     engine: "الطبقات الست",
     contradictions: "التناقضات",
@@ -130,6 +131,7 @@ const I18N = {
       contradictions: "التناقضات",
       scenarios: "السيناريوهات",
       evidence: "الأدلة",
+      inspection: "الفحص",
       exports: "التصدير",
     },
     navHints: {
@@ -138,6 +140,7 @@ const I18N = {
       contradictions: "الخطاب مقابل الأفعال",
       scenarios: "مسارات مستقبلية قابلة للاختبار",
       evidence: "الأدلة والافتراضات والاختبارات",
+      inspection: "المعرّفات والمصادر وسجل التدقيق",
       exports: "تقرير قابل للمشاركة",
     },
     warnings: {
@@ -381,7 +384,7 @@ const I18N = {
     stateImported: "Analysis imported",
     reviewTitle: "Strategic Analysis Review",
     reviewSubtitle:
-      "Navigate the summary, six layers, contradictions, scenarios, evidence, and exports.",
+      "Navigate the summary, layers, contradictions, scenarios, evidence, inspection, and exports.",
     overview: "Overview",
     engine: "Six layers",
     contradictions: "Contradictions",
@@ -407,6 +410,7 @@ const I18N = {
       contradictions: "Contradictions",
       scenarios: "Scenarios",
       evidence: "Evidence",
+      inspection: "Inspection",
       exports: "Exports",
     },
     navHints: {
@@ -415,6 +419,7 @@ const I18N = {
       contradictions: "Rhetoric versus actions",
       scenarios: "Future paths and falsifiers",
       evidence: "Claims, assumptions, and tests",
+      inspection: "Identifiers, provenance, and audit trail",
       exports: "Download the final report",
     },
     warnings: {
@@ -669,7 +674,7 @@ const I18N = {
     stateImported: "Analyse importée",
     reviewTitle: "Revue de l’analyse stratégique",
     reviewSubtitle:
-      "Naviguez entre la synthèse, les six couches, les contradictions, les scénarios, les preuves et l’export.",
+      "Naviguez entre la synthèse, les couches, les contradictions, les scénarios, les preuves, l’inspection et l’export.",
     overview: "Synthèse",
     engine: "Six couches",
     contradictions: "Contradictions",
@@ -698,6 +703,7 @@ const I18N = {
       contradictions: "Contradictions",
       scenarios: "Scénarios",
       evidence: "Preuves",
+      inspection: "Inspection",
       exports: "Export",
     },
     navHints: {
@@ -706,6 +712,7 @@ const I18N = {
       contradictions: "Rhétorique versus actions",
       scenarios: "Trajectoires futures et falsificateurs",
       evidence: "Énoncés, hypothèses et tests",
+      inspection: "Identifiants, provenance et piste d’audit",
       exports: "Télécharger le rapport final",
     },
     warnings: {
@@ -1930,6 +1937,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       },
       interests: [
         {
+          id: "I1",
           name: "Empêcher le retour de l’hégémonie allemande",
           type: "strategic",
           intensity: 5,
@@ -1940,6 +1948,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
             "Deux guerres mondiales ont transformé le contrôle de la puissance allemande en priorité de sécurité.",
         },
         {
+          id: "I2",
           name: "Reconstruire l’économie internationale",
           type: "economic",
           intensity: 4,
@@ -1952,6 +1961,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       ],
       actors: [
         {
+          id: "A1",
           name: "États-Unis",
           category: "state",
           power_index: 5,
@@ -1964,6 +1974,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
             "Leur capacité industrielle, financière et militaire leur permettait d’organiser l’ordre d’après-guerre.",
         },
         {
+          id: "A2",
           name: "Union soviétique",
           category: "state",
           power_index: 5,
@@ -1978,6 +1989,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       ],
       tools: [
         {
+          id: "T1",
           name: "Institutions internationales",
           type: "diplomatic",
           cost: 3,
@@ -1992,6 +2004,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       ],
       narrative: [
         {
+          id: "N1",
           name: "Empêcher une nouvelle guerre totale",
           frame: "security",
           coherence: 5,
@@ -2004,6 +2017,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       ],
       results: [
         {
+          id: "R1",
           name: "Ordre bipolaire",
           type: "direct",
           goal_achieved_pct: 75,
@@ -2016,6 +2030,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       ],
       feedback: [
         {
+          id: "F1",
           description:
             "La rivalité entre alliés a transformé la coopération militaire en compétition idéologique.",
           adapts: "actors",
@@ -2028,6 +2043,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       contradictions: {
         items: [
           {
+            id: "C1",
             rhetoric:
               "La sécurité collective empêcherait une nouvelle guerre mondiale.",
             contradiction_type: "result_vs_intention",
@@ -2046,6 +2062,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       scenarios: {
         items: [
           {
+            id: "S1",
             name: "Normalisation institutionnelle contenue",
             probability: 45,
             timeframe: "1947–1955",
@@ -2069,11 +2086,17 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       evidence: {
         items: [
           {
+            id: "E1",
             claim:
               "Les États-Unis sortent de la guerre avec une puissance industrielle et financière exceptionnelle.",
             basis: "source_based",
+            source_title: "Référence sur la distribution historique de la puissance",
             source_note:
               "Données historiques générales sur la production et le financement de guerre.",
+            counter_evidence:
+              "Certains États européens ont conservé une capacité institutionnelle et économique substantielle après 1945.",
+            uncertainty:
+              "Inférence historique agrégée ; la source doit être précisée avant toute publication.",
             confidence: "high",
           },
         ],
@@ -2081,6 +2104,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
       assumptions: {
         items: [
           {
+            id: "AS1",
             assumption:
               "La stabilité d’après-guerre dépend de la capacité américaine à financer la reconstruction.",
             risk: "medium",
@@ -2091,6 +2115,11 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           },
         ],
       },
+      links: [
+        { from: "I1", to: "A1", relation: "motivates", confidence: "high" },
+        { from: "A1", to: "T1", relation: "uses", confidence: "high" },
+        { from: "T1", to: "R1", relation: "produces", confidence: "medium" },
+      ],
     });
   const ar = lang === "ar";
   return normalizeAnalysis(
@@ -2107,6 +2136,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           },
           interests: [
             {
+              id: "I1",
               name: "منع عودة الهيمنة الألمانية",
               type: "strategic",
               intensity: 5,
@@ -2117,6 +2147,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 "تكرار الحربين العالميتين جعل احتواء ألمانيا مصلحة أمنية مركزية للحلفاء.",
             },
             {
+              id: "I2",
               name: "إعادة بناء الاقتصاد العالمي",
               type: "economic",
               intensity: 4,
@@ -2129,6 +2160,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           actors: [
             {
+              id: "A1",
               name: "الولايات المتحدة",
               category: "state",
               power_index: 5,
@@ -2141,6 +2173,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 "امتلكت قدرة مالية وصناعية وعسكرية مكّنتها من قيادة النظام الجديد.",
             },
             {
+              id: "A2",
               name: "الاتحاد السوفيتي",
               category: "state",
               power_index: 5,
@@ -2155,6 +2188,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           tools: [
             {
+              id: "T1",
               name: "مؤسسات دولية جديدة",
               type: "diplomatic",
               cost: 3,
@@ -2166,6 +2200,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               rationale: "الأمم المتحدة وبريتون وودز وفّرت أدوات تنسيق وشرعية.",
             },
             {
+              id: "T2",
               name: "الاحتلال وإعادة البناء",
               type: "legal",
               cost: 4,
@@ -2179,6 +2214,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           narrative: [
             {
+              id: "N1",
               name: "منع تكرار الحرب الشاملة",
               frame: "security",
               coherence: 5,
@@ -2191,6 +2227,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           results: [
             {
+              id: "R1",
               name: "صعود نظام ثنائي القطبية",
               type: "direct",
               goal_achieved_pct: 70,
@@ -2200,6 +2237,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               rationale: "انحسر مركز الثقل الأوروبي وصعدت واشنطن وموسكو.",
             },
             {
+              id: "R2",
               name: "بداية الحرب الباردة",
               type: "unintended",
               goal_achieved_pct: 30,
@@ -2212,6 +2250,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           feedback: [
             {
+              id: "F1",
               description:
                 "خوف متبادل بين القوتين دفع إلى أحلاف عسكرية وتسابق تسلح.",
               adapts: "tools",
@@ -2223,6 +2262,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           contradictions: {
             items: [
               {
+                id: "C1",
                 rhetoric: "تحرير الشعوب ومنع الاستبداد",
                 contradiction_type: "rhetoric_vs_action",
                 actions: [
@@ -2240,6 +2280,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           scenarios: {
             items: [
               {
+                id: "S1",
                 name: "ترسيخ النظام ثنائي القطبية",
                 probability: 70,
                 timeframe: "1947–1955",
@@ -2260,9 +2301,15 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           evidence: {
             items: [
               {
+                id: "E1",
                 claim: "أوروبا فقدت مركزية النظام الدولي بعد الحرب.",
                 basis: "inference",
+                source_title: "مرجع تاريخي لتوزيع القوة",
                 source_note: "مستنتج من توزيع القوة بعد 1945",
+                counter_evidence:
+                  "احتفظت بعض الدول الأوروبية بقدرات مؤسسية واقتصادية مهمة بعد عام 1945.",
+                uncertainty:
+                  "استنتاج تاريخي تجميعي؛ يجب تحسين دقة المصدر قبل النشر.",
                 confidence: "high",
               },
             ],
@@ -2270,6 +2317,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           assumptions: {
             items: [
               {
+                id: "AS1",
                 assumption:
                   "القوى الكبرى ستفضّل الاستقرار المؤسسي على العودة لعزلة ما قبل الحرب.",
                 risk: "medium",
@@ -2280,6 +2328,11 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               },
             ],
           },
+          links: [
+            { from: "I1", to: "A1", relation: "motivates", confidence: "high" },
+            { from: "A1", to: "T1", relation: "uses", confidence: "high" },
+            { from: "T1", to: "R1", relation: "produces", confidence: "medium" },
+          ],
         }
       : {
           ...metadata,
@@ -2293,6 +2346,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           },
           interests: [
             {
+              id: "I1",
               name: "Prevent renewed German hegemony",
               type: "strategic",
               intensity: 5,
@@ -2303,6 +2357,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 "The repetition of two world wars made German containment a central Allied security interest.",
             },
             {
+              id: "I2",
               name: "Rebuild the global economy",
               type: "economic",
               intensity: 4,
@@ -2315,6 +2370,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           actors: [
             {
+              id: "A1",
               name: "United States",
               category: "state",
               power_index: 5,
@@ -2327,6 +2383,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 "Its financial, industrial, and military capacity enabled it to lead the new order.",
             },
             {
+              id: "A2",
               name: "Soviet Union",
               category: "state",
               power_index: 5,
@@ -2341,6 +2398,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           tools: [
             {
+              id: "T1",
               name: "New international institutions",
               type: "diplomatic",
               cost: 3,
@@ -2353,6 +2411,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 "The UN and Bretton Woods institutions provided coordination and legitimacy mechanisms.",
             },
             {
+              id: "T2",
               name: "Occupation and reconstruction",
               type: "legal",
               cost: 4,
@@ -2367,6 +2426,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           narrative: [
             {
+              id: "N1",
               name: "Prevent another total war",
               frame: "security",
               coherence: 5,
@@ -2379,6 +2439,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           results: [
             {
+              id: "R1",
               name: "Rise of bipolarity",
               type: "direct",
               goal_achieved_pct: 70,
@@ -2389,6 +2450,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 "Europe receded as the central power arena while Washington and Moscow rose.",
             },
             {
+              id: "R2",
               name: "Beginning of the Cold War",
               type: "unintended",
               goal_achieved_pct: 30,
@@ -2401,6 +2463,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           ],
           feedback: [
             {
+              id: "F1",
               description:
                 "Mutual fear between the two superpowers drove military alliances and arms competition.",
               adapts: "tools",
@@ -2412,6 +2475,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           contradictions: {
             items: [
               {
+                id: "C1",
                 rhetoric: "Liberating peoples and preventing tyranny",
                 contradiction_type: "rhetoric_vs_action",
                 actions: [
@@ -2429,6 +2493,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           scenarios: {
             items: [
               {
+                id: "S1",
                 name: "Consolidation of bipolar order",
                 probability: 70,
                 timeframe: "1947–1955",
@@ -2454,10 +2519,16 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           evidence: {
             items: [
               {
+                id: "E1",
                 claim:
                   "Europe lost centrality in the international system after the war.",
                 basis: "inference",
+                source_title: "Historical power distribution reference",
                 source_note: "Inferred from post-1945 power distribution",
+                counter_evidence:
+                  "Some European states retained substantial institutional and economic capacity after 1945.",
+                uncertainty:
+                  "Aggregated historical inference; source specificity should be improved before publication.",
                 confidence: "high",
               },
             ],
@@ -2465,6 +2536,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           assumptions: {
             items: [
               {
+                id: "AS1",
                 assumption:
                   "Great powers will prefer institutional stability over a return to prewar isolation.",
                 risk: "medium",
@@ -2475,6 +2547,11 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               },
             ],
           },
+          links: [
+            { from: "I1", to: "A1", relation: "motivates", confidence: "high" },
+            { from: "A1", to: "T1", relation: "uses", confidence: "high" },
+            { from: "T1", to: "R1", relation: "produces", confidence: "medium" },
+          ],
         },
   );
 }
@@ -3732,7 +3809,10 @@ function scoreFormulaHtml() {
   return `<div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p>${escapeHtml(scoreFormulaText())}</p><div class="formulaGrid">${entries}</div><div class="scoreBandLegend" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands}</div></div>`;
 }
 function itemCard(obj, extra = "") {
-  return `<article class="item"><div class="itemTitle">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</div><div class="itemMeta">${pill(obj.type || obj.category || obj.frame || obj.basis)}${pill(obj.confidence, "confidence")}${pill(obj.horizon || obj.timeframe)}${pill(obj.stakes)}</div>${obj.rationale ? `<div class="itemText">${escapeHtml(obj.rationale)}</div>` : ""}${extra}</article>`;
+  const inspectionAnchor = obj?.id
+    ? ` data-inspection-id="${escapeHtml(obj.id)}" tabindex="-1"`
+    : "";
+  return `<article class="item"${inspectionAnchor}><div class="itemTitle">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</div><div class="itemMeta">${pill(obj.type || obj.category || obj.frame || obj.basis)}${pill(obj.confidence, "confidence")}${pill(obj.horizon || obj.timeframe)}${pill(obj.stakes)}</div>${obj.rationale ? `<div class="itemText">${escapeHtml(obj.rationale)}</div>` : ""}${extra}</article>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateClass = model.publication.approved ? "approved" : "blocked";
@@ -4024,7 +4104,10 @@ function renderContradictions() {
       ? items
           .map((c) => {
             const layers = affectedLayers(c);
-            return `<article class="conflictCard premiumConflict"><div class="conflictTop"><div><div class="conflictLabel">${t("contradictions")}</div><div class="conflictTitle">${escapeHtml(c.rhetoric || c.name || c.title || "—")}</div></div><div class="chips conflictMeta">${pill(c.contradiction_type || c.type)}${pill(c.confidence, "confidence")}${c.severity !== undefined && c.severity !== null && c.severity !== "" ? pill(`${t("severityShort")} ${c.severity}`, "severity") : ""}</div></div><div class="conflictBodyGrid"><div class="conflictMain"><div class="miniBlock actionBox"><b>${t("actionsResults")}</b><ul class="actionList">${
+            const inspectionAnchor = c?.id
+              ? ` data-inspection-id="${escapeHtml(c.id)}" tabindex="-1"`
+              : "";
+            return `<article class="conflictCard premiumConflict"${inspectionAnchor}><div class="conflictTop"><div><div class="conflictLabel">${t("contradictions")}</div><div class="conflictTitle">${escapeHtml(c.rhetoric || c.name || c.title || "—")}</div></div><div class="chips conflictMeta">${pill(c.contradiction_type || c.type)}${pill(c.confidence, "confidence")}${c.severity !== undefined && c.severity !== null && c.severity !== "" ? pill(`${t("severityShort")} ${c.severity}`, "severity") : ""}</div></div><div class="conflictBodyGrid"><div class="conflictMain"><div class="miniBlock actionBox"><b>${t("actionsResults")}</b><ul class="actionList">${
               arr(c.actions).length
                 ? arr(c.actions)
                     .map((x) => `<li>${escapeHtml(x)}</li>`)
@@ -4056,7 +4139,10 @@ function renderScenarios() {
       ? items
           .map((s) => {
             const pct = valuePct(Number(s.probability));
-            return `<article class="forecastCard ${pctClass(pct)}"><div class="forecastHead"><div><div class="sectionKicker">${t("scenarios")}</div><div class="conflictTitle">${escapeHtml(s.name || s.title || "—")}</div><div class="muted">${escapeHtml(s.timeframe || "—")}</div></div><div class="forecastProbWrap">${probabilityMetric(pct, "md")}</div></div><div class="forecastCols"><div class="miniBlock"><b>${t("drivers")}</b>${
+            const inspectionAnchor = s?.id
+              ? ` data-inspection-id="${escapeHtml(s.id)}" tabindex="-1"`
+              : "";
+            return `<article class="forecastCard ${pctClass(pct)}"${inspectionAnchor}><div class="forecastHead"><div><div class="sectionKicker">${t("scenarios")}</div><div class="conflictTitle">${escapeHtml(s.name || s.title || "—")}</div><div class="muted">${escapeHtml(s.timeframe || "—")}</div></div><div class="forecastProbWrap">${probabilityMetric(pct, "md")}</div></div><div class="forecastCols"><div class="miniBlock"><b>${t("drivers")}</b>${
               arr(s.drivers)
                 .map((x) => "• " + escapeHtml(x))
                 .join("<br>") || "—"
@@ -4080,7 +4166,10 @@ function renderEvidence() {
   const assumptionCard = (a) => {
     const riskText = a.risk || a.risk_level || "";
     const r = riskInfo(riskText);
-    return `<article class="assumptionCard ${r.cls}"><div class="assumptionTop"><div><div class="sectionKicker">${t("assumption")}</div><div class="itemTitle">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</div></div><div class="chips">${pill(riskText, "risk")}${a.confidence ? pill(a.confidence, "confidence") : ""}</div></div><div class="assumptionDetails"><div><span>${t("risk")}</span><p>${escapeHtml(riskText || labelText("No explicit risk stated.", "لا توجد مخاطر مصرح بها."))}</p></div><div><span>${t("test")}</span><p>${escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال."))}</p></div></div></article>`;
+    const inspectionAnchor = a?.id
+      ? ` data-inspection-id="${escapeHtml(a.id)}" tabindex="-1"`
+      : "";
+    return `<article class="assumptionCard ${r.cls}"${inspectionAnchor}><div class="assumptionTop"><div><div class="sectionKicker">${t("assumption")}</div><div class="itemTitle">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</div></div><div class="chips">${pill(riskText, "risk")}${a.confidence ? pill(a.confidence, "confidence") : ""}</div></div><div class="assumptionDetails"><div><span>${t("risk")}</span><p>${escapeHtml(riskText || labelText("No explicit risk stated.", "لا توجد مخاطر مصرح بها."))}</p></div><div><span>${t("test")}</span><p>${escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال."))}</p></div></div></article>`;
   };
   return `<h3>${t("evidence")}</h3><div class="evidenceLedger premiumLedger"><div class="ledgerRow header"><div>${t("claim")}</div><div>${t("basis")}</div><div>${t("confidence")}</div><div>${t("sourceNote")}</div></div>${
     ev.length
@@ -4090,7 +4179,10 @@ function renderEvidence() {
               .filter(Boolean)
               .join(" · ");
             const counter = e.counter_evidence || e.counterEvidence || "";
-            return `<div class="ledgerRow evidenceRow"><div class="evidenceClaim"><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<small class="muted"><br>${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</small>` : ""}</div><div>${pill(e.basis, "basis")}</div><div>${pill(e.confidence, "confidence")}${e.evidence_strength ? pill(`${escapeHtml(e.evidence_strength)}/5`) : ""}</div><div class="sourceNote">${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</div></div>`;
+            const inspectionAnchor = e?.id
+              ? ` data-inspection-id="${escapeHtml(e.id)}" tabindex="-1"`
+              : "";
+            return `<div class="ledgerRow evidenceRow"${inspectionAnchor}><div class="evidenceClaim"><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<small class="muted"><br>${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</small>` : ""}</div><div>${pill(e.basis, "basis")}</div><div>${pill(e.confidence, "confidence")}${e.evidence_strength ? pill(`${escapeHtml(e.evidence_strength)}/5`) : ""}</div><div class="sourceNote">${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</div></div>`;
           })
           .join("")
       : `<div class="empty"><strong>${t("noItems")}</strong></div>`
@@ -4120,7 +4212,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.25";
+    "2.1.0-alpha.27";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4512,6 +4604,129 @@ function buildLosslessStrategicReport() {
   }
 }
 
+let inspectionIndexCache = { analysis: null, lang: "", indexes: new Map() };
+function currentResultsInspectionIndex(lens = state.analysis?.analysis_lens || "strategic") {
+  if (
+    inspectionIndexCache.analysis !== state.analysis
+    || inspectionIndexCache.lang !== state.lang
+  ) {
+    inspectionIndexCache = { analysis: state.analysis, lang: state.lang, indexes: new Map() };
+  }
+  if (inspectionIndexCache.indexes.has(lens)) {
+    return inspectionIndexCache.indexes.get(lens);
+  }
+  const provenance = PROVENANCE.assessEvidenceProvenance(state.analysis, { lens });
+  const index = createResultsInspectionIndex({
+    lens,
+    analysis: state.analysis,
+    graph: lens === "biopolitical" ? currentBiopoliticalGraph() : null,
+    provenance,
+    lang: state.lang,
+  });
+  inspectionIndexCache.indexes.set(lens, index);
+  return index;
+}
+function inspectionCopy() {
+  return {
+    title: labelText("Inspection directory", "دليل الفحص", "Répertoire d’inspection"),
+    intro: labelText(
+      "Open a canonical record to inspect provenance, confidence, evidence balance, linked records, audit details, and every indexed occurrence.",
+      "افتح سجلًا نظاميًا لفحص المصدر والثقة وتوازن الأدلة والسجلات المرتبطة وتفاصيل التدقيق وكل موضع ظهور مفهرس.",
+      "Ouvrez une fiche canonique pour examiner la provenance, la confiance, l’équilibre des preuves, les fiches liées, l’audit et chaque occurrence indexée.",
+    ),
+    records: labelText("Canonical records", "السجلات النظامية", "Fiches canoniques"),
+    occurrences: labelText("Indexed occurrences", "مواضع الظهور المفهرسة", "Occurrences indexées"),
+    concerns: labelText("Audit concerns", "ملاحظات التدقيق", "Points d’audit"),
+    search: labelText("Search records", "ابحث في السجلات", "Rechercher des fiches"),
+    searchHint: labelText(
+      "Search by human name, canonical ID, type, or pillar",
+      "ابحث بالاسم أو المعرّف النظامي أو النوع أو المحور",
+      "Rechercher par nom, identifiant canonique, type ou pilier",
+    ),
+    empty: labelText(
+      "No canonical identifiers were authored for this analysis. Inspection never invents identifiers.",
+      "لم تُؤلف معرّفات نظامية لهذا التحليل. لا ينشئ الفحص معرّفات من تلقاء نفسه.",
+      "Aucun identifiant canonique n’a été rédigé pour cette analyse. L’inspection n’en invente jamais.",
+    ),
+    noMatch: labelText("No records match this search.", "لا توجد سجلات تطابق البحث.", "Aucune fiche ne correspond à cette recherche."),
+    open: labelText("Inspect record", "افحص السجل", "Inspecter la fiche"),
+  };
+}
+function renderInspectionDirectory(index) {
+  const copy = inspectionCopy();
+  const concerns = index.nodes.filter((node) => {
+    const inspection = index.inspect(node.id);
+    return inspection?.provenance?.sourceStatus === "missing"
+      || inspection?.provenance?.claimStatus === "mismatched";
+  }).length + (index.diagnostics?.unresolved?.length || 0);
+  const cards = index.nodes.length
+    ? index.nodes.map((node) => {
+        const inspection = index.inspect(node.id);
+        const search = [node.label, node.id, index.typeLabel(node.type), node.pillar]
+          .join(" ")
+          .toLocaleLowerCase(state.lang);
+        return `<li class="inspectionDirectoryItem" data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="inspectionDirectoryType">${escapeHtml(index.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><span class="inspectionDirectoryMeta"><code>${escapeHtml(node.id)}</code><span>${escapeHtml(String(node.pillar || "").replaceAll("_", " "))}</span>${inspection?.confidence ? `<span>${escapeHtml(inspection.confidence)}</span>` : ""}</span></button></li>`;
+      }).join("")
+    : `<li class="inspectionDirectoryEmpty">${escapeHtml(copy.empty)}</li>`;
+  return `<section class="inspectionDirectory" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="inspectionDirectoryHeader"><div><div class="sectionKicker">${escapeHtml(t("nav").inspection)}</div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p>${escapeHtml(copy.intro)}</p></div><div class="inspectionDirectoryMetrics"><div><strong>${index.nodes.length}</strong><span>${escapeHtml(copy.records)}</span></div><div><strong>${index.occurrenceCount}</strong><span>${escapeHtml(copy.occurrences)}</span></div><div class="${concerns ? "concern" : "clear"}"><strong>${concerns}</strong><span>${escapeHtml(copy.concerns)}</span></div></div></header><div class="inspectionSearch"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="srOnly" role="status" aria-live="polite"></span></div><ul class="inspectionDirectoryList" id="inspectionDirectoryList">${cards}</ul><p class="inspectionDirectoryNoMatch" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
+}
+function wireInspectionDirectory() {
+  const input = $("inspectionSearch");
+  if (!input) return;
+  const items = [...document.querySelectorAll("[data-inspection-directory-item]")];
+  const noMatch = $("inspectionDirectoryNoMatch");
+  const status = $("inspectionSearchStatus");
+  input.oninput = () => {
+    const query = input.value.trim().toLocaleLowerCase(state.lang);
+    let visible = 0;
+    items.forEach((item) => {
+      const match = !query || item.dataset.inspectionSearch.includes(query);
+      item.hidden = !match;
+      if (match) visible += 1;
+    });
+    if (noMatch) noMatch.hidden = visible > 0 || !items.length;
+    if (status) status.textContent = `${visible} / ${items.length}`;
+  };
+}
+function focusInspectionRecord(node, fallbackSelector) {
+  requestAnimationFrame(() => {
+    const target = document.querySelector(
+      `[data-inspection-id="${CSS.escape(node.id)}"]`,
+    ) || document.querySelector(fallbackSelector) || $("reviewContent");
+    target?.scrollIntoView({ behavior: "auto", block: "center" });
+    target?.focus?.({ preventScroll: true });
+  });
+}
+function openStrategicInspectionRecord(node) {
+  const reviewByType = {
+    contradiction: "contradictions",
+    scenario: "scenarios",
+    evidence: "evidence",
+    assumption: "evidence",
+  };
+  state.activeReview = reviewByType[node.type] || "pillars";
+  state.activePillar = PILLARS.includes(node.pillar) ? node.pillar : null;
+  renderReview();
+  focusInspectionRecord(node, `[data-review="${CSS.escape(state.activeReview)}"]`);
+}
+function openInspectionOccurrence(lens, node, occurrence) {
+  const index = currentResultsInspectionIndex(lens);
+  const owner = index.resolve(occurrence.ownerId) || node;
+  if (lens === "biopolitical") openBiopoliticalRecord(owner);
+  else openStrategicInspectionRecord(owner);
+}
+function bindResultsInspection(lens) {
+  const index = currentResultsInspectionIndex(lens);
+  REFERENCE_UI.bind(index, {
+    lang: state.lang,
+    onOpenRecord: lens === "biopolitical" ? openBiopoliticalRecord : openStrategicInspectionRecord,
+    onShowInMap: lens === "biopolitical" ? showBiopoliticalNodeInMap : null,
+    onOpenOccurrence: (node, occurrence) => openInspectionOccurrence(lens, node, occurrence),
+  });
+  wireInspectionDirectory();
+  return index;
+}
+
 function currentBiopoliticalGraph(lang = state.lang) {
   return BIO_GRAPH.build(state.analysis, lang);
 }
@@ -4523,14 +4738,7 @@ function openBiopoliticalRecord(node) {
   state.activeReview =
     node.pillar === "evidence_explanations" ? "evidence" : "pillars";
   renderBiopoliticalReview();
-  requestAnimationFrame(() => {
-    const reference = document.querySelector(
-      `[data-reference-id="${CSS.escape(node.id)}"]`,
-    );
-    const target = reference || $("reviewContent");
-    target?.scrollIntoView({ behavior: "smooth", block: "center" });
-    target?.focus?.({ preventScroll: true });
-  });
+  focusInspectionRecord(node, `[data-reference-id="${CSS.escape(node.id)}"]`);
 }
 function showBiopoliticalNodeInMap(node) {
   state.activeReview = "connections";
@@ -4744,6 +4952,7 @@ function renderBiopoliticalReviewNav() {
       (sum, group) => sum + group.items.length,
       0,
     ),
+    inspection: currentResultsInspectionIndex("biopolitical").nodes.length,
     exports: "",
   };
   const items = [
@@ -4752,6 +4961,7 @@ function renderBiopoliticalReviewNav() {
     "connections",
     "evidence",
     "conclusion",
+    "inspection",
     "exports",
   ];
   const tones = {
@@ -4760,6 +4970,7 @@ function renderBiopoliticalReviewNav() {
     connections: "var(--accent-3)",
     evidence: "var(--success)",
     conclusion: "var(--warn)",
+    inspection: "var(--accent-2)",
     exports: "var(--p5)",
   };
   const labels = t("nav");
@@ -4821,6 +5032,7 @@ function renderBiopoliticalReview() {
     "connections",
     "evidence",
     "conclusion",
+    "inspection",
     "exports",
   ];
   if (!valid.includes(state.activeReview)) state.activeReview = "overview";
@@ -4834,6 +5046,8 @@ function renderBiopoliticalReview() {
   if (state.activeReview === "evidence") html = renderBiopoliticalEvidence();
   if (state.activeReview === "conclusion")
     html = renderBiopoliticalConclusion();
+  if (state.activeReview === "inspection")
+    html = renderInspectionDirectory(currentResultsInspectionIndex("biopolitical"));
   if (state.activeReview === "exports") html = renderExports();
   if (state.activeReview !== "connections") RELATIONSHIP_EXPLORER.deactivate?.();
   $("reviewContent").innerHTML = html;
@@ -4842,11 +5056,7 @@ function renderBiopoliticalReview() {
     `bio-review-tab-${state.activeReview}`,
   );
   wireResultsExplanation("biopolitical");
-  REFERENCE_UI.bind(currentBiopoliticalGraph(), {
-    lang: state.lang,
-    onOpenRecord: openBiopoliticalRecord,
-    onShowInMap: showBiopoliticalNodeInMap,
-  });
+  bindResultsInspection("biopolitical");
   if (state.activeReview === "connections") {
     RELATIONSHIP_EXPLORER.mount(
       $("relationshipExplorerMount"),
@@ -4899,7 +5109,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.25";
+    "2.1.0-alpha.27";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4928,6 +5138,7 @@ function renderReviewNav() {
     evidence:
       normalizeArray(state.analysis.evidence.items).length +
       normalizeArray(state.analysis.assumptions.items).length,
+    inspection: currentResultsInspectionIndex("strategic").nodes.length,
     exports: "",
   };
   const items = [
@@ -4936,6 +5147,7 @@ function renderReviewNav() {
     "contradictions",
     "scenarios",
     "evidence",
+    "inspection",
     "exports",
   ];
   const tones = {
@@ -4944,6 +5156,7 @@ function renderReviewNav() {
     contradictions: "var(--warn)",
     scenarios: "var(--accent-3)",
     evidence: "var(--success)",
+    inspection: "var(--accent-2)",
     exports: "var(--p5)",
   };
   $("reviewNav").innerHTML = items
@@ -4965,6 +5178,7 @@ function renderReview() {
     "contradictions",
     "scenarios",
     "evidence",
+    "inspection",
     "exports",
   ];
   if (!validTabs.includes(state.activeReview)) state.activeReview = "overview";
@@ -4976,6 +5190,8 @@ function renderReview() {
   if (state.activeReview === "contradictions") html = renderContradictions();
   if (state.activeReview === "scenarios") html = renderScenarios();
   if (state.activeReview === "evidence") html = renderEvidence();
+  if (state.activeReview === "inspection")
+    html = renderInspectionDirectory(currentResultsInspectionIndex("strategic"));
   if (state.activeReview === "exports") html = renderExports();
   if (!html) {
     state.activeReview = "overview";
@@ -4990,6 +5206,7 @@ function renderReview() {
     );
   }
   wireResultsExplanation("strategic");
+  bindResultsInspection("strategic");
   document.querySelectorAll("[data-acc]").forEach(
     (b) =>
       (b.onclick = () => {

@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0-alpha.27 — Evidence Package Completeness Correction
+
+- Corrected the release archive boundary so hosted-demo and visual-audit test specifications and review checks are included.
+- Added package-level verification of all four evidence harness files before delivery.
+- Preserved the complete Alpha.26 inspection implementation without product, schema, scoring, prompt, graph, report, or export changes.
+
+## 2.1.0-alpha.26 — Phase 3 Results Inspection Layer
+
+- Added one shared, immutable inspection index for Strategic and Biopolitical canonical records.
+- Added a dedicated Inspection tab with human-readable search and secondary canonical identifiers.
+- Expanded the accessible inspector with provenance, confidence, canonical paths, supporting and counter-evidence, linked records, audit facts, and occurrence navigation.
+- Added Strategic identifier and relationship indexing without fabricating missing IDs or provenance.
+- Authored stable IDs, explicit links, source titles, counter-evidence, and uncertainty into the trilingual Strategic demonstration so the public sample exercises the inspection layer honestly.
+- Preserved focus across linked-record traversal and returned occurrence activation to the owning detailed record.
+- Added unit, static, and cross-browser regression contracts while preserving schemas, scoring, prompts, imports, graphs, reports, and exports.
+
 ## 2.1.0-alpha.25 — Results Explanation Runtime-Authority Contract
 
 - Replaced fixture-file evidence-title assertions with runtime-rendered evidence names for both lenses.

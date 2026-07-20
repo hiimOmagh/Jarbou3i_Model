@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.25` extends the Results Workspace with a shared decision-orientation and explanation hierarchy, connecting actors, mechanisms, evidence, tensions, and effects to each lens’s complete detailed record. Its browser contract follows the authoritative runtime sample rather than fixture-only display text, while preserving the fully verified analytical baseline for a static, trilingual workbench with two independent contracts:
+Version `2.1.0-alpha.27` is the package-complete release of the Results Workspace inspection layer. It preserves Alpha.26’s shared, read-only inspector and corrects the release archive so every hosted and visual evidence gate is included with the same version authority:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -9,7 +9,7 @@ Alpha.15 adds the shared Set up → Model → Review application frame, live len
 
 The Strategic engine is preserved. Biopolitical analysis has its own schema, prompt, validator, semantic-integrity gate, diagnostics, review interface, export contract, and explicitly non-canonical legacy adapter.
 
-Phase 3 now presents results progressively: orientation answers what matters first; explanation shows how the conclusion is built from authored actors, mechanisms, evidence, tensions, and effects; existing lens-specific views retain complete records for inspection. Explanation previews are read-only and never alter canonical analysis, scoring, or export data. See [`docs/phase3-results-explanation.md`](docs/phase3-results-explanation.md).
+Phase 3 now presents results progressively: orientation answers what matters first; explanation shows how the conclusion is built; inspection reveals the canonical identity, provenance, evidence balance, relationships, audit facts, and every indexed occurrence; lens-specific detail views retain the complete records. All three layers are read-only and never alter canonical analysis, scoring, or export data. See [`docs/phase3-results-inspection.md`](docs/phase3-results-inspection.md).
 
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 
@@ -98,6 +98,7 @@ src/core/lens-registry.js
 src/core/platform-state.js
 src/core/performance.js
 src/core/render-regions.js
+src/core/results-inspection.js
 src/lenses/strategic/adapter.js
 src/lenses/biopolitical/adapter.js
 src/biopolitics.js

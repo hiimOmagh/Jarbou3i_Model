@@ -1,4 +1,4 @@
-/* Jarbou3i Model — accessible named-reference UI */
+/* Jarbou3i Model — accessible, cross-lens inspection UI */
 (function attachReferenceUi(root) {
   "use strict";
 
@@ -9,18 +9,94 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
-  const labels = {
-    en: { close: "Close relationship details", connections: "Connections", incoming: "Referenced by", outgoing: "References", none: "No indexed connections", open: "Open full record", showMap: "Show in map", details: "Relationship details", pillar: "Analysis pillar", confidence: "Confidence" },
-    ar: { close: "إغلاق تفاصيل العلاقة", connections: "العلاقات", incoming: "تُشير إليه", outgoing: "يُشير إلى", none: "لا توجد علاقات مفهرسة", open: "فتح السجل الكامل", showMap: "إظهار في الخريطة", details: "تفاصيل العلاقة", pillar: "محور التحليل", confidence: "الثقة" },
-    fr: { close: "Fermer les détails", connections: "Connexions", incoming: "Référencé par", outgoing: "Références", none: "Aucune connexion indexée", open: "Ouvrir la fiche complète", showMap: "Afficher sur la carte", details: "Détails de la relation", pillar: "Pilier d’analyse", confidence: "Confiance" },
+  const copyByLanguage = {
+    en: {
+      close: "Close inspection details", details: "Inspection details",
+      connections: "Linked records", incoming: "Referenced by", outgoing: "References",
+      none: "No indexed connections", open: "Open full record", showMap: "Show in map",
+      identity: "Canonical identity", type: "Record type", pillar: "Analysis pillar",
+      canonicalId: "Canonical ID", path: "Canonical path", confidence: "Confidence",
+      provenance: "Provenance", sourceTitle: "Source", sourceLocator: "Locator",
+      sourceDate: "Source date", sourceType: "Source type", sourceTier: "Source tier",
+      sourceNote: "Source note", verificationStatus: "Declared verification",
+      verifiedBy: "Verified by", verificationDate: "Verification date",
+      claimSourceFit: "Claim–source fit", sourceStatus: "Traceability",
+      claimStatus: "Claim status", reviewStatus: "Independent review",
+      approvalEligible: "Approval eligible", unavailable: "Not provided in the canonical record",
+      evidence: "Evidence balance", supporting: "Supporting evidence",
+      counter: "Counter-evidence records", counterText: "Authored counter-evidence",
+      audit: "Audit details", schemaVersion: "Schema version", contractStatus: "Contract status",
+      modelStatus: "Model status", analysisId: "Analysis ID", uncertainty: "Uncertainty",
+      limitations: "Limitations", evidenceStrength: "Evidence strength",
+      unresolvedLinks: "Unresolved links", occurrences: "Occurrences",
+      occurrenceCanonical: "Canonical record", occurrenceRelationship: "Relationship reference",
+      occurrenceReference: "Authored reference", occurrenceOpen: "Open occurrence",
+      yes: "Yes", no: "No",
+    },
+    ar: {
+      close: "إغلاق تفاصيل الفحص", details: "تفاصيل الفحص",
+      connections: "السجلات المرتبطة", incoming: "تُشير إليه", outgoing: "يُشير إلى",
+      none: "لا توجد علاقات مفهرسة", open: "فتح السجل الكامل", showMap: "إظهار في الخريطة",
+      identity: "الهوية النظامية", type: "نوع السجل", pillar: "محور التحليل",
+      canonicalId: "المعرّف النظامي", path: "المسار النظامي", confidence: "الثقة",
+      provenance: "المصدر والتتبّع", sourceTitle: "المصدر", sourceLocator: "موضع المصدر",
+      sourceDate: "تاريخ المصدر", sourceType: "نوع المصدر", sourceTier: "رتبة المصدر",
+      sourceNote: "ملاحظة المصدر", verificationStatus: "التحقق المعلن",
+      verifiedBy: "تحقق بواسطة", verificationDate: "تاريخ التحقق",
+      claimSourceFit: "ملاءمة الادعاء للمصدر", sourceStatus: "قابلية التتبع",
+      claimStatus: "حالة الادعاء", reviewStatus: "المراجعة المستقلة",
+      approvalEligible: "مؤهل للاعتماد", unavailable: "غير وارد في السجل النظامي",
+      evidence: "توازن الأدلة", supporting: "الأدلة الداعمة",
+      counter: "سجلات الأدلة المضادة", counterText: "الدليل المضاد المؤلف",
+      audit: "تفاصيل التدقيق", schemaVersion: "إصدار المخطط", contractStatus: "حالة العقد",
+      modelStatus: "حالة النموذج", analysisId: "معرّف التحليل", uncertainty: "عدم اليقين",
+      limitations: "القيود", evidenceStrength: "قوة الدليل",
+      unresolvedLinks: "الروابط غير المحلولة", occurrences: "مواضع الظهور",
+      occurrenceCanonical: "السجل النظامي", occurrenceRelationship: "مرجع علاقة",
+      occurrenceReference: "مرجع مؤلف", occurrenceOpen: "فتح موضع الظهور",
+      yes: "نعم", no: "لا",
+    },
+    fr: {
+      close: "Fermer les détails d’inspection", details: "Détails d’inspection",
+      connections: "Fiches liées", incoming: "Référencé par", outgoing: "Références",
+      none: "Aucune connexion indexée", open: "Ouvrir la fiche complète", showMap: "Afficher sur la carte",
+      identity: "Identité canonique", type: "Type de fiche", pillar: "Pilier d’analyse",
+      canonicalId: "Identifiant canonique", path: "Chemin canonique", confidence: "Confiance",
+      provenance: "Provenance", sourceTitle: "Source", sourceLocator: "Localisation",
+      sourceDate: "Date de la source", sourceType: "Type de source", sourceTier: "Niveau de source",
+      sourceNote: "Note de source", verificationStatus: "Vérification déclarée",
+      verifiedBy: "Vérifié par", verificationDate: "Date de vérification",
+      claimSourceFit: "Adéquation énoncé–source", sourceStatus: "Traçabilité",
+      claimStatus: "Statut de l’énoncé", reviewStatus: "Revue indépendante",
+      approvalEligible: "Éligible à l’approbation", unavailable: "Non fourni dans la fiche canonique",
+      evidence: "Équilibre des preuves", supporting: "Preuves à l’appui",
+      counter: "Fiches de contre-preuve", counterText: "Contre-preuve rédigée",
+      audit: "Détails d’audit", schemaVersion: "Version du schéma", contractStatus: "Statut du contrat",
+      modelStatus: "Statut du modèle", analysisId: "Identifiant de l’analyse", uncertainty: "Incertitude",
+      limitations: "Limites", evidenceStrength: "Force de la preuve",
+      unresolvedLinks: "Liens non résolus", occurrences: "Occurrences",
+      occurrenceCanonical: "Fiche canonique", occurrenceRelationship: "Référence relationnelle",
+      occurrenceReference: "Référence rédigée", occurrenceOpen: "Ouvrir l’occurrence",
+      yes: "Oui", no: "Non",
+    },
   };
 
   let graph = null;
   let lang = "en";
   let onOpenRecord = null;
   let onShowInMap = null;
+  let onOpenOccurrence = null;
   let returnFocus = null;
+  let activeNode = null;
+  let activeInspection = null;
   let wired = false;
+
+  const humanize = (value) => String(value || "—").replaceAll("_", " ");
+  const validHttpUrl = (value) => {
+    try { return ["http:", "https:"].includes(new URL(String(value || "")).protocol); }
+    catch { return false; }
+  };
+  const valueHtml = (value) => `<span>${escapeHtml(humanize(value))}</span>`;
 
   function renderText(value, currentGraph) {
     const activeGraph = currentGraph || graph;
@@ -46,16 +122,86 @@
     return rootElement;
   }
 
+  function fact(label, value, options = {}) {
+    if (value === "" || value === null || value === undefined || (Array.isArray(value) && !value.length)) return "";
+    const content = options.link && validHttpUrl(value)
+      ? `<a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">${escapeHtml(options.linkLabel || value)}</a>`
+      : escapeHtml(Array.isArray(value) ? value.join(" · ") : options.raw ? value : humanize(value));
+    return `<div><dt>${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
+  }
+
   function relationHtml(edge, direction) {
     const otherId = direction === "incoming" ? edge.source : edge.target;
     const other = graph.resolve(otherId);
-    const relation = String(edge.relation || "related_to").replaceAll("_", " ");
+    const relation = humanize(edge.relation || "related_to");
     return `<li><button type="button" data-reference-id="${escapeHtml(otherId)}"><span>${escapeHtml(other?.label || otherId)}</span><small>${escapeHtml(otherId)} · ${escapeHtml(relation)}</small></button></li>`;
   }
 
+  function referenceList(ids, emptyCopy) {
+    if (!ids?.length) return `<p class="referenceEmpty compact">${escapeHtml(emptyCopy)}</p>`;
+    return `<ul class="referenceRecordList">${ids.map((id) => {
+      const node = graph.resolve(id);
+      return `<li>${node ? `<button type="button" data-reference-id="${escapeHtml(id)}"><span>${escapeHtml(node.label)}</span><small>${escapeHtml(id)}</small></button>` : `<span>${escapeHtml(id)}</span>`}</li>`;
+    }).join("")}</ul>`;
+  }
+
+  function provenanceHtml(inspection, copy) {
+    const provenance = inspection?.provenance || {};
+    const facts = [
+      fact(copy.sourceTitle, provenance.sourceUrl || provenance.sourceTitle, provenance.sourceUrl ? { link: true, linkLabel: provenance.sourceTitle || provenance.sourceUrl } : {}),
+      fact(copy.sourceLocator, provenance.sourceLocator), fact(copy.sourceDate, provenance.sourceDate),
+      fact(copy.sourceType, provenance.sourceType), fact(copy.sourceTier, provenance.sourceTier),
+      fact(copy.sourceNote, provenance.sourceNote), fact(copy.verificationStatus, provenance.verificationStatus),
+      fact(copy.verifiedBy, provenance.verifiedBy), fact(copy.verificationDate, provenance.verificationDate),
+      fact(copy.claimSourceFit, provenance.claimSourceFit), fact(copy.sourceStatus, provenance.sourceStatus),
+      fact(copy.claimStatus, provenance.claimStatus), fact(copy.reviewStatus, provenance.reviewStatus),
+      provenance.sourceStatus ? fact(copy.approvalEligible, provenance.approvalEligible ? copy.yes : copy.no) : "",
+    ].filter(Boolean).join("");
+    return `<section class="referenceInspectorSection" data-inspection-section="provenance"><h3>${escapeHtml(copy.provenance)}</h3>${facts ? `<dl class="referenceInspectorFacts">${facts}</dl>` : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`}</section>`;
+  }
+
+  function evidenceHtml(inspection, copy) {
+    const evidence = inspection?.evidence || {};
+    const counterText = evidence.counterEvidence?.length
+      ? `<div class="referenceEvidenceText"><h4>${escapeHtml(copy.counterText)}</h4><ul>${evidence.counterEvidence.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div>`
+      : "";
+    return `<section class="referenceInspectorSection" data-inspection-section="evidence"><h3>${escapeHtml(copy.evidence)}</h3><div class="referenceEvidenceGrid"><div><h4>${escapeHtml(copy.supporting)}</h4>${referenceList(evidence.supportingIds, copy.unavailable)}</div><div><h4>${escapeHtml(copy.counter)}</h4>${referenceList(evidence.counterIds, copy.unavailable)}</div></div>${counterText}</section>`;
+  }
+
+  function auditHtml(inspection, copy) {
+    const audit = inspection?.audit || {};
+    const facts = [
+      fact(copy.schemaVersion, audit.schemaVersion), fact(copy.contractStatus, audit.contractStatus),
+      fact(copy.modelStatus, audit.modelStatus), fact(copy.analysisId, audit.analysisId),
+      fact(copy.uncertainty, audit.uncertainty), fact(copy.limitations, audit.limitations),
+      fact(copy.evidenceStrength, audit.evidenceStrength), fact(copy.unresolvedLinks, audit.unresolvedLinks),
+    ].filter(Boolean).join("");
+    return `<section class="referenceInspectorSection" data-inspection-section="audit"><h3>${escapeHtml(copy.audit)}</h3>${facts ? `<dl class="referenceInspectorFacts auditFacts">${facts}</dl>` : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`}</section>`;
+  }
+
+  function occurrencesHtml(inspection, copy) {
+    const kindLabel = {
+      canonical: copy.occurrenceCanonical,
+      relationship: copy.occurrenceRelationship,
+      reference: copy.occurrenceReference,
+    };
+    const occurrences = inspection?.occurrences || [];
+    const content = occurrences.length
+      ? `<ol class="referenceOccurrences">${occurrences.map((occurrence, index) => `<li><button type="button" data-reference-occurrence="${index}" aria-label="${escapeHtml(`${copy.occurrenceOpen}: ${occurrence.path}`)}"><span>${escapeHtml(kindLabel[occurrence.kind] || copy.occurrenceReference)}</span><code>${escapeHtml(occurrence.path)}</code></button></li>`).join("")}</ol>`
+      : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`;
+    return `<section class="referenceInspectorSection" data-inspection-section="occurrences"><h3>${escapeHtml(copy.occurrences)} <span class="referenceSectionCount">${occurrences.length}</span></h3>${content}</section>`;
+  }
+
   function populate(node) {
-    const copy = labels[lang] || labels.en;
+    const copy = copyByLanguage[lang] || copyByLanguage.en;
     const rootElement = ensureInspector();
+    const inspection = graph.inspect?.(node.id) || {
+      canonicalId: node.id, label: node.label, type: node.type, pillar: node.pillar,
+      path: node.path, confidence: node.confidence, summary: node.subtitle,
+      provenance: {}, evidence: {}, audit: {}, occurrences: [],
+    };
+    activeNode = node;
+    activeInspection = inspection;
     rootElement.dir = lang === "ar" ? "rtl" : "ltr";
     rootElement.querySelector(".referenceInspectorClose").setAttribute("aria-label", copy.close);
     rootElement.querySelector(".referenceInspectorClose").textContent = "×";
@@ -64,9 +210,10 @@
     const incoming = graph.incoming(node.id);
     const outgoing = graph.outgoing(node.id);
     const connections = incoming.length + outgoing.length
-      ? `<section class="referenceConnections"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4>${escapeHtml(copy.incoming)}</h4><ul>${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4>${escapeHtml(copy.outgoing)}</h4><ul>${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
-      : `<p class="referenceEmpty">${escapeHtml(copy.none)}</p>`;
-    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${node.subtitle && node.subtitle !== node.label ? `<p class="referenceInspectorSummary">${escapeHtml(node.subtitle)}</p>` : ""}<dl class="referenceInspectorFacts"><div><dt>${escapeHtml(copy.pillar)}</dt><dd>${escapeHtml(node.pillar.replaceAll("_", " "))}</dd></div>${node.confidence ? `<div><dt>${escapeHtml(copy.confidence)}</dt><dd>${escapeHtml(node.confidence)}</dd></div>` : ""}</dl>${connections}`;
+      ? `<section class="referenceConnections" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4>${escapeHtml(copy.incoming)}</h4><ul>${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4>${escapeHtml(copy.outgoing)}</h4><ul>${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
+      : `<section class="referenceConnections" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3><p class="referenceEmpty compact">${escapeHtml(copy.none)}</p></section>`;
+    const identity = `<section class="referenceInspectorSection" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="referenceInspectorFacts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar)}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence)}</dl></section>`;
+    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="referenceInspectorSummary">${escapeHtml(inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
     const openButton = rootElement.querySelector("#referenceOpenRecord");
     openButton.textContent = copy.open;
     openButton.dataset.referenceOpenRecord = node.id;
@@ -75,13 +222,14 @@
     mapButton.textContent = copy.showMap;
     mapButton.dataset.referenceShowMap = node.id;
     mapButton.hidden = typeof onShowInMap !== "function";
+    rootElement.querySelector(".referenceInspectorFooter").classList.toggle("single", openButton.hidden || mapButton.hidden);
   }
 
   function open(id, trigger) {
     const node = graph?.resolve(id);
     if (!node) return;
-    returnFocus = trigger || document.activeElement;
     const rootElement = ensureInspector();
+    if (rootElement.hidden) returnFocus = trigger || document.activeElement;
     populate(node);
     rootElement.hidden = false;
     document.documentElement.classList.add("referenceInspectorOpen");
@@ -89,14 +237,16 @@
     requestAnimationFrame(() => rootElement.querySelector(".referenceInspector").focus());
   }
 
-  function close() {
+  function close({ restoreFocus = true } = {}) {
     const rootElement = document.getElementById("referenceInspectorRoot");
     if (!rootElement || rootElement.hidden) return;
     rootElement.hidden = true;
     document.documentElement.classList.remove("referenceInspectorOpen");
     document.querySelector("main")?.removeAttribute("inert");
-    if (returnFocus?.isConnected) returnFocus.focus();
+    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus();
     returnFocus = null;
+    activeNode = null;
+    activeInspection = null;
   }
 
   function handleKeydown(event) {
@@ -108,37 +258,50 @@
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = [...rootElement.querySelectorAll('button:not([hidden]),[href],[tabindex]:not([tabindex="-1"])')].filter((element) => !element.disabled);
+    const focusable = [...rootElement.querySelectorAll('button:not([hidden]),a[href],[tabindex]:not([tabindex="-1"])')].filter((element) => !element.disabled);
     if (!focusable.length) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault(); last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
       event.preventDefault(); first.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); last.focus();
     }
   }
 
   function wire() {
     if (wired) return;
     document.addEventListener("click", (event) => {
+      const occurrenceButton = event.target.closest?.("[data-reference-occurrence]");
+      if (occurrenceButton) {
+        event.preventDefault();
+        const occurrence = activeInspection?.occurrences?.[Number(occurrenceButton.dataset.referenceOccurrence)];
+        const node = activeNode;
+        close({ restoreFocus: false });
+        if (node && occurrence && typeof onOpenOccurrence === "function") onOpenOccurrence(node, occurrence);
+        return;
+      }
       const reference = event.target.closest?.("[data-reference-id]");
       if (reference) {
         event.preventDefault();
         open(reference.dataset.referenceId, reference);
         return;
       }
-      if (event.target.closest?.("[data-reference-close]")) close();
+      if (event.target.closest?.("[data-reference-close]")) {
+        close();
+        return;
+      }
       const openButton = event.target.closest?.("[data-reference-open-record]");
       if (openButton && typeof onOpenRecord === "function") {
         const node = graph?.resolve(openButton.dataset.referenceOpenRecord);
-        close();
+        close({ restoreFocus: false });
         if (node) onOpenRecord(node);
+        return;
       }
       const mapButton = event.target.closest?.("[data-reference-show-map]");
       if (mapButton && typeof onShowInMap === "function") {
         const node = graph?.resolve(mapButton.dataset.referenceShowMap);
-        close();
+        close({ restoreFocus: false });
         if (node) onShowInMap(node);
       }
     });
@@ -148,9 +311,10 @@
 
   function bind(nextGraph, options = {}) {
     graph = nextGraph;
-    lang = labels[options.lang] ? options.lang : "en";
+    lang = copyByLanguage[options.lang] ? options.lang : "en";
     onOpenRecord = options.onOpenRecord || null;
     onShowInMap = options.onShowInMap || null;
+    onOpenOccurrence = options.onOpenOccurrence || null;
     wire();
   }
 

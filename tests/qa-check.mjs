@@ -30,6 +30,7 @@ for (const [file, source] of [
   ["src/core/performance.js", read("src/core/performance.js")],
   ["src/core/platform-runtime.js", read("src/core/platform-runtime.js")],
   ["src/core/render-regions.js", read("src/core/render-regions.js")],
+  ["src/core/results-inspection.js", read("src/core/results-inspection.js")],
 ]) {
   try {
     void source;
@@ -67,6 +68,7 @@ for (const file of [
   "src/core/performance.js",
   "src/core/platform-runtime.js",
   "src/core/provenance.js",
+  "src/core/results-inspection.js",
   "src/lenses/strategic/adapter.js",
   "src/lenses/biopolitical/adapter.js",
   "schema/strategic-analysis.schema.json",
@@ -96,8 +98,8 @@ if (scriptOrder.some((position, index) => index && position <= scriptOrder[index
   fail("runtime side-effect imports load in an unsafe order");
 }
 
-if (pkg.version !== "2.1.0-alpha.25") fail("package version is wrong");
-if (!index.includes('name="app-version" content="2.1.0-alpha.25"')) {
+if (pkg.version !== "2.1.0-alpha.27") fail("package version is wrong");
+if (!index.includes('name="app-version" content="2.1.0-alpha.27"')) {
   fail("app version metadata is wrong");
 }
 for (const token of [
