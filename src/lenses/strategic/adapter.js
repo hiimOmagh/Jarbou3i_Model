@@ -7,6 +7,7 @@ export function createStrategicLensAdapter(services) {
     schemaVersion: "1.1.0",
     modelSectionCount: 6,
     accent: "strategic",
+    capabilities: ["prompt", "sample", "engine-navigation", "review"],
     ...services,
   });
 }

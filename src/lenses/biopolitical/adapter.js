@@ -7,6 +7,7 @@ export function createBiopoliticalLensAdapter(services) {
     schemaVersion: "2.1.0",
     modelSectionCount: 9,
     accent: "biopolitical",
+    capabilities: ["prompt", "sample", "engine-navigation", "review"],
     ...services,
   });
 }

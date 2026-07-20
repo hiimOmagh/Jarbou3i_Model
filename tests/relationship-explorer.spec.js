@@ -137,9 +137,17 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await temporalOverlay.focus();
   await temporalOverlay.press("Enter");
   await expect(temporalOverlay).toHaveAttribute("aria-pressed", "true");
-  await page.locator("#relationshipSearch").fill("Public-health authorities");
-  await expect(page.locator("#relationshipSearch")).toHaveValue("Public-health authorities");
+  const search = page.locator("#relationshipSearch");
   const saveView = page.locator("[data-save-view]");
+  const searchNode = await search.elementHandle();
+  const saveNode = await saveView.elementHandle();
+  await search.fill("Public-health authorities");
+  await expect(search).toHaveValue("Public-health authorities");
+  await page.evaluate(() => new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve)),
+  ));
+  expect(await searchNode.evaluate((node) => node === document.querySelector("#relationshipSearch"))).toBe(true);
+  expect(await saveNode.evaluate((node) => node === document.querySelector("[data-save-view]"))).toBe(true);
   await saveView.focus();
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
   await expect(saveView).toBeFocused();

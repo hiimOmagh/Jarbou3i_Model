@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.8 — shared dual-lens application runtime */
+/* Jarbou3i Model v2.1.0-alpha.14 — shared dual-lens platform runtime */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -9,11 +9,7 @@ import "./biopolitical-report.js";
 import "./reference-ui.js";
 import "./relationship-explorer.js";
 import "./json-parser.js";
-import { createLensRegistry } from "./core/lens-registry.js";
-import { createLocalizationService } from "./core/localization.js";
-import { createSettingsRepository } from "./core/persistence.js";
-import { createPlatformState } from "./core/platform-state.js";
-import { createRegionRenderer } from "./core/render-regions.js";
+import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 
@@ -841,61 +837,6 @@ const PROVENANCE = window.Jarbou3iProvenance;
 if (!PROVENANCE) throw new Error("Evidence provenance service failed to load.");
 const SETTINGS_KEY = "jarbou3i-model-settings";
 const SUPPORTED_LANGUAGES = ["ar", "en", "fr"];
-const SETTINGS = createSettingsRepository(window.localStorage, SETTINGS_KEY);
-function readSettings() {
-  return SETTINGS.read();
-}
-function writeSettings(patch) {
-  SETTINGS.update(patch);
-}
-const savedSettings = readSettings();
-const LOCALIZATION = createLocalizationService({
-  catalogs: I18N,
-  supportedLanguages: SUPPORTED_LANGUAGES,
-  fallbackLanguage: "en",
-  resolve: ({ language, key, context, raw }) => {
-    if (context.lens !== "biopolitical") return undefined;
-    const contractValue = BIO.ui(language, key);
-    if (contractValue !== undefined) return contractValue;
-    const alias = LENS_KEY_ALIASES[key];
-    return alias ? raw(alias) : undefined;
-  },
-});
-const isSupportedLanguage = LOCALIZATION.isSupported;
-const savedInterfaceLanguage = isSupportedLanguage(savedSettings.lang)
-  ? savedSettings.lang
-  : "ar";
-const savedAnalysisLanguage = isSupportedLanguage(savedSettings.analysisLang)
-  ? savedSettings.analysisLang
-  : savedInterfaceLanguage;
-const PLATFORM_STATE = createPlatformState({
-  lang: savedInterfaceLanguage,
-  stage: "topic",
-  topic: "",
-  context: "",
-  analysisLang: savedAnalysisLanguage,
-  analysisLangFollowsUi:
-    typeof savedSettings.analysisLangFollowsUi === "boolean"
-      ? savedSettings.analysisLangFollowsUi
-      : !isSupportedLanguage(savedSettings.analysisLang) ||
-        savedAnalysisLanguage === savedInterfaceLanguage,
-  promptMode: "simple",
-  analysisLens: ["strategic", "biopolitical"].includes(
-    savedSettings.analysisLens,
-  )
-    ? savedSettings.analysisLens
-    : "strategic",
-  analysis: null,
-  jsonValid: false,
-  activeReview: "overview",
-  activePillar: null,
-  lastPrompt: "",
-  importValidation: null,
-  importAudit: null,
-  modalInvoker: null,
-});
-const state = PLATFORM_STATE.state;
-const $ = (id) => document.getElementById(id);
 const LENS_KEY_ALIASES = {
   appTitle: "appTitleBiopolitical",
   appSubtitle: "appSubtitleBiopolitical",
@@ -917,20 +858,107 @@ const LENS_KEY_ALIASES = {
   sampleLoaded: "sampleLoadedBiopolitical",
   pillars: "pillarsBiopolitical",
 };
-const LENS_REGISTRY = createLensRegistry([
-  createStrategicLensAdapter({
-    buildPrompt: buildStrategicPrompt,
-    createSample: ({ lang, mode }) => sampleStrategicAnalysis(lang, mode),
-    renderEngineNav,
-    renderReview,
+const PLATFORM = createPlatformRuntime({
+  storage: window.localStorage,
+  settingsKey: SETTINGS_KEY,
+  adapters: [
+    createStrategicLensAdapter({
+      buildPrompt: buildStrategicPrompt,
+      createSample: ({ lang, mode }) => sampleStrategicAnalysis(lang, mode),
+      renderEngineNav,
+      renderReview,
+    }),
+    createBiopoliticalLensAdapter({
+      buildPrompt: (options) => BIO.buildPrompt(options),
+      createSample: ({ lang, mode }) => BIO.sample(lang, mode),
+      renderEngineNav: renderBiopoliticalEngineNav,
+      renderReview: renderBiopoliticalReview,
+    }),
+  ],
+  localization: {
+    catalogs: I18N,
+    supportedLanguages: SUPPORTED_LANGUAGES,
+    fallbackLanguage: "en",
+    resolve: ({ language, key, context, raw }) => {
+      if (context.lens !== "biopolitical") return undefined;
+      const contractValue = BIO.ui(language, key);
+      if (contractValue !== undefined) return contractValue;
+      const alias = LENS_KEY_ALIASES[key];
+      return alias ? raw(alias) : undefined;
+    },
+  },
+  initialState: ({ settings }) => {
+    const supported = (language) => SUPPORTED_LANGUAGES.includes(language);
+    const interfaceLanguage = supported(settings.lang) ? settings.lang : "ar";
+    const analysisLanguage = supported(settings.analysisLang)
+      ? settings.analysisLang
+      : interfaceLanguage;
+    return {
+      lang: interfaceLanguage,
+      stage: "topic",
+      topic: "",
+      context: "",
+      analysisLang: analysisLanguage,
+      analysisLangFollowsUi:
+        typeof settings.analysisLangFollowsUi === "boolean"
+          ? settings.analysisLangFollowsUi
+          : !supported(settings.analysisLang) || analysisLanguage === interfaceLanguage,
+      promptMode: "simple",
+      analysisLens: ["strategic", "biopolitical"].includes(settings.analysisLens)
+        ? settings.analysisLens
+        : "strategic",
+      analysis: null,
+      jsonValid: false,
+      activeReview: "overview",
+      activePillar: null,
+      lastPrompt: "",
+      importValidation: null,
+      importAudit: null,
+      modalInvoker: null,
+    };
+  },
+  regions: {
+    shell() {
+      applyI18n();
+      renderLensToggle();
+    },
+    workflow() {
+      $("analysisLang").value = state.analysisLang;
+      $("promptMode").value = state.promptMode;
+      $("timeframeInput").value = state.context;
+      $("topicInput").value = state.topic;
+      renderGuide();
+      renderStages();
+    },
+    engine() {
+      activeLensAdapter().renderEngineNav();
+    },
+    review() {
+      activeLensAdapter().renderReview();
+    },
+  },
+  performance: { capacity: 160 },
+});
+const SETTINGS = PLATFORM.settings;
+const LOCALIZATION = PLATFORM.localization;
+const PLATFORM_STATE = PLATFORM.state;
+const LENS_REGISTRY = PLATFORM.registry;
+const PLATFORM_RENDERER = PLATFORM.renderer;
+const state = PLATFORM_STATE.state;
+const $ = (id) => document.getElementById(id);
+const isSupportedLanguage = LOCALIZATION.isSupported;
+function readSettings() {
+  return SETTINGS.read();
+}
+function writeSettings(patch) {
+  SETTINGS.update(patch);
+}
+Object.defineProperty(window, "Jarbou3iPlatformDiagnostics", {
+  value: Object.freeze({
+    runtimeVersion: PLATFORM.runtimeVersion,
+    inspect: PLATFORM.inspect,
   }),
-  createBiopoliticalLensAdapter({
-    buildPrompt: (options) => BIO.buildPrompt(options),
-    createSample: ({ lang, mode }) => BIO.sample(lang, mode),
-    renderEngineNav: renderBiopoliticalEngineNav,
-    renderReview: renderBiopoliticalReview,
-  }),
-]);
+});
 function activeLensAdapter() {
   return LENS_REGISTRY.get(state.analysisLens);
 }
@@ -1112,7 +1140,7 @@ function setTheme(isDark, persist = true) {
   if (persist) writeSettings({ theme: isDark ? "dark" : "light" });
 }
 function initializeTheme() {
-  const pref = savedSettings.theme;
+  const pref = PLATFORM.bootSettings.theme;
   const dark = pref
     ? pref === "dark"
     : window.matchMedia?.("(prefers-color-scheme: dark)").matches;
@@ -3640,7 +3668,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.8";
+    "2.1.0-alpha.14";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4405,7 +4433,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.8";
+    "2.1.0-alpha.14";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -4527,26 +4555,6 @@ function renderReview() {
       );
   }
 }
-const PLATFORM_RENDERER = createRegionRenderer({
-  shell() {
-    applyI18n();
-    renderLensToggle();
-  },
-  workflow() {
-    $("analysisLang").value = state.analysisLang;
-    $("promptMode").value = state.promptMode;
-    $("timeframeInput").value = state.context;
-    $("topicInput").value = state.topic;
-    renderGuide();
-    renderStages();
-  },
-  engine() {
-    activeLensAdapter().renderEngineNav();
-  },
-  review() {
-    activeLensAdapter().renderReview();
-  },
-});
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
 }
@@ -4764,6 +4772,12 @@ $("topicInput").addEventListener("input", () => {
 $("timeframeInput").addEventListener("input", () => {
   state.context = $("timeframeInput").value;
 });
-initializeTheme();
-renderAll();
-validateJsonInput();
+PLATFORM.performance.measure(
+  "boot.initialize",
+  () => {
+    initializeTheme();
+    renderAll();
+    validateJsonInput();
+  },
+  { lens: state.analysisLens, language: state.lang },
+);

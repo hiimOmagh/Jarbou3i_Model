@@ -153,6 +153,7 @@
   let onOpenNode = null;
   let resizeObserver = null;
   let renderEpoch = 0;
+  let searchRenderFrame = 0;
   function focusAfterRender(resolveTarget, { force = false, epoch = renderEpoch } = {}) {
     requestAnimationFrame(() => {
       if (epoch !== renderEpoch) return;
@@ -526,17 +527,44 @@
     return `<div class="relationshipCommandBar">${modeToggle}${depthToggle}${viewToggle}${overlayToggle}${actions}</div>${capabilityNote}<div class="relationshipSearchRow"><label class="relationshipSearch"><span>${escapeHtml(c().search)}</span><input id="relationshipSearch" type="search" value="${escapeHtml(state.query)}" placeholder="${escapeHtml(c().searchPlaceholder)}"></label><button type="button" data-map-reset>${escapeHtml(c().reset)}</button></div>${saved}<details class="relationshipAdvanced"${state.depth === "analyst" ? " open" : ""}><summary>${escapeHtml(c().advanced)}</summary>${filters}${layers}</details><div class="relationshipLegend" aria-label="${escapeHtml(c().legend)}">${[["explicit", c().explicit], ["evidence", c().evidenceEdges], ["structural", c().structural]].map(([family, label]) => `<span class="relationshipLegend--${family}"><i aria-hidden="true"></i>${escapeHtml(label)}</span>`).join("")}</div><p class="relationshipCount" role="status" aria-live="polite"><b>${data.nodes.length}</b> ${escapeHtml(c().nodes)} · <b>${data.edges.length}</b> ${escapeHtml(c().edges)}</p>`;
   }
 
-  function render(focusId = "") {
-    if (!container || !graph) return;
-    renderEpoch += 1;
-    if (state.view === "spatial" && !spatialAvailable) state.view = "list";
-    const data = visibleData();
+  function resultsHtml(data, inspection = inspectionHtml(data)) {
     const walkthrough = walkthroughHtml(data);
     const content = data.nodes.length
       ? state.view === "map" ? mapHtml(data) : state.view === "spatial" ? spatialHtml(data) : listHtml(data)
       : `<div class="relationshipEmpty">${escapeHtml(c().empty)}</div>`;
+    return `${overlayHtml()}${walkthrough}<div class="relationshipWorkspace"><div class="relationshipView">${content}</div>${inspection}</div>`;
+  }
+
+  function renderSearchResults() {
+    if (!container || !graph) return;
+    const results = container.querySelector("[data-relationship-results]");
+    if (!results) {
+      render("relationshipSearch");
+      return;
+    }
+    renderEpoch += 1;
+    const data = visibleData();
     const inspection = inspectionHtml(data);
-    container.innerHTML = `<section class="relationshipExplorer${state.focused ? " is-focus" : ""}${inspection ? " has-inspection" : ""}" dir="${lang === "ar" ? "rtl" : "ltr"}" role="${state.focused ? "dialog" : "region"}"${state.focused ? ` aria-modal="true" aria-label="${escapeHtml(c().focus)}"` : ` aria-label="${escapeHtml(c().title)}"`}><header class="relationshipIntro"><div><span>2D · ${escapeHtml(c()[state.mode])}</span><h2>${escapeHtml(c().title)}</h2><p>${escapeHtml(c().subtitle)}</p></div>${state.focused ? `<button type="button" data-focus-toggle class="relationshipFocusExit">${escapeHtml(c().exitFocus)}</button>` : ""}</header>${controlsHtml(data)}${overlayHtml()}${walkthrough}<div class="relationshipWorkspace"><div class="relationshipView">${content}</div>${inspection}</div></section>`;
+    container.querySelector(".relationshipExplorer")?.classList.toggle("has-inspection", Boolean(inspection));
+    results.innerHTML = resultsHtml(data, inspection);
+    const count = container.querySelector(".relationshipCount");
+    if (count) count.innerHTML = `<b>${data.nodes.length}</b> ${escapeHtml(c().nodes)} · <b>${data.edges.length}</b> ${escapeHtml(c().edges)}`;
+    bindEvents();
+    if (state.view === "map" && state.mode === "network") observeAndDraw();
+    else resizeObserver?.disconnect();
+  }
+
+  function render(focusId = "") {
+    if (!container || !graph) return;
+    if (searchRenderFrame) {
+      cancelAnimationFrame(searchRenderFrame);
+      searchRenderFrame = 0;
+    }
+    renderEpoch += 1;
+    if (state.view === "spatial" && !spatialAvailable) state.view = "list";
+    const data = visibleData();
+    const inspection = inspectionHtml(data);
+    container.innerHTML = `<section class="relationshipExplorer${state.focused ? " is-focus" : ""}${inspection ? " has-inspection" : ""}" dir="${lang === "ar" ? "rtl" : "ltr"}" role="${state.focused ? "dialog" : "region"}"${state.focused ? ` aria-modal="true" aria-label="${escapeHtml(c().focus)}"` : ` aria-label="${escapeHtml(c().title)}"`}><header class="relationshipIntro"><div><span>2D · ${escapeHtml(c()[state.mode])}</span><h2>${escapeHtml(c().title)}</h2><p>${escapeHtml(c().subtitle)}</p></div>${state.focused ? `<button type="button" data-focus-toggle class="relationshipFocusExit">${escapeHtml(c().exitFocus)}</button>` : ""}</header>${controlsHtml(data)}<div data-relationship-results>${resultsHtml(data, inspection)}</div></section>`;
     bindEvents();
     if (state.view === "map" && state.mode === "network") observeAndDraw();
     else resizeObserver?.disconnect();
@@ -571,6 +599,13 @@
   }
 
   function bindEvents() {
+    // Search-only renders preserve the command bar. Assigning event-handler
+    // properties makes rebinding idempotent for those persistent controls;
+    // addEventListener would accumulate another activation on every search.
+    const bindClick = (selector, handler) => {
+      const element = container.querySelector(selector);
+      if (element) element.onclick = handler;
+    };
     container.onkeydown = (event) => {
       if (event.key === "Escape" && state.focused) {
         event.preventDefault();
@@ -614,10 +649,15 @@
     });
     const search = container.querySelector("#relationshipSearch");
     if (search) search.oninput = () => {
-      state.query = search.value;
-      render("relationshipSearch");
-      const next = container.querySelector("#relationshipSearch");
-      next?.setSelectionRange(next.value.length, next.value.length);
+      const value = search.value;
+      const epoch = renderEpoch;
+      state.query = value;
+      cancelAnimationFrame(searchRenderFrame);
+      searchRenderFrame = requestAnimationFrame(() => {
+        searchRenderFrame = 0;
+        if (!container || state.query !== value || renderEpoch !== epoch) return;
+        renderSearchResults();
+      });
     };
     container.querySelectorAll("[data-map-family]").forEach((input) => input.onchange = () => {
       input.checked ? state.families.add(input.dataset.mapFamily) : state.families.delete(input.dataset.mapFamily);
@@ -643,7 +683,7 @@
     container.querySelectorAll("[data-spatial-control]").forEach((button) => {
       button.onclick = () => updateSpatial(button.dataset.spatialControl);
     });
-    container.querySelector("[data-spatial-reset]")?.addEventListener("click", () => updateSpatial("reset"));
+    bindClick("[data-spatial-reset]", () => updateSpatial("reset"));
     const spatialRecordSelect = container.querySelector("#spatialRecordSelect");
     if (spatialRecordSelect) spatialRecordSelect.onchange = () => {
       state.selectedId = graph.resolve(spatialRecordSelect.value) ? spatialRecordSelect.value : "";
@@ -692,7 +732,7 @@
     }
     const savedSelect = container.querySelector("#relationshipSavedView");
     if (savedSelect) savedSelect.onchange = () => { state.savedViewId = savedSelect.value; render("relationshipSavedView"); };
-    container.querySelector("[data-save-view]")?.addEventListener("click", () => {
+    bindClick("[data-save-view]", () => {
       const id = `view-${Date.now().toString(36)}-${savedViews.length + 1}`;
       const name = `${c()[state.mode]} · ${c()[state.overlay]} · ${savedViews.length + 1}`;
       savedViews.push({ id, name, snapshot: viewSnapshot() });
@@ -700,13 +740,13 @@
       persistSavedViews();
       render();
     });
-    container.querySelector("[data-restore-view]")?.addEventListener("click", () => {
+    bindClick("[data-restore-view]", () => {
       const saved = savedViews.find((item) => item.id === state.savedViewId);
       if (!saved) return;
       restoreSnapshot(saved.snapshot);
       render();
     });
-    container.querySelector("[data-delete-view]")?.addEventListener("click", () => {
+    bindClick("[data-delete-view]", () => {
       savedViews = savedViews.filter((item) => item.id !== state.savedViewId);
       state.savedViewId = "";
       persistSavedViews();
@@ -733,10 +773,10 @@
       state.selectedEdgeId = button.dataset.mapEdge; state.selectedId = ""; render();
       container.querySelector(".relationshipEdgeDetails")?.scrollIntoView({ block: "nearest" });
     });
-    container.querySelector("[data-clear-selection]")?.addEventListener("click", () => {
+    bindClick("[data-clear-selection]", () => {
       state.selectedEdgeId = ""; state.selectedId = ""; state.neighborhood = false; state.tour = false; render();
     });
-    container.querySelector("[data-reveal-selection]")?.addEventListener("click", () => {
+    bindClick("[data-reveal-selection]", () => {
       Object.assign(state, { mode: "network", view: "map", query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: false });
       state.families = new Set(["explicit", "evidence", "structural"]);
       render();
@@ -745,11 +785,11 @@
         if (id) container.querySelector(`[data-map-node="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center", inline: "center" });
       });
     });
-    container.querySelector("[data-open-selected]")?.addEventListener("click", (event) => {
+    bindClick("[data-open-selected]", (event) => {
       const node = graph.resolve(state.selectedId);
       if (node) onOpenNode?.(node, event.currentTarget);
     });
-    container.querySelector("[data-focus-selected]")?.addEventListener("click", () => {
+    bindClick("[data-focus-selected]", () => {
       if (!state.selectedId) return;
       Object.assign(state, { mode: "network", view: "map", query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: true });
       state.families = new Set(["explicit", "evidence", "structural"]);
@@ -762,7 +802,7 @@
       render();
       focusAfterRender(() => container.querySelector(entering ? ".relationshipFocusExit" : "[data-focus-toggle]"), { force: true });
     });
-    container.querySelector("[data-tour-toggle]")?.addEventListener("click", () => {
+    bindClick("[data-tour-toggle]", () => {
       state.tour = !state.tour;
       state.tourIndex = 0;
       if (state.tour) {
@@ -774,7 +814,7 @@
       const tourActive = state.tour;
       focusAfterRender(() => container.querySelector(tourActive ? "[data-tour-step=next]" : "[data-tour-toggle]"), { force: true });
     });
-    container.querySelector("[data-tour-stop]")?.addEventListener("click", () => { state.tour = false; render(); });
+    bindClick("[data-tour-stop]", () => { state.tour = false; render(); });
     container.querySelectorAll("[data-tour-step]").forEach((button) => button.onclick = () => {
       const edges = walkthroughEdges(visibleData());
       if (button.dataset.tourStep === "previous") state.tourIndex = Math.max(0, state.tourIndex - 1);
@@ -789,7 +829,7 @@
       state.zoom = action === "fit" ? 0.82 : Math.max(0.7, Math.min(1.4, state.zoom + (action === "in" ? 0.1 : -0.1)));
       render();
     });
-    container.querySelector("[data-map-reset]")?.addEventListener("click", () => {
+    bindClick("[data-map-reset]", () => {
       Object.assign(state, { query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: false, selectedId: "", selectedEdgeId: "", zoom: 1, tour: false, tourIndex: 0, overlay: "none", spatialYaw: -18, spatialPitch: 48, spatialZoom: 0.68 });
       setMode("story");
     });

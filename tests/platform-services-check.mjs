@@ -77,6 +77,30 @@ renderer.render("review");
 renderer.renderAll();
 assert(order.join(",") === "review,shell,review", "named render regions are not deterministic");
 assert(renderer.cycle() === 2, "render cycles are not measurable");
+renderer.renderChanged({ shell: "en", review: "analysis-1" });
+renderer.renderChanged({ shell: "en", review: "analysis-1" });
+assert(
+  order.join(",") === "review,shell,review,shell,review",
+  "unchanged region signatures must not rerender",
+);
+assert(
+  renderer.stats().find((region) => region.name === "review")?.count === 3,
+  "region-level render counts are inaccurate",
+);
+
+let failingRenders = 0;
+const retryable = createRegionRenderer({
+  review: () => {
+    failingRenders += 1;
+    if (failingRenders === 1) throw new Error("transient render failure");
+  },
+});
+try {
+  retryable.renderChanged({ review: "analysis-2" });
+} catch {
+  // A failed render must not commit the signature and suppress its retry.
+}
+retryable.renderChanged({ review: "analysis-2" });
+assert(failingRenders === 2, "failed region signatures were committed before rendering completed");
 
 console.log("Platform services checks passed.");
-

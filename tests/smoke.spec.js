@@ -4,6 +4,14 @@ test('Jarbou3i Model core flow', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#copyPromptBtn')).toBeVisible();
 
+  const platform = await page.evaluate(() => window.Jarbou3iPlatformDiagnostics?.inspect());
+  expect(platform?.runtimeVersion).toBe('1.0.0');
+  expect(platform?.lenses.map((lens) => lens.id)).toEqual(['strategic', 'biopolitical']);
+  expect(platform?.performance.measures.map((measure) => measure.name)).toEqual(
+    expect.arrayContaining(['render.shell', 'render.workflow', 'render.engine', 'render.review']),
+  );
+  expect(platform?.performance.entryCount).toBeLessThanOrEqual(160);
+
   await expect(page.locator('.logo img')).toHaveAttribute('src', /jarbou3i-mascot-192\.png$/);
   await expect(page.locator('.welcomeMascot')).toHaveAttribute('src', /jarbou3i-mascot-512\.png$/);
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', 'manifest.webmanifest');

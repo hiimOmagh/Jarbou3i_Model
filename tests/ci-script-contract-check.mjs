@@ -14,6 +14,10 @@ for (const gate of [
   "build:validator",
   "test:qa",
   "test:static",
+  "test:platform",
+  "test:platform:services",
+  "test:platform:runtime",
+  "test:performance",
   "test:bio:v2",
   "test:bio:integrity",
   "test:bio:report",
@@ -50,14 +54,14 @@ for (const spec of [
 ]) {
   if (!core.includes(spec)) fail(`browser core is missing ${spec}`);
 }
-if (pkg.scripts?.["test:browser:reflow"] !== "playwright test tests/reflow-audit.spec.js") {
+if (pkg.scripts?.["test:browser:reflow"] !== "node scripts/run-playwright.mjs tests/reflow-audit.spec.js") {
   fail("dedicated reflow audit script is missing");
 }
 const visualAudit = pkg.scripts?.["test:browser:visual-audit"] || "";
 for (const token of ["tests/visual-audit-evidence.spec.js", "--project=chromium", "--workers=1", "npm run test:evidence:visual-audit"]) {
   if (!visualAudit.includes(token)) fail(`visual audit script is missing ${token}`);
 }
-if (pkg.scripts?.["test:browser:audit"] !== "playwright test tests/release-audit-matrix.spec.js") {
+if (pkg.scripts?.["test:browser:audit"] !== "node scripts/run-playwright.mjs tests/release-audit-matrix.spec.js") {
   fail("dedicated browser audit script is missing");
 }
 const hosted = pkg.scripts?.["test:browser:hosted"] || "";
@@ -83,14 +87,27 @@ if (pkg.scripts?.test !== "npm run test:ci") {
 }
 
 for (const token of [
+  "PLAYWRIGHT_MANAGED_BASE_URL",
+  "command: 'node scripts/static-server.mjs'",
   "PLAYWRIGHT_WORKERS",
   "const DEFAULT_BROWSER_WORKERS = 4;",
   "timeout: 60_000",
   "expect: { timeout: 10_000 }",
   "workers: workerCount",
+  "const reuseLocalServer = process.env.PLAYWRIGHT_REUSE_SERVER === '1';",
+  "reuseExistingServer: reuseLocalServer",
 ]) {
   if (!playwright.includes(token)) {
     fail(`Playwright resource contract is missing: ${token}`);
+  }
+}
+const managedRunner = read("scripts/run-playwright.mjs");
+for (const token of ["availablePort", "PLAYWRIGHT_MANAGED_BASE_URL", "finally", "stopServer(server)", "playwrightCli"]) {
+  if (!managedRunner.includes(token)) fail(`managed Playwright runner is missing: ${token}`);
+}
+for (const script of ["test:browser:core", "test:browser:hosted", "test:browser:visual-audit"]) {
+  if (!pkg.scripts?.[script]?.includes("node scripts/run-playwright.mjs")) {
+    fail(`${script} must use the managed Playwright runner`);
   }
 }
 if ((playwright.match(/channel: 'chromium'/g) || []).length !== 2) {
@@ -122,8 +139,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.8") {
-  fail("package version must be 2.1.0-alpha.8");
+if (pkg.version !== "2.1.0-alpha.14") {
+  fail("package version must be 2.1.0-alpha.14");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

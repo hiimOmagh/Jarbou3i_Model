@@ -99,12 +99,15 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
 
         await page.locator("#loadSampleBtn").click();
         await expect(page.locator("#reviewPanel")).toBeVisible();
-        await page.locator('[data-bio-review="connections"]').click();
-        await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
-        await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute(
+        const connectionsTab = page.locator('[data-bio-review="connections"]');
+        await connectionsTab.focus();
+        await expect(connectionsTab).toBeFocused();
+        await connectionsTab.press("Enter");
+        await expect(connectionsTab).toHaveAttribute(
           "aria-selected",
           "true",
         );
+        await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
 
         const duplicateIds = await page.locator("[id]").evaluateAll((elements) => {
           const counts = new Map();

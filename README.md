@@ -1,11 +1,13 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.8` is the protected post-RC17 visual-acceptance track for a static, trilingual workbench with two independent contracts:
+Version `2.1.0-alpha.14` completes the first shared-platform foundation while preserving the verified Alpha.8 visual and analytical baseline for a static, trilingual workbench with two independent contracts:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
 
 The Strategic engine is preserved. Biopolitical analysis has its own schema, prompt, validator, semantic-integrity gate, diagnostics, review interface, export contract, and explicitly non-canonical legacy adapter.
+
+Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 
 Biopolitical result references are resolved through a read-only relationship index. Review cards show the referenced record’s name alongside its stable canonical ID; selecting a reference opens its type, analytical pillar, confidence, and indexed incoming/outgoing relationships. Standalone HTML reports expand the same names and include a reference directory, while canonical JSON remains unchanged for re-import and verification. RC 12 removes assistant-interface citation artifacts during import, links valid public sources directly, and separates analytical readiness from the independent publication gate in the report hero. RC 13 preserves authored French punctuation; RC 14 completes content-safe Relationship Explorer containment at the 320px/400%-equivalent boundary.
 
@@ -87,6 +89,13 @@ The analysis language stored in imported JSON controls report language and direc
 ```text
 index.html
 src/app.js
+src/core/platform-runtime.js
+src/core/lens-registry.js
+src/core/platform-state.js
+src/core/performance.js
+src/core/render-regions.js
+src/lenses/strategic/adapter.js
+src/lenses/biopolitical/adapter.js
 src/biopolitics.js
 src/biopolitics-integrity.js
 src/biopolitical-report.js
@@ -111,7 +120,7 @@ npm run dev
 
 Open `http://127.0.0.1:4173`.
 
-For the alpha.5 verification sequence, see [`docs/alpha5-acceptance-hotfix.md`](docs/alpha5-acceptance-hotfix.md). The full alpha.4 visual-acceptance scope and separate deployed-site gate remain documented in [`docs/alpha4-visual-acceptance.md`](docs/alpha4-visual-acceptance.md).
+For the Alpha.10 architecture and verification scope, see [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md). The Alpha.5 verification sequence remains in [`docs/alpha5-acceptance-hotfix.md`](docs/alpha5-acceptance-hotfix.md), and the full Alpha.4 visual-acceptance scope and separate deployed-site gate remain documented in [`docs/alpha4-visual-acceptance.md`](docs/alpha4-visual-acceptance.md).
 
 When applying this release over an older working directory, run the safe layout
 migration once before testing:

@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL?.trim();
+const managedBaseURL = process.env.PLAYWRIGHT_MANAGED_BASE_URL?.trim();
 const localBaseURL = 'http://127.0.0.1:4173';
+const reuseLocalServer = process.env.PLAYWRIGHT_REUSE_SERVER === '1';
 const DEFAULT_BROWSER_WORKERS = 4;
 const workerOverride = Number.parseInt(process.env.PLAYWRIGHT_WORKERS || '', 10);
 const workerCount = Number.isInteger(workerOverride) && workerOverride > 0
@@ -16,16 +18,16 @@ export default defineConfig({
   workers: workerCount,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
-  webServer: externalBaseURL
+  webServer: externalBaseURL || managedBaseURL
     ? undefined
     : {
-        command: 'npm run dev',
+        command: 'node scripts/static-server.mjs',
         url: localBaseURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: reuseLocalServer,
         timeout: 30_000
       },
   use: {
-    baseURL: externalBaseURL || localBaseURL,
+    baseURL: externalBaseURL || managedBaseURL || localBaseURL,
     trace: 'on-first-retry'
   },
   projects: [

@@ -1,5 +1,42 @@
 # Changelog
 
+## 2.1.0-alpha.14 — Idempotent Explorer Event Lifecycle
+
+- Makes explorer click binding idempotent across non-destructive search-result renders.
+- Prevents one keyboard or pointer activation from creating duplicate saved views after search.
+- Applies the same event-lifecycle protection to saved-view, map-reset, tour, selection, and spatial controls.
+- Adds a no-browser regression gate that rejects accumulating click listeners in the explorer.
+
+## 2.1.0-alpha.13 — Managed Cross-platform Browser Harness
+
+- Runs every official browser suite through a managed launcher with a temporary free local port.
+- Starts the static server as a direct Node child and guarantees teardown in a `finally` block.
+- Keeps deployed checks external while distinguishing the managed local base URL from a deployed target.
+- Adds parent-process and signal shutdown safeguards to prevent orphan servers on Windows.
+
+## 2.1.0-alpha.12 — Non-destructive Explorer Search
+
+- Updates relationship search results without replacing the search field, saved-view controls, or their active keyboard focus.
+- Coalesces graph-only search work to one animation frame and discards stale callbacks after any newer full render.
+- Exercises release-audit tab activation through the keyboard contract to avoid transient pointer overlays during concurrent cross-browser runs.
+- Makes local Playwright server reuse explicitly opt-in through `PLAYWRIGHT_REUSE_SERVER=1`.
+
+## 2.1.0-alpha.10 — Platform Boot Settings Hotfix
+
+- Fixes the single browser-boot exception behind the Alpha.9 cascade: theme initialization now reads the immutable platform boot settings instead of the removed pre-platform `savedSettings` binding.
+- Restores persisted interface language, analysis-language overrides, theme selection, initial render-region measurements, export-tab interaction, and every downstream reflow case.
+- Adds a no-browser regression guard that requires theme initialization to use `PLATFORM.bootSettings` and rejects reintroduction of the obsolete binding.
+- Retains the complete Phase 1 runtime, lens manifests, performance primitives, Strategic v1.1 behavior, Biopolitical v2.1 behavior, canonical data, and presentation baseline.
+
+## 2.1.0-alpha.9 — Phase 1 Platform Foundation
+
+- Replaces ad hoc service assembly in the application entry point with one shared platform runtime that composes state, settings, localization, lens registration, render regions, diagnostics, caching, and scheduling.
+- Upgrades both analytical adapters to immutable, discoverable lens manifests with stable contract identity, schema identity, section counts, capabilities, and isolated service boundaries.
+- Adds bounded in-memory performance telemetry for boot and named render regions; no analytics, network transmission, persistent profiling, or canonical payload mutation is introduced.
+- Adds revision-keyed memoization and deduplicated task scheduling primitives for future graph, report, and lens modules without changing current synchronous interaction behavior.
+- Extends the no-browser release gate with runtime-composition and performance-foundation contracts, and carries forward the verified phone score-card visual capture anchor from the Alpha.8 closure.
+- Preserves Strategic v1.1 and Biopolitical v2.1 schemas, prompts, scoring, evidence discipline, graph projections, import/export behavior, translations, themes, and responsive presentation.
+
 ## 2.1.0-alpha.8 — Shared Score-Card Component Closure
 
 - Corrects the shared overview renderer to use the design-system `scoreMetricCard`, `metricHead`, and `metricHint` contracts.

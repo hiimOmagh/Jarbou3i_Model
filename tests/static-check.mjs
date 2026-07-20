@@ -196,8 +196,24 @@ const relationshipBrowser = read("tests/relationship-explorer.spec.js");
 for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFocused()', 'saveView.press("Enter")', 'restoreView.press("Enter")', 'openSelected.press("Enter")']) {
   if (!relationshipBrowser.includes(token)) fail(`Firefox explorer stabilization contract missing: ${token}`);
 }
+const staticServer = read("scripts/static-server.mjs");
+for (const token of ["const parentPid = process.ppid", "process.kill(parentPid, 0)", "process.once(\"SIGTERM\", shutdown)"]) {
+  if (!staticServer.includes(token)) fail(`static server lifecycle contract missing: ${token}`);
+}
 for (const token of ["function focusAfterRender", "epoch !== renderEpoch", "force: true", "active !== document.body", "active !== document.documentElement"]) {
   if (!explorer.includes(token)) fail(`deferred focus ownership contract missing: ${token}`);
+}
+for (const token of ["let searchRenderFrame = 0", "function renderSearchResults", "data-relationship-results", "state.query !== value", "renderEpoch !== epoch"]) {
+  if (!explorer.includes(token)) fail(`non-destructive explorer search contract missing: ${token}`);
+}
+for (const token of ["const bindClick = (selector, handler)", "if (element) element.onclick = handler"]) {
+  if (!explorer.includes(token)) fail(`idempotent explorer event contract missing: ${token}`);
+}
+if (explorer.includes('.addEventListener("click"')) {
+  fail("relationship explorer click handlers must remain idempotent across partial renders");
+}
+if (!releaseAudit.includes('connectionsTab.press("Enter")')) {
+  fail("release audit connections activation contract missing");
 }
 for (const token of ['connections.press("Enter")', 'data-bio-review="connections"]\')).toHaveAttribute("aria-selected", "true")']) {
   if (!relationshipBrowser.includes(token)) fail(`explorer tab synchronization contract missing: ${token}`);
@@ -246,14 +262,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.8") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.14") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.8"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.14"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.8"')) {
+if (!app.includes('"2.1.0-alpha.14"')) {
   fail("report fallback version is stale");
 }
 for (const token of [
@@ -274,14 +290,23 @@ for (const token of [
   if (!app.includes(token)) fail(`sample-language linkage contract missing: ${token}`);
 }
 for (const token of [
-  "createPlatformState",
-  "createSettingsRepository",
-  "createLocalizationService",
-  "createRegionRenderer",
+  "createPlatformRuntime",
+  "PLATFORM.registry",
+  "PLATFORM.localization",
+  "PLATFORM.state",
+  "PLATFORM.renderer",
+  "PLATFORM.performance.measure",
   "PLATFORM_RENDERER.renderAll()",
+  "Jarbou3iPlatformDiagnostics",
   "Jarbou3iProvenance",
 ]) {
   if (!app.includes(token)) fail(`shared platform service missing: ${token}`);
+}
+if (!app.includes("const pref = PLATFORM.bootSettings.theme;")) {
+  fail("platform boot settings are not used by theme initialization");
+}
+if (/\bsavedSettings\b/.test(app)) {
+  fail("removed pre-platform settings binding was reintroduced");
 }
 if (!fs.existsSync("tests/sample-language-contract.spec.js")) {
   fail("sample-language browser contract is missing");

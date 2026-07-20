@@ -5,6 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT || 4173);
+const parentPid = process.ppid;
 const types = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -42,3 +43,23 @@ const server = http.createServer(async (request, response) => {
 server.listen(port, host, () => {
   console.log(`Jarbou3i Model available at http://${host}:${port}`);
 });
+
+let closing = false;
+function shutdown() {
+  if (closing) return;
+  closing = true;
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1_500).unref();
+}
+
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
+
+const parentWatch = setInterval(() => {
+  try {
+    process.kill(parentPid, 0);
+  } catch {
+    shutdown();
+  }
+}, 1_000);
+parentWatch.unref();

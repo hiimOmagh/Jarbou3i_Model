@@ -2,6 +2,7 @@ import fs from "node:fs";
 import {
   createLensRegistry,
   defineLensAdapter,
+  LENS_CAPABILITIES,
   LENS_ADAPTER_METHODS,
 } from "../src/core/lens-registry.js";
 import { createStrategicLensAdapter } from "../src/lenses/strategic/adapter.js";
@@ -39,6 +40,18 @@ assert(
 );
 assert(registry.get("strategic").modelSectionCount === 6, "strategic adapter lost six-layer identity");
 assert(registry.get("biopolitical").modelSectionCount === 9, "biopolitical adapter lost nine-pillar identity");
+assert(Object.isFrozen(strategic.manifest), "lens manifests must be immutable");
+assert(Object.isFrozen(strategic.services), "lens service boundaries must be immutable");
+assert(
+  strategic.supports(LENS_CAPABILITIES.PROMPT) &&
+    registry.supports("biopolitical", LENS_CAPABILITIES.REVIEW),
+  "lens capability discovery is incomplete",
+);
+assert(
+  registry.manifest("strategic").contractId === "strategic-analysis-v1" &&
+    registry.manifest("biopolitical").contractId === "biopolitical-training-map-v2",
+  "lens contract identities were not preserved",
+);
 assert(
   LENS_ADAPTER_METHODS.every((method) => typeof strategic[method] === "function"),
   "strategic adapter is incomplete",
@@ -57,6 +70,7 @@ const payload = {
 };
 const envelope = registry.createEnvelope(payload, "strategic");
 assert(envelope.lensId === "biopolitical", "canonical lens identity was not preserved");
+assert(envelope.contractId === "biopolitical-training-map-v2", "platform envelope lost contract identity");
 assert(envelope.canonicalPayload === payload, "platform envelope must not copy or mutate canonical data");
 assert(Object.isFrozen(envelope), "platform envelope must be immutable");
 
@@ -76,20 +90,39 @@ try {
 }
 assert(duplicateRejected, "duplicate lens id was accepted");
 
+let incompleteCapabilitiesRejected = false;
+try {
+  defineLensAdapter({
+    id: "partial",
+    contractId: "partial-contract-v1",
+    schemaVersion: "1.0.0",
+    modelSectionCount: 1,
+    accent: "partial",
+    capabilities: ["prompt"],
+    ...services,
+  });
+} catch {
+  incompleteCapabilitiesRejected = true;
+}
+assert(incompleteCapabilitiesRejected, "incomplete lens capabilities were accepted");
+
 const index = fs.readFileSync("index.html", "utf8");
 const app = fs.readFileSync("src/app.js", "utf8");
+const smoke = fs.readFileSync("tests/smoke.spec.js", "utf8");
 assert(
   index.includes('<script type="module" src="src/app.js"></script>'),
   "native module entry point is missing",
 );
 for (const token of [
-  "createLensRegistry",
+  "createPlatformRuntime",
   "createStrategicLensAdapter",
   "createBiopoliticalLensAdapter",
   "activeLensAdapter().createSample",
   "activeLensAdapter().renderEngineNav()",
   "activeLensAdapter().renderReview()",
   "PLATFORM_RENDERER.renderAll()",
+  "Jarbou3iPlatformDiagnostics",
+  '"boot.initialize"',
 ]) {
   assert(app.includes(token), `runtime is not routed through the platform contract: ${token}`);
 }
@@ -98,8 +131,19 @@ for (const file of [
   "src/core/persistence.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
+  "src/core/performance.js",
+  "src/core/platform-runtime.js",
 ]) {
   assert(fs.existsSync(file), `shared platform service is missing: ${file}`);
+}
+for (const token of [
+  "Jarbou3iPlatformDiagnostics?.inspect()",
+  "render.shell",
+  "render.workflow",
+  "render.engine",
+  "render.review",
+]) {
+  assert(smoke.includes(token), `browser runtime contract is missing: ${token}`);
 }
 
 console.log("Platform architecture checks passed.");
