@@ -29,6 +29,7 @@ const shellNavigation = read("src/core/shell-navigation.js");
 const resultsOrientation = read("src/core/results-orientation.js");
 const resultsExplanation = read("src/core/results-explanation.js");
 const resultsInspection = read("src/core/results-inspection.js");
+const relationshipIntelligence = read("src/core/relationship-intelligence.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -65,6 +66,7 @@ for (const [file, source] of [
   ["src/core/results-orientation.js", resultsOrientation],
   ["src/core/results-explanation.js", resultsExplanation],
   ["src/core/results-inspection.js", resultsInspection],
+  ["src/core/relationship-intelligence.js", relationshipIntelligence],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -490,15 +492,34 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.27") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.28") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.27"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.28"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.27"')) {
+if (!app.includes('"2.1.0-alpha.28"')) {
   fail("report fallback version is stale");
+}
+for (const token of [
+  "createRelationshipIntelligence",
+  "evidenceTrail(id)",
+  "backReferences(id)",
+  "resolveDeepLink(value)",
+  "unresolvedEvidence",
+  "unsupportedHighConfidence",
+]) {
+  if (!relationshipIntelligence.includes(token)) {
+    fail(`Phase 4 relationship-intelligence contract missing: ${token}`);
+  }
+}
+for (const token of [
+  'data-inspection-section="evidence-trail"',
+  "referencePermanentLink",
+  'window.addEventListener("hashchange"',
+]) {
+  if (!referenceUi.includes(token)) fail(`Phase 4 evidence UI contract missing: ${token}`);
 }
 for (const token of [
   'class="scoreMetricCard',

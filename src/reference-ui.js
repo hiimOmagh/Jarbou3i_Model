@@ -31,6 +31,10 @@
       unresolvedLinks: "Unresolved links", occurrences: "Occurrences",
       occurrenceCanonical: "Canonical record", occurrenceRelationship: "Relationship reference",
       occurrenceReference: "Authored reference", occurrenceOpen: "Open occurrence",
+      evidenceTrail: "Evidence trail", trailSupporting: "Authored support",
+      trailCounter: "Authored counter-records", backReferences: "Evidence back-references",
+      citedAsSupport: "Cited as support", citedAsCounter: "Cited as counter-evidence",
+      permanentLink: "Permanent record link",
       yes: "Yes", no: "No",
     },
     ar: {
@@ -54,6 +58,10 @@
       unresolvedLinks: "الروابط غير المحلولة", occurrences: "مواضع الظهور",
       occurrenceCanonical: "السجل النظامي", occurrenceRelationship: "مرجع علاقة",
       occurrenceReference: "مرجع مؤلف", occurrenceOpen: "فتح موضع الظهور",
+      evidenceTrail: "مسار الأدلة", trailSupporting: "الدعم المؤلف",
+      trailCounter: "سجلات الأدلة المضادة المؤلفة", backReferences: "الإحالات العكسية للأدلة",
+      citedAsSupport: "مذكور كدليل داعم", citedAsCounter: "مذكور كدليل مضاد",
+      permanentLink: "رابط السجل الدائم",
       yes: "نعم", no: "لا",
     },
     fr: {
@@ -77,6 +85,10 @@
       unresolvedLinks: "Liens non résolus", occurrences: "Occurrences",
       occurrenceCanonical: "Fiche canonique", occurrenceRelationship: "Référence relationnelle",
       occurrenceReference: "Référence rédigée", occurrenceOpen: "Ouvrir l’occurrence",
+      evidenceTrail: "Parcours probatoire", trailSupporting: "Appuis rédigés",
+      trailCounter: "Fiches de contre-preuve rédigées", backReferences: "Rétro-références probatoires",
+      citedAsSupport: "Cité comme appui", citedAsCounter: "Cité comme contre-preuve",
+      permanentLink: "Lien permanent de la fiche",
       yes: "Oui", no: "Non",
     },
   };
@@ -168,6 +180,21 @@
     return `<section class="referenceInspectorSection" data-inspection-section="evidence"><h3>${escapeHtml(copy.evidence)}</h3><div class="referenceEvidenceGrid"><div><h4>${escapeHtml(copy.supporting)}</h4>${referenceList(evidence.supportingIds, copy.unavailable)}</div><div><h4>${escapeHtml(copy.counter)}</h4>${referenceList(evidence.counterIds, copy.unavailable)}</div></div>${counterText}</section>`;
   }
 
+  function relationshipEvidenceHtml(inspection, copy) {
+    const relationship = inspection?.relationship || {};
+    const trail = relationship.evidenceTrail || {};
+    const backlinks = relationship.backReferences?.evidence || [];
+    const supporting = (trail.supporting || []).map((item) => item.targetId);
+    const counter = (trail.counter || []).map((item) => item.targetId);
+    const supportBacklinks = backlinks
+      .filter((item) => item.role === "supporting")
+      .map((item) => item.ownerId);
+    const counterBacklinks = backlinks
+      .filter((item) => item.role === "counter")
+      .map((item) => item.ownerId);
+    return `<section class="referenceInspectorSection" data-inspection-section="evidence-trail"><h3>${escapeHtml(copy.evidenceTrail)}</h3><div class="referenceEvidenceGrid"><div><h4>${escapeHtml(copy.trailSupporting)}</h4>${referenceList(supporting, copy.unavailable)}</div><div><h4>${escapeHtml(copy.trailCounter)}</h4>${referenceList(counter, copy.unavailable)}</div></div>${backlinks.length ? `<div class="referenceEvidenceBacklinks"><h4>${escapeHtml(copy.backReferences)}</h4><div class="referenceEvidenceGrid"><div><h5>${escapeHtml(copy.citedAsSupport)}</h5>${referenceList(supportBacklinks, copy.unavailable)}</div><div><h5>${escapeHtml(copy.citedAsCounter)}</h5>${referenceList(counterBacklinks, copy.unavailable)}</div></div></div>` : ""}</section>`;
+  }
+
   function auditHtml(inspection, copy) {
     const audit = inspection?.audit || {};
     const facts = [
@@ -212,8 +239,11 @@
     const connections = incoming.length + outgoing.length
       ? `<section class="referenceConnections" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4>${escapeHtml(copy.incoming)}</h4><ul>${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4>${escapeHtml(copy.outgoing)}</h4><ul>${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
       : `<section class="referenceConnections" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3><p class="referenceEmpty compact">${escapeHtml(copy.none)}</p></section>`;
-    const identity = `<section class="referenceInspectorSection" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="referenceInspectorFacts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar)}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence)}</dl></section>`;
-    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="referenceInspectorSummary">${escapeHtml(inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
+    const permanentLink = inspection.relationship?.deepLink
+      ? `<div><dt>${escapeHtml(copy.permanentLink)}</dt><dd><a class="referencePermanentLink" href="${escapeHtml(inspection.relationship.deepLink)}"><code>${escapeHtml(inspection.relationship.deepLink)}</code></a></dd></div>`
+      : "";
+    const identity = `<section class="referenceInspectorSection" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="referenceInspectorFacts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar)}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence)}${permanentLink}</dl></section>`;
+    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="referenceInspectorSummary">${escapeHtml(inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
     const openButton = rootElement.querySelector("#referenceOpenRecord");
     openButton.textContent = copy.open;
     openButton.dataset.referenceOpenRecord = node.id;
@@ -240,6 +270,7 @@
   function close({ restoreFocus = true } = {}) {
     const rootElement = document.getElementById("referenceInspectorRoot");
     if (!rootElement || rootElement.hidden) return;
+    const closingId = activeNode?.id;
     rootElement.hidden = true;
     document.documentElement.classList.remove("referenceInspectorOpen");
     document.querySelector("main")?.removeAttribute("inert");
@@ -247,6 +278,10 @@
     returnFocus = null;
     activeNode = null;
     activeInspection = null;
+    const linkedNode = graph?.resolveDeepLink?.(window.location.hash);
+    if (closingId && linkedNode?.id === closingId) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
   }
 
   function handleKeydown(event) {
@@ -306,6 +341,10 @@
       }
     });
     document.addEventListener("keydown", handleKeydown);
+    window.addEventListener("hashchange", () => {
+      const node = graph?.resolveDeepLink?.(window.location.hash);
+      if (node) open(node.id, document.activeElement);
+    });
     wired = true;
   }
 
@@ -316,6 +355,10 @@
     onShowInMap = options.onShowInMap || null;
     onOpenOccurrence = options.onOpenOccurrence || null;
     wire();
+    requestAnimationFrame(() => {
+      const node = graph?.resolveDeepLink?.(window.location.hash);
+      if (node) open(node.id, null);
+    });
   }
 
   root.Jarbou3iReferenceUi = Object.freeze({ bind, renderText, open, close });

@@ -81,3 +81,30 @@ test("biopolitical inspection traverses linked records without losing return foc
   await expect(inspector).toBeHidden();
   await expect(evidenceRecord).toBeFocused();
 });
+
+test("evidence trails expose back-references and stable cross-lens deep links", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#langEn").click();
+  await page.locator('[data-lens="biopolitical"]').click();
+  await page.locator("#loadSampleBtn").click();
+  await page.locator('[data-bio-review="inspection"]').click();
+
+  const intervention = page.locator('[data-results-inspection] [data-reference-id="IV1"]');
+  await intervention.click();
+  const inspector = page.locator(".referenceInspector");
+  const trail = inspector.locator('[data-inspection-section="evidence-trail"]');
+  await expect(trail).toContainText("Rules linked defined health credentials");
+  await expect(trail).toContainText("E1");
+
+  const permanent = inspector.locator('.referencePermanentLink[href="#record=biopolitical:IV1"]');
+  await expect(permanent).toBeVisible();
+  await permanent.click();
+  await expect(page).toHaveURL(/#record=biopolitical:IV1$/);
+  await inspector.locator(".referenceInspectorClose").click();
+  await expect(page).not.toHaveURL(/#record=/);
+
+  await page.evaluate(() => { window.location.hash = "record=biopolitical:E1"; });
+  await expect(inspector).toBeVisible();
+  await expect(page.locator("#referenceInspectorTitle")).toContainText("Rules linked defined health credentials");
+  await expect(inspector.locator('[data-inspection-section="evidence-trail"]')).toContainText("IV1");
+});

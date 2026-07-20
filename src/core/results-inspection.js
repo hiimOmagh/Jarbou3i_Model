@@ -1,5 +1,7 @@
 /* Jarbou3i Model — shared, read-only results inspection index */
 
+import { createRelationshipIntelligence } from "./relationship-intelligence.js";
+
 const arr = (value) => (Array.isArray(value) ? value : []);
 const record = (value) =>
   value && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -188,7 +190,7 @@ function stringList(...values) {
   return [...new Set(values.flatMap((value) => arr(value)).map(text).filter(Boolean))];
 }
 
-function buildInspection(node, analysis, provenanceRecord, occurrences, diagnostics) {
+function buildInspection(node, analysis, provenanceRecord, occurrences, diagnostics, intelligence) {
   const source = record(resolvePointer(analysis, node.path));
   const supportingIds = stringList(
     source.supporting_evidence_ids,
@@ -241,6 +243,11 @@ function buildInspection(node, analysis, provenanceRecord, occurrences, diagnost
     summary: node.subtitle,
     provenance,
     evidence: { supportingIds, counterIds, counterEvidence },
+    relationship: {
+      evidenceTrail: intelligence.evidenceTrail(node.id),
+      backReferences: intelligence.backReferences(node.id),
+      deepLink: intelligence.deepLink(node.id),
+    },
     audit,
     occurrences: arr(occurrences),
   });
@@ -265,9 +272,24 @@ export function createResultsInspectionIndex({
   });
   const occurrences = collectOccurrences(canonical, base.nodes);
   const provenanceById = new Map(arr(provenance?.records).map((item) => [text(item.id), item]));
+  const intelligence = createRelationshipIntelligence({
+    lens,
+    analysis: canonical,
+    nodes: base.nodes,
+    edges: base.edges,
+    provenance,
+    diagnostics: base.diagnostics,
+  });
   const inspectionById = new Map(base.nodes.map((node) => [
     node.id,
-    buildInspection(node, canonical, provenanceById.get(node.id), occurrences.get(node.id), base.diagnostics),
+    buildInspection(
+      node,
+      canonical,
+      provenanceById.get(node.id),
+      occurrences.get(node.id),
+      base.diagnostics,
+      intelligence,
+    ),
   ]));
   const typeLabel = (type) =>
     graph?.typeLabel?.(type) || TYPE_LABELS[locale]?.[type] || TYPE_LABELS.en[type] || type;
@@ -276,10 +298,17 @@ export function createResultsInspectionIndex({
     nodes: Object.freeze(base.nodes),
     edges: Object.freeze(base.edges),
     diagnostics: deepFreeze({ ...base.diagnostics }),
+    intelligence,
+    stats: intelligence.stats,
+    gaps: intelligence.gaps,
     occurrenceCount: [...occurrences.values()].reduce((sum, items) => sum + items.length, 0),
     resolve(id) { return base.byId.get(text(id)) || null; },
     incoming(id) { return Object.freeze([...(incoming.get(text(id)) || [])]); },
     outgoing(id) { return Object.freeze([...(outgoing.get(text(id)) || [])]); },
+    evidenceTrail(id) { return intelligence.evidenceTrail(id); },
+    backReferences(id) { return intelligence.backReferences(id); },
+    deepLink(id) { return intelligence.deepLink(id); },
+    resolveDeepLink(value) { return intelligence.resolveDeepLink(value); },
     typeLabel,
     inspect(id) { return inspectionById.get(text(id)) || null; },
   });

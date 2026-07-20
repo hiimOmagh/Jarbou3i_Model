@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0-alpha.28 — Phase 4 Evidence and Relationship Intelligence Foundation
+
+- Added one immutable, dual-lens registry for canonical records, typed relationships, evidence trails, reverse citations, and objective relationship gaps.
+- Added authored supporting/counter-evidence traversal and evidence back-references to the shared inspector.
+- Added lens-scoped permanent record links with fragment-driven opening and clean dismissal behavior.
+- Added dedicated unit, static, source-of-truth, CI-contract, and cross-browser interaction coverage.
+- Preserved Strategic v1.1, Biopolitical schema `2.1.0`, contract `biopolitical-training-map-v2`, prompts, imports, scoring, publication gates, canonical JSON, reports, and existing graph semantics.
+
 ## 2.1.0-alpha.27 — Evidence Package Completeness Correction
 
 - Corrected the release archive boundary so hosted-demo and visual-audit test specifications and review checks are included.

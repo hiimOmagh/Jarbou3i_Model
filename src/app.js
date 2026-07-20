@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.27 — shared results inspection layer */
+/* Jarbou3i Model v2.1.0-alpha.28 — shared results inspection layer */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -4212,7 +4212,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.27";
+    "2.1.0-alpha.28";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -5109,7 +5109,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.27";
+    "2.1.0-alpha.28";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
