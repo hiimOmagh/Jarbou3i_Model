@@ -15,18 +15,18 @@ for (const dir of forbiddenTracks) {
   }
 }
 
-for (const required of ['index.html', 'src/app.js', 'src/core/lens-registry.js', 'src/core/platform-state.js', 'src/core/persistence.js', 'src/core/localization.js', 'src/core/render-regions.js', 'src/core/performance.js', 'src/core/platform-runtime.js', 'src/core/provenance.js', 'src/core/results-inspection.js', 'src/core/relationship-intelligence.js', 'src/core/evidence-intelligence.js', 'src/lenses/strategic/adapter.js', 'src/lenses/biopolitical/adapter.js', 'src/biopolitics.js', 'src/styles.css', 'schema/strategic-analysis.schema.json', 'schema/biopolitical-analysis.schema.json', 'tests/platform-architecture-check.mjs', 'tests/platform-services-check.mjs', 'tests/platform-runtime-check.mjs', 'tests/performance-foundations-check.mjs', 'tests/provenance-check.mjs', 'tests/results-inspection-check.mjs', 'tests/relationship-intelligence-check.mjs', 'tests/evidence-intelligence-check.mjs', 'tests/results-inspection.spec.js', 'tests/smoke.spec.js']) {
+for (const required of ['index.html', 'src/app.js', 'src/core/lens-registry.js', 'src/core/platform-state.js', 'src/core/persistence.js', 'src/core/localization.js', 'src/core/render-regions.js', 'src/core/performance.js', 'src/core/platform-runtime.js', 'src/core/provenance.js', 'src/core/results-inspection.js', 'src/core/relationship-intelligence.js', 'src/core/evidence-intelligence.js', 'src/core/evidence-traceability.js', 'src/lenses/strategic/adapter.js', 'src/lenses/biopolitical/adapter.js', 'src/biopolitics.js', 'src/styles.css', 'schema/strategic-analysis.schema.json', 'schema/biopolitical-analysis.schema.json', 'tests/platform-architecture-check.mjs', 'tests/platform-services-check.mjs', 'tests/platform-runtime-check.mjs', 'tests/performance-foundations-check.mjs', 'tests/provenance-check.mjs', 'tests/results-inspection-check.mjs', 'tests/relationship-intelligence-check.mjs', 'tests/evidence-intelligence-check.mjs', 'tests/evidence-traceability-check.mjs', 'tests/results-inspection.spec.js', 'tests/evidence-intelligence.spec.js', 'tests/smoke.spec.js']) {
   if (!fs.existsSync(path.join(root, required))) {
     fail(`missing root source file: ${required}`);
   }
 }
 
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-if (packageJson.version !== '2.1.0-alpha.30') {
-  fail('root package version must be 2.1.0-alpha.30');
+if (packageJson.version !== '2.1.0-alpha.32') {
+  fail('root package version must be 2.1.0-alpha.32');
 }
 
-for (const script of ['test:platform', 'test:platform:services', 'test:platform:runtime', 'test:results:inspection', 'test:relationship:intelligence', 'test:evidence:intelligence', 'test:performance', 'test:provenance', 'test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {
+for (const script of ['test:platform', 'test:platform:services', 'test:platform:runtime', 'test:results:inspection', 'test:relationship:intelligence', 'test:evidence:intelligence', 'test:evidence:traceability', 'test:performance', 'test:provenance', 'test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {
   if (!packageJson.scripts?.[script]) fail(`missing package script: ${script}`);
 }
 

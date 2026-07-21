@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.30 — source stylesheet */
+/* Jarbou3i Model v2.1.0-alpha.32 — source stylesheet */
 
 :root{
   --bg:#eef2f8;
@@ -752,9 +752,26 @@ body.bio-v2 .engineCard:nth-child(3n) .flowArrow{display:none;}
 .evidenceGapGroup h5 span{display:grid;min-width:20px;height:20px;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--warn) 12%,var(--surface-solid));color:var(--warn);font-size:9px;}
 .evidenceGapGroup>div{display:grid;gap:5px;}
 .evidenceIntelligenceEmpty{margin:0;padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:11px;text-align:center;}
+.evidenceTraceability{grid-column:1/-1;min-width:0;padding-top:18px;border-top:1px solid var(--line);}
+.evidenceTraceability>header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:10px;}
+.evidenceTraceability>header h4{margin:0 0 4px;}
+.evidenceTraceability>header p,.evidenceTraceability>header small{margin:0;color:var(--muted);font-size:10.5px;}
+.evidenceTraceability>header>div:last-child{display:grid;justify-items:end;gap:5px;text-align:end;}
+.evidenceTraceabilityTable{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:14px;}
+.evidenceTraceability table{width:100%;border-collapse:collapse;background:var(--surface-solid);font-size:10.5px;}
+.evidenceTraceability th,.evidenceTraceability td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top;}
+.evidenceTraceability thead th{background:var(--surface-soft);color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+.evidenceTraceability tbody tr:last-child>*{border-bottom:0;}
+.evidenceTraceability tbody th{min-width:220px;}
+.evidenceTraceability tbody button{display:grid;gap:2px;width:100%;padding:0;border:0;background:transparent;color:var(--text);font:inherit;text-align:start;cursor:pointer;}
+.evidenceTraceability tbody button span{font-weight:850;}
+.evidenceTraceability code{display:inline-block;margin:1px;padding:2px 5px;border-radius:6px;background:var(--surface-soft);color:var(--accent);font-size:9px;}
+.traceabilityBalance{display:inline-block;padding:4px 7px;border-radius:999px;background:var(--surface-soft);color:var(--muted);font-size:9px;font-weight:850;white-space:nowrap;}
+.traceabilityBalance.support_and_counter{background:color-mix(in srgb,var(--success) 11%,var(--surface-soft));color:var(--success);}
+.traceabilityBalance.support_only,.traceabilityBalance.counter_only{background:color-mix(in srgb,var(--warn) 11%,var(--surface-soft));color:var(--warn);}
 @media(max-width:860px){.inspectionDirectoryHeader{grid-template-columns:1fr}.inspectionDirectoryList{grid-template-columns:1fr}}
 @media(max-width:860px){.evidenceIntelligenceBody{grid-template-columns:1fr}.evidenceIntelligence>summary{grid-template-columns:1fr}.evidenceIntelligenceMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:620px){.referenceInspector{inset-block-start:auto;width:100%;height:min(86vh,760px);border-start-start-radius:24px;border-start-end-radius:24px;box-shadow:0 -18px 60px rgba(2,8,23,.25);}.referenceInspectorHead{padding:19px 18px}.referenceInspectorBody{padding:18px}.referenceInspectorFooter{grid-template-columns:1fr;padding:13px 18px}.referenceChip{grid-template-columns:1fr auto;}.referenceEvidenceGrid{grid-template-columns:1fr}.inspectionDirectoryHeader{padding:17px}.inspectionDirectoryMetrics{grid-template-columns:1fr}.inspectionSearch{grid-template-columns:1fr;gap:6px}.evidenceIntelligence>summary,.evidenceIntelligenceBody{padding-inline:14px}.evidenceIntelligenceMetrics{grid-template-columns:1fr}.sourceClusterCard>header{display:grid}.sourceClusterBasis{white-space:normal}}
+@media(max-width:620px){.referenceInspector{inset-block-start:auto;width:100%;height:min(86vh,760px);border-start-start-radius:24px;border-start-end-radius:24px;box-shadow:0 -18px 60px rgba(2,8,23,.25);}.referenceInspectorHead{padding:19px 18px}.referenceInspectorBody{padding:18px}.referenceInspectorFooter{grid-template-columns:1fr;padding:13px 18px}.referenceChip{grid-template-columns:1fr auto;}.referenceEvidenceGrid{grid-template-columns:1fr}.inspectionDirectoryHeader{padding:17px}.inspectionDirectoryMetrics{grid-template-columns:1fr}.inspectionSearch{grid-template-columns:1fr;gap:6px}.evidenceIntelligence>summary,.evidenceIntelligenceBody{padding-inline:14px}.evidenceIntelligenceMetrics{grid-template-columns:1fr}.sourceClusterCard>header{display:grid}.sourceClusterBasis{white-space:normal}.evidenceTraceability>header{display:grid}.evidenceTraceability>header>div:last-child{justify-items:stretch;text-align:start}.evidenceTraceability tbody th{min-width:180px}}
 @media(prefers-reduced-motion:reduce){.referenceChip{transition:none}.referenceChip:hover{transform:none}}
 
 /* 2.1.0-alpha.4 — visual acceptance repair */

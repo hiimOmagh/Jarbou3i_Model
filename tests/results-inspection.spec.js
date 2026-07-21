@@ -93,7 +93,9 @@ test("evidence trails expose back-references and stable cross-lens deep links", 
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="inspection"]').click();
 
-  const intervention = page.locator('[data-results-inspection] [data-reference-id="IV1"]');
+  const intervention = page.locator(
+    '[data-inspection-directory-item] [data-reference-id="IV1"]',
+  );
   await intervention.click();
   const inspector = page.locator(".referenceInspector");
   const trail = inspector.locator('[data-inspection-section="evidence-trail"]');

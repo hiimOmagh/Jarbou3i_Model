@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.30";
+const EXPECTED_VERSION = "2.1.0-alpha.32";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl", button: "#langAr" },

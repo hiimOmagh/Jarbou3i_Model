@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.1.0-alpha.32 — Inspection Selector Namespace Correction
+
+- Scoped the legacy `IV1` browser assertion to the canonical Inspection directory surface.
+- Added a generic static guard against unscoped record selectors across the complete Inspection workspace.
+- Preserved Alpha.31 claim–evidence traceability, derived intelligence export, and all analytical behavior unchanged.
+
+## 2.1.0-alpha.31 — Phase 4 Claim–Evidence Traceability
+
+- Added a dual-lens claim–evidence matrix with authored support, counter-evidence, clusters, unresolved targets, and coverage states.
+- Added direct evidence-to-record routes with canonical paths and permanent record links.
+- Added a separate `jarbou3i-evidence-intelligence-v1` JSON audit export.
+- Marked the new artifact explicitly derived and non-canonical, and excluded raw analysis content.
+- Added unit, static, CI-contract, and cross-browser download verification while preserving canonical exports and analytical behavior.
+
 ## 2.1.0-alpha.30 — Inspection Selector Namespace Correction
 
 - Scoped the two legacy evidence-card browser assertions to canonical Inspection directory items.

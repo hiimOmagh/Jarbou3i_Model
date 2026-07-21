@@ -31,6 +31,7 @@ const resultsExplanation = read("src/core/results-explanation.js");
 const resultsInspection = read("src/core/results-inspection.js");
 const relationshipIntelligence = read("src/core/relationship-intelligence.js");
 const evidenceIntelligence = read("src/core/evidence-intelligence.js");
+const evidenceTraceability = read("src/core/evidence-traceability.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -39,11 +40,18 @@ const validator = read("src/biopolitics-schema-validator.js");
 const pkg = JSON.parse(read("package.json"));
 const lock = JSON.parse(read("package-lock.json"));
 
-if (resultsInspectionBrowser.includes("directory.locator('[data-reference-id=\"E1\"]')")) {
+if (
+  /\[data-results-inspection\]\s+\[data-reference-id=/.test(resultsInspectionBrowser)
+  || /\.locator\(['"`]\[data-reference-id=/.test(resultsInspectionBrowser)
+) {
   fail("inspection browser contract uses an ambiguous cross-surface record selector");
 }
-if (!resultsInspectionBrowser.includes('[data-inspection-directory-item] [data-reference-id="E1"]')) {
-  fail("inspection browser contract is not scoped to the canonical directory item");
+for (const recordId of ["E1", "IV1"]) {
+  if (!resultsInspectionBrowser.includes(
+    `[data-inspection-directory-item] [data-reference-id="${recordId}"]`,
+  )) {
+    fail(`inspection browser contract does not scope ${recordId} to the canonical directory item`);
+  }
 }
 
 for (const [name, entry] of Object.entries(lock.packages || {})) {
@@ -76,6 +84,7 @@ for (const [file, source] of [
   ["src/core/results-inspection.js", resultsInspection],
   ["src/core/relationship-intelligence.js", relationshipIntelligence],
   ["src/core/evidence-intelligence.js", evidenceIntelligence],
+  ["src/core/evidence-traceability.js", evidenceTraceability],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -501,14 +510,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.30") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.32") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.30"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.32"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.30"')) {
+if (!app.includes('"2.1.0-alpha.32"')) {
   fail("report fallback version is stale");
 }
 for (const token of [
@@ -532,6 +541,18 @@ for (const token of [
   "concentratedClusters",
 ]) {
   if (!evidenceIntelligence.includes(token)) fail(`Phase 4 source-cluster contract missing: ${token}`);
+}
+for (const token of [
+  "createEvidenceTraceability",
+  "jarbou3i-evidence-intelligence-v1",
+  "canonical_transport: false",
+  "claim_evidence_matrix",
+  "authored_routes",
+]) {
+  if (!evidenceTraceability.includes(token)) fail(`Phase 4 traceability contract missing: ${token}`);
+}
+for (const token of ["evidenceTraceability", "exportIntelligence", "evidence-intelligence.json"]) {
+  if (!app.includes(token)) fail(`Phase 4 traceability UI/export contract missing: ${token}`);
 }
 for (const token of ["renderEvidenceIntelligence", "data-evidence-intelligence", "data-source-cluster", "data-evidence-gap"]) {
   if (!app.includes(token)) fail(`Phase 4 evidence-gap UI contract missing: ${token}`);

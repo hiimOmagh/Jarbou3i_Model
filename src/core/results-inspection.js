@@ -2,6 +2,7 @@
 
 import { createRelationshipIntelligence } from "./relationship-intelligence.js";
 import { createEvidenceIntelligence } from "./evidence-intelligence.js";
+import { createEvidenceTraceability } from "./evidence-traceability.js";
 
 const arr = (value) => (Array.isArray(value) ? value : []);
 const record = (value) =>
@@ -293,6 +294,13 @@ export function createResultsInspectionIndex({
     relationship: intelligence,
     provenance,
   });
+  const traceability = createEvidenceTraceability({
+    lens,
+    analysis: canonical,
+    nodes: base.nodes,
+    relationship: intelligence,
+    evidenceIntelligence,
+  });
   const inspectionById = new Map(base.nodes.map((node) => [
     node.id,
     buildInspection(
@@ -314,6 +322,7 @@ export function createResultsInspectionIndex({
     diagnostics: deepFreeze({ ...base.diagnostics }),
     intelligence,
     evidenceIntelligence,
+    traceability,
     stats: intelligence.stats,
     gaps: intelligence.gaps,
     occurrenceCount: [...occurrences.values()].reduce((sum, items) => sum + items.length, 0),

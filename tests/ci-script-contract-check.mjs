@@ -24,6 +24,7 @@ for (const gate of [
   "test:results:inspection",
   "test:relationship:intelligence",
   "test:evidence:intelligence",
+  "test:evidence:traceability",
   "test:performance",
   "test:bio:v2",
   "test:bio:integrity",
@@ -50,6 +51,7 @@ for (const spec of [
   "tests/results-workspace.spec.js",
   "tests/results-explanation.spec.js",
   "tests/results-inspection.spec.js",
+  "tests/evidence-intelligence.spec.js",
   "tests/a11y.spec.js",
   "tests/smoke.spec.js",
   "tests/rtl-mobile.spec.js",
@@ -152,8 +154,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.30") {
-  fail("package version must be 2.1.0-alpha.30");
+if (pkg.version !== "2.1.0-alpha.32") {
+  fail("package version must be 2.1.0-alpha.32");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

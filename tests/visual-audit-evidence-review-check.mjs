@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.30";
+const EXPECTED_VERSION = "2.1.0-alpha.32";
 const fail = (message) => {
   console.error(`Visual audit evidence review failed: ${message}`);
   process.exit(1);

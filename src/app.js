@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.30 — shared results inspection layer */
+/* Jarbou3i Model v2.1.0-alpha.32 — shared results inspection layer */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -4212,7 +4212,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.30";
+    "2.1.0-alpha.32";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4668,6 +4668,13 @@ function evidenceIntelligenceCopy() {
     identity: labelText("Identity basis", "أساس الهوية", "Base d’identité"),
     traceable: labelText("Traceable", "قابل للتتبع", "Traçable"),
     verified: labelText("Declared verified", "متحقق منه حسب الإعلان", "Déclaré vérifié"),
+    matrix: labelText("Claim–evidence traceability", "تتبّع الادعاء والأدلة", "Traçabilité énoncé–preuve"),
+    matrixIntro: labelText("Every row reflects authored evidence identifiers only.", "يعكس كل صف معرّفات الأدلة المؤلفة فقط.", "Chaque ligne reflète uniquement les identifiants de preuve rédigés."),
+    supporting: labelText("Supporting", "داعم", "À l’appui"),
+    counter: labelText("Counter", "مضاد", "Contraire"),
+    balance: labelText("Balance", "التوازن", "Équilibre"),
+    export: labelText("Export intelligence JSON", "تصدير JSON للاستخبارات", "Exporter le JSON d’intelligence"),
+    derivedNote: labelText("Derived audit artifact — not canonical transport", "أثر تدقيق مشتق — ليس نقلًا نظاميًا", "Artefact d’audit dérivé — pas un transport canonique"),
     empty: labelText("No authored evidence records are available.", "لا تتوفر سجلات أدلة مؤلفة.", "Aucune fiche de preuve rédigée n’est disponible."),
     gapLabels: {
       missingIdentity: labelText("Missing source identity", "هوية المصدر مفقودة", "Identité de source manquante"),
@@ -4708,7 +4715,10 @@ function renderEvidenceIntelligence(index) {
       }).join("");
       return `<div class="evidenceGapGroup" data-evidence-gap="${escapeHtml(key)}"><h5>${escapeHtml(copy.gapLabels[key] || key)} <span>${ids.length}</span></h5><div>${links}</div></div>`;
     }).join("");
-  return `<details class="evidenceIntelligence" data-evidence-intelligence><summary><span><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="evidenceIntelligenceMetrics"><span><b>${intelligence.stats.sourceClusters}</b>${escapeHtml(copy.clusters)}</span><span><b>${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}</b>${escapeHtml(copy.cited)}</span><span><b>${intelligence.stats.gapCount}</b>${escapeHtml(copy.gaps)}</span></span></summary><div class="evidenceIntelligenceBody"><section><h4>${escapeHtml(copy.clusters)}</h4><div class="sourceClusterGrid">${clusterCards}</div></section><section><h4>${escapeHtml(copy.gaps)}</h4><div class="evidenceGapGrid">${gapGroups || `<p class="evidenceIntelligenceEmpty">0</p>`}</div></section></div></details>`;
+  const traceability = index.traceability;
+  const matrixRows = traceability.rows.map((row) => `<tr data-traceability-record="${escapeHtml(row.recordId)}"><th scope="row"><button type="button" data-reference-id="${escapeHtml(row.recordId)}"><span>${escapeHtml(row.label)}</span><code>${escapeHtml(row.recordId)}</code></button></th><td>${row.supportingIds.length ? row.supportingIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.counterIds.length ? row.counterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.clusterIds.length ? row.clusterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td><span class="traceabilityBalance ${escapeHtml(row.balance)}">${escapeHtml(String(row.balance).replaceAll("_", " "))}</span></td></tr>`).join("");
+  const matrix = `<section class="evidenceTraceability"><header><div><h4>${escapeHtml(copy.matrix)}</h4><p>${escapeHtml(copy.matrixIntro)}</p></div><div><button class="btn" id="exportIntelligence" type="button">${escapeHtml(copy.export)}</button><small>${escapeHtml(copy.derivedNote)}</small></div></header><div class="evidenceTraceabilityTable"><table><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div></section>`;
+  return `<details class="evidenceIntelligence" data-evidence-intelligence><summary><span><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="evidenceIntelligenceMetrics"><span><b>${intelligence.stats.sourceClusters}</b>${escapeHtml(copy.clusters)}</span><span><b>${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}</b>${escapeHtml(copy.cited)}</span><span><b>${intelligence.stats.gapCount}</b>${escapeHtml(copy.gaps)}</span></span></summary><div class="evidenceIntelligenceBody"><section><h4>${escapeHtml(copy.clusters)}</h4><div class="sourceClusterGrid">${clusterCards}</div></section><section><h4>${escapeHtml(copy.gaps)}</h4><div class="evidenceGapGrid">${gapGroups || `<p class="evidenceIntelligenceEmpty">0</p>`}</div></section>${matrix}</div></details>`;
 }
 function renderInspectionDirectory(index) {
   const copy = inspectionCopy();
@@ -4731,6 +4741,15 @@ function renderInspectionDirectory(index) {
 function wireInspectionDirectory() {
   const input = $("inspectionSearch");
   if (!input) return;
+  const index = currentResultsInspectionIndex();
+  const exportButton = $("exportIntelligence");
+  if (exportButton) {
+    exportButton.onclick = () => {
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.32";
+      const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
+      download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
+    };
+  }
   const items = [...document.querySelectorAll("[data-inspection-directory-item]")];
   const noMatch = $("inspectionDirectoryNoMatch");
   const status = $("inspectionSearchStatus");
@@ -5167,7 +5186,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.30";
+    "2.1.0-alpha.32";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
