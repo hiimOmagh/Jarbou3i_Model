@@ -3,6 +3,7 @@
 import { createRelationshipIntelligence } from "./relationship-intelligence.js";
 import { createEvidenceIntelligence } from "./evidence-intelligence.js";
 import { createEvidenceTraceability } from "./evidence-traceability.js";
+import { createEvidenceReviewPlan } from "./evidence-review-plan.js";
 
 const arr = (value) => (Array.isArray(value) ? value : []);
 const record = (value) =>
@@ -301,6 +302,13 @@ export function createResultsInspectionIndex({
     relationship: intelligence,
     evidenceIntelligence,
   });
+  const reviewPlan = createEvidenceReviewPlan({
+    lens,
+    analysis: canonical,
+    relationship: intelligence,
+    evidenceIntelligence,
+    traceability,
+  });
   const inspectionById = new Map(base.nodes.map((node) => [
     node.id,
     buildInspection(
@@ -323,6 +331,7 @@ export function createResultsInspectionIndex({
     intelligence,
     evidenceIntelligence,
     traceability,
+    reviewPlan,
     stats: intelligence.stats,
     gaps: intelligence.gaps,
     occurrenceCount: [...occurrences.values()].reduce((sum, items) => sum + items.length, 0),

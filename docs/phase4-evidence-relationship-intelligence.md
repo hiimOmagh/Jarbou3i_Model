@@ -1,6 +1,6 @@
 # Phase 4, Slice 1 — Evidence and relationship intelligence foundation
 
-Release: `2.1.0-alpha.32`
+Release: `2.1.0-alpha.33`
 
 ## Outcome
 

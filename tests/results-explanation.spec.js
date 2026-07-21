@@ -71,7 +71,7 @@ test("shared explanation hierarchy drills into authored details across both lens
   await expect(explanation.locator('[data-explanation-section="evidence"] h4')).toHaveText("Preuves et contre-preuves");
 
   await page.setViewportSize({ width: 320, height: 800 });
-  await explanation.scrollIntoViewIfNeeded();
+  await explanation.evaluate((element) => element.scrollIntoView({ block: "start", inline: "nearest" }));
   const bounds = await explanation.boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(0);

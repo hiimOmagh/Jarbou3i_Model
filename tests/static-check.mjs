@@ -32,6 +32,7 @@ const resultsInspection = read("src/core/results-inspection.js");
 const relationshipIntelligence = read("src/core/relationship-intelligence.js");
 const evidenceIntelligence = read("src/core/evidence-intelligence.js");
 const evidenceTraceability = read("src/core/evidence-traceability.js");
+const evidenceReviewPlan = read("src/core/evidence-review-plan.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -510,14 +511,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.32") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.33") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.32"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.33"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.32"')) {
+if (!app.includes('"2.1.0-alpha.33"')) {
   fail("report fallback version is stale");
 }
 for (const token of [
@@ -553,6 +554,19 @@ for (const token of [
 }
 for (const token of ["evidenceTraceability", "exportIntelligence", "evidence-intelligence.json"]) {
   if (!app.includes(token)) fail(`Phase 4 traceability UI/export contract missing: ${token}`);
+}
+for (const token of [
+  "createEvidenceReviewPlan",
+  "jarbou3i-evidence-review-plan-v1",
+  "completion_validates_conclusions: false",
+  "resolve_references",
+  "verify_provenance",
+  "strengthen_coverage",
+]) {
+  if (!evidenceReviewPlan.includes(token)) fail(`Phase 4 review-plan contract missing: ${token}`);
+}
+for (const token of ["evidenceReviewQueue", "exportReviewPlan", "evidence-review-plan.json"]) {
+  if (!app.includes(token)) fail(`Phase 4 review-plan UI/export contract missing: ${token}`);
 }
 for (const token of ["renderEvidenceIntelligence", "data-evidence-intelligence", "data-source-cluster", "data-evidence-gap"]) {
   if (!app.includes(token)) fail(`Phase 4 evidence-gap UI contract missing: ${token}`);

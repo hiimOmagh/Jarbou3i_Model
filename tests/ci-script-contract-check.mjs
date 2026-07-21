@@ -25,6 +25,7 @@ for (const gate of [
   "test:relationship:intelligence",
   "test:evidence:intelligence",
   "test:evidence:traceability",
+  "test:evidence:review-plan",
   "test:performance",
   "test:bio:v2",
   "test:bio:integrity",
@@ -154,8 +155,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.32") {
-  fail("package version must be 2.1.0-alpha.32");
+if (pkg.version !== "2.1.0-alpha.33") {
+  fail("package version must be 2.1.0-alpha.33");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

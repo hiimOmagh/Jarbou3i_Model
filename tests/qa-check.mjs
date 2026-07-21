@@ -104,8 +104,8 @@ if (scriptOrder.some((position, index) => index && position <= scriptOrder[index
   fail("runtime side-effect imports load in an unsafe order");
 }
 
-if (pkg.version !== "2.1.0-alpha.32") fail("package version is wrong");
-if (!index.includes('name="app-version" content="2.1.0-alpha.32"')) {
+if (pkg.version !== "2.1.0-alpha.33") fail("package version is wrong");
+if (!index.includes('name="app-version" content="2.1.0-alpha.33"')) {
   fail("app version metadata is wrong");
 }
 for (const token of [

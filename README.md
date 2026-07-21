@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.32` preserves the completed Phase 4 claim–evidence traceability release and corrects its cross-surface browser selector contract. The dual-lens matrix, direct authored evidence routes, derived intelligence export, and canonical JSON transport remain unchanged:
+Version `2.1.0-alpha.33` adds a deterministic Evidence Review Queue and Resolution Plan on top of the completed Phase 4 evidence-intelligence chain. Existing diagnostics are ordered into resolve-reference, verify-provenance, and strengthen-coverage phases; the queue never assigns truth scores or treats task completion as validation:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -16,6 +16,8 @@ Phase 4 builds relationship intelligence on that inspection foundation. Supporti
 Slice 2 adds deterministic source clusters and localized gap intelligence. Exact authored URLs, title-plus-locator pairs, or titles define clusters; records with missing identity remain separate. The workspace exposes uncited evidence, missing counter-evidence or dates, untraceable sources, and exact-source concentration as review signals rather than truth judgments. See [`docs/phase4-source-cluster-gap-intelligence.md`](docs/phase4-source-cluster-gap-intelligence.md).
 
 Slice 3 adds a complete claim–evidence matrix and authored evidence-to-record routes. Its optional `jarbou3i-evidence-intelligence-v1` download is explicitly derived, contains no raw analysis, and cannot replace canonical JSON. See [`docs/phase4-claim-evidence-traceability.md`](docs/phase4-claim-evidence-traceability.md).
+
+Slice 4 operationalizes those diagnostics as a stable, navigable review queue and adds a separate `jarbou3i-evidence-review-plan-v1` artifact. It preserves authored-data boundaries and states explicitly that completing the queue does not validate a conclusion. See [`docs/phase4-evidence-review-queue.md`](docs/phase4-evidence-review-queue.md).
 
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 

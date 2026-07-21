@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.0-alpha.33 — Phase 4 Evidence Review Queue and Resolution Planning
+
+- Added a deterministic dual-lens review queue derived only from existing relationship, provenance, source-cluster, and traceability diagnostics.
+- Ordered tasks into resolve-reference, verify-provenance, and strengthen-coverage phases without introducing truth scores or inferred source judgments.
+- Added direct canonical-record navigation and a separate `jarbou3i-evidence-review-plan-v1` derived export.
+- Declared that queue completion does not validate conclusions and excluded raw canonical analysis from the review-plan artifact.
+- Hardened the retry-recovered WebKit explanation test by replacing helper actionability scrolling with direct standards-based DOM scrolling.
+- Preserved schemas, prompts, imports, scoring, publication gates, canonical JSON, reports, and relationship semantics.
+
 ## 2.1.0-alpha.32 — Inspection Selector Namespace Correction
 
 - Scoped the legacy `IV1` browser assertion to the canonical Inspection directory surface.
