@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.28 — shared results inspection layer */
+/* Jarbou3i Model v2.1.0-alpha.30 — shared results inspection layer */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -4212,7 +4212,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.28";
+    "2.1.0-alpha.30";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4652,6 +4652,64 @@ function inspectionCopy() {
     open: labelText("Inspect record", "افحص السجل", "Inspecter la fiche"),
   };
 }
+function evidenceIntelligenceCopy() {
+  return {
+    title: labelText("Source clusters and evidence gaps", "عناقيد المصادر وفجوات الأدلة", "Groupes de sources et lacunes probatoires"),
+    intro: labelText(
+      "Exact authored source identities are grouped without external lookup or inferred equivalence. Coverage signals identify where review attention is needed.",
+      "تُجمع هويات المصادر المؤلفة المتطابقة دون بحث خارجي أو افتراض للتكافؤ. وتحدد إشارات التغطية مواضع الحاجة إلى المراجعة.",
+      "Les identités de source rédigées identiques sont regroupées sans recherche externe ni équivalence supposée. Les signaux de couverture indiquent les besoins de revue.",
+    ),
+    clusters: labelText("Source clusters", "عناقيد المصادر", "Groupes de sources"),
+    cited: labelText("Cited evidence", "الأدلة المُحال إليها", "Preuves citées"),
+    gaps: labelText("Coverage signals", "إشارات التغطية", "Signaux de couverture"),
+    records: labelText("Evidence records", "سجلات الأدلة", "Fiches de preuve"),
+    citations: labelText("Cited by records", "سجلات مُحيلة", "Cité par des fiches"),
+    identity: labelText("Identity basis", "أساس الهوية", "Base d’identité"),
+    traceable: labelText("Traceable", "قابل للتتبع", "Traçable"),
+    verified: labelText("Declared verified", "متحقق منه حسب الإعلان", "Déclaré vérifié"),
+    empty: labelText("No authored evidence records are available.", "لا تتوفر سجلات أدلة مؤلفة.", "Aucune fiche de preuve rédigée n’est disponible."),
+    gapLabels: {
+      missingIdentity: labelText("Missing source identity", "هوية المصدر مفقودة", "Identité de source manquante"),
+      titleOnlyIdentity: labelText("Title-only source identity", "هوية مصدر بالعنوان فقط", "Identité fondée sur le titre seul"),
+      uncitedEvidence: labelText("Evidence not cited by another record", "دليل لا يحيل إليه سجل آخر", "Preuve non citée par une autre fiche"),
+      missingCounterEvidence: labelText("Counter-evidence not authored", "الدليل المضاد غير مؤلف", "Contre-preuve non rédigée"),
+      missingSourceDate: labelText("Source date missing or unknown", "تاريخ المصدر مفقود أو غير معروف", "Date de source manquante ou inconnue"),
+      untraceableEvidence: labelText("Source not traceable", "المصدر غير قابل للتتبع", "Source non traçable"),
+      concentratedClusters: labelText("Multiple evidence records share one exact source identity", "عدة سجلات أدلة تشترك في هوية مصدر متطابقة", "Plusieurs preuves partagent une identité de source exacte"),
+    },
+  };
+}
+function renderEvidenceIntelligence(index) {
+  const intelligence = index.evidenceIntelligence;
+  const copy = evidenceIntelligenceCopy();
+  if (!intelligence) return "";
+  const clusterCards = intelligence.clusters.length
+    ? intelligence.clusters.map((cluster) => {
+        const members = cluster.memberIds.map((id) => {
+          const node = index.resolve(id);
+          return `<li><button type="button" data-reference-id="${escapeHtml(id)}"><span>${escapeHtml(node?.label || id)}</span><code>${escapeHtml(id)}</code></button></li>`;
+        }).join("");
+        return `<article class="sourceClusterCard" data-source-cluster="${escapeHtml(cluster.id)}"><header><div><span>${escapeHtml(cluster.id)}</span><h5>${escapeHtml(cluster.label)}</h5></div><span class="sourceClusterBasis">${escapeHtml(copy.identity)} · ${escapeHtml(String(cluster.identityBasis).replaceAll("_", " "))}</span></header><div class="sourceClusterFacts"><span><strong>${cluster.memberIds.length}</strong>${escapeHtml(copy.records)}</span><span><strong>${cluster.citedByIds.length}</strong>${escapeHtml(copy.citations)}</span><span><strong>${cluster.traceableCount}</strong>${escapeHtml(copy.traceable)}</span><span><strong>${cluster.verifiedCount}</strong>${escapeHtml(copy.verified)}</span></div><ul>${members}</ul></article>`;
+      }).join("")
+    : `<p class="evidenceIntelligenceEmpty">${escapeHtml(copy.empty)}</p>`;
+  const gapGroups = Object.entries(intelligence.gaps)
+    .filter(([, ids]) => ids.length)
+    .map(([key, ids]) => {
+      const recordIds = key === "concentratedClusters"
+        ? ids.flatMap((clusterId) => intelligence.resolveCluster(clusterId)?.memberIds || [])
+        : ids;
+      const uniqueIds = [...new Set(recordIds)];
+      const links = uniqueIds.map((id) => {
+        const node = index.resolve(id);
+        return node
+          ? `<button type="button" data-reference-id="${escapeHtml(id)}"><span>${escapeHtml(node.label)}</span><code>${escapeHtml(id)}</code></button>`
+          : `<code>${escapeHtml(id)}</code>`;
+      }).join("");
+      return `<div class="evidenceGapGroup" data-evidence-gap="${escapeHtml(key)}"><h5>${escapeHtml(copy.gapLabels[key] || key)} <span>${ids.length}</span></h5><div>${links}</div></div>`;
+    }).join("");
+  return `<details class="evidenceIntelligence" data-evidence-intelligence><summary><span><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="evidenceIntelligenceMetrics"><span><b>${intelligence.stats.sourceClusters}</b>${escapeHtml(copy.clusters)}</span><span><b>${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}</b>${escapeHtml(copy.cited)}</span><span><b>${intelligence.stats.gapCount}</b>${escapeHtml(copy.gaps)}</span></span></summary><div class="evidenceIntelligenceBody"><section><h4>${escapeHtml(copy.clusters)}</h4><div class="sourceClusterGrid">${clusterCards}</div></section><section><h4>${escapeHtml(copy.gaps)}</h4><div class="evidenceGapGrid">${gapGroups || `<p class="evidenceIntelligenceEmpty">0</p>`}</div></section></div></details>`;
+}
 function renderInspectionDirectory(index) {
   const copy = inspectionCopy();
   const concerns = index.nodes.filter((node) => {
@@ -4668,7 +4726,7 @@ function renderInspectionDirectory(index) {
         return `<li class="inspectionDirectoryItem" data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="inspectionDirectoryType">${escapeHtml(index.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><span class="inspectionDirectoryMeta"><code>${escapeHtml(node.id)}</code><span>${escapeHtml(String(node.pillar || "").replaceAll("_", " "))}</span>${inspection?.confidence ? `<span>${escapeHtml(inspection.confidence)}</span>` : ""}</span></button></li>`;
       }).join("")
     : `<li class="inspectionDirectoryEmpty">${escapeHtml(copy.empty)}</li>`;
-  return `<section class="inspectionDirectory" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="inspectionDirectoryHeader"><div><div class="sectionKicker">${escapeHtml(t("nav").inspection)}</div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p>${escapeHtml(copy.intro)}</p></div><div class="inspectionDirectoryMetrics"><div><strong>${index.nodes.length}</strong><span>${escapeHtml(copy.records)}</span></div><div><strong>${index.occurrenceCount}</strong><span>${escapeHtml(copy.occurrences)}</span></div><div class="${concerns ? "concern" : "clear"}"><strong>${concerns}</strong><span>${escapeHtml(copy.concerns)}</span></div></div></header><div class="inspectionSearch"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="srOnly" role="status" aria-live="polite"></span></div><ul class="inspectionDirectoryList" id="inspectionDirectoryList">${cards}</ul><p class="inspectionDirectoryNoMatch" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
+  return `<section class="inspectionDirectory" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="inspectionDirectoryHeader"><div><div class="sectionKicker">${escapeHtml(t("nav").inspection)}</div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p>${escapeHtml(copy.intro)}</p></div><div class="inspectionDirectoryMetrics"><div><strong>${index.nodes.length}</strong><span>${escapeHtml(copy.records)}</span></div><div><strong>${index.occurrenceCount}</strong><span>${escapeHtml(copy.occurrences)}</span></div><div class="${concerns ? "concern" : "clear"}"><strong>${concerns}</strong><span>${escapeHtml(copy.concerns)}</span></div></div></header>${renderEvidenceIntelligence(index)}<div class="inspectionSearch"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="srOnly" role="status" aria-live="polite"></span></div><ul class="inspectionDirectoryList" id="inspectionDirectoryList">${cards}</ul><p class="inspectionDirectoryNoMatch" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
 }
 function wireInspectionDirectory() {
   const input = $("inspectionSearch");
@@ -5109,7 +5167,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.28";
+    "2.1.0-alpha.30";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,

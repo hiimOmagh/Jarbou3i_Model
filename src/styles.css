@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.28 — source stylesheet */
+/* Jarbou3i Model v2.1.0-alpha.30 — source stylesheet */
 
 :root{
   --bg:#eef2f8;
@@ -721,8 +721,40 @@ body.bio-v2 .engineCard:nth-child(3n) .flowArrow{display:none;}
 .inspectionDirectoryMeta>*{padding:3px 6px;border-radius:7px;background:var(--surface-soft);}
 .inspectionDirectoryMeta code{color:var(--accent);font-weight:900;}
 .inspectionDirectoryEmpty,.inspectionDirectoryNoMatch{margin:0;padding:20px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);text-align:center;}
+.evidenceIntelligence{border:1px solid color-mix(in srgb,var(--accent) 25%,var(--line));border-radius:20px;background:var(--surface-solid);overflow:hidden;}
+.evidenceIntelligence>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:18px 20px;cursor:pointer;list-style-position:inside;}
+.evidenceIntelligence>summary::marker{color:var(--accent);}
+.evidenceIntelligence>summary>span:first-of-type{display:grid;gap:4px;}
+.evidenceIntelligence>summary strong{color:var(--strong);font-size:15px;}
+.evidenceIntelligence>summary small{max-width:76ch;color:var(--muted);font-size:11px;line-height:1.45;}
+.evidenceIntelligenceMetrics{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:7px;}
+.evidenceIntelligenceMetrics>span{display:grid;gap:2px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface-soft);color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;}
+.evidenceIntelligenceMetrics b{color:var(--strong);font-size:16px;}
+.evidenceIntelligenceBody{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px;padding:0 20px 20px;border-top:1px solid var(--line);}
+.evidenceIntelligenceBody>section{min-width:0;padding-top:18px;}
+.evidenceIntelligenceBody h4{margin:0 0 10px;color:var(--strong);font-size:13px;}
+.sourceClusterGrid,.evidenceGapGrid{display:grid;gap:9px;}
+.sourceClusterCard,.evidenceGapGroup{padding:12px;border:1px solid var(--line);border-radius:15px;background:var(--surface-soft);}
+.sourceClusterCard>header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+.sourceClusterCard>header>div{display:grid;gap:3px;min-width:0;}
+.sourceClusterCard>header span:first-child{color:var(--accent);font:900 9px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;}
+.sourceClusterCard h5,.evidenceGapGroup h5{margin:0;color:var(--strong);font-size:12px;line-height:1.35;overflow-wrap:anywhere;}
+.sourceClusterBasis{flex:none;color:var(--muted);font-size:9px;text-transform:uppercase;}
+.sourceClusterFacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.sourceClusterFacts>span{display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:8px;background:var(--surface-solid);color:var(--muted);font-size:9px;}
+.sourceClusterFacts strong{color:var(--strong);font-size:11px;}
+.sourceClusterCard ul{display:grid;gap:5px;margin:9px 0 0;padding:0;list-style:none;}
+.sourceClusterCard button,.evidenceGapGroup button{display:inline-grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface-solid);color:var(--text);font:inherit;text-align:start;cursor:pointer;}
+.sourceClusterCard button span,.evidenceGapGroup button span{min-width:0;font-size:10.5px;font-weight:800;overflow-wrap:anywhere;}
+.sourceClusterCard button code,.evidenceGapGroup button code{color:var(--accent);font-size:9px;font-weight:900;}
+.sourceClusterCard button:focus-visible,.evidenceGapGroup button:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 30%,transparent);outline-offset:2px;}
+.evidenceGapGroup h5{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.evidenceGapGroup h5 span{display:grid;min-width:20px;height:20px;place-items:center;border-radius:999px;background:color-mix(in srgb,var(--warn) 12%,var(--surface-solid));color:var(--warn);font-size:9px;}
+.evidenceGapGroup>div{display:grid;gap:5px;}
+.evidenceIntelligenceEmpty{margin:0;padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:11px;text-align:center;}
 @media(max-width:860px){.inspectionDirectoryHeader{grid-template-columns:1fr}.inspectionDirectoryList{grid-template-columns:1fr}}
-@media(max-width:620px){.referenceInspector{inset-block-start:auto;width:100%;height:min(86vh,760px);border-start-start-radius:24px;border-start-end-radius:24px;box-shadow:0 -18px 60px rgba(2,8,23,.25);}.referenceInspectorHead{padding:19px 18px}.referenceInspectorBody{padding:18px}.referenceInspectorFooter{grid-template-columns:1fr;padding:13px 18px}.referenceChip{grid-template-columns:1fr auto;}.referenceEvidenceGrid{grid-template-columns:1fr}.inspectionDirectoryHeader{padding:17px}.inspectionDirectoryMetrics{grid-template-columns:1fr}.inspectionSearch{grid-template-columns:1fr;gap:6px}}
+@media(max-width:860px){.evidenceIntelligenceBody{grid-template-columns:1fr}.evidenceIntelligence>summary{grid-template-columns:1fr}.evidenceIntelligenceMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.referenceInspector{inset-block-start:auto;width:100%;height:min(86vh,760px);border-start-start-radius:24px;border-start-end-radius:24px;box-shadow:0 -18px 60px rgba(2,8,23,.25);}.referenceInspectorHead{padding:19px 18px}.referenceInspectorBody{padding:18px}.referenceInspectorFooter{grid-template-columns:1fr;padding:13px 18px}.referenceChip{grid-template-columns:1fr auto;}.referenceEvidenceGrid{grid-template-columns:1fr}.inspectionDirectoryHeader{padding:17px}.inspectionDirectoryMetrics{grid-template-columns:1fr}.inspectionSearch{grid-template-columns:1fr;gap:6px}.evidenceIntelligence>summary,.evidenceIntelligenceBody{padding-inline:14px}.evidenceIntelligenceMetrics{grid-template-columns:1fr}.sourceClusterCard>header{display:grid}.sourceClusterBasis{white-space:normal}}
 @media(prefers-reduced-motion:reduce){.referenceChip{transition:none}.referenceChip:hover{transform:none}}
 
 /* 2.1.0-alpha.4 — visual acceptance repair */

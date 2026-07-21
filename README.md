@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.28` begins the platform roadmap’s Evidence and Relationship Intelligence phase. It adds one shared, read-only registry for canonical records, typed incoming/outgoing relationships, authored evidence trails, reverse citations, objective gap diagnostics, and lens-scoped permanent record links:
+Version `2.1.0-alpha.30` is the browser-contract correction for Source Cluster and Gap Intelligence. It preserves Alpha.29’s product implementation while scoping canonical-directory assertions away from the intentionally repeated record references inside clusters and gap groups:
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -12,6 +12,8 @@ The Strategic engine is preserved. Biopolitical analysis has its own schema, pro
 Phase 3 now presents results progressively: orientation answers what matters first; explanation shows how the conclusion is built; inspection reveals the canonical identity, provenance, evidence balance, relationships, audit facts, and every indexed occurrence; lens-specific detail views retain the complete records. All three layers are read-only and never alter canonical analysis, scoring, or export data. See [`docs/phase3-results-inspection.md`](docs/phase3-results-inspection.md).
 
 Phase 4 builds relationship intelligence on that inspection foundation. Supporting and counter-evidence references now resolve in both directions, every canonical record can expose a stable lens-scoped fragment target, and missing endpoints or traceability remain explicit diagnostics rather than manufactured records or inferred conclusions. See [`docs/phase4-evidence-relationship-intelligence.md`](docs/phase4-evidence-relationship-intelligence.md).
+
+Slice 2 adds deterministic source clusters and localized gap intelligence. Exact authored URLs, title-plus-locator pairs, or titles define clusters; records with missing identity remain separate. The workspace exposes uncited evidence, missing counter-evidence or dates, untraceable sources, and exact-source concentration as review signals rather than truth judgments. See [`docs/phase4-source-cluster-gap-intelligence.md`](docs/phase4-source-cluster-gap-intelligence.md).
 
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 

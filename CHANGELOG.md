@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0-alpha.30 — Inspection Selector Namespace Correction
+
+- Scoped the two legacy evidence-card browser assertions to canonical Inspection directory items.
+- Preserved the intentional reuse of canonical reference controls inside source clusters and gap groups.
+- Added a static regression guard against ambiguous cross-surface record selectors.
+- Preserved the complete Alpha.29 Source Cluster and Gap Intelligence implementation without product or analytical changes.
+
+## 2.1.0-alpha.29 — Phase 4 Source Cluster and Gap Intelligence
+
+- Added deterministic dual-lens source clusters using exact authored URL, title-plus-locator, or title identity.
+- Kept evidence without source identity in separate record-specific clusters to prevent false equivalence.
+- Added citation, traceability, declared-verification, counter-evidence, confidence, and source-date cluster summaries.
+- Added localized, navigable coverage signals for missing identity, title-only identity, uncited evidence, missing counter-evidence, missing dates, untraceable sources, and exact-source concentration.
+- Added a responsive Source clusters and evidence gaps workspace to the shared Inspection directory.
+- Added dedicated unit and cross-browser contracts while preserving every analytical and export contract.
+
 ## 2.1.0-alpha.28 — Phase 4 Evidence and Relationship Intelligence Foundation
 
 - Added one immutable, dual-lens registry for canonical records, typed relationships, evidence trails, reverse citations, and objective relationship gaps.

@@ -1,6 +1,7 @@
 /* Jarbou3i Model — shared, read-only results inspection index */
 
 import { createRelationshipIntelligence } from "./relationship-intelligence.js";
+import { createEvidenceIntelligence } from "./evidence-intelligence.js";
 
 const arr = (value) => (Array.isArray(value) ? value : []);
 const record = (value) =>
@@ -190,7 +191,7 @@ function stringList(...values) {
   return [...new Set(values.flatMap((value) => arr(value)).map(text).filter(Boolean))];
 }
 
-function buildInspection(node, analysis, provenanceRecord, occurrences, diagnostics, intelligence) {
+function buildInspection(node, analysis, provenanceRecord, occurrences, diagnostics, intelligence, evidenceIntelligence) {
   const source = record(resolvePointer(analysis, node.path));
   const supportingIds = stringList(
     source.supporting_evidence_ids,
@@ -242,7 +243,12 @@ function buildInspection(node, analysis, provenanceRecord, occurrences, diagnost
     confidence: node.confidence,
     summary: node.subtitle,
     provenance,
-    evidence: { supportingIds, counterIds, counterEvidence },
+    evidence: {
+      supportingIds,
+      counterIds,
+      counterEvidence,
+      sourceCluster: evidenceIntelligence.clusterForEvidence(node.id),
+    },
     relationship: {
       evidenceTrail: intelligence.evidenceTrail(node.id),
       backReferences: intelligence.backReferences(node.id),
@@ -280,6 +286,13 @@ export function createResultsInspectionIndex({
     provenance,
     diagnostics: base.diagnostics,
   });
+  const evidenceIntelligence = createEvidenceIntelligence({
+    lens,
+    analysis: canonical,
+    nodes: base.nodes,
+    relationship: intelligence,
+    provenance,
+  });
   const inspectionById = new Map(base.nodes.map((node) => [
     node.id,
     buildInspection(
@@ -289,6 +302,7 @@ export function createResultsInspectionIndex({
       occurrences.get(node.id),
       base.diagnostics,
       intelligence,
+      evidenceIntelligence,
     ),
   ]));
   const typeLabel = (type) =>
@@ -299,6 +313,7 @@ export function createResultsInspectionIndex({
     edges: Object.freeze(base.edges),
     diagnostics: deepFreeze({ ...base.diagnostics }),
     intelligence,
+    evidenceIntelligence,
     stats: intelligence.stats,
     gaps: intelligence.gaps,
     occurrenceCount: [...occurrences.values()].reduce((sum, items) => sum + items.length, 0),

@@ -30,6 +30,7 @@ const resultsOrientation = read("src/core/results-orientation.js");
 const resultsExplanation = read("src/core/results-explanation.js");
 const resultsInspection = read("src/core/results-inspection.js");
 const relationshipIntelligence = read("src/core/relationship-intelligence.js");
+const evidenceIntelligence = read("src/core/evidence-intelligence.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
 const renderRegions = read("src/core/render-regions.js");
@@ -37,6 +38,13 @@ const provenance = read("src/core/provenance.js");
 const validator = read("src/biopolitics-schema-validator.js");
 const pkg = JSON.parse(read("package.json"));
 const lock = JSON.parse(read("package-lock.json"));
+
+if (resultsInspectionBrowser.includes("directory.locator('[data-reference-id=\"E1\"]')")) {
+  fail("inspection browser contract uses an ambiguous cross-surface record selector");
+}
+if (!resultsInspectionBrowser.includes('[data-inspection-directory-item] [data-reference-id="E1"]')) {
+  fail("inspection browser contract is not scoped to the canonical directory item");
+}
 
 for (const [name, entry] of Object.entries(lock.packages || {})) {
   if (!entry?.resolved) continue;
@@ -67,6 +75,7 @@ for (const [file, source] of [
   ["src/core/results-explanation.js", resultsExplanation],
   ["src/core/results-inspection.js", resultsInspection],
   ["src/core/relationship-intelligence.js", relationshipIntelligence],
+  ["src/core/evidence-intelligence.js", evidenceIntelligence],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -492,14 +501,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.28") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.30") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.28"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.30"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.28"')) {
+if (!app.includes('"2.1.0-alpha.30"')) {
   fail("report fallback version is stale");
 }
 for (const token of [
@@ -513,6 +522,19 @@ for (const token of [
   if (!relationshipIntelligence.includes(token)) {
     fail(`Phase 4 relationship-intelligence contract missing: ${token}`);
   }
+}
+for (const token of [
+  "createEvidenceIntelligence",
+  "clusterIdentity",
+  "missingIdentity",
+  "uncitedEvidence",
+  "missingCounterEvidence",
+  "concentratedClusters",
+]) {
+  if (!evidenceIntelligence.includes(token)) fail(`Phase 4 source-cluster contract missing: ${token}`);
+}
+for (const token of ["renderEvidenceIntelligence", "data-evidence-intelligence", "data-source-cluster", "data-evidence-gap"]) {
+  if (!app.includes(token)) fail(`Phase 4 evidence-gap UI contract missing: ${token}`);
 }
 for (const token of [
   'data-inspection-section="evidence-trail"',
