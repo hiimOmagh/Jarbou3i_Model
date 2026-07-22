@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.39";
+const EXPECTED_VERSION = "2.1.0-alpha.41";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl", button: "#langAr" },
@@ -16,7 +16,7 @@ const VIEWPORTS = [
   { id: "phone", width: 390, height: 844 },
 ];
 const REPORT_VIEWPORTS = VIEWPORTS.filter(({ id }) => id !== "tablet");
-const SCREENSHOT_KINDS = ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "import-audit"];
+const SCREENSHOT_KINDS = ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit"];
 const REPORT_DETAIL_SURFACES = [
   { id: "pillar", selector: "#pillar-question_context" },
   { id: "relationships", selector: "#relationships" },
@@ -217,6 +217,21 @@ test.describe("Release Candidate visual audit evidence", () => {
       await saveScreenshot(page, testInfo, `review-ledger-${key}.png`);
       await page.locator("#ledgerClose").click();
 
+      await page.locator("#workspaceBtn").click();
+      await page.locator(".workspaceRow.active [data-workspace-edit]").click();
+      await page.locator('[data-editor-path="/subject"]').click();
+      const editorField = page.locator("#editorField");
+      const subject = JSON.parse(await editorField.inputValue());
+      subject.title = `${subject.title} · visual resolution`;
+      await editorField.fill(JSON.stringify(subject, null, 2));
+      await editorField.press("Control+Enter");
+      await page.locator("#editorSave").click();
+      await expect(page.locator("#editorResolve")).toBeEnabled();
+      await page.locator("#editorResolve").click();
+      await expect(page.locator("#resolutionDialog")).toBeVisible();
+      await saveScreenshot(page, testInfo, `resolution-transaction-${key}.png`);
+      await page.locator("#resolutionClose").click();
+
       const draft = await fixture(`sample-analysis-bio-${locale.id}.json`);
       draft.evidence.items[0].source_url = "not-a-url";
       draft.self_audit.statistics_quotations_verified = "pass";
@@ -287,6 +302,7 @@ test.describe("Release Candidate visual audit evidence", () => {
     await fs.writeFile(evidencePath("visual-audit-metadata.json"), `${JSON.stringify({
       app_version: EXPECTED_VERSION,
       evidence_version: EXPECTED_VERSION,
+      source_commit: process.env.GITHUB_SHA || process.env.SOURCE_COMMIT || "local-uncommitted",
       capture_set: "final-language-theme-viewport-audit",
       visual_assets_decoded: true,
       transient_ui_cleared: true,
@@ -302,7 +318,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       report_case_count: reportCases.length,
       report_surface_count: 1 + REPORT_DETAIL_SURFACES.length,
       screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length * (1 + REPORT_DETAIL_SURFACES.length),
-      coverage: ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"],
+      coverage: ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"],
       required_files: [...requiredFiles, ...reportFiles, "visual-audit-metadata.json"],
     }, null, 2)}\n`, "utf8");
   });

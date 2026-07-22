@@ -162,17 +162,35 @@ export function createWorkspaceRepository({ backend, cryptoImpl } = {}) {
     backendKind: backend.kind || "custom",
     async list({ includeArchived = false } = {}) {
       const values = await backend.list();
-      return values
-        .filter((item) => includeArchived || !item.metadata?.archived_at)
-        .sort((a, b) => String(b.metadata?.updated_at).localeCompare(String(a.metadata?.updated_at)))
-        .map((item) => ({
-          workspace_id: item.workspace_id,
-          repository_revision: item.repository_revision,
-          metadata: structuredClone(item.metadata),
-          analysis_identity: structuredClone(item.analysis_identity),
-          head_revision_id: item.head_revision_id,
-          dirty: Boolean(item.working_draft?.dirty),
-        }));
+      const inspected = await Promise.all(values.map(async (item) => {
+        try {
+          const verified = await migrateWorkspace(item, { cryptoImpl });
+          return { verified, integrity_status: "verified" };
+        } catch (error) {
+          return {
+            verified: null,
+            integrity_status: "corrupt",
+            workspace_id: String(item?.workspace_id || ""),
+            error_code: String(error?.code || "WORKSPACE_INTEGRITY_FAILED"),
+          };
+        }
+      }));
+      return inspected
+        .filter((entry) => entry.verified ? (includeArchived || !entry.verified.metadata?.archived_at) : true)
+        .sort((a, b) => String(b.verified?.metadata?.updated_at || "").localeCompare(String(a.verified?.metadata?.updated_at || "")))
+        .map((entry) => entry.verified ? {
+          workspace_id: entry.verified.workspace_id,
+          repository_revision: entry.verified.repository_revision,
+          metadata: structuredClone(entry.verified.metadata),
+          analysis_identity: structuredClone(entry.verified.analysis_identity),
+          head_revision_id: entry.verified.head_revision_id,
+          dirty: Boolean(entry.verified.working_draft?.dirty),
+          integrity_status: entry.integrity_status,
+        } : {
+          workspace_id: entry.workspace_id,
+          integrity_status: entry.integrity_status,
+          error_code: entry.error_code,
+        });
     },
     async get(id) {
       const value = await backend.get(id);

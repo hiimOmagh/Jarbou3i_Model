@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jarbou3i.example/schema/local-workspace-v2.schema.json",
-  "title": "Jarbou3i Local Workspace v2",
+  "$id": "https://jarbou3i.example/schema/local-workspace-v3.schema.json",
+  "title": "Jarbou3i Local Workspace v3",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "format_version", "workspace_id", "repository_revision", "metadata", "analysis_identity", "imported_revision_id", "head_revision_id", "revisions", "working_draft", "audit_events", "review_ledger"],
+  "required": ["format", "format_version", "workspace_id", "repository_revision", "metadata", "analysis_identity", "imported_revision_id", "head_revision_id", "revisions", "working_draft", "audit_events", "review_ledger", "resolution_ledger"],
   "properties": {
     "format": { "const": "jarbou3i-local-workspace" },
-    "format_version": { "const": 2 },
+    "format_version": { "const": 3 },
     "workspace_id": { "type": "string", "minLength": 1 },
     "repository_revision": { "type": "integer", "minimum": 1 },
     "metadata": {
@@ -45,7 +45,8 @@
       "type": "array",
       "items": { "$ref": "#/$defs/auditEvent" }
     },
-    "review_ledger": { "$ref": "#/$defs/reviewLedger" }
+    "review_ledger": { "$ref": "#/$defs/reviewLedger" },
+    "resolution_ledger": { "$ref": "#/$defs/resolutionLedger" }
   },
   "$defs": {
     "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
@@ -60,7 +61,8 @@
         "kind": { "enum": ["imported_canonical", "committed_resolution"] },
         "created_at": { "type": "string", "format": "date-time" },
         "payload_checksum": { "$ref": "#/$defs/checksum" },
-        "canonical_payload": { "$ref": "#/$defs/payload" }
+        "canonical_payload": { "$ref": "#/$defs/payload" },
+        "resolution_record_id": { "type": "string", "minLength": 1 }
       }
     },
     "draft": {
@@ -157,6 +159,61 @@
         "created_at": { "type": "string", "format": "date-time" },
         "head_event_hash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
         "events": { "type": "array", "items": { "$ref": "#/$defs/reviewEvent" } }
+      }
+    },
+    "resolutionValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "error_count", "warning_count", "errors"],
+      "properties": {
+        "valid": { "const": true },
+        "error_count": { "const": 0 },
+        "warning_count": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "resolutionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_id", "sequence", "occurred_at", "previous_record_hash", "workspace_id", "repository_revision_before", "proposal_id", "proposal_checksum", "base_revision_id", "committed_revision_id", "committed_payload_checksum", "source_draft_id", "source_draft_checksum", "diff_format", "diff_version", "change_count", "diff_checksum", "reviewer", "rationale", "validation", "diagnostics_before", "diagnostics_after", "identity_assurance", "approval_mode", "record_hash"],
+      "properties": {
+        "record_id": { "type": "string", "minLength": 1 },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "occurred_at": { "type": "string", "format": "date-time" },
+        "previous_record_hash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+        "workspace_id": { "type": "string", "minLength": 1 },
+        "repository_revision_before": { "type": "integer", "minimum": 1 },
+        "proposal_id": { "type": "string", "minLength": 1 },
+        "proposal_checksum": { "$ref": "#/$defs/checksum" },
+        "base_revision_id": { "type": "string", "minLength": 1 },
+        "committed_revision_id": { "type": "string", "minLength": 1 },
+        "committed_payload_checksum": { "$ref": "#/$defs/checksum" },
+        "source_draft_id": { "type": "string", "minLength": 1 },
+        "source_draft_checksum": { "$ref": "#/$defs/checksum" },
+        "diff_format": { "const": "jarbou3i-canonical-diff" },
+        "diff_version": { "const": 1 },
+        "change_count": { "type": "integer", "minimum": 1 },
+        "diff_checksum": { "$ref": "#/$defs/checksum" },
+        "reviewer": { "$ref": "#/$defs/reviewer" },
+        "rationale": { "type": "string", "minLength": 1 },
+        "validation": { "$ref": "#/$defs/resolutionValidation" },
+        "diagnostics_before": {},
+        "diagnostics_after": {},
+        "identity_assurance": { "const": "local_assertion" },
+        "approval_mode": { "const": "explicit_local_confirmation" },
+        "record_hash": { "$ref": "#/$defs/checksum" }
+      }
+    },
+    "resolutionLedger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "format_version", "created_at", "head_record_hash", "records"],
+      "properties": {
+        "format": { "const": "jarbou3i-resolution-ledger" },
+        "format_version": { "const": 1 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "head_record_hash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+        "records": { "type": "array", "items": { "$ref": "#/$defs/resolutionRecord" } }
       }
     }
   }

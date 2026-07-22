@@ -47,6 +47,22 @@ test.describe("Operational review ledger", () => {
     await page.locator("#openReviewLedger").click();
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
     await expect(page.locator("#ledgerTrust")).toContainText(/does not validate conclusions/i);
+    await page.locator("#ledgerClose").click();
+    await page.locator("#workspaceBtn").click();
+    await page.locator(".workspaceRow.active [data-workspace-edit]").click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    const subject = JSON.parse(await field.inputValue());
+    subject.title = `${subject.title} revised after review`;
+    await field.fill(JSON.stringify(subject));
+    await field.press("Control+Enter");
+    await page.locator("#editorSave").click();
+    await page.locator("#editorClose").click();
+    await page.locator('[data-review="inspection"]').click();
+    await page.locator("[data-evidence-intelligence] summary").click();
+    await page.locator("#openReviewLedger").click();
+    await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
+    await expect(page.locator("#ledgerTaskList .ledgerStatus.stale").first()).toContainText(/Stale after draft change/i);
   });
 
   test("records a bounded waiver, reopens it, and exports the hash chain", async ({ page }) => {

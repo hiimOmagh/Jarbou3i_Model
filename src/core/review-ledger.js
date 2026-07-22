@@ -125,7 +125,7 @@ export async function verifyReviewLedger(ledger, { cryptoImpl } = {}) {
   return clone(ledger);
 }
 
-export function projectReviewLedger(ledger) {
+export function projectReviewLedger(ledger, { currentDraftChecksum = "" } = {}) {
   const tasks = new Map();
   for (const event of ledger?.events || []) {
     const current = tasks.get(event.task_key) || {
@@ -168,6 +168,9 @@ export function projectReviewLedger(ledger) {
       current.notes.push({ note: event.note, reviewer: clone(event.reviewer), occurred_at: event.occurred_at });
     }
     tasks.set(event.task_key, current);
+  }
+  for (const task of tasks.values()) {
+    task.is_stale = Boolean(currentDraftChecksum && task.draft_checksum !== currentDraftChecksum);
   }
   return Object.freeze({
     tasks,
@@ -254,7 +257,7 @@ export async function appendReviewEvent(workspace, {
 }
 
 export async function reviewLedgerManifest(workspace, { tasks = [], cryptoImpl } = {}) {
-  const projection = projectReviewLedger(workspace.review_ledger);
+  const projection = projectReviewLedger(workspace.review_ledger, { currentDraftChecksum: workspace.working_draft.payload_checksum });
   const taskStates = await Promise.all(tasks.map(async (task) => {
     const normalizedTask = taskSnapshot(task);
     const taskKey = await reviewTaskKey(normalizedTask, { cryptoImpl });
@@ -267,6 +270,7 @@ export async function reviewLedgerManifest(workspace, { tasks = [], cryptoImpl }
       event_count: current?.event_count || 0,
       last_event_at: current?.last_event_at || null,
       waiver: current?.waiver ? clone(current.waiver) : null,
+      is_stale: Boolean(current?.is_stale),
     };
   }));
   const statuses = taskStates.length ? taskStates : [...projection.tasks.values()];

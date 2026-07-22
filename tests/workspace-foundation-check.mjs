@@ -92,8 +92,9 @@ const migrated = await migrateWorkspace({
   created_at: clock(),
   analysis,
 }, { idFactory });
-assert(migrated.format_version === 2, "legacy workspace did not migrate to v2");
+assert(migrated.format_version === 3, "legacy workspace did not migrate to v3");
 assert(migrated.review_ledger?.format === "jarbou3i-operational-review-ledger", "migration omitted review ledger");
+assert(migrated.resolution_ledger?.format === "jarbou3i-resolution-ledger", "migration omitted resolution ledger");
 assert(canonicalStringify(migrated.working_draft.canonical_payload) === canonicalStringify(analysis), "migration changed analysis semantics");
 
 const backend = createMemoryWorkspaceBackend();
@@ -118,8 +119,9 @@ versionOne.format_version = 1;
 delete versionOne.review_ledger;
 const legacyRepository = createWorkspaceRepository({ backend: createMemoryWorkspaceBackend([versionOne]) });
 const migratedOnRead = await legacyRepository.get(versionOne.workspace_id);
-assert(migratedOnRead.format_version === 2, "repository read did not migrate a v1 workspace");
+assert(migratedOnRead.format_version === 3, "repository read did not migrate a v1 workspace");
 assert(migratedOnRead.review_ledger.events.length === 0, "v1 migration invented review history");
+assert(migratedOnRead.resolution_ledger.records.length === 0, "v1 migration invented resolution history");
 
 const unavailableBackend = createIndexedDbWorkspaceBackend({
   indexedDB: {
@@ -127,5 +129,12 @@ const unavailableBackend = createIndexedDbWorkspaceBackend({
   },
 });
 await expectCode(() => unavailableBackend.list(), "STORAGE_UNAVAILABLE");
+
+const corruptStored = structuredClone(workspace);
+corruptStored.revisions[0].canonical_payload.subject.title = "Tampered listing title";
+const diagnosticRepository = createWorkspaceRepository({ backend: createMemoryWorkspaceBackend([corruptStored]) });
+const [diagnosticEntry] = await diagnosticRepository.list();
+assert(diagnosticEntry.integrity_status === "corrupt", "unverified workspace metadata was presented as healthy");
+assert(!diagnosticEntry.metadata, "corrupt workspace leaked unverified display metadata");
 
 console.log("Workspace contract, migration, portability, integrity, and repository checks passed.");

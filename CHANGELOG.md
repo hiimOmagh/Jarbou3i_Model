@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.0-alpha.41 — Resolution Accessibility Correction
+
+- Darkened the shared light-theme muted-text token from `#65758b` to `#5f6f84`, raising contrast on `#f8fafc` soft surfaces from 4.48:1 to approximately 4.90:1.
+- Added a static 4.75:1 token-pair safety-margin check while preserving the runtime Axe accessibility gate unchanged.
+- Preserved Alpha.40 resolution transactions, workspace v3 semantics, prompt isolation, integrity checks, security headers, and evidence authority.
+
+## 2.1.0-alpha.40 — Phase 5 Slice 4 Resolution Transactions
+
+- Added deterministic exact canonical diffs, whole-draft validation, explicit local approval, and stale-proposal rejection.
+- Added immutable `committed_resolution` child revisions and a cross-verified, hash-chained resolution ledger in workspace format v3.
+- Marked review decisions stale when their recorded draft checksum no longer matches the working draft.
+- Added trilingual responsive diff/approval UI, an eight-case browser authority, and 156-screenshot/175-artifact visual coverage.
+- Isolated Strategic prompt material as untrusted JSON and disclosed prompt character burden/output-capacity risk.
+- Integrity-checked workspace listings and disclosed that local data is not app-encrypted.
+- Added deployment security headers and exact CI commit attribution inside evidence metadata.
+
 ## 2.1.0-alpha.39 — Review Transaction and Focus Stability
 
 - Serialized operational-ledger submissions behind an explicit pending state so consecutive actions cannot race the optimistic repository guard.

@@ -7,7 +7,36 @@ const fail = (message) => {
 
 const index = fs.readFileSync('index.html', 'utf8');
 const app = fs.readFileSync('src/app.js', 'utf8');
+const styles = fs.readFileSync('src/styles.css', 'utf8');
 const html = index + '\n' + app;
+
+const relativeLuminance = (hex) => {
+  const channels = hex.match(/[a-f\d]{2}/gi)?.map((channel) => Number.parseInt(channel, 16) / 255);
+  if (!channels || channels.length !== 3) fail(`invalid color token: ${hex}`);
+  const linear = channels.map((channel) => (
+    channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4
+  ));
+  return (0.2126 * linear[0]) + (0.7152 * linear[1]) + (0.0722 * linear[2]);
+};
+
+const contrastRatio = (foreground, background) => {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const lightTheme = styles.match(/:root\s*\{([\s\S]*?)\}/)?.[1] || '';
+const muted = lightTheme.match(/--muted:\s*(#[a-f\d]{6})/i)?.[1];
+const softSurface = lightTheme.match(/--surface-soft:\s*(#[a-f\d]{6})/i)?.[1];
+if (!muted || !softSurface) fail('light-theme muted and soft-surface tokens must use explicit hex colors');
+const mutedOnSoftContrast = contrastRatio(muted, softSurface);
+if (mutedOnSoftContrast < 4.75) {
+  fail(`light-theme muted text needs a 4.75:1 safety margin on soft surfaces; found ${mutedOnSoftContrast.toFixed(2)}:1`);
+}
 
 if (!/<html[^>]+lang="ar"[^>]+dir="rtl"/.test(index)) fail('root html must define initial lang and dir');
 if (!index.includes('name="viewport"')) fail('viewport meta tag missing');
@@ -38,8 +67,8 @@ for (const tag of buttonTags) {
   if (!/\btype="button"/.test(tag)) fail(`button without explicit type=button: ${tag}`);
 }
 
-if (!/\.srOnly/.test(fs.readFileSync('src/styles.css', 'utf8'))) fail('screen-reader utility class missing');
-if (!/:focus-visible/.test(fs.readFileSync('src/styles.css', 'utf8'))) fail('focus-visible styling missing');
+if (!/\.srOnly/.test(styles)) fail('screen-reader utility class missing');
+if (!/:focus-visible/.test(styles)) fail('focus-visible styling missing');
 
 console.log('Accessibility static checks passed.');
 process.exit(0);

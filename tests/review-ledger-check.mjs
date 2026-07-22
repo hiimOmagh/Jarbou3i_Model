@@ -60,6 +60,8 @@ projected = projectReviewLedger(next.review_ledger).tasks.get(taskKey);
 assert.equal(projected.status, "completed");
 assert.equal(next.review_ledger.events.length, 5);
 assert.equal(next.review_ledger.head_event_hash, next.review_ledger.events.at(-1).event_hash);
+assert.equal(projectReviewLedger(next.review_ledger, { currentDraftChecksum: "0".repeat(64) }).tasks.get(taskKey).is_stale, true, "draft drift did not stale the review decision");
+assert.equal(projectReviewLedger(next.review_ledger, { currentDraftChecksum: next.working_draft.payload_checksum }).tasks.get(taskKey).is_stale, false, "current-draft review decision was marked stale");
 assert.equal((await reviewLedgerManifest(next, { tasks: [task] })).completion_validates_conclusions, false);
 assert.equal((await reviewLedgerManifest(next, { tasks: [task] })).identity_assurance, "local_assertion");
 await verifyWorkspace(next);

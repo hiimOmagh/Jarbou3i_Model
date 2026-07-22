@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const EXPECTED_VERSION = '2.1.0-alpha.39';
+const EXPECTED_VERSION = '2.1.0-alpha.41';
 
 const fail = (message) => {
   console.error(`Hosted demo evidence review failed: ${message}`);
@@ -56,6 +56,10 @@ if (metadata.app_version !== EXPECTED_VERSION) {
 
 if (metadata.evidence_version !== EXPECTED_VERSION) {
   fail(`metadata evidence_version must be ${EXPECTED_VERSION}`);
+}
+
+if (metadata.source_commit !== 'local-uncommitted' && !/^[a-f0-9]{40}$/i.test(metadata.source_commit || '')) {
+  fail('metadata source_commit must be the full CI commit SHA or local-uncommitted');
 }
 
 if (metadata.capture_set !== 'public-ui-lock') {

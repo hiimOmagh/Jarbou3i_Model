@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.39";
+const EXPECTED_VERSION = "2.1.0-alpha.41";
 const fail = (message) => {
   console.error(`Visual audit evidence review failed: ${message}`);
   process.exit(1);
@@ -15,6 +15,7 @@ const metadataPath = path.join(evidencePath, "visual-audit-metadata.json");
 if (!fs.existsSync(metadataPath)) fail("missing visual-audit-metadata.json");
 const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
 if (metadata.app_version !== EXPECTED_VERSION || metadata.evidence_version !== EXPECTED_VERSION) fail(`evidence version must be ${EXPECTED_VERSION}`);
+if (metadata.source_commit !== "local-uncommitted" && !/^[a-f0-9]{40}$/i.test(metadata.source_commit || "")) fail("source_commit must be the full CI commit SHA or local-uncommitted");
 if (metadata.capture_set !== "final-language-theme-viewport-audit") fail("unexpected capture_set");
 if (metadata.visual_assets_decoded !== true) fail("critical visual assets were not decode-gated");
 if (metadata.transient_ui_cleared !== true) fail("transient UI was not cleared before capture");
@@ -22,9 +23,9 @@ if (metadata.deterministic_viewport_anchors !== true) fail("viewport captures we
 if (metadata.report_top_anchor_verified !== true) fail("standalone report hero was not verified at the top anchor");
 if (metadata.phone_connections_target !== "relationshipExplorerMount") fail("phone Connections evidence does not target the explorer");
 if (metadata.generated_by !== "tests/visual-audit-evidence.spec.js") fail("unexpected evidence generator");
-if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 5 || metadata.screenshot_count !== 138) fail("visual evidence counts must be 18 matrix cases, 6 report cases, 5 report surfaces, and 138 screenshots");
-if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 157) fail("required_files must contain 157 artifacts");
-for (const target of ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"]) {
+if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 5 || metadata.screenshot_count !== 156) fail("visual evidence counts must be 18 matrix cases, 6 report cases, 5 report surfaces, and 156 screenshots");
+if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 175) fail("required_files must contain 175 artifacts");
+for (const target of ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"]) {
   if (!metadata.coverage?.includes(target)) fail(`coverage must include ${target}`);
 }
 
@@ -53,4 +54,4 @@ for (const locale of ["ar", "en", "fr"]) {
   }
 }
 
-console.log(`Visual audit evidence review passed: 18 matrix cases, 6 report cases, 5 report surfaces, 138 screenshots, ${metadata.required_files.length} artifacts`);
+console.log(`Visual audit evidence review passed: 18 matrix cases, 6 report cases, 5 report surfaces, 156 screenshots, ${metadata.required_files.length} artifacts`);

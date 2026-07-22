@@ -512,14 +512,14 @@ for (const archived of [
   if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.39") fail("package version mismatch");
+if (pkg.version !== "2.1.0-alpha.41") fail("package version mismatch");
 if (lock.version !== pkg.version || lock.packages?.[""]?.version !== pkg.version) {
   fail("package lock version mismatch");
 }
-if (!index.includes('name="app-version" content="2.1.0-alpha.39"')) {
+if (!index.includes('name="app-version" content="2.1.0-alpha.41"')) {
   fail("app version metadata missing");
 }
-if (!app.includes('"2.1.0-alpha.39"')) {
+if (!app.includes('"2.1.0-alpha.41"')) {
   fail("report fallback version is stale");
 }
 for (const token of [

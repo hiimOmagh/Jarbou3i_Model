@@ -3,6 +3,8 @@ import vm from "node:vm";
 import Ajv2020 from "ajv/dist/2020.js";
 import { createWorkspace, createWorkspaceBundle } from "../src/core/workspace-contract.js";
 import { appendReviewEvent } from "../src/core/review-ledger.js";
+import { writeEditorDraft } from "../src/core/canonical-editor.js";
+import { commitResolution, createResolutionProposal } from "../src/core/resolution-transaction.js";
 
 const fail = (message) => {
   console.error(`Schema check failed: ${message}`);
@@ -136,8 +138,25 @@ try {
     clock: () => "2026-07-21T12:01:00.000Z",
     idFactory: (prefix) => `${prefix}_schema_event`,
   });
-  const bundle = await createWorkspaceBundle(reviewedWorkspace, { clock: () => "2026-07-21T12:02:00.000Z" });
-  if (!validateWorkspace(reviewedWorkspace)) fail(`workspace failed published schema: ${JSON.stringify(validateWorkspace.errors)}`);
+  const editedPayload = structuredClone(reviewedWorkspace.working_draft.canonical_payload);
+  editedPayload.subject.title = "Schema-approved resolution";
+  const savedDraft = await writeEditorDraft(reviewedWorkspace, editedPayload, { clock: () => "2026-07-21T12:02:00.000Z" });
+  const validator = (payload) => ({ valid: Boolean(payload.subject?.title), errors: [], warnings: [] });
+  const proposal = await createResolutionProposal(savedDraft, {
+    validate: validator,
+    clock: () => "2026-07-21T12:03:00.000Z",
+    idFactory: (prefix) => `${prefix}_schema_resolution`,
+  });
+  const resolvedWorkspace = await commitResolution(savedDraft, proposal, {
+    validate: validator,
+    reviewer: { reviewer_id: "schema-reviewer", display_name: "Schema Reviewer" },
+    rationale: "Exercise the published resolution-ledger schema.",
+    approved: true,
+    clock: () => "2026-07-21T12:04:00.000Z",
+    idFactory: (prefix) => `${prefix}_schema_commit`,
+  });
+  const bundle = await createWorkspaceBundle(resolvedWorkspace, { clock: () => "2026-07-21T12:05:00.000Z" });
+  if (!validateWorkspace(resolvedWorkspace)) fail(`workspace failed published schema: ${JSON.stringify(validateWorkspace.errors)}`);
   if (!validateBundle(bundle)) fail(`workspace bundle failed published schema: ${JSON.stringify(validateBundle.errors)}`);
 } catch (error) {
   fail(`workspace schemas could not compile or validate: ${error.message}`);

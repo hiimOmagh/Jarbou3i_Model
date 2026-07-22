@@ -21,7 +21,13 @@ Imported JSON is untrusted input. The application:
 - escapes all rendered and exported human-readable values;
 - embeds export JSON with script-closing characters neutralized.
 
-The generated Biopolitical prompt also encloses topic and context as untrusted analytical material and instructs the model not to follow embedded commands.
+Both generated prompts serialize topic and context as untrusted analytical material and instruct the model not to follow embedded commands. This reduces instruction/data confusion; it cannot guarantee that an external model will resist every prompt-injection attempt.
+
+## Local workspace boundary
+
+Workspace analyses are stored in IndexedDB inside the current browser profile. They are not encrypted by the application, authenticated, remotely backed up, or protected from another person or process controlling that profile. Hash chains detect covered mutations during verification; they are not digital signatures and can be recomputed by a malicious local actor replacing the whole workspace. Export portable backups for important work and do not use a shared browser profile for sensitive analysis.
+
+Cloud deployment includes a restrictive response-header policy. Inline styles remain allowed until existing deterministic style attributes are removed; scripts and runtime connections remain self-only or denied.
 
 ## Reporting
 

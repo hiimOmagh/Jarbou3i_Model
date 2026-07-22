@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.39" />
+<meta name="app-version" content="2.1.0-alpha.41" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -228,6 +228,7 @@
       <button class="btn" id="editorUndo" type="button" disabled>Undo</button>
       <button class="btn" id="editorRedo" type="button" disabled>Redo</button>
       <span class="editorDirty" id="editorDirty" role="status" aria-live="polite"></span>
+      <button class="btn" id="editorResolve" type="button" disabled>Review &amp; commit</button>
       <button class="btn primary" id="editorSave" type="button" disabled>Save draft</button>
     </div>
     <div class="editorLayout">
@@ -279,6 +280,27 @@
         <details class="ledgerHistory"><summary id="ledgerHistorySummary"></summary><ol id="ledgerHistory"></ol></details>
       </section>
     </div>
+  </section>
+</div>
+<div class="workspaceBackdrop" id="resolutionBackdrop" aria-hidden="true">
+  <section class="workspaceDialog resolutionDialog" id="resolutionDialog" role="dialog" aria-modal="true" aria-labelledby="resolutionTitle" tabindex="-1">
+    <header class="modalHead">
+      <div><h3 id="resolutionTitle">Resolution transaction</h3><p class="muted" id="resolutionHint"></p></div>
+      <button class="btn iconBtn" id="resolutionClose" type="button" aria-label="Close resolution transaction">×</button>
+    </header>
+    <div class="resolutionTrust" id="resolutionTrust"></div>
+    <div class="resolutionSummary" id="resolutionSummary"></div>
+    <section class="resolutionDiffPanel" aria-labelledby="resolutionDiffTitle">
+      <div class="ledgerSectionHead"><h4 id="resolutionDiffTitle"></h4><span class="chip" id="resolutionChangeCount"></span></div>
+      <ol class="resolutionDiff" id="resolutionDiff"></ol>
+    </section>
+    <div class="resolutionApproval">
+      <div class="field"><label class="label" id="resolutionReviewerLabel" for="resolutionReviewer"></label><input id="resolutionReviewer" type="text" maxlength="120" autocomplete="name" /></div>
+      <div class="field"><label class="label" id="resolutionRationaleLabel" for="resolutionRationale"></label><textarea id="resolutionRationale" rows="4" maxlength="2000"></textarea></div>
+      <label class="resolutionConfirm"><input id="resolutionConfirm" type="checkbox" /><span id="resolutionConfirmLabel"></span></label>
+    </div>
+    <div class="status" id="resolutionStatus" role="status" aria-live="polite"></div>
+    <div class="actions"><button class="btn primary" id="resolutionCommit" type="button" disabled></button></div>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -63,5 +63,21 @@ test("runtime accessibility and keyboard contract", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(previewButton).toBeFocused();
 
+  await page.locator("#workspaceBtn").click();
+  await page.locator(".workspaceRow.active [data-workspace-edit]").click();
+  await page.locator('[data-editor-path="/subject"]').click();
+  const field = page.locator("#editorField");
+  const subject = JSON.parse(await field.inputValue());
+  subject.title = `${subject.title} accessibility resolution`;
+  await field.fill(JSON.stringify(subject));
+  await field.press("Control+Enter");
+  await page.locator("#editorSave").click();
+  const resolutionButton = page.locator("#editorResolve");
+  await resolutionButton.click();
+  await expect(page.locator("#resolutionDialog")).toBeFocused();
+  await expectNoSeriousViolations(page);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#workspaceBtn")).toBeFocused();
+
   await expectNoSeriousViolations(page);
 });

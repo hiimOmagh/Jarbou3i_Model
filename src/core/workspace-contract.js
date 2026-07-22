@@ -1,9 +1,10 @@
 /* Versioned local-workspace contract. Canonical analysis revisions remain immutable. */
 
 import { createReviewLedger, verifyReviewLedger } from "./review-ledger.js";
+import { createResolutionLedger, verifyResolutionLedger } from "./resolution-transaction.js";
 
 export const WORKSPACE_FORMAT = "jarbou3i-local-workspace";
-export const WORKSPACE_FORMAT_VERSION = 2;
+export const WORKSPACE_FORMAT_VERSION = 3;
 export const WORKSPACE_BUNDLE_FORMAT = "jarbou3i-workspace-bundle";
 export const WORKSPACE_BUNDLE_VERSION = 1;
 export const WORKSPACE_CHECKSUM_ALGORITHM = "SHA-256";
@@ -158,6 +159,7 @@ export async function createWorkspace({
       },
     ],
     review_ledger: createReviewLedger({ clock: () => createdAt }),
+    resolution_ledger: createResolutionLedger({ clock: () => createdAt }),
   };
 }
 
@@ -210,11 +212,15 @@ function validateShape(workspace) {
   if (!isRecord(workspace.review_ledger)) {
     fail("INVALID_REVIEW_LEDGER", "Workspace operational review ledger is required.");
   }
+  if (!isRecord(workspace.resolution_ledger)) {
+    fail("INVALID_RESOLUTION_LEDGER", "Workspace resolution ledger is required.");
+  }
 }
 
 export async function verifyWorkspace(workspace, { cryptoImpl } = {}) {
   validateShape(workspace);
   await verifyReviewLedger(workspace.review_ledger, { cryptoImpl });
+  await verifyResolutionLedger(workspace.resolution_ledger, { workspace, cryptoImpl });
   for (const event of workspace.review_ledger.events) {
     if (event.workspace_id !== workspace.workspace_id) {
       fail("REVIEW_EVENT_WORKSPACE_MISMATCH", "Review event belongs to a different workspace.", {
@@ -261,6 +267,17 @@ export async function migrateWorkspace(input, options = {}) {
     const migrated = clone(input);
     migrated.format_version = WORKSPACE_FORMAT_VERSION;
     migrated.review_ledger = createReviewLedger({
+      clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
+    });
+    migrated.resolution_ledger = createResolutionLedger({
+      clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
+    });
+    return verifyWorkspace(migrated, options);
+  }
+  if (input.format === WORKSPACE_FORMAT && input.format_version === 2) {
+    const migrated = clone(input);
+    migrated.format_version = WORKSPACE_FORMAT_VERSION;
+    migrated.resolution_ledger = createResolutionLedger({
       clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
     });
     return verifyWorkspace(migrated, options);
