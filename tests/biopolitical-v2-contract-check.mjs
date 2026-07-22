@@ -131,6 +131,39 @@ for (const lang of ["ar", "en", "fr"]) {
 }
 
 for (const lang of ["ar", "en", "fr"]) {
+  const conceptual = JSON.parse(
+    bio.buildSchemaTemplate(lang, "research", "none"),
+  );
+  if (
+    conceptual.evidence.items[0].verification_status !== "unverified" ||
+    conceptual.evidence.items[0].source_url !== "" ||
+    conceptual.evidence.items[0].confidence !== "low"
+  ) {
+    fail(`${lang} no-source template must be an explicit unverified placeholder`);
+  }
+  if (
+    conceptual.calibrated_conclusion.strongly_supported.length !== 1 ||
+    conceptual.calibrated_conclusion.overall_confidence !== "low"
+  ) {
+    fail(`${lang} no-source template overstates conclusion strength`);
+  }
+  const serialized = JSON.stringify(conceptual);
+  if (/"evidence_ids":\["E1"\]/.test(serialized)) {
+    fail(`${lang} no-source template must not cite its placeholder as proof`);
+  }
+  const prompt = bio.buildPrompt({
+    topic: "Conceptual inquiry",
+    context: "No supplied sources",
+    lang,
+    mode: "research",
+    evidenceAccess: "none",
+  });
+  if (!/do not refuse|لا ترفض|ne refusez pas/i.test(prompt)) {
+    fail(`${lang} no-source prompt lacks bounded conceptual-draft fallback`);
+  }
+}
+
+for (const lang of ["ar", "en", "fr"]) {
   const fixture = readJson(`fixtures/sample-analysis-bio-${lang}.json`);
   const normalized = bio.normalize(fixture);
   if (normalized.schema_version !== bio.SCHEMA_VERSION || normalized.migration) {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0-alpha.37 — AI Interchange Reliability Interlock
+
+- Added explicit no-source, supplied-source, and live-research capability modes to prompt generation.
+- Added a publication-blocked conceptual-draft fallback that does not fabricate citations or treat a placeholder as proof.
+- Added conservative recovery for AI-emitted labeled array entries such as `["CMP1": {...}]`.
+- Added audited contract-shape repair for ID-keyed collection maps, unambiguous scalar-to-array drift, and misplaced actor confidence enums.
+- Preserved the exact pasted input and disclosed every structural repair by canonical path.
+- Renamed import-time evidence blocks as publication blockers so an enabled draft-import action is not semantically contradictory.
+- Replaced full-schema generative repair with a diagnostic, minified-JSON-only repair instruction that forbids code, prose, ellipses, and invented content.
+- Added focused node and four-browser regression authority for the supplied failure pattern.
+
 ## 2.1.0-alpha.36 — Phase 5 Slice 2
 
 - Added a structured, lens-aware editor for checksummed working drafts.

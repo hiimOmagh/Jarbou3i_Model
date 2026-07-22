@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.36` starts Phase 5 with a local-first workspace contract, durable IndexedDB repository, integrity-checked portability, and automatic reopening of the active analysis. Canonical analysis export remains unchanged; a workspace bundle preserves local revisions and draft state but explicitly is not canonical transport or collaboration state.
+Version `2.1.0-alpha.37` hardens the boundary between external AI assistants and the local-first workspace. It adds explicit source-access modes, an honest no-source conceptual-draft fallback, deterministic structural repair for common AI serialization drift, clearer publication-blocker language, and a constrained repair prompt that cannot silently invent evidence. Canonical analysis export remains unchanged.
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -20,6 +20,10 @@ Slice 3 adds a complete claim–evidence matrix and authored evidence-to-record 
 Slice 4 operationalizes those diagnostics as a stable, navigable review queue and adds a separate `jarbou3i-evidence-review-plan-v1` artifact. It preserves authored-data boundaries and states explicitly that completing the queue does not validate a conclusion. See [`docs/phase4-evidence-review-queue.md`](docs/phase4-evidence-review-queue.md).
 
 Phase 5 Slice 1 introduces `jarbou3i-local-workspace@1`. Importing a validated analysis creates an immutable imported revision and a separate clean working draft, each protected by SHA-256. Workspaces live in IndexedDB behind a storage abstraction and use optimistic repository revisions to reject stale writes. The local manager lists and reopens analyses, survives reload, and exports/restores a checksummed `jarbou3i-workspace-bundle@1`. The bundle contains canonical revisions but declares `canonical_transport: false`; canonical JSON remains the authoritative analysis transport. See [`docs/phase5-workspace-storage-portability.md`](docs/phase5-workspace-storage-portability.md).
+
+Phase 5 Slice 2 adds a structured editor above the working draft. Field changes are type-preserving, whole-draft validated, undoable, redoable, and saved through optimistic repository revisions; imported and committed revisions remain immutable. See [`docs/phase5-structured-canonical-editor.md`](docs/phase5-structured-canonical-editor.md).
+
+Alpha.37 is an interchange reliability interlock before the operational review ledger. The source-access selector distinguishes unsourced conceptual drafting, user-supplied sources, and live research. The parser and contract-repair layer can recover only auditable syntax and type-shape mistakes; it never rewrites analytical claims, confidence, or evidence. See [`docs/phase5-ai-interchange-reliability.md`](docs/phase5-ai-interchange-reliability.md).
 
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 

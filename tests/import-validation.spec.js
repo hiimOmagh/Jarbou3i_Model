@@ -81,7 +81,10 @@ test.describe("Runtime import validation", () => {
     const audit = page.locator("#importAuditDetails");
     await expect(audit).toBeVisible();
     await audit.locator("summary").click();
-    await expect(audit).toContainText(/Blocking/i);
+    await expect(audit).toContainText(/Publication blockers/i);
+    await expect(audit).toContainText(/Draft import is allowed/i);
+    await expect(audit).toContainText(/publication remains blocked/i);
+    await expect(page.locator("#importBtn")).toBeEnabled();
     await expect(audit).toContainText(/Review required/i);
     await expect(audit).toContainText(/original pasted text is preserved/i);
     await page.locator("#importBtn").click();

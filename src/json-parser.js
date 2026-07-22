@@ -61,6 +61,99 @@
     });
   }
 
+  function objectHasTopLevelKey(text, opening, expectedKey) {
+    let depth = 1;
+    let inString = false;
+    let escaped = false;
+    let stringStart = -1;
+    for (let index = opening + 1; index < text.length; index += 1) {
+      const char = text[index];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (char === "\\") escaped = true;
+        else if (char === '"') {
+          inString = false;
+          if (depth === 1) {
+            let colon = index + 1;
+            while (colon < text.length && /\s/.test(text[colon])) colon += 1;
+            if (text[colon] === ":") {
+              try {
+                if (
+                  JSON.parse(text.slice(stringStart, index + 1)) === expectedKey
+                ) {
+                  return true;
+                }
+              } catch {}
+            }
+          }
+        }
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        stringStart = index;
+      } else if (char === "{") depth += 1;
+      else if (char === "}" && --depth === 0) return false;
+    }
+    return false;
+  }
+
+  function repairLabeledArrayEntries(source) {
+    const text = String(source || "");
+    const stack = [];
+    let out = "";
+    let inString = false;
+    let escaped = false;
+    let count = 0;
+    for (let index = 0; index < text.length; index += 1) {
+      const char = text[index];
+      if (inString) {
+        out += char;
+        if (escaped) escaped = false;
+        else if (char === "\\") escaped = true;
+        else if (char === '"') inString = false;
+        continue;
+      }
+      if (char === '"' && stack.at(-1) === "[") {
+        let end = index + 1;
+        let labelEscaped = false;
+        for (; end < text.length; end += 1) {
+          if (labelEscaped) labelEscaped = false;
+          else if (text[end] === "\\") labelEscaped = true;
+          else if (text[end] === '"') break;
+        }
+        if (end < text.length) {
+          let colon = end + 1;
+          while (colon < text.length && /\s/.test(text[colon])) colon += 1;
+          if (text[colon] === ":") {
+            let opening = colon + 1;
+            while (opening < text.length && /\s/.test(text[opening])) opening += 1;
+            let label = "";
+            try {
+              label = JSON.parse(text.slice(index, end + 1));
+            } catch {}
+            if (
+              text[opening] === "{" &&
+              /^[A-Z][A-Z0-9_-]{1,31}$/.test(label) &&
+              !objectHasTopLevelKey(text, opening, "id")
+            ) {
+              out += `{"id":${JSON.stringify(label)},`;
+              stack.push("{");
+              index = opening;
+              count += 1;
+              continue;
+            }
+          }
+        }
+      }
+      if (char === '"') inString = true;
+      if (["{", "["].includes(char)) stack.push(char);
+      if (["}", "]"].includes(char)) stack.pop();
+      out += char;
+    }
+    return { source: out, count };
+  }
+
   function balancedJsonSlice(source) {
     const text = String(source || "");
     let start = -1;
@@ -98,7 +191,8 @@
   }
 
   function recoverCandidate(source) {
-    return removeTrailingCommas(stripJsonComments(stripBom(source)));
+    const conservative = removeTrailingCommas(stripJsonComments(stripBom(source)));
+    return repairLabeledArrayEntries(conservative).source;
   }
 
   function extractJson(source) {
@@ -122,7 +216,19 @@
       if (!recovered || seen.has(recovered)) continue;
       seen.add(recovered);
       try {
-        return { value: JSON.parse(recovered), recovered: true, source: recovered };
+        const labeledEntries = repairLabeledArrayEntries(
+          removeTrailingCommas(stripJsonComments(clean)),
+        ).count;
+        return {
+          value: JSON.parse(recovered),
+          recovered: true,
+          source: recovered,
+          repairs: Object.freeze([
+            ...(labeledEntries
+              ? [{ code: "LABELED_ARRAY_ENTRIES", count: labeledEntries }]
+              : []),
+          ]),
+        };
       } catch {}
     }
     throw new Error("invalid");
@@ -131,6 +237,7 @@
   root.Jarbou3iJson = Object.freeze({
     stripJsonComments,
     removeTrailingCommas,
+    repairLabeledArrayEntries,
     balancedJsonSlice,
     recoverCandidate,
     extractJson,

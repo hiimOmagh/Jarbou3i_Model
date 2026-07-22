@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.36 — structured canonical editor */
+/* Jarbou3i Model v2.1.0-alpha.37 — AI interchange reliability hardening */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -9,6 +9,7 @@ import "./biopolitical-report.js";
 import "./reference-ui.js";
 import "./relationship-explorer.js";
 import "./json-parser.js";
+import "./contract-repair.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { createShellPreferences, normalizeShellDensity } from "./core/shell-preferences.js";
 import { nextShellSection, resolveShellCommand } from "./core/shell-navigation.js";
@@ -50,6 +51,10 @@ const I18N = {
     modeSimple: "مركّز",
     modeExpert: "خبير",
     modeResearch: "بحثي",
+    evidenceAccess: "الوصول إلى المصادر",
+    evidenceAccessNone: "دون وصول — مسودة مفاهيمية",
+    evidenceAccessProvided: "مصادر مقدمة في السياق",
+    evidenceAccessWeb: "بحث مباشر في الويب",
     optionArabic: "العربية",
     optionEnglish: "الإنجليزية",
     optionFrench: "الفرنسية",
@@ -327,6 +332,10 @@ const I18N = {
     modeSimple: "Focused",
     modeExpert: "Expert",
     modeResearch: "Research",
+    evidenceAccess: "Source access",
+    evidenceAccessNone: "No access — conceptual draft",
+    evidenceAccessProvided: "Sources supplied in context",
+    evidenceAccessWeb: "Live web research",
     optionArabic: "Arabic",
     optionEnglish: "English",
     optionFrench: "French",
@@ -615,6 +624,10 @@ const I18N = {
     modeSimple: "Ciblé",
     modeExpert: "Expert",
     modeResearch: "Recherche",
+    evidenceAccess: "Accès aux sources",
+    evidenceAccessNone: "Aucun accès — brouillon conceptuel",
+    evidenceAccessProvided: "Sources fournies dans le contexte",
+    evidenceAccessWeb: "Recherche web en direct",
     optionArabic: "Arabe",
     optionEnglish: "Anglais",
     optionFrench: "Français",
@@ -929,6 +942,9 @@ if (!RELATIONSHIP_EXPLORER)
   throw new Error("Relationship explorer failed to load.");
 const JSON_TOOLS = window.Jarbou3iJson;
 if (!JSON_TOOLS) throw new Error("Conservative JSON parser failed to load.");
+const CONTRACT_REPAIR = window.Jarbou3iContractRepair;
+if (!CONTRACT_REPAIR)
+  throw new Error("Auditable contract-shape repair failed to load.");
 const PROVENANCE = window.Jarbou3iProvenance;
 if (!PROVENANCE) throw new Error("Evidence provenance service failed to load.");
 const SETTINGS_KEY = "jarbou3i-model-settings";
@@ -1000,6 +1016,9 @@ const PLATFORM = createPlatformRuntime({
           ? settings.analysisLangFollowsUi
           : !supported(settings.analysisLang) || analysisLanguage === interfaceLanguage,
       promptMode: "simple",
+      evidenceAccess: ["none", "provided", "web"].includes(settings.evidenceAccess)
+        ? settings.evidenceAccess
+        : "none",
       analysisLens: ["strategic", "biopolitical"].includes(settings.analysisLens)
         ? settings.analysisLens
         : "strategic",
@@ -1029,6 +1048,7 @@ const PLATFORM = createPlatformRuntime({
     workflow() {
       $("analysisLang").value = state.analysisLang;
       $("promptMode").value = state.promptMode;
+      $("evidenceAccess").value = state.evidenceAccess;
       $("timeframeInput").value = state.context;
       $("topicInput").value = state.topic;
       renderGuide();
@@ -1522,7 +1542,12 @@ function importErrorText(error) {
   );
   return `${prefix}: ${first.path || "/"} — ${localizedImportIssueMessage(first)}`;
 }
-function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
+function renderImportAuditDetails({
+  warnings = [],
+  parsed,
+  provenance,
+  contractRepairs = [],
+} = {}) {
   const details = $("importAuditDetails");
   const summary = $("importAuditSummary");
   const body = $("importAuditBody");
@@ -1539,12 +1564,18 @@ function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
   const blocking = provenance?.total
     ? provenance.total - provenance.approved
     : 0;
-  const repairCount = (parsed?.recovered ? 1 : 0) +
+  const parserRepairCount = (parsed?.repairs || []).reduce(
+    (total, item) => total + (item.count || 1),
+    0,
+  );
+  const repairCount =
+    (parsed?.recovered ? Math.max(1, parserRepairCount) : 0) +
+    contractRepairs.reduce((total, item) => total + (item.count || 1), 0) +
     (citationRepair?.count || 0);
   summary.textContent = labelText(
-    `Review details · ${blocking} blocking · ${warnings.length} review · ${repairCount} repaired`,
-    `تفاصيل المراجعة · ${blocking} عوائق · ${warnings.length} للمراجعة · ${repairCount} إصلاحات`,
-    `Détails · ${blocking} blocages · ${warnings.length} à revoir · ${repairCount} réparations`,
+    `Review details · ${blocking} publication blocker${blocking === 1 ? "" : "s"} · ${warnings.length} review · ${repairCount} repaired`,
+    `تفاصيل المراجعة · ${blocking} ${blocking === 1 ? "عائق نشر" : "عوائق نشر"} · ${warnings.length} للمراجعة · ${repairCount} إصلاحات`,
+    `Détails · ${blocking} blocage${blocking === 1 ? "" : "s"} de publication · ${warnings.length} à revoir · ${repairCount} réparations`,
   );
   const warningItems = warnings.length
     ? `<ul>${warnings
@@ -1563,6 +1594,32 @@ function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
           "Les enveloppes JSON, commentaires ou ponctuations finales ont été réparés de façon conservative.",
         )
       : "",
+    ...contractRepairs.map((repair) => {
+      const count = repair.count || 1;
+      if (repair.code === "OBJECT_MAP_TO_ARRAY")
+        return labelText(
+          `${repair.path} was converted from an ID-keyed object map to an array (${count} item${count === 1 ? "" : "s"}).`,
+          `حُوّل ${repair.path} من خريطة كائنات بمفاتيح معرّفات إلى مصفوفة (${count}).`,
+          `${repair.path} a été converti d’une table d’objets indexée par ID en tableau (${count} élément${count === 1 ? "" : "s"}).`,
+        );
+      if (repair.code === "SCALAR_TO_ARRAY")
+        return labelText(
+          `${repair.path} was wrapped in the array required by the contract.`,
+          `وُضعت قيمة ${repair.path} داخل المصفوفة التي يتطلبها العقد.`,
+          `${repair.path} a été placé dans le tableau exigé par le contrat.`,
+        );
+      if (repair.code === "MISPLACED_CONFIDENCE_RECOVERED")
+        return labelText(
+          `${repair.path} was recovered from a misplaced confidence enum.`,
+          `استُعيدت ${repair.path} من قيمة ثقة موضوعة في الحقل الخطأ.`,
+          `${repair.path} a été récupéré depuis une valeur de confiance mal placée.`,
+        );
+      return labelText(
+        `${repair.path || "/"} received a conservative structural repair.`,
+        `خضع ${repair.path || "/"} لإصلاح بنيوي محافظ.`,
+        `${repair.path || "/"} a reçu une réparation structurelle conservative.`,
+      );
+    }),
     citationRepair
       ? labelText(
           `${citationRepair.count || 1} non-portable citation markers were removed from the normalized copy.`,
@@ -1573,9 +1630,9 @@ function renderImportAuditDetails({ warnings = [], parsed, provenance } = {}) {
   ].filter(Boolean);
   body.innerHTML = `${
     provenance?.total
-      ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Blocking", "العوائق", "Blocage"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Model-declared verification remains untrusted.`, `${blocking} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. La vérification déclarée par le modèle reste non fiable.`))}</p></section>`
+      ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Draft import is allowed; model-declared verification remains untrusted.`, `يفتقر ${blocking} من ${provenance.total} سجلات أدلة إلى اعتماد مستقل. استيراد المسودة مسموح؛ ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. L’import du brouillon est permis ; la vérification déclarée par le modèle reste non fiable.`))}</p></section>`
       : ""
-  }<section class="importAuditGroup"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="importAuditGroup"><h4>${escapeHtml(labelText("Automatic repair", "الإصلاح التلقائي", "Réparation automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic content repair was required.", "لم يلزم إصلاح تلقائي للمحتوى.", "Aucune réparation automatique du contenu n’a été nécessaire."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>`;
+  }<section class="importAuditGroup"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="importAuditGroup"><h4>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>`;
   details.hidden = false;
 }
 function validateJsonInput() {
@@ -1591,10 +1648,14 @@ function validateJsonInput() {
     renderImportAuditDetails();
     return null;
   }
+  let parsed = null;
+  let contractRepairs = [];
   try {
     state.importValidation = null;
-    const parsed = extractJson(text);
-    const raw = parsed.value;
+    parsed = extractJson(text);
+    const contractRepair = CONTRACT_REPAIR.repairBiopolitical(parsed.value);
+    contractRepairs = contractRepair.repairs;
+    const raw = contractRepair.value;
     const analysis = normalizeAnalysis(raw);
     const has =
       analysis.analysis_lens === "biopolitical"
@@ -1625,9 +1686,10 @@ function validateJsonInput() {
       parsedSource: parsed.source,
       recovered: parsed.recovered,
       warnings: Object.freeze([...warnings]),
+      contractRepairs: Object.freeze([...contractRepairs]),
       provenance,
     });
-    renderImportAuditDetails({ warnings, parsed, provenance });
+    renderImportAuditDetails({ warnings, parsed, provenance, contractRepairs });
     const needsIndependentReview =
       analysis.analysis_lens === "biopolitical" &&
       provenance.total > 0 &&
@@ -1645,9 +1707,9 @@ function validateJsonInput() {
         )
       : needsIndependentReview
         ? labelText(
-            `Reviewable draft. Blocking: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${warnings.length} contract or integrity warning${warnings.length === 1 ? "" : "s"}. Import is allowed; publication is blocked.`,
-            `مسودة قابلة للمراجعة. العوائق: ${provenance.total - provenance.approved} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. المراجعة: ${warnings.length} ${warnings.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. الاستيراد مسموح والنشر محظور.`,
-            `Brouillon révisable. Blocage : ${provenance.total - provenance.approved} preuves sur ${provenance.total} sans approbation indépendante. Révision : ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"} de contrat ou d’intégrité. L’import est permis ; la publication est bloquée.`,
+            `Reviewable draft. Publication blockers: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${warnings.length} contract or integrity warning${warnings.length === 1 ? "" : "s"}. Draft import is allowed; publication is blocked.`,
+            `مسودة قابلة للمراجعة. عوائق النشر: ${provenance.total - provenance.approved} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. المراجعة: ${warnings.length} ${warnings.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. استيراد المسودة مسموح والنشر محظور.`,
+            `Brouillon révisable. Blocages de publication : ${provenance.total - provenance.approved} preuves sur ${provenance.total} sans approbation indépendante. Révision : ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"} de contrat ou d’intégrité. L’import du brouillon est permis ; la publication est bloquée.`,
           )
         : warnings.length
           ? labelText(
@@ -1665,14 +1727,17 @@ function validateJsonInput() {
     $("pasteCard").classList.remove("invalid");
     return analysis;
   } catch (e) {
+    const validationErrors = e?.validation?.errors || [];
     state.importAudit = Object.freeze({
       originalText: text,
       error: importErrorText(e),
+      errors: Object.freeze([...validationErrors]),
     });
     renderImportAuditDetails({
-      warnings: e?.validation?.errors || [],
-      parsed: null,
+      warnings: validationErrors,
+      parsed,
       provenance: null,
+      contractRepairs,
     });
     state.jsonValid = false;
     $("importBtn").disabled = true;
@@ -1688,6 +1753,7 @@ function buildSchema(
   lang = state.analysisLang,
   mode = state.promptMode,
   lens = state.analysisLens,
+  evidenceAccess = state.evidenceAccess,
 ) {
   const ar = lang === "ar";
   const fr = lang === "fr";
@@ -1697,7 +1763,7 @@ function buildSchema(
       ? "Retourne uniquement un JSON valide avec la structure suivante"
       : "Return valid JSON only using this structure";
   if (lens === "biopolitical")
-    return `${label}\n${BIO.buildSchemaTemplate(lang, mode)}`;
+    return `${label}\n${BIO.buildSchemaTemplate(lang, mode, evidenceAccess)}`;
   const schema = {
     schema_version: "1.1.0",
     analysis_id: "slug-or-short-id",
@@ -1858,10 +1924,32 @@ function buildSchema(
         confidence: "high|medium|low",
       },
     ];
+    if (evidenceAccess === "none") {
+      schema.evidence.items = [
+        {
+          id: "E1",
+          claim: "Unsourced conceptual inference; not evidence",
+          basis: "inference",
+          source_title: "UNSOURCED MODEL SYNTHESIS — PLACEHOLDER",
+          source_url: "",
+          source_date: "",
+          source_note: "No external source access; publication-blocking placeholder",
+          evidence_strength: 0,
+          counter_evidence: "Not assessed without source access",
+          confidence: "low",
+        },
+      ];
+    }
   }
-  return `${label}\n${JSON.stringify(schema, null, 2)}`;
+  return `${label}\n${JSON.stringify(schema)}`;
 }
-function buildStrategicPrompt({ lang, mode, topic, context }) {
+function buildStrategicPrompt({
+  lang,
+  mode,
+  topic,
+  context,
+  evidenceAccess = "web",
+}) {
   const ar = lang === "ar";
   const fr = lang === "fr";
   const modeText =
@@ -1882,12 +1970,30 @@ function buildStrategicPrompt({ lang, mode, topic, context }) {
           : fr
             ? "Ciblé : priorise les six couches, les contradictions et les scénarios."
             : "Focused: prioritize the six layers, contradictions, and scenarios.";
+  const evidenceRule = ar
+    ? evidenceAccess === "none"
+      ? "الوصول إلى المصادر: غير متاح. لا ترفض المهمة لهذا السبب ولا تختلق مصدرًا. استخدم عنصرًا نائبًا صريحًا منخفض الثقة، ولا تقدمه كدليل."
+      : evidenceAccess === "provided"
+        ? "الوصول إلى المصادر: استخدم فقط المصادر المحددة فعليًا في السياق، ولا تخمّن البيانات المفقودة."
+        : "الوصول إلى المصادر: بحث مباشر. استخدم فقط مصادر فتحتها أو تحققت منها؛ وإن تعذر التصفح فصرّح بمسودة غير مسندة منخفضة الثقة."
+    : fr
+      ? evidenceAccess === "none"
+        ? "Accès aux sources : indisponible. Ne refusez pas pour cette seule raison et n’inventez aucune source. Utilisez un substitut explicite de faible confiance sans le présenter comme preuve."
+        : evidenceAccess === "provided"
+          ? "Accès aux sources : utilisez uniquement les sources effectivement identifiées dans le contexte, sans deviner les données manquantes."
+          : "Accès aux sources : recherche en direct. Utilisez uniquement des sources ouvertes ou vérifiées ; si la navigation échoue, produisez un brouillon non sourcé de faible confiance."
+      : evidenceAccess === "none"
+        ? "Source access: unavailable. Do not refuse solely for that reason and do not invent a source. Use an explicit low-confidence placeholder and never present it as evidence."
+        : evidenceAccess === "provided"
+          ? "Source access: use only sources actually identified in the context; never guess missing metadata."
+          : "Source access: live research. Use only sources you opened or verified; if browsing fails, produce a clearly unsourced low-confidence draft.";
   if (ar)
     return `أنت محلل استراتيجي صارم. حلّل الموضوع التالي باستخدام نموذج: مصالح → فاعلون → أدوات → سردية → نتائج → تغذية راجعة.
 
 الموضوع: ${topic}
 السياق: ${context || "غير محدد"}
 النمط: ${modeText}
+${evidenceRule}
 
 قواعد مهمة:
 - اكتب كل محتوى التحليل باللغة العربية.
@@ -1899,13 +2005,14 @@ function buildStrategicPrompt({ lang, mode, topic, context }) {
 - قبل إخراج JSON النهائي، راجع داخليًا: الفاعلين المفقودين، السببية الأحادية، الافتراضات غير المدعومة، ضعف الأدلة، غياب الأدلة المضادة، وغياب شروط الإبطال.
 - لا تكتب مراجعتك الداخلية؛ أخرج JSON المصحح فقط.
 
-${buildSchema(lang, mode, "strategic")}`;
+${buildSchema(lang, mode, "strategic", evidenceAccess)}`;
   if (fr)
     return `Tu es un analyste stratégique rigoureux. Analyse le sujet suivant avec le modèle : Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.
 
 Sujet : ${topic}
 Contexte : ${context || "non précisé"}
 Mode : ${modeText}
+${evidenceRule}
 
 Règles :
 - Rédige tout le contenu de l’analyse en français.
@@ -1917,12 +2024,13 @@ Règles :
 - Avant le JSON final, audite silencieusement : acteurs manquants, monocausalité, hypothèses non étayées, preuves faibles, absence de contre-preuves et absence de réfutateurs.
 - Ne montre pas cet audit interne ; retourne uniquement le JSON corrigé.
 
-${buildSchema(lang, mode, "strategic")}`;
+${buildSchema(lang, mode, "strategic", evidenceAccess)}`;
   return `You are a rigorous strategic analyst. Analyze the following topic using the model: Interests → Actors → Tools → Narrative → Results → Feedback.
 
 Topic: ${topic}
 Context: ${context || "not specified"}
 Mode: ${modeText}
+${evidenceRule}
 
 Rules:
 - Write all analysis content in English.
@@ -1934,12 +2042,13 @@ Rules:
 - Before final JSON, silently audit for missing actors, monocausal reasoning, unsupported assumptions, weak evidence, absent counter-evidence, and missing falsifiers.
 - Do not reveal the audit. Return only the corrected JSON.
 
-${buildSchema(lang, mode, "strategic")}`;
+${buildSchema(lang, mode, "strategic", evidenceAccess)}`;
 }
 function buildPrompt() {
   const lang = $("analysisLang").value;
   setAnalysisLanguage(lang);
   state.promptMode = $("promptMode").value;
+  state.evidenceAccess = $("evidenceAccess").value;
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
   return activeLensAdapter().buildPrompt({
@@ -1947,6 +2056,7 @@ function buildPrompt() {
     mode: state.promptMode,
     topic: state.topic,
     context: state.context,
+    evidenceAccess: state.evidenceAccess,
   });
 }
 function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
@@ -4247,7 +4357,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.36";
+    "2.1.0-alpha.37";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4824,7 +4934,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.36";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.37";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4832,7 +4942,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.36";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.37";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5273,7 +5383,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.36";
+    "2.1.0-alpha.37";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -5773,29 +5883,34 @@ function repairPrompt() {
   const ar = state.analysisLang === "ar";
   const fr = state.analysisLang === "fr";
   const bad = $("jsonInput").value.trim();
+  const diagnostics = (state.importAudit?.errors || [])
+    .slice(0, 20)
+    .map((issue) => `${issue.path || "/"}: ${issue.message || issue.code}`)
+    .join("\n");
+  const diagnosticBlock = diagnostics || state.importAudit?.error || "JSON parsing failed.";
   if (ar)
-    return `أصلح النص التالي ليصبح JSON صالحًا فقط ومتوافقًا مع مخطط أداة التحليل. لا تكتب أي شرح خارج JSON. لا تدرج علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم معرّفات الأدلة النظامية وروابط HTTP(S) فقط. لا تضع في source_url إلا رابط HTTP(S) مطلقًا؛ استخدم "" عند غيابه. لا تستخدم verified ما لم يكن verified_by وverification_date غير فارغين؛ وإلا استخدم partially_verified أو unverified واتركهما فارغين. لا تعيّن statistics_quotations_verified إلى pass إذا بقي أي دليل unverified أو partially_verified أو disputed.
+    return `هذه مهمة إصلاح تسلسل JSON وليست مهمة بحث أو إعادة كتابة. أعد كائن JSON واحدًا كاملًا ومضغوطًا فقط. لا تُعد Python أو JavaScript أو JSON Patch أو Markdown أو أسوار كود أو شرحًا أو علامات حذف. حافظ على كل المحتوى والمعرّفات، ولا تغيّر إلا علامات JSON أو أنواع الحقول المحددة في التشخيص. لا تختلق محتوى أو مصادر أو روابط أو محددات أو حالات تحقق. إذا كان الإدخال مبتورًا ومحتواه مفقودًا، فأعد فقط {"repair_status":"incomplete_input","reason":"truncated"} بدل اختلاق الباقي. لا تدرج علامات cite أو filecite أو turn. لا تستخدم verified دون verified_by وverification_date؛ وإلا استخدم unverified واتركهما فارغين.
+
+التشخيص:
+${diagnosticBlock}
 
 النص:
-${bad}
-
-المخطط المطلوب:
-${buildSchema(state.analysisLang, state.promptMode)}`;
+${bad}`;
   if (fr)
-    return `Répare le texte suivant pour produire uniquement un JSON valide compatible avec le schéma de l’outil. N’écris aucune explication hors JSON. N’inclus aucun marqueur interne d’assistant tel que cite, filecite ou turn ; utilise uniquement les identifiants de preuve canoniques et des URL HTTP(S). source_url doit être une URL HTTP(S) absolue ou "". N’utilise verified que si verified_by et verification_date sont tous deux non vides ; sinon utilise partially_verified ou unverified et laisse-les vides. N’utilise pas pass pour statistics_quotations_verified si une preuve reste unverified, partially_verified ou disputed.
+    return `Il s’agit d’une réparation de sérialisation JSON, pas d’une recherche ni d’une réécriture. Retournez exactement un objet JSON complet et minifié. Ne retournez ni Python, ni JavaScript, ni JSON Patch, ni Markdown, ni bloc de code, ni explication, ni ellipse. Préservez tout le contenu et tous les identifiants ; ne modifiez que la ponctuation JSON ou les types de champs indiqués par le diagnostic. N’inventez aucun contenu, source, URL, localisateur ou état de vérification. Si l’entrée est tronquée et qu’il manque du contenu, retournez uniquement {"repair_status":"incomplete_input","reason":"truncated"}. N’insérez aucun marqueur cite, filecite ou turn. N’utilisez verified qu’avec verified_by et verification_date ; sinon utilisez unverified et laissez-les vides.
+
+Diagnostic :
+${diagnosticBlock}
 
 Texte :
-${bad}
+${bad}`;
+  return `This is a JSON serialization repair task, not research or rewriting. Return exactly one complete minified JSON object. Do not return Python, JavaScript, JSON Patch, Markdown, code fences, explanations, or ellipses. Preserve all content and IDs; change only JSON punctuation or the field types identified by the diagnostics. Never invent content, sources, URLs, locators, or verification states. If the input is truncated and content is missing, return only {"repair_status":"incomplete_input","reason":"truncated"} instead of inventing the remainder. Do not insert cite, filecite, or turn markers. Use verified only with both verified_by and verification_date; otherwise use unverified and leave them empty.
 
-Schéma requis :
-${buildSchema(state.analysisLang, state.promptMode)}`;
-  return `Repair the following text into valid JSON only, matching the analysis workbench schema. Do not write any explanation outside JSON. Do not include assistant-internal citation markers such as cite, filecite, or turn; use canonical evidence IDs and HTTP(S) URLs only. source_url must be an absolute HTTP(S) URL or "". Use verified only when verified_by and verification_date are both non-empty; otherwise use partially_verified or unverified and leave them empty. Do not set statistics_quotations_verified to pass while any evidence is unverified, partially_verified, or disputed.
+Diagnostics:
+${diagnosticBlock}
 
 Text:
-${bad}
-
-Required schema:
-${buildSchema(state.analysisLang, state.promptMode)}`;
+${bad}`;
 }
 $("langAr").onclick = () => setLang("ar");
 $("langEn").onclick = () => setLang("en");
@@ -5973,6 +6088,7 @@ $("modalCopy").onclick = async () => {
 [
   "analysisLang",
   "promptMode",
+  "evidenceAccess",
   "timeframeInput",
   "topicInput",
 ].forEach((id) =>
@@ -5981,6 +6097,8 @@ $("modalCopy").onclick = async () => {
       setAnalysisLanguage($("analysisLang").value);
     }
     state.promptMode = $("promptMode").value;
+    state.evidenceAccess = $("evidenceAccess").value;
+    writeSettings({ evidenceAccess: state.evidenceAccess });
     state.context = $("timeframeInput").value;
     state.topic = $("topicInput").value;
   }),

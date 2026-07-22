@@ -34,6 +34,7 @@ for (const gate of [
   "test:schema",
   "test:fixtures",
   "test:parser",
+  "test:ai-interchange",
   "test:layout:migration",
   "test:i18n:bio",
   "test:a11y:static",
@@ -53,6 +54,7 @@ for (const spec of [
   "tests/results-workspace.spec.js",
   "tests/workspace-foundation.spec.js",
   "tests/canonical-editor.spec.js",
+  "tests/ai-interchange-reliability.spec.js",
   "tests/results-explanation.spec.js",
   "tests/results-inspection.spec.js",
   "tests/evidence-intelligence.spec.js",
@@ -158,8 +160,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.36") {
-  fail("package version must be 2.1.0-alpha.36");
+if (pkg.version !== "2.1.0-alpha.37") {
+  fail("package version must be 2.1.0-alpha.37");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

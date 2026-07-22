@@ -26,12 +26,12 @@ assert(strategic.reviewPlan.forPhase("verify_provenance").some((task) => task.ta
 const bio = indexFor("biopolitical", "sample-analysis-bio-en.json");
 assert(bio.reviewPlan.forPhase("verify_provenance").filter((task) => task.reasonCode === "untraceable_source").length === 2, "biopolitical untraceable-source tasks drifted");
 assert(bio.reviewPlan.tasks.every((task) => !task.deepLink || task.deepLink.startsWith("#record=biopolitical:")), "review task deep link escaped its lens");
-const manifest = bio.reviewPlan.manifest({ appVersion: "2.1.0-alpha.36", language: "en" });
+const manifest = bio.reviewPlan.manifest({ appVersion: "2.1.0-alpha.37", language: "en" });
 assert(Object.isFrozen(manifest), "review-plan manifest must be immutable");
 assert(manifest.format === "jarbou3i-evidence-review-plan-v1", "review-plan identity drifted");
 assert(manifest.derived === true && manifest.canonical_transport === false, "derived boundary missing");
 assert(manifest.completion_validates_conclusions === false, "truth boundary missing");
-assert(manifest.app_version === "2.1.0-alpha.36", "review-plan version missing");
+assert(manifest.app_version === "2.1.0-alpha.37", "review-plan version missing");
 assert(!("analysis" in manifest), "raw canonical analysis leaked into review plan");
 assert(!JSON.stringify(manifest).includes("Under what conditions did digital health passes"), "canonical research question leaked into review plan");
 
