@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.34" />
+<meta name="app-version" content="2.1.0-alpha.36" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -212,6 +212,30 @@
     </div>
     <div class="status" id="workspaceStatus" role="status" aria-live="polite"></div>
     <div class="workspaceList" id="workspaceList"></div>
+  </section>
+</div>
+<div class="workspaceBackdrop" id="editorBackdrop" aria-hidden="true">
+  <section class="workspaceDialog editorDialog" id="editorDialog" role="dialog" aria-modal="true" aria-labelledby="editorTitle" tabindex="-1">
+    <header class="modalHead">
+      <div><h3 id="editorTitle">Structured canonical editor</h3><p class="muted" id="editorHint"></p></div>
+      <button class="btn iconBtn" id="editorClose" type="button" aria-label="Close editor">×</button>
+    </header>
+    <div class="editorToolbar">
+      <button class="btn" id="editorUndo" type="button" disabled>Undo</button>
+      <button class="btn" id="editorRedo" type="button" disabled>Redo</button>
+      <span class="editorDirty" id="editorDirty" role="status" aria-live="polite"></span>
+      <button class="btn primary" id="editorSave" type="button" disabled>Save draft</button>
+    </div>
+    <div class="editorLayout">
+      <nav class="editorSections" id="editorSections" aria-label="Canonical sections"></nav>
+      <div class="editorFieldPanel">
+        <label class="label" id="editorFieldLabel" for="editorField"></label>
+        <p class="muted editorPath" id="editorPath" dir="ltr"></p>
+        <textarea id="editorField" class="pasteArea editorField" spellcheck="true"></textarea>
+        <div class="status" id="editorFieldStatus" role="status" aria-live="polite"></div>
+        <div class="editorErrors" id="editorErrors" aria-live="polite"></div>
+      </div>
+    </div>
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

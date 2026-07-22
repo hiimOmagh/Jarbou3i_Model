@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.0-alpha.36 — Phase 5 Slice 2
+
+- Added a structured, lens-aware editor for checksummed working drafts.
+- Added full-draft contract validation, immutable identity enforcement, bounded undo/redo, dirty-state protection, and optimistic local saves.
+- Preserved imported and committed revisions as immutable history.
+- Added non-browser editor invariants and an eight-case cross-browser authority.
+- Prevented WebKit's deferred textarea `change` event from reapplying an already-applied field after Undo and clearing the Redo history.
+- Strengthened the browser journey to require an enabled Redo control and verify that Redo restores the edited canonical value.
+
 ## 2.1.0-alpha.34 — Phase 5 Workspace Contract and Portability Foundation
 
 - Added the versioned `jarbou3i-local-workspace@1` contract with separate immutable imported revision, working draft, revision pointers, analysis identity, and audit events.

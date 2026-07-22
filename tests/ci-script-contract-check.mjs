@@ -52,6 +52,7 @@ const core = pkg.scripts?.["test:browser:core"] || "";
 for (const spec of [
   "tests/results-workspace.spec.js",
   "tests/workspace-foundation.spec.js",
+  "tests/canonical-editor.spec.js",
   "tests/results-explanation.spec.js",
   "tests/results-inspection.spec.js",
   "tests/evidence-intelligence.spec.js",
@@ -157,8 +158,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.34") {
-  fail("package version must be 2.1.0-alpha.34");
+if (pkg.version !== "2.1.0-alpha.36") {
+  fail("package version must be 2.1.0-alpha.36");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.34 — local workspace foundation */
+/* Jarbou3i Model v2.1.0-alpha.36 — structured canonical editor */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -26,6 +26,7 @@ import {
   createIndexedDbWorkspaceBackend,
   createWorkspaceRepository,
 } from "./core/workspace-storage.js";
+import { createCanonicalEditorSession, writeEditorDraft } from "./core/canonical-editor.js";
 
 "use strict";
 const I18N = {
@@ -1014,6 +1015,9 @@ const PLATFORM = createPlatformRuntime({
       modalInvoker: null,
       activeWorkspaceId: null,
       workspaceSaveState: "idle",
+      editorSession: null,
+      editorWorkspace: null,
+      editorPath: null,
     };
   },
   regions: {
@@ -4243,7 +4247,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.34";
+    "2.1.0-alpha.36";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4820,7 +4824,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.34";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.36";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4828,7 +4832,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.34";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.36";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5269,7 +5273,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.34";
+    "2.1.0-alpha.36";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -5440,6 +5444,126 @@ function workspaceFailureMessage(error) {
   return workspaceText("error", { message: error?.message || error?.code || "unknown" });
 }
 
+function editorText(key) {
+  const copy = {
+    title: ["Structured canonical editor", "محرر التحليل النظامي", "Éditeur canonique structuré"],
+    hint: ["Edits affect only the working draft. Imported and committed revisions remain immutable.", "تؤثر التعديلات في مسودة العمل فقط. تبقى النسخ المستوردة والمعتمدة غير قابلة للتغيير.", "Les modifications concernent uniquement le brouillon. Les révisions importées et validées restent immuables."],
+    edit: ["Edit draft", "تعديل المسودة", "Modifier le brouillon"],
+    undo: ["Undo", "تراجع", "Annuler"], redo: ["Redo", "إعادة", "Rétablir"],
+    save: ["Save draft", "حفظ المسودة", "Enregistrer le brouillon"],
+    clean: ["No unsaved changes", "لا تغييرات غير محفوظة", "Aucune modification non enregistrée"],
+    dirty: ["Unsaved draft changes", "تغييرات غير محفوظة في المسودة", "Modifications du brouillon non enregistrées"],
+    valid: ["Field parsed. Contract validation passed.", "تم تحليل الحقل واجتاز التحقق من العقد.", "Champ analysé et contrat validé."],
+    parse: ["Enter valid JSON for this canonical field.", "أدخل JSON صالحًا لهذا الحقل النظامي.", "Saisissez un JSON valide pour ce champ canonique."],
+    saved: ["Working draft saved locally.", "تم حفظ مسودة العمل محليًا.", "Brouillon enregistré localement."],
+    invalid: ["Resolve contract errors before saving.", "أصلح أخطاء العقد قبل الحفظ.", "Corrigez les erreurs de contrat avant l’enregistrement."],
+  }[key] || [key, key, key];
+  return state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
+}
+
+function validateEditorPayload(payload) {
+  const errors = [];
+  const requiredIdentity = {
+    analysis_lens: state.editorWorkspace.analysis_identity.lens_id,
+    schema_version: state.editorWorkspace.analysis_identity.schema_version,
+    language: state.editorWorkspace.analysis_identity.language,
+  };
+  for (const [key, expected] of Object.entries(requiredIdentity)) {
+    if (String(payload?.[key] || "") !== String(expected || "")) {
+      errors.push({ path: `/${key}`, code: "IMMUTABLE_ANALYSIS_IDENTITY", message: `${key} must remain ${expected}.` });
+    }
+  }
+  if (requiredIdentity.analysis_lens === "biopolitical") {
+    const result = BIO_INTEGRITY.validateImport(payload);
+    errors.push(...(result.errors || []));
+    return { valid: errors.length === 0, errors, warnings: result.warnings || [] };
+  }
+  for (const key of PILLARS) if (!Array.isArray(payload?.[key])) errors.push({ path: `/${key}`, code: "SCHEMA_TYPE", message: `${key} must be an array.` });
+  if (!payload?.subject || typeof payload.subject !== "object" || Array.isArray(payload.subject)) errors.push({ path: "/subject", code: "SCHEMA_TYPE", message: "subject must be an object." });
+  for (const key of ["contradictions", "scenarios", "evidence", "assumptions"]) {
+    if (!payload?.[key] || !Array.isArray(payload[key].items)) errors.push({ path: `/${key}/items`, code: "SCHEMA_TYPE", message: `${key}.items must be an array.` });
+  }
+  return { valid: errors.length === 0, errors, warnings: [] };
+}
+
+function renderCanonicalEditor() {
+  const snapshot = state.editorSession?.inspect();
+  if (!snapshot) return;
+  const keys = Object.keys(snapshot.payload);
+  if (!state.editorPath || !keys.includes(state.editorPath.slice(1))) state.editorPath = `/${keys[0]}`;
+  $("editorTitle").textContent = editorText("title");
+  $("editorHint").textContent = editorText("hint");
+  $("editorUndo").textContent = editorText("undo");
+  $("editorRedo").textContent = editorText("redo");
+  $("editorSave").textContent = editorText("save");
+  $("editorUndo").disabled = !snapshot.canUndo;
+  $("editorRedo").disabled = !snapshot.canRedo;
+  $("editorSave").disabled = !snapshot.dirty || !snapshot.validation.valid;
+  $("editorDirty").textContent = editorText(snapshot.dirty ? "dirty" : "clean");
+  $("editorSections").innerHTML = keys.map((key) => `<button class="btn editorSection${state.editorPath === `/${key}` ? " active" : ""}" type="button" data-editor-path="/${escapeHtml(key)}">${escapeHtml(key)}</button>`).join("");
+  $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => { button.onclick = () => { state.editorPath = button.dataset.editorPath; renderCanonicalEditor(); }; });
+  const key = state.editorPath.slice(1);
+  $("editorFieldLabel").textContent = key;
+  $("editorPath").textContent = state.editorPath;
+  const editorField = $("editorField");
+  editorField.value = JSON.stringify(snapshot.payload[key], null, 2);
+  editorField.dataset.appliedValue = editorField.value;
+  const relevant = (snapshot.validation.errors || []).filter((issue) => String(issue.path || "/").startsWith(state.editorPath));
+  $("editorErrors").innerHTML = relevant.length ? `<ul>${relevant.map((issue) => `<li><span dir="ltr">${escapeHtml(issue.path || "/")}</span> — ${escapeHtml(localizedImportIssueMessage(issue))}</li>`).join("")}</ul>` : "";
+  $("editorFieldStatus").className = `status ${snapshot.validation.valid ? "good" : "bad"}`;
+  $("editorFieldStatus").textContent = snapshot.validation.valid ? editorText("valid") : editorText("invalid");
+}
+
+async function openCanonicalEditor(workspace = null) {
+  const loaded = workspace || await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
+  if (!loaded) return;
+  state.editorWorkspace = loaded;
+  state.editorSession = createCanonicalEditorSession({ payload: loaded.working_draft.canonical_payload, validate: validateEditorPayload });
+  state.editorPath = null;
+  $("editorBackdrop").classList.add("show");
+  $("editorBackdrop").setAttribute("aria-hidden", "false");
+  renderCanonicalEditor();
+  $("editorDialog").focus();
+}
+
+function closeCanonicalEditor() {
+  if (!$("editorBackdrop").classList.contains("show")) return;
+  if (state.editorSession?.inspect().dirty && !window.confirm(editorText("dirty"))) return;
+  $("editorBackdrop").classList.remove("show");
+  $("editorBackdrop").setAttribute("aria-hidden", "true");
+  state.editorSession = null; state.editorWorkspace = null; state.editorPath = null;
+  $("workspaceBtn").focus();
+}
+
+function applyEditorField() {
+  try {
+    const field = $("editorField");
+    if (field.value === field.dataset.appliedValue) return;
+    const value = JSON.parse(field.value);
+    state.editorSession.replace(state.editorPath, value);
+    renderCanonicalEditor();
+  } catch (error) {
+    $("editorFieldStatus").className = "status bad";
+    $("editorFieldStatus").textContent = `${editorText("parse")} ${error.message}`;
+  }
+}
+
+async function saveEditorDraft() {
+  const snapshot = state.editorSession.inspect();
+  if (!snapshot.validation.valid) return;
+  state.workspaceSaveState = "saving"; renderApplicationShell();
+  try {
+    const expectedRevision = state.editorWorkspace.repository_revision;
+    const next = await writeEditorDraft(state.editorWorkspace, snapshot.payload);
+    const saved = await WORKSPACE_REPOSITORY.replace(next, { expectedRevision });
+    state.editorWorkspace = saved;
+    state.editorSession = createCanonicalEditorSession({ payload: saved.working_draft.canonical_payload, validate: validateEditorPayload });
+    applyWorkspaceAnalysis(saved);
+    setWorkspaceStatus("good", editorText("saved"));
+    renderCanonicalEditor();
+  } catch (error) { setWorkspaceStatus("bad", workspaceFailureMessage(error)); }
+}
+
 async function persistImportedAnalysis(analysis) {
   state.workspaceSaveState = "saving";
   renderApplicationShell();
@@ -5504,7 +5628,7 @@ async function renderWorkspaceList() {
           const active = entry.workspace_id === state.activeWorkspaceId;
           const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" })
             .format(new Date(entry.metadata.updated_at));
-          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(entry.analysis_identity.lens_id)}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></article>`;
+          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(entry.analysis_identity.lens_id)}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="actions"><button class="btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button><button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
         }).join("")
       : `<div class="empty"><strong>${escapeHtml(workspaceText("empty"))}</strong></div>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
@@ -5513,6 +5637,7 @@ async function renderWorkspaceList() {
         if (workspace) await renderWorkspaceList();
       };
     });
+    target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceEdit); closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
   } catch (error) {
     target.innerHTML = "";
@@ -5811,6 +5936,16 @@ $("workspaceImportFile").onchange = async (event) => {
   if (file) await importWorkspaceFile(file);
   event.target.value = "";
 };
+$("editorClose").onclick = closeCanonicalEditor;
+$("editorUndo").onclick = () => { state.editorSession?.undo(); renderCanonicalEditor(); };
+$("editorRedo").onclick = () => { state.editorSession?.redo(); renderCanonicalEditor(); };
+$("editorSave").onclick = saveEditorDraft;
+$("editorField").addEventListener("change", applyEditorField);
+$("editorField").addEventListener("keydown", (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); applyEditorField(); }
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); applyEditorField(); if (state.editorSession?.inspect().validation.valid) saveEditorDraft(); }
+});
+$("editorBackdrop").addEventListener("click", (event) => { if (event.target === $("editorBackdrop")) closeCanonicalEditor(); });
 $("workspaceBackdrop").addEventListener("click", (event) => {
   if (event.target === $("workspaceBackdrop")) closeWorkspaceDialog();
 });
@@ -5821,9 +5956,15 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeModal();
     closeWorkspaceDialog();
+    closeCanonicalEditor();
   }
   trapModalFocus(e);
   trapWorkspaceFocus(e);
+});
+window.addEventListener("beforeunload", (event) => {
+  if (!state.editorSession?.inspect().dirty) return;
+  event.preventDefault();
+  event.returnValue = "";
 });
 $("modalCopy").onclick = async () => {
   const ok = await copyText($("modalContent").textContent);

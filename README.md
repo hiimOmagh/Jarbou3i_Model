@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.34` starts Phase 5 with a local-first workspace contract, durable IndexedDB repository, integrity-checked portability, and automatic reopening of the active analysis. Canonical analysis export remains unchanged; a workspace bundle preserves local revisions and draft state but explicitly is not canonical transport or collaboration state.
+Version `2.1.0-alpha.36` starts Phase 5 with a local-first workspace contract, durable IndexedDB repository, integrity-checked portability, and automatic reopening of the active analysis. Canonical analysis export remains unchanged; a workspace bundle preserves local revisions and draft state but explicitly is not canonical transport or collaboration state.
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
