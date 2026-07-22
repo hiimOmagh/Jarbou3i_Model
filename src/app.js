@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.37 — AI interchange reliability hardening */
+/* Jarbou3i Model v2.1.0-alpha.39 — operational review ledger */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -28,6 +28,12 @@ import {
   createWorkspaceRepository,
 } from "./core/workspace-storage.js";
 import { createCanonicalEditorSession, writeEditorDraft } from "./core/canonical-editor.js";
+import {
+  appendReviewEvent,
+  projectReviewLedger,
+  reviewLedgerManifest,
+  reviewTaskKey,
+} from "./core/review-ledger.js";
 
 "use strict";
 const I18N = {
@@ -1037,6 +1043,9 @@ const PLATFORM = createPlatformRuntime({
       editorSession: null,
       editorWorkspace: null,
       editorPath: null,
+      ledgerWorkspace: null,
+      ledgerTasks: [],
+      ledgerSelectedTaskId: null,
     };
   },
   regions: {
@@ -4357,7 +4366,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.37";
+    "2.1.0-alpha.39";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4826,6 +4835,7 @@ function evidenceIntelligenceCopy() {
       "Tâches déterministes issues des diagnostics existants, ordonnées par dépendance. Leur achèvement ne valide aucune conclusion.",
     ),
     exportReviewPlan: labelText("Export review plan", "تصدير خطة المراجعة", "Exporter le plan de revue"),
+    openLedger: labelText("Operate review ledger", "تشغيل سجل المراجعة", "Ouvrir le registre de revue"),
     resolveReferences: labelText("Resolve references", "حلّ الإحالات", "Résoudre les références"),
     verifyProvenance: labelText("Verify provenance", "التحقق من المصدر", "Vérifier la provenance"),
     strengthenCoverage: labelText("Strengthen coverage", "تعزيز التغطية", "Renforcer la couverture"),
@@ -4904,7 +4914,7 @@ function renderEvidenceIntelligence(index) {
     }).join("");
     return `<section data-review-phase="${escapeHtml(phase)}"><header><h5>${escapeHtml(phaseLabels[phase])}</h5><span>${tasks.length}</span></header>${items ? `<ol>${items}</ol>` : `<p class="evidenceIntelligenceEmpty">0</p>`}</section>`;
   }).join("");
-  const reviewQueue = `<section class="evidenceReviewQueue" data-evidence-review-queue><header><div><h4>${escapeHtml(copy.reviewQueue)}</h4><p>${escapeHtml(copy.reviewQueueIntro)}</p></div><div><button class="btn" id="exportReviewPlan" type="button">${escapeHtml(copy.exportReviewPlan)}</button><small>${escapeHtml(copy.derivedNote)}</small></div></header><div class="evidenceReviewPhases">${reviewGroups}</div></section>`;
+  const reviewQueue = `<section class="evidenceReviewQueue" data-evidence-review-queue><header><div><h4>${escapeHtml(copy.reviewQueue)}</h4><p>${escapeHtml(copy.reviewQueueIntro)}</p></div><div><span class="reviewQueueActions"><button class="btn primary" id="openReviewLedger" type="button">${escapeHtml(copy.openLedger)}</button><button class="btn" id="exportReviewPlan" type="button">${escapeHtml(copy.exportReviewPlan)}</button></span><small>${escapeHtml(copy.derivedNote)}</small></div></header><div class="evidenceReviewPhases">${reviewGroups}</div></section>`;
   const matrixRows = traceability.rows.map((row) => `<tr data-traceability-record="${escapeHtml(row.recordId)}"><th scope="row"><button type="button" data-reference-id="${escapeHtml(row.recordId)}"><span>${escapeHtml(row.label)}</span><code>${escapeHtml(row.recordId)}</code></button></th><td>${row.supportingIds.length ? row.supportingIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.counterIds.length ? row.counterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.clusterIds.length ? row.clusterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td><span class="traceabilityBalance ${escapeHtml(row.balance)}">${escapeHtml(String(row.balance).replaceAll("_", " "))}</span></td></tr>`).join("");
   const matrix = `<section class="evidenceTraceability"><header><div><h4>${escapeHtml(copy.matrix)}</h4><p>${escapeHtml(copy.matrixIntro)}</p></div><div><button class="btn" id="exportIntelligence" type="button">${escapeHtml(copy.export)}</button><small>${escapeHtml(copy.derivedNote)}</small></div></header><div class="evidenceTraceabilityTable"><table><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div></section>`;
   return `<details class="evidenceIntelligence" data-evidence-intelligence><summary><span><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="evidenceIntelligenceMetrics"><span><b>${intelligence.stats.sourceClusters}</b>${escapeHtml(copy.clusters)}</span><span><b>${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}</b>${escapeHtml(copy.cited)}</span><span><b>${intelligence.stats.gapCount}</b>${escapeHtml(copy.gaps)}</span></span></summary><div class="evidenceIntelligenceBody"><section><h4>${escapeHtml(copy.clusters)}</h4><div class="sourceClusterGrid">${clusterCards}</div></section><section><h4>${escapeHtml(copy.gaps)}</h4><div class="evidenceGapGrid">${gapGroups || `<p class="evidenceIntelligenceEmpty">0</p>`}</div></section>${reviewQueue}${matrix}</div></details>`;
@@ -4934,7 +4944,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.37";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.39";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4942,10 +4952,15 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.37";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.39";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
+  }
+  const ledgerButton = $("openReviewLedger");
+  if (ledgerButton) {
+    ledgerButton.disabled = !state.activeWorkspaceId;
+    ledgerButton.onclick = () => openReviewLedger(index.reviewPlan.tasks, ledgerButton);
   }
   const items = [...document.querySelectorAll("[data-inspection-directory-item]")];
   const noMatch = $("inspectionDirectoryNoMatch");
@@ -5383,7 +5398,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.37";
+    "2.1.0-alpha.39";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -5674,6 +5689,198 @@ async function saveEditorDraft() {
   } catch (error) { setWorkspaceStatus("bad", workspaceFailureMessage(error)); }
 }
 
+let ledgerDialogInvoker = null;
+let ledgerEventPending = false;
+
+function ledgerText(key) {
+  const copy = {
+    title: ["Operational review ledger", "سجل المراجعة التشغيلي", "Registre opérationnel de revue"],
+    hint: ["Append-only decisions for the current local workspace. Canonical analysis is never changed by review actions.", "قرارات متسلسلة غير قابلة لإعادة الكتابة لمساحة العمل المحلية الحالية. لا تغيّر إجراءات المراجعة التحليل النظامي.", "Décisions ajoutées sans réécriture pour l’espace local actuel. Les actions de revue ne modifient jamais l’analyse canonique."],
+    trust: ["Hash-chained local audit trail · completion does not validate conclusions", "سجل تدقيق محلي مترابط بالتجزئة · الإنجاز لا يثبت صحة الاستنتاجات", "Piste locale chaînée par empreinte · l’achèvement ne valide pas les conclusions"],
+    reviewer: ["Reviewer display name", "اسم المراجع", "Nom affiché du réviseur"],
+    identityHint: ["Locally asserted identity; no account verification is claimed.", "هوية مصرّح بها محليًا؛ لا يُدّعى التحقق عبر حساب.", "Identité déclarée localement ; aucune vérification de compte n’est revendiquée."],
+    tasks: ["Review tasks", "مهام المراجعة", "Tâches de revue"],
+    decision: ["Decision record", "سجل القرار", "Décision"],
+    action: ["Action", "الإجراء", "Action"],
+    rationale: ["Rationale or note", "التبرير أو الملاحظة", "Justification ou note"],
+    waiverScope: ["Waiver scope", "نطاق الاستثناء", "Portée de la dérogation"],
+    waiverRisk: ["Accepted risk", "الخطر المقبول", "Risque accepté"],
+    waiverExpiry: ["Expiry (optional)", "تاريخ الانتهاء (اختياري)", "Expiration (facultative)"],
+    apply: ["Append event", "إضافة الحدث", "Ajouter l’événement"],
+    export: ["Export audit trail", "تصدير سجل التدقيق", "Exporter la piste d’audit"],
+    history: ["Immutable event history", "سجل الأحداث غير القابل للتغيير", "Historique immuable"],
+    choose: ["Select a task to record review work.", "اختر مهمة لتسجيل عمل المراجعة.", "Sélectionnez une tâche pour enregistrer le travail de revue."],
+    saved: ["Review event appended and integrity verified.", "أُضيف حدث المراجعة وتم التحقق من سلامته.", "Événement ajouté et intégrité vérifiée."],
+    saving: ["Appending review event…", "جارٍ إضافة حدث المراجعة…", "Ajout de l’événement de revue…"],
+    identityRequired: ["Enter the reviewer display name before recording an event.", "أدخل اسم المراجع قبل تسجيل الحدث.", "Saisissez le nom du réviseur avant d’enregistrer un événement."],
+    pending: ["Pending", "معلّقة", "En attente"],
+    in_review: ["In review", "قيد المراجعة", "En revue"],
+    completed: ["Completed", "مكتملة", "Terminée"],
+    waived: ["Waived", "مستثناة", "Dérogation"],
+    task_started: ["Start review", "بدء المراجعة", "Commencer la revue"],
+    task_completed: ["Complete with rationale", "إكمال مع تبرير", "Terminer avec justification"],
+    task_waived: ["Waive with risk record", "استثناء مع تسجيل الخطر", "Déroger avec risque consigné"],
+    task_reopened: ["Reopen", "إعادة الفتح", "Rouvrir"],
+    note_added: ["Add note", "إضافة ملاحظة", "Ajouter une note"],
+  }[key] || [key, key, key];
+  return state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
+}
+
+function ledgerActionsFor(status) {
+  if (status === "pending") return ["task_started", "task_waived", "note_added"];
+  if (status === "in_review") return ["task_completed", "task_waived", "note_added"];
+  return ["task_reopened", "note_added"];
+}
+
+async function ledgerTaskRows() {
+  const projection = projectReviewLedger(state.ledgerWorkspace.review_ledger);
+  return Promise.all(state.ledgerTasks.map(async (task) => {
+    const key = await reviewTaskKey(task);
+    const current = projection.tasks.get(key) || { status: "pending", event_count: 0, notes: [] };
+    return { task, key, current };
+  }));
+}
+
+async function renderReviewLedger() {
+  if (!state.ledgerWorkspace) return;
+  const rows = await ledgerTaskRows();
+  if (!state.ledgerSelectedTaskId && rows.length) state.ledgerSelectedTaskId = rows[0].task.id;
+  const selected = rows.find((row) => row.task.id === state.ledgerSelectedTaskId) || rows[0];
+  $("ledgerTitle").textContent = ledgerText("title");
+  $("ledgerHint").textContent = ledgerText("hint");
+  $("ledgerTrust").textContent = ledgerText("trust");
+  $("ledgerReviewerLabel").textContent = ledgerText("reviewer");
+  $("ledgerIdentityHint").textContent = ledgerText("identityHint");
+  $("ledgerTasksTitle").textContent = ledgerText("tasks");
+  $("ledgerDecisionTitle").textContent = ledgerText("decision");
+  $("ledgerActionLabel").textContent = ledgerText("action");
+  $("ledgerRationaleLabel").textContent = ledgerText("rationale");
+  $("ledgerWaiverScopeLabel").textContent = ledgerText("waiverScope");
+  $("ledgerWaiverRiskLabel").textContent = ledgerText("waiverRisk");
+  $("ledgerWaiverExpiryLabel").textContent = ledgerText("waiverExpiry");
+  $("ledgerApply").textContent = ledgerText("apply");
+  $("ledgerExport").textContent = ledgerText("export");
+  $("ledgerHistorySummary").textContent = ledgerText("history");
+  const counts = rows.reduce((result, row) => {
+    result[row.current.status] = (result[row.current.status] || 0) + 1;
+    return result;
+  }, { pending: 0, in_review: 0, completed: 0, waived: 0 });
+  $("ledgerCounts").innerHTML = Object.entries(counts).map(([status, count]) => `<span class="ledgerCount ${status}"><b>${count}</b>${escapeHtml(ledgerText(status))}</span>`).join("");
+  $("ledgerTaskList").innerHTML = rows.map((row) => `<button type="button" class="ledgerTask${row.task.id === selected?.task.id ? " active" : ""}" data-ledger-task="${escapeHtml(row.task.id)}"><span class="ledgerTaskTop"><code>${escapeHtml(row.task.id)}</code><span class="ledgerStatus ${escapeHtml(row.current.status)}">${escapeHtml(ledgerText(row.current.status))}</span></span><strong>${escapeHtml(String(row.task.reasonCode).replaceAll("_", " "))}</strong><small>${escapeHtml(row.task.targetId)} · ${escapeHtml(row.task.phase.replaceAll("_", " "))}</small></button>`).join("");
+  $("ledgerTaskList").querySelectorAll("[data-ledger-task]").forEach((button) => {
+    button.onclick = async () => { state.ledgerSelectedTaskId = button.dataset.ledgerTask; await renderReviewLedger(); };
+  });
+  if (!selected) {
+    $("ledgerSelectedTask").textContent = ledgerText("choose");
+    $("ledgerApply").disabled = true;
+    return;
+  }
+  $("ledgerApply").disabled = ledgerEventPending;
+  $("ledgerSelectedTask").innerHTML = `<span class="ledgerStatus ${escapeHtml(selected.current.status)}">${escapeHtml(ledgerText(selected.current.status))}</span><strong>${escapeHtml(String(selected.task.reasonCode).replaceAll("_", " "))}</strong><code>${escapeHtml(selected.task.targetId)}</code><small dir="ltr">${escapeHtml(selected.key)}</small>`;
+  const previousAction = $("ledgerAction").value;
+  const actions = ledgerActionsFor(selected.current.status);
+  $("ledgerAction").innerHTML = actions.map((action) => `<option value="${action}">${escapeHtml(ledgerText(action))}</option>`).join("");
+  if (actions.includes(previousAction)) $("ledgerAction").value = previousAction;
+  toggleLedgerWaiver();
+  const history = state.ledgerWorkspace.review_ledger.events.filter((event) => event.task_key === selected.key).reverse();
+  $("ledgerHistory").innerHTML = history.length ? history.map((event) => `<li><div><strong>${escapeHtml(ledgerText(event.type))}</strong><span>${escapeHtml(event.reviewer.display_name)}</span><time datetime="${escapeHtml(event.occurred_at)}">${escapeHtml(new Date(event.occurred_at).toLocaleString(state.lang))}</time></div>${event.rationale ? `<p>${escapeHtml(event.rationale)}</p>` : ""}${event.note ? `<p>${escapeHtml(event.note)}</p>` : ""}<code>${escapeHtml(event.event_hash.slice(0, 16))}…</code></li>`).join("") : `<li>${escapeHtml(ledgerText("choose"))}</li>`;
+}
+
+function toggleLedgerWaiver() {
+  $("ledgerWaiverFields").hidden = $("ledgerAction").value !== "task_waived";
+}
+
+async function openReviewLedger(tasks, invoker = document.activeElement) {
+  if (!state.activeWorkspaceId) return;
+  try {
+    const workspace = await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
+    if (!workspace) throw new Error("Workspace was not found on this device.");
+    ledgerDialogInvoker = invoker;
+    state.ledgerWorkspace = workspace;
+    state.ledgerTasks = [...tasks];
+    state.ledgerSelectedTaskId = tasks[0]?.id || null;
+    const settings = readSettings();
+    if (!settings.reviewerId) writeSettings({ reviewerId: globalThis.crypto.randomUUID() });
+    $("ledgerReviewer").value = settings.reviewerName || "";
+    $("ledgerBackdrop").classList.add("show");
+    $("ledgerBackdrop").setAttribute("aria-hidden", "false");
+    $("ledgerStatus").textContent = "";
+    await renderReviewLedger();
+    $("ledgerDialog").focus();
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+  }
+}
+
+function closeReviewLedger() {
+  if (!$("ledgerBackdrop").classList.contains("show")) return;
+  $("ledgerBackdrop").classList.remove("show");
+  $("ledgerBackdrop").setAttribute("aria-hidden", "true");
+  state.ledgerWorkspace = null;
+  state.ledgerTasks = [];
+  state.ledgerSelectedTaskId = null;
+  if (ledgerDialogInvoker?.isConnected) ledgerDialogInvoker.focus();
+  ledgerDialogInvoker = null;
+}
+
+async function applyReviewLedgerEvent() {
+  if (ledgerEventPending) return;
+  const task = state.ledgerTasks.find((item) => item.id === state.ledgerSelectedTaskId);
+  if (!task || !state.ledgerWorkspace) return;
+  const reviewerName = $("ledgerReviewer").value.trim();
+  if (!reviewerName) {
+    $("ledgerStatus").className = "status bad";
+    $("ledgerStatus").textContent = ledgerText("identityRequired");
+    $("ledgerReviewer").focus();
+    return;
+  }
+  const settings = readSettings();
+  const reviewerId = settings.reviewerId || globalThis.crypto.randomUUID();
+  writeSettings({ reviewerId, reviewerName });
+  const type = $("ledgerAction").value;
+  const text = $("ledgerRationale").value.trim();
+  ledgerEventPending = true;
+  $("ledgerApply").disabled = true;
+  $("ledgerStatus").className = "status";
+  $("ledgerStatus").textContent = ledgerText("saving");
+  try {
+    const expectedRevision = state.ledgerWorkspace.repository_revision;
+    const next = await appendReviewEvent(state.ledgerWorkspace, {
+      type,
+      task,
+      reviewer: { reviewer_id: reviewerId, display_name: reviewerName },
+      rationale: type === "note_added" ? "" : text,
+      note: type === "note_added" ? text : "",
+      waiver: type === "task_waived" ? {
+        scope: $("ledgerWaiverScope").value,
+        accepted_risk: $("ledgerWaiverRisk").value,
+        expires_at: $("ledgerWaiverExpiry").value ? new Date($("ledgerWaiverExpiry").value).toISOString() : null,
+      } : null,
+    });
+    state.ledgerWorkspace = await WORKSPACE_REPOSITORY.replace(next, { expectedRevision });
+    $("ledgerRationale").value = "";
+    $("ledgerWaiverScope").value = "";
+    $("ledgerWaiverRisk").value = "";
+    $("ledgerWaiverExpiry").value = "";
+    ledgerEventPending = false;
+    await renderReviewLedger();
+    $("ledgerStatus").className = "status good";
+    $("ledgerStatus").textContent = ledgerText("saved");
+    renderApplicationShell();
+  } catch (error) {
+    ledgerEventPending = false;
+    await renderReviewLedger();
+    $("ledgerStatus").className = "status bad";
+    $("ledgerStatus").textContent = workspaceFailureMessage(error);
+  }
+}
+
+async function exportReviewLedger() {
+  if (!state.ledgerWorkspace) return;
+  const manifest = await reviewLedgerManifest(state.ledgerWorkspace, { tasks: state.ledgerTasks });
+  download(`${safeFileSlug(state.ledgerWorkspace.metadata.title)}-review-ledger.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
+}
+
 async function persistImportedAnalysis(analysis) {
   state.workspaceSaveState = "saving";
   renderApplicationShell();
@@ -5688,6 +5895,8 @@ async function persistImportedAnalysis(analysis) {
     state.activeWorkspaceId = workspace.workspace_id;
     writeSettings({ activeWorkspaceId: workspace.workspace_id });
     setWorkspaceStatus("good", workspaceText("saved"));
+    const ledgerButton = $("openReviewLedger");
+    if (ledgerButton) ledgerButton.disabled = false;
     return workspace;
   } catch (error) {
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
@@ -5795,6 +6004,22 @@ function trapWorkspaceFocus(event) {
   } else if (!event.shiftKey && document.activeElement === last) {
     first.focus();
     event.preventDefault();
+  }
+}
+
+function trapLedgerFocus(event) {
+  const backdrop = $("ledgerBackdrop");
+  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
+  const focusable = [...backdrop.querySelectorAll(
+    'button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
+  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    last.focus(); event.preventDefault();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    first.focus(); event.preventDefault();
   }
 }
 
@@ -6061,6 +6286,12 @@ $("editorField").addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); applyEditorField(); if (state.editorSession?.inspect().validation.valid) saveEditorDraft(); }
 });
 $("editorBackdrop").addEventListener("click", (event) => { if (event.target === $("editorBackdrop")) closeCanonicalEditor(); });
+$("ledgerClose").onclick = closeReviewLedger;
+$("ledgerAction").onchange = toggleLedgerWaiver;
+$("ledgerApply").onclick = applyReviewLedgerEvent;
+$("ledgerExport").onclick = exportReviewLedger;
+$("ledgerReviewer").onchange = () => writeSettings({ reviewerName: $("ledgerReviewer").value.trim() });
+$("ledgerBackdrop").addEventListener("click", (event) => { if (event.target === $("ledgerBackdrop")) closeReviewLedger(); });
 $("workspaceBackdrop").addEventListener("click", (event) => {
   if (event.target === $("workspaceBackdrop")) closeWorkspaceDialog();
 });
@@ -6072,9 +6303,11 @@ document.addEventListener("keydown", (e) => {
     closeModal();
     closeWorkspaceDialog();
     closeCanonicalEditor();
+    closeReviewLedger();
   }
   trapModalFocus(e);
   trapWorkspaceFocus(e);
+  trapLedgerFocus(e);
 });
 window.addEventListener("beforeunload", (event) => {
   if (!state.editorSession?.inspect().dirty) return;

@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jarbou3i.example/schema/local-workspace-v1.schema.json",
-  "title": "Jarbou3i Local Workspace v1",
+  "$id": "https://jarbou3i.example/schema/local-workspace-v2.schema.json",
+  "title": "Jarbou3i Local Workspace v2",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "format_version", "workspace_id", "repository_revision", "metadata", "analysis_identity", "imported_revision_id", "head_revision_id", "revisions", "working_draft", "audit_events"],
+  "required": ["format", "format_version", "workspace_id", "repository_revision", "metadata", "analysis_identity", "imported_revision_id", "head_revision_id", "revisions", "working_draft", "audit_events", "review_ledger"],
   "properties": {
     "format": { "const": "jarbou3i-local-workspace" },
-    "format_version": { "const": 1 },
+    "format_version": { "const": 2 },
     "workspace_id": { "type": "string", "minLength": 1 },
     "repository_revision": { "type": "integer", "minimum": 1 },
     "metadata": {
@@ -44,7 +44,8 @@
     "audit_events": {
       "type": "array",
       "items": { "$ref": "#/$defs/auditEvent" }
-    }
+    },
+    "review_ledger": { "$ref": "#/$defs/reviewLedger" }
   },
   "$defs": {
     "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
@@ -85,7 +86,78 @@
         "occurred_at": { "type": "string", "format": "date-time" },
         "revision_id": { "type": "string", "minLength": 1 }
       }
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewer_id", "display_name", "identity_assurance"],
+      "properties": {
+        "reviewer_id": { "type": "string", "minLength": 1 },
+        "display_name": { "type": "string", "minLength": 1 },
+        "identity_assurance": { "const": "local_assertion" }
+      }
+    },
+    "reviewTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_task_id", "phase", "reason_code", "target_type", "target_id", "owner_id", "canonical_path"],
+      "properties": {
+        "plan_task_id": { "type": "string" },
+        "phase": { "type": "string", "minLength": 1 },
+        "reason_code": { "type": "string", "minLength": 1 },
+        "target_type": { "type": "string", "minLength": 1 },
+        "target_id": { "type": "string", "minLength": 1 },
+        "owner_id": { "type": "string" },
+        "canonical_path": { "type": "string" }
+      }
+    },
+    "reviewEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "sequence", "type", "occurred_at", "previous_event_hash", "workspace_id", "repository_revision_before", "draft_checksum", "task_key", "task", "reviewer", "rationale", "note", "waiver", "event_hash"],
+      "properties": {
+        "event_id": { "type": "string", "minLength": 1 },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "type": { "enum": ["task_started", "task_completed", "task_waived", "task_reopened", "note_added"] },
+        "occurred_at": { "type": "string", "format": "date-time" },
+        "previous_event_hash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+        "workspace_id": { "type": "string", "minLength": 1 },
+        "repository_revision_before": { "type": "integer", "minimum": 1 },
+        "draft_checksum": { "$ref": "#/$defs/checksum" },
+        "task_key": { "type": "string", "pattern": "^rt_[a-f0-9]{64}$" },
+        "task": { "$ref": "#/$defs/reviewTask" },
+        "reviewer": { "$ref": "#/$defs/reviewer" },
+        "rationale": { "type": "string" },
+        "note": { "type": "string" },
+        "waiver": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["scope", "accepted_risk", "expires_at"],
+              "properties": {
+                "scope": { "type": "string", "minLength": 1 },
+                "accepted_risk": { "type": "string", "minLength": 1 },
+                "expires_at": { "type": ["string", "null"], "format": "date-time" }
+              }
+            }
+          ]
+        },
+        "event_hash": { "$ref": "#/$defs/checksum" }
+      }
+    },
+    "reviewLedger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "format_version", "created_at", "head_event_hash", "events"],
+      "properties": {
+        "format": { "const": "jarbou3i-operational-review-ledger" },
+        "format_version": { "const": 1 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "head_event_hash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+        "events": { "type": "array", "items": { "$ref": "#/$defs/reviewEvent" } }
+      }
     }
   }
 }
-

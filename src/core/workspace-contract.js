@@ -1,7 +1,9 @@
 /* Versioned local-workspace contract. Canonical analysis revisions remain immutable. */
 
+import { createReviewLedger, verifyReviewLedger } from "./review-ledger.js";
+
 export const WORKSPACE_FORMAT = "jarbou3i-local-workspace";
-export const WORKSPACE_FORMAT_VERSION = 1;
+export const WORKSPACE_FORMAT_VERSION = 2;
 export const WORKSPACE_BUNDLE_FORMAT = "jarbou3i-workspace-bundle";
 export const WORKSPACE_BUNDLE_VERSION = 1;
 export const WORKSPACE_CHECKSUM_ALGORITHM = "SHA-256";
@@ -155,6 +157,7 @@ export async function createWorkspace({
         revision_id: revisionId,
       },
     ],
+    review_ledger: createReviewLedger({ clock: () => createdAt }),
   };
 }
 
@@ -204,10 +207,26 @@ function validateShape(workspace) {
   if (!Array.isArray(workspace.audit_events)) {
     fail("INVALID_AUDIT_LOG", "Workspace audit events must be an array.");
   }
+  if (!isRecord(workspace.review_ledger)) {
+    fail("INVALID_REVIEW_LEDGER", "Workspace operational review ledger is required.");
+  }
 }
 
 export async function verifyWorkspace(workspace, { cryptoImpl } = {}) {
   validateShape(workspace);
+  await verifyReviewLedger(workspace.review_ledger, { cryptoImpl });
+  for (const event of workspace.review_ledger.events) {
+    if (event.workspace_id !== workspace.workspace_id) {
+      fail("REVIEW_EVENT_WORKSPACE_MISMATCH", "Review event belongs to a different workspace.", {
+        event_id: event.event_id,
+      });
+    }
+    if (event.repository_revision_before >= workspace.repository_revision) {
+      fail("REVIEW_EVENT_REVISION_MISMATCH", "Review event revision is not earlier than the stored workspace revision.", {
+        event_id: event.event_id,
+      });
+    }
+  }
   for (const revision of workspace.revisions) {
     const actual = await sha256(revision.canonical_payload, cryptoImpl);
     if (actual !== revision.payload_checksum) {
@@ -237,6 +256,14 @@ export async function migrateWorkspace(input, options = {}) {
   if (!isRecord(input)) fail("INVALID_WORKSPACE", "Workspace must be an object.");
   if (input.format === WORKSPACE_FORMAT && input.format_version === WORKSPACE_FORMAT_VERSION) {
     return verifyWorkspace(input, options);
+  }
+  if (input.format === WORKSPACE_FORMAT && input.format_version === 1) {
+    const migrated = clone(input);
+    migrated.format_version = WORKSPACE_FORMAT_VERSION;
+    migrated.review_ledger = createReviewLedger({
+      clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
+    });
+    return verifyWorkspace(migrated, options);
   }
   if (input.format === WORKSPACE_FORMAT && input.format_version === 0 && isRecord(input.analysis)) {
     return createWorkspace({

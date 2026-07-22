@@ -2,6 +2,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import Ajv2020 from "ajv/dist/2020.js";
 import { createWorkspace, createWorkspaceBundle } from "../src/core/workspace-contract.js";
+import { appendReviewEvent } from "../src/core/review-ledger.js";
 
 const fail = (message) => {
   console.error(`Schema check failed: ${message}`);
@@ -126,8 +127,17 @@ try {
     clock: () => "2026-07-21T12:00:00.000Z",
     idFactory: (prefix) => `${prefix}_schema_${++sequence}`,
   });
-  const bundle = await createWorkspaceBundle(workspace, { clock: () => "2026-07-21T12:00:00.000Z" });
-  if (!validateWorkspace(workspace)) fail(`workspace failed published schema: ${JSON.stringify(validateWorkspace.errors)}`);
+  const reviewedWorkspace = await appendReviewEvent(workspace, {
+    type: "task_waived",
+    task: { id: "RQ001", phase: "verify_provenance", reasonCode: "untraceable_source", targetType: "evidence", targetId: "E1" },
+    reviewer: { reviewer_id: "schema-reviewer", display_name: "Schema Reviewer" },
+    rationale: "Schema exercise waiver.",
+    waiver: { scope: "Schema test", accepted_risk: "Fixture-only source", expires_at: null },
+    clock: () => "2026-07-21T12:01:00.000Z",
+    idFactory: (prefix) => `${prefix}_schema_event`,
+  });
+  const bundle = await createWorkspaceBundle(reviewedWorkspace, { clock: () => "2026-07-21T12:02:00.000Z" });
+  if (!validateWorkspace(reviewedWorkspace)) fail(`workspace failed published schema: ${JSON.stringify(validateWorkspace.errors)}`);
   if (!validateBundle(bundle)) fail(`workspace bundle failed published schema: ${JSON.stringify(validateBundle.errors)}`);
 } catch (error) {
   fail(`workspace schemas could not compile or validate: ${error.message}`);

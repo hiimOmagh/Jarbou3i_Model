@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.1.0-alpha.39 — Review Transaction and Focus Stability
+
+- Serialized operational-ledger submissions behind an explicit pending state so consecutive actions cannot race the optimistic repository guard.
+- Cleared stale success state before each ledger transaction and exposed success only after persistence and ledger projection complete.
+- Replaced the delayed full review rerender after imported-analysis persistence with targeted workspace-control synchronization.
+- Preserved focused review tabs, relationship controls, records, and reference triggers while asynchronous workspace checks finish.
+- Strengthened the ledger browser journey to wait for a fresh successful transaction and an enabled next action.
+
+## 2.1.0-alpha.38 — Phase 5 Slice 3 Operational Review Ledger
+
+- Added an append-only operational ledger for deterministic evidence-review tasks.
+- Added explicit pending, in-review, completed, waived, and reopened task-state semantics.
+- Required a stable local reviewer identifier and display-name snapshot for every event while explicitly declaring that identity is locally asserted, not account-verified.
+- Required rationale for decisions, text for notes, and scope plus accepted risk for waivers; optional waiver expiry is preserved.
+- Hash-chained every event to its predecessor and anchored it to the exact working-draft checksum and repository revision in effect when recorded.
+- Added optimistic-concurrency persistence, workspace-bundle portability, v1-to-v2 migration on repository reads, and a separate non-canonical audit-trail export.
+- Kept canonical drafts and immutable revisions outside the review mutation boundary and stated that task completion never validates a conclusion.
+- Added deterministic integrity/transition/tamper tests and an eight-case cross-browser lifecycle authority.
+
 ## 2.1.0-alpha.37 — AI Interchange Reliability Interlock
 
 - Added explicit no-source, supplied-source, and live-research capability modes to prompt generation.

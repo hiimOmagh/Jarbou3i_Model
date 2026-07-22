@@ -1,6 +1,6 @@
 /* Durable workspace storage abstraction with optimistic concurrency. */
 
-import { verifyWorkspace, WorkspaceContractError } from "./workspace-contract.js";
+import { migrateWorkspace, verifyWorkspace, WorkspaceContractError } from "./workspace-contract.js";
 
 export const WORKSPACE_DATABASE_NAME = "jarbou3i-model-workspaces";
 export const WORKSPACE_DATABASE_VERSION = 1;
@@ -176,7 +176,7 @@ export function createWorkspaceRepository({ backend, cryptoImpl } = {}) {
     },
     async get(id) {
       const value = await backend.get(id);
-      return value ? verifyWorkspace(value, { cryptoImpl }) : undefined;
+      return value ? migrateWorkspace(value, { cryptoImpl }) : undefined;
     },
     async create(workspace) {
       const verified = await verifyWorkspace(workspace, { cryptoImpl });

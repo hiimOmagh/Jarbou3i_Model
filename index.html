@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.37" />
+<meta name="app-version" content="2.1.0-alpha.39" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -239,6 +239,45 @@
         <div class="status" id="editorFieldStatus" role="status" aria-live="polite"></div>
         <div class="editorErrors" id="editorErrors" aria-live="polite"></div>
       </div>
+    </div>
+  </section>
+</div>
+<div class="workspaceBackdrop" id="ledgerBackdrop" aria-hidden="true">
+  <section class="workspaceDialog ledgerDialog" id="ledgerDialog" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle" tabindex="-1">
+    <header class="modalHead">
+      <div><h3 id="ledgerTitle">Operational review ledger</h3><p class="muted" id="ledgerHint"></p></div>
+      <button class="btn iconBtn" id="ledgerClose" type="button" aria-label="Close review ledger">×</button>
+    </header>
+    <div class="ledgerTrust" id="ledgerTrust"></div>
+    <div class="ledgerIdentity">
+      <label class="label" id="ledgerReviewerLabel" for="ledgerReviewer"></label>
+      <input id="ledgerReviewer" type="text" maxlength="120" autocomplete="name" />
+      <small id="ledgerIdentityHint"></small>
+    </div>
+    <div class="ledgerLayout">
+      <section class="ledgerTaskPanel" aria-labelledby="ledgerTasksTitle">
+        <div class="ledgerSectionHead"><h4 id="ledgerTasksTitle"></h4><div id="ledgerCounts"></div></div>
+        <div class="ledgerTaskList" id="ledgerTaskList"></div>
+      </section>
+      <section class="ledgerDecisionPanel" id="ledgerDecisionPanel" aria-labelledby="ledgerDecisionTitle">
+        <h4 id="ledgerDecisionTitle"></h4>
+        <div id="ledgerSelectedTask" class="ledgerSelectedTask"></div>
+        <label class="label" id="ledgerActionLabel" for="ledgerAction"></label>
+        <select id="ledgerAction"></select>
+        <label class="label" id="ledgerRationaleLabel" for="ledgerRationale"></label>
+        <textarea id="ledgerRationale" rows="4"></textarea>
+        <div class="ledgerWaiverFields" id="ledgerWaiverFields" hidden>
+          <label class="label" id="ledgerWaiverScopeLabel" for="ledgerWaiverScope"></label>
+          <input id="ledgerWaiverScope" type="text" maxlength="240" />
+          <label class="label" id="ledgerWaiverRiskLabel" for="ledgerWaiverRisk"></label>
+          <textarea id="ledgerWaiverRisk" rows="3"></textarea>
+          <label class="label" id="ledgerWaiverExpiryLabel" for="ledgerWaiverExpiry"></label>
+          <input id="ledgerWaiverExpiry" type="datetime-local" />
+        </div>
+        <div class="status" id="ledgerStatus" role="status" aria-live="polite"></div>
+        <div class="actions"><button class="btn primary" id="ledgerApply" type="button"></button><button class="btn" id="ledgerExport" type="button"></button></div>
+        <details class="ledgerHistory"><summary id="ledgerHistorySummary"></summary><ol id="ledgerHistory"></ol></details>
+      </section>
     </div>
   </section>
 </div>

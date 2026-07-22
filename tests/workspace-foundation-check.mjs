@@ -92,7 +92,8 @@ const migrated = await migrateWorkspace({
   created_at: clock(),
   analysis,
 }, { idFactory });
-assert(migrated.format_version === 1, "legacy workspace did not migrate to v1");
+assert(migrated.format_version === 2, "legacy workspace did not migrate to v2");
+assert(migrated.review_ledger?.format === "jarbou3i-operational-review-ledger", "migration omitted review ledger");
 assert(canonicalStringify(migrated.working_draft.canonical_payload) === canonicalStringify(analysis), "migration changed analysis semantics");
 
 const backend = createMemoryWorkspaceBackend();
@@ -111,6 +112,14 @@ await expectCode(() => repository.replace(stale, { expectedRevision: 1 }), "WRIT
 await expectCode(() => repository.create(workspace), "WORKSPACE_EXISTS");
 assert(await repository.remove(workspace.workspace_id, { expectedRevision: 2 }), "revision-guarded delete failed");
 assert((await repository.list()).length === 0, "deleted workspace remained in repository");
+
+const versionOne = structuredClone(workspace);
+versionOne.format_version = 1;
+delete versionOne.review_ledger;
+const legacyRepository = createWorkspaceRepository({ backend: createMemoryWorkspaceBackend([versionOne]) });
+const migratedOnRead = await legacyRepository.get(versionOne.workspace_id);
+assert(migratedOnRead.format_version === 2, "repository read did not migrate a v1 workspace");
+assert(migratedOnRead.review_ledger.events.length === 0, "v1 migration invented review history");
 
 const unavailableBackend = createIndexedDbWorkspaceBackend({
   indexedDB: {

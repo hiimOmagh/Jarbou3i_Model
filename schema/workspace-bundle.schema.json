@@ -30,6 +30,6 @@
         "collaboration_state": { "const": false }
       }
     },
-    "workspace": { "$ref": "https://jarbou3i.example/schema/local-workspace-v1.schema.json" }
+    "workspace": { "$ref": "https://jarbou3i.example/schema/local-workspace-v2.schema.json" }
   }
 }
