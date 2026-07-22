@@ -17,6 +17,7 @@ for (const gate of [
   "test:platform",
   "test:platform:services",
   "test:platform:runtime",
+  "test:workspace",
   "test:shell",
   "test:shell:navigation",
   "test:results:orientation",
@@ -50,6 +51,7 @@ if (pkg.scripts?.["upgrade:layout"] !== "node scripts/migrate-release-layout.mjs
 const core = pkg.scripts?.["test:browser:core"] || "";
 for (const spec of [
   "tests/results-workspace.spec.js",
+  "tests/workspace-foundation.spec.js",
   "tests/results-explanation.spec.js",
   "tests/results-inspection.spec.js",
   "tests/evidence-intelligence.spec.js",
@@ -155,8 +157,8 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.33") {
-  fail("package version must be 2.1.0-alpha.33");
+if (pkg.version !== "2.1.0-alpha.34") {
+  fail("package version must be 2.1.0-alpha.34");
 }
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");

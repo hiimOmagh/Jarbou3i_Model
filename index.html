@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.33" />
+<meta name="app-version" content="2.1.0-alpha.34" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -38,6 +38,9 @@
         <span class="lensContextSignal" aria-hidden="true"></span>
         <span id="lensContextLabel">العدسة الاستراتيجية</span>
       </div>
+      <button class="btn workspaceLibraryButton" id="workspaceBtn" type="button" aria-haspopup="dialog" aria-controls="workspaceDialog">
+        <span aria-hidden="true">▣</span><span id="workspaceButtonLabel">مساحات العمل</span>
+      </button>
       <div class="segment" role="radiogroup" aria-label="Language selector" id="languageSegment">
         <button class="segBtn active" id="langAr" type="button" role="radio" aria-checked="true" tabindex="0">عربي</button>
         <button class="segBtn" id="langEn" type="button" role="radio" aria-checked="false" tabindex="-1">EN</button>
@@ -67,7 +70,7 @@
       </button>
     </nav>
     <div class="workspaceCommands">
-      <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span></div>
+      <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span><span aria-hidden="true">·</span><span id="workspaceSaveState">لا توجد مساحة محفوظة</span></div>
       <button class="btn primary shellNextAction" id="shellNextAction" type="button">
         <span class="shellNextActionCopy"><small data-i18n="nextActionLabel">الإجراء التالي</small><strong id="shellNextActionLabel">ابدأ بالموضوع</strong></span>
         <span class="shellNextActionIcon" aria-hidden="true">←</span>
@@ -195,6 +198,21 @@
       <button class="btn primary" id="modalCopy" type="button" data-i18n="copyShownText">نسخ النص المعروض</button>
     </div>
   </div>
+</div>
+<div class="workspaceBackdrop" id="workspaceBackdrop" aria-hidden="true">
+  <section class="workspaceDialog" id="workspaceDialog" role="dialog" aria-modal="true" aria-labelledby="workspaceDialogTitle" tabindex="-1">
+    <header class="modalHead">
+      <div><h3 id="workspaceDialogTitle">مساحات العمل المحلية</h3><p class="muted" id="workspaceDialogHint">محفوظة على هذا الجهاز فقط.</p></div>
+      <button class="btn iconBtn" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
+    </header>
+    <div class="workspaceDialogActions">
+      <button class="btn" id="workspaceExport" type="button" disabled>تصدير مساحة العمل</button>
+      <button class="btn" id="workspaceImport" type="button">استيراد حزمة</button>
+      <input class="srOnly" id="workspaceImportFile" type="file" accept="application/json,.json" />
+    </div>
+    <div class="status" id="workspaceStatus" role="status" aria-live="polite"></div>
+    <div class="workspaceList" id="workspaceList"></div>
+  </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

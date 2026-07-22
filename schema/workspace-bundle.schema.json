@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jarbou3i.example/schema/workspace-bundle-v1.schema.json",
+  "title": "Jarbou3i Portable Workspace Bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact", "artifact_version", "exported_at", "checksum", "semantics", "workspace"],
+  "properties": {
+    "artifact": { "const": "jarbou3i-workspace-bundle" },
+    "artifact_version": { "const": 1 },
+    "exported_at": { "type": "string", "format": "date-time" },
+    "checksum": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "workspace", "protected_content"],
+      "properties": {
+        "algorithm": { "const": "SHA-256" },
+        "workspace": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "protected_content": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_first", "canonical_transport", "contains_canonical_revisions", "collaboration_state"],
+      "properties": {
+        "local_first": { "const": true },
+        "canonical_transport": { "const": false },
+        "contains_canonical_revisions": { "const": true },
+        "collaboration_state": { "const": false }
+      }
+    },
+    "workspace": { "$ref": "https://jarbou3i.example/schema/local-workspace-v1.schema.json" }
+  }
+}

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0-alpha.34 — Phase 5 Workspace Contract and Portability Foundation
+
+- Added the versioned `jarbou3i-local-workspace@1` contract with separate immutable imported revision, working draft, revision pointers, analysis identity, and audit events.
+- Added durable IndexedDB storage behind a repository abstraction; substantive analysis data is no longer placed in `localStorage`.
+- Added optimistic repository revisions that reject stale replacement and deletion attempts instead of silently overwriting another browser context.
+- Added SHA-256 verification for every revision and working draft, plus separate workspace and protected-manifest checksums for portable bundles.
+- Added guarded v0-to-v1 migration, explicit unsupported-version rejection, corruption detection, quota/unavailable-storage errors, and a 25 MiB import ceiling.
+- Added a trilingual local workspace manager with save state, reopen-after-reload, multi-workspace listing, lossless bundle export, and safe restore.
+- Kept canonical JSON export unchanged; workspace bundles declare `canonical_transport: false`, `local_first: true`, and `collaboration_state: false`.
+- Added published workspace and bundle JSON Schemas, deterministic no-browser contract tests, and a sixteen-case dual-lens cross-browser persistence/portability matrix.
+
 ## 2.1.0-alpha.33 — Phase 4 Evidence Review Queue and Resolution Planning
 
 - Added a deterministic dual-lens review queue derived only from existing relationship, provenance, source-cluster, and traceability diagnostics.

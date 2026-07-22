@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.33` adds a deterministic Evidence Review Queue and Resolution Plan on top of the completed Phase 4 evidence-intelligence chain. Existing diagnostics are ordered into resolve-reference, verify-provenance, and strengthen-coverage phases; the queue never assigns truth scores or treats task completion as validation:
+Version `2.1.0-alpha.34` starts Phase 5 with a local-first workspace contract, durable IndexedDB repository, integrity-checked portability, and automatic reopening of the active analysis. Canonical analysis export remains unchanged; a workspace bundle preserves local revisions and draft state but explicitly is not canonical transport or collaboration state.
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
@@ -18,6 +18,8 @@ Slice 2 adds deterministic source clusters and localized gap intelligence. Exact
 Slice 3 adds a complete claim–evidence matrix and authored evidence-to-record routes. Its optional `jarbou3i-evidence-intelligence-v1` download is explicitly derived, contains no raw analysis, and cannot replace canonical JSON. See [`docs/phase4-claim-evidence-traceability.md`](docs/phase4-claim-evidence-traceability.md).
 
 Slice 4 operationalizes those diagnostics as a stable, navigable review queue and adds a separate `jarbou3i-evidence-review-plan-v1` artifact. It preserves authored-data boundaries and states explicitly that completing the queue does not validate a conclusion. See [`docs/phase4-evidence-review-queue.md`](docs/phase4-evidence-review-queue.md).
+
+Phase 5 Slice 1 introduces `jarbou3i-local-workspace@1`. Importing a validated analysis creates an immutable imported revision and a separate clean working draft, each protected by SHA-256. Workspaces live in IndexedDB behind a storage abstraction and use optimistic repository revisions to reject stale writes. The local manager lists and reopens analyses, survives reload, and exports/restores a checksummed `jarbou3i-workspace-bundle@1`. The bundle contains canonical revisions but declares `canonical_transport: false`; canonical JSON remains the authoritative analysis transport. See [`docs/phase5-workspace-storage-portability.md`](docs/phase5-workspace-storage-portability.md).
 
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 
@@ -93,6 +95,7 @@ Generated prompts treat the topic and context as untrusted analytical material. 
 6. Import structurally canonical work, then resolve every disclosed semantic and evidence warning before publication.
 7. Review the full analytical record.
 8. Export a human-readable HTML report and lossless canonical JSON.
+9. Use Local workspaces to reopen the analysis or export an integrity-checked workspace bundle for backup and restore.
 
 The analysis language stored in imported JSON controls report language and direction. Changing the interface language does not relabel an imported analysis.
 
@@ -107,6 +110,8 @@ src/core/platform-state.js
 src/core/performance.js
 src/core/render-regions.js
 src/core/results-inspection.js
+src/core/workspace-contract.js
+src/core/workspace-storage.js
 src/lenses/strategic/adapter.js
 src/lenses/biopolitical/adapter.js
 src/biopolitics.js
@@ -117,6 +122,8 @@ src/biopolitics-sample-i18n.js
 src/json-parser.js
 schema/biopolitical-analysis.schema.json
 schema/biopolitical-migrated-draft.schema.json
+schema/workspace.schema.json
+schema/workspace-bundle.schema.json
 fixtures/
 tests/
 docs/

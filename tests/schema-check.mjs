@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import vm from "node:vm";
 import Ajv2020 from "ajv/dist/2020.js";
+import { createWorkspace, createWorkspaceBundle } from "../src/core/workspace-contract.js";
 
 const fail = (message) => {
   console.error(`Schema check failed: ${message}`);
@@ -11,6 +12,8 @@ const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 const canonicalSchema = readJson("schema/biopolitical-analysis.schema.json");
 const draftSchema = readJson("schema/biopolitical-migrated-draft.schema.json");
 const strategicSchema = readJson("schema/strategic-analysis.schema.json");
+const workspaceSchema = readJson("schema/workspace.schema.json");
+const workspaceBundleSchema = readJson("schema/workspace-bundle.schema.json");
 
 let canonical;
 let migratedDraft;
@@ -108,6 +111,26 @@ try {
   }
 } catch (error) {
   fail(`strategic schema could not compile: ${error.message}`);
+}
+
+try {
+  const workspaceAjv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
+  workspaceAjv.addSchema(workspaceSchema);
+  const validateWorkspace = workspaceAjv.getSchema(workspaceSchema.$id);
+  const validateBundle = workspaceAjv.compile(workspaceBundleSchema);
+  let sequence = 0;
+  const analysis = readJson("fixtures/sample-analysis-en.json");
+  const workspace = await createWorkspace({
+    analysis,
+    manifest: { id: "strategic", contractId: "strategic-analysis-v1", schemaVersion: "1.1.0" },
+    clock: () => "2026-07-21T12:00:00.000Z",
+    idFactory: (prefix) => `${prefix}_schema_${++sequence}`,
+  });
+  const bundle = await createWorkspaceBundle(workspace, { clock: () => "2026-07-21T12:00:00.000Z" });
+  if (!validateWorkspace(workspace)) fail(`workspace failed published schema: ${JSON.stringify(validateWorkspace.errors)}`);
+  if (!validateBundle(bundle)) fail(`workspace bundle failed published schema: ${JSON.stringify(validateBundle.errors)}`);
+} catch (error) {
+  fail(`workspace schemas could not compile or validate: ${error.message}`);
 }
 
 console.log("Schema checks passed.");

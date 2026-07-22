@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.33 — shared results inspection layer */
+/* Jarbou3i Model v2.1.0-alpha.34 — local workspace foundation */
 import "./biopolitics-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
@@ -17,6 +17,15 @@ import { createResultsExplanation } from "./core/results-explanation.js";
 import { createResultsInspectionIndex } from "./core/results-inspection.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
+import {
+  createWorkspace,
+  createWorkspaceBundle,
+  parseWorkspaceBundle,
+} from "./core/workspace-contract.js";
+import {
+  createIndexedDbWorkspaceBackend,
+  createWorkspaceRepository,
+} from "./core/workspace-storage.js";
 
 "use strict";
 const I18N = {
@@ -1003,6 +1012,8 @@ const PLATFORM = createPlatformRuntime({
       importValidation: null,
       importAudit: null,
       modalInvoker: null,
+      activeWorkspaceId: null,
+      workspaceSaveState: "idle",
     };
   },
   regions: {
@@ -1035,6 +1046,9 @@ const LENS_REGISTRY = PLATFORM.registry;
 const PLATFORM_RENDERER = PLATFORM.renderer;
 const state = PLATFORM_STATE.state;
 const $ = (id) => document.getElementById(id);
+const WORKSPACE_REPOSITORY = createWorkspaceRepository({
+  backend: createIndexedDbWorkspaceBackend(),
+});
 const SHELL_PREFERENCES = createShellPreferences({
   document,
   settings: SETTINGS,
@@ -1216,6 +1230,23 @@ function renderApplicationShell() {
   if ($("shellNextActionLabel")) $("shellNextActionLabel").textContent = commandLabel;
   const nextIcon = nextAction?.querySelector(".shellNextActionIcon");
   if (nextIcon) nextIcon.textContent = state.lang === "ar" ? "←" : "→";
+  if ($("workspaceButtonLabel")) {
+    $("workspaceButtonLabel").textContent = labelText("Workspaces", "مساحات العمل", "Espaces de travail");
+  }
+  if ($("workspaceBtn")) {
+    $("workspaceBtn").setAttribute("aria-label", labelText(
+      "Open local workspaces", "فتح مساحات العمل المحلية", "Ouvrir les espaces de travail locaux",
+    ));
+  }
+  const saveLabels = {
+    idle: labelText("No saved workspace", "لا توجد مساحة محفوظة", "Aucun espace enregistré"),
+    saving: labelText("Saving locally…", "جارٍ الحفظ محليًا…", "Enregistrement local…"),
+    saved: labelText("Saved locally", "محفوظ محليًا", "Enregistré localement"),
+    error: labelText("Local save needs attention", "الحفظ المحلي يحتاج مراجعة", "L’enregistrement local exige une vérification"),
+  };
+  if ($("workspaceSaveState")) {
+    $("workspaceSaveState").textContent = saveLabels[state.workspaceSaveState] || saveLabels.idle;
+  }
 }
 function setDensity(value, persist = true) {
   state.density = SHELL_PREFERENCES.apply(value, { persist });
@@ -4212,7 +4243,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.33";
+    "2.1.0-alpha.34";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4789,7 +4820,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.33";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.34";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4797,7 +4828,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.33";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.34";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5238,7 +5269,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.33";
+    "2.1.0-alpha.34";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -5368,6 +5399,209 @@ function renderReview() {
       );
   }
 }
+let workspaceDialogInvoker = null;
+
+function workspaceText(key, values = {}) {
+  const copy = {
+    title: ["Local workspaces", "مساحات العمل المحلية", "Espaces de travail locaux"],
+    hint: ["Durable on this device. No account, telemetry, or network transfer.", "حفظ دائم على هذا الجهاز. بلا حساب أو تتبع أو نقل شبكي.", "Stockage durable sur cet appareil, sans compte, télémétrie ni transfert réseau."],
+    export: ["Export workspace bundle", "تصدير حزمة مساحة العمل", "Exporter le paquet de l’espace"],
+    import: ["Import workspace bundle", "استيراد حزمة مساحة عمل", "Importer un paquet d’espace"],
+    empty: ["No local workspaces yet. Import or load an analysis to create one.", "لا توجد مساحات عمل محلية بعد. استورد تحليلًا أو حمّل مثالًا لإنشاء واحدة.", "Aucun espace local. Importez ou chargez une analyse pour en créer un."],
+    open: ["Open", "فتح", "Ouvrir"],
+    current: ["Current", "الحالية", "Actuel"],
+    ready: ["Workspace storage is ready.", "تخزين مساحات العمل جاهز.", "Le stockage des espaces est prêt."],
+    saved: ["Workspace saved locally.", "تم حفظ مساحة العمل محليًا.", "Espace enregistré localement."],
+    opened: ["Workspace reopened with integrity verified.", "أُعيد فتح مساحة العمل بعد التحقق من سلامتها.", "Espace rouvert après vérification d’intégrité."],
+    imported: ["Portable workspace restored locally.", "تمت استعادة مساحة العمل محليًا.", "Espace portable restauré localement."],
+    exported: ["Workspace bundle exported.", "تم تصدير حزمة مساحة العمل.", "Paquet d’espace exporté."],
+    duplicate: ["This workspace already exists. Nothing was overwritten.", "مساحة العمل هذه موجودة. لم تتم الكتابة فوق أي بيانات.", "Cet espace existe déjà. Aucune donnée n’a été écrasée."],
+    error: ["Workspace operation failed safely: {message}", "فشلت عملية مساحة العمل بأمان: {message}", "L’opération a échoué sans altérer les données : {message}"],
+  }[key] || [key, key, key];
+  const template = state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
+  return Object.entries(values).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    template,
+  );
+}
+
+function setWorkspaceStatus(kind, message) {
+  state.workspaceSaveState = kind === "bad" ? "error" : state.activeWorkspaceId ? "saved" : "idle";
+  const target = $("workspaceStatus");
+  if (target) {
+    target.className = `status ${kind || ""}`.trim();
+    target.textContent = message;
+  }
+  renderApplicationShell();
+}
+
+function workspaceFailureMessage(error) {
+  if (error?.code === "WORKSPACE_EXISTS") return workspaceText("duplicate");
+  return workspaceText("error", { message: error?.message || error?.code || "unknown" });
+}
+
+async function persistImportedAnalysis(analysis) {
+  state.workspaceSaveState = "saving";
+  renderApplicationShell();
+  try {
+    const manifest = LENS_REGISTRY.manifest(analysis.analysis_lens || state.analysisLens);
+    const workspace = await createWorkspace({
+      analysis,
+      manifest,
+      title: analysis.subject?.title || state.topic,
+    });
+    await WORKSPACE_REPOSITORY.create(workspace);
+    state.activeWorkspaceId = workspace.workspace_id;
+    writeSettings({ activeWorkspaceId: workspace.workspace_id });
+    setWorkspaceStatus("good", workspaceText("saved"));
+    return workspace;
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+    return null;
+  }
+}
+
+function applyWorkspaceAnalysis(workspace) {
+  const analysis = normalizeAnalysis(structuredClone(workspace.working_draft.canonical_payload));
+  state.analysis = analysis;
+  state.analysisLens = analysis.analysis_lens;
+  state.activeWorkspaceId = workspace.workspace_id;
+  state.stage = "review";
+  state.shellSection = "review";
+  state.activeReview = "overview";
+  state.activePillar = null;
+  if (isSupportedLanguage(analysis.language)) setAnalysisLanguage(analysis.language);
+  state.topic = analysis.subject?.title || workspace.metadata.title;
+  state.context = analysis.subject?.context || "";
+  $("topicInput").value = state.topic;
+  $("timeframeInput").value = state.context;
+  $("jsonInput").value = JSON.stringify(analysis, null, 2);
+  writeSettings({ activeWorkspaceId: workspace.workspace_id, analysisLens: state.analysisLens });
+  state.workspaceSaveState = "saved";
+  renderAll();
+}
+
+async function openStoredWorkspace(id, { announce = true } = {}) {
+  try {
+    const workspace = await WORKSPACE_REPOSITORY.get(id);
+    if (!workspace) throw new Error("Workspace was not found on this device.");
+    applyWorkspaceAnalysis(workspace);
+    if (announce) setWorkspaceStatus("good", workspaceText("opened"));
+    return workspace;
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+    return null;
+  }
+}
+
+async function renderWorkspaceList() {
+  const target = $("workspaceList");
+  if (!target) return;
+  try {
+    const entries = await WORKSPACE_REPOSITORY.list();
+    target.innerHTML = entries.length
+      ? entries.map((entry) => {
+          const active = entry.workspace_id === state.activeWorkspaceId;
+          const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" })
+            .format(new Date(entry.metadata.updated_at));
+          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(entry.analysis_identity.lens_id)}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></article>`;
+        }).join("")
+      : `<div class="empty"><strong>${escapeHtml(workspaceText("empty"))}</strong></div>`;
+    target.querySelectorAll("[data-workspace-open]").forEach((button) => {
+      button.onclick = async () => {
+        const workspace = await openStoredWorkspace(button.dataset.workspaceOpen);
+        if (workspace) await renderWorkspaceList();
+      };
+    });
+    $("workspaceExport").disabled = !state.activeWorkspaceId;
+  } catch (error) {
+    target.innerHTML = "";
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+  }
+}
+
+async function openWorkspaceDialog(invoker = document.activeElement) {
+  workspaceDialogInvoker = invoker;
+  $("workspaceDialogTitle").textContent = workspaceText("title");
+  $("workspaceDialogHint").textContent = workspaceText("hint");
+  $("workspaceClose").setAttribute("aria-label", labelText(
+    "Close local workspaces", "إغلاق مساحات العمل المحلية", "Fermer les espaces de travail locaux",
+  ));
+  $("workspaceExport").textContent = workspaceText("export");
+  $("workspaceImport").textContent = workspaceText("import");
+  $("workspaceBackdrop").classList.add("show");
+  $("workspaceBackdrop").setAttribute("aria-hidden", "false");
+  setWorkspaceStatus("good", workspaceText("ready"));
+  await renderWorkspaceList();
+  $("workspaceDialog").focus();
+}
+
+function closeWorkspaceDialog() {
+  const backdrop = $("workspaceBackdrop");
+  if (!backdrop.classList.contains("show")) return;
+  backdrop.classList.remove("show");
+  backdrop.setAttribute("aria-hidden", "true");
+  if (workspaceDialogInvoker?.isConnected) workspaceDialogInvoker.focus();
+  workspaceDialogInvoker = null;
+}
+
+function trapWorkspaceFocus(event) {
+  const backdrop = $("workspaceBackdrop");
+  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
+  const focusable = [...backdrop.querySelectorAll(
+    'button:not(:disabled),input:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
+  )].filter((element) => !element.classList.contains("srOnly"));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    last.focus();
+    event.preventDefault();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    first.focus();
+    event.preventDefault();
+  }
+}
+
+async function exportActiveWorkspace() {
+  if (!state.activeWorkspaceId) return;
+  try {
+    const workspace = await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
+    const bundle = await createWorkspaceBundle(workspace);
+    download(
+      `${safeFileSlug(workspace.metadata.title)}-workspace.json`,
+      `${JSON.stringify(bundle, null, 2)}\n`,
+      "application/json",
+    );
+    setWorkspaceStatus("good", workspaceText("exported"));
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+  }
+}
+
+async function importWorkspaceFile(file) {
+  try {
+    if (file.size > 25 * 1024 * 1024) {
+      const error = new Error("Workspace bundles must not exceed 25 MiB.");
+      error.code = "BUNDLE_TOO_LARGE";
+      throw error;
+    }
+    const workspace = await parseWorkspaceBundle(await file.text());
+    await WORKSPACE_REPOSITORY.create(workspace);
+    applyWorkspaceAnalysis(workspace);
+    setWorkspaceStatus("good", workspaceText("imported"));
+    await renderWorkspaceList();
+  } catch (error) {
+    setWorkspaceStatus(error?.code === "WORKSPACE_EXISTS" ? "warn" : "bad", workspaceFailureMessage(error));
+  }
+}
+
+async function restoreLastWorkspace() {
+  const id = readSettings().activeWorkspaceId;
+  if (!id) return;
+  await openStoredWorkspace(id, { announce: false });
+}
+
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
 }
@@ -5503,7 +5737,7 @@ $("clearJsonBtn").onclick = () => {
   $("jsonInput").value = "";
   validateJsonInput();
 };
-$("importBtn").onclick = () => {
+$("importBtn").onclick = async () => {
   const a = validateJsonInput();
   if (!a) return;
   state.analysis = a;
@@ -5524,6 +5758,7 @@ $("importBtn").onclick = () => {
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"));
   renderAll();
+  await persistImportedAnalysis(a);
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
@@ -5535,7 +5770,7 @@ $("repairPromptBtn").onclick = async (event) => {
   toast(ok ? t("repairCopied") : t("copyFailed"));
   if (!ok) showModal(t("repairPrompt"), p, invoker);
 };
-$("loadSampleBtn").onclick = () => {
+$("loadSampleBtn").onclick = async () => {
   const a = sampleAnalysis(state.analysisLang);
   if (a.analysis_lens === "biopolitical") {
     const validation = BIO_INTEGRITY.validateImport(a);
@@ -5561,17 +5796,34 @@ $("loadSampleBtn").onclick = () => {
   $("jsonInput").value = JSON.stringify(a, null, 2);
   toast(t("sampleLoaded"));
   renderAll();
+  await persistImportedAnalysis(a);
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
 };
 $("modalClose").onclick = closeModal;
+$("workspaceBtn").onclick = (event) => openWorkspaceDialog(event.currentTarget);
+$("workspaceClose").onclick = closeWorkspaceDialog;
+$("workspaceExport").onclick = exportActiveWorkspace;
+$("workspaceImport").onclick = () => $("workspaceImportFile").click();
+$("workspaceImportFile").onchange = async (event) => {
+  const [file] = event.target.files || [];
+  if (file) await importWorkspaceFile(file);
+  event.target.value = "";
+};
+$("workspaceBackdrop").addEventListener("click", (event) => {
+  if (event.target === $("workspaceBackdrop")) closeWorkspaceDialog();
+});
 $("modalBackdrop").addEventListener("click", (e) => {
   if (e.target === $("modalBackdrop")) closeModal();
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
+  if (e.key === "Escape") {
+    closeModal();
+    closeWorkspaceDialog();
+  }
   trapModalFocus(e);
+  trapWorkspaceFocus(e);
 });
 $("modalCopy").onclick = async () => {
   const ok = await copyText($("modalContent").textContent);
@@ -5608,3 +5860,4 @@ PLATFORM.performance.measure(
   },
   { lens: state.analysisLens, language: state.lang },
 );
+restoreLastWorkspace();
