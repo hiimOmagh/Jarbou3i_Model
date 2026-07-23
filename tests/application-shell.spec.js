@@ -27,8 +27,12 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
 
   await page.locator('[data-shell-nav="engine"]').click();
   await expect(page.locator('[data-shell-nav="engine"]')).toHaveAttribute("aria-current", "step");
+  await page.locator("#enginePanel").scrollIntoViewIfNeeded();
 
-  await page.locator('[data-lens="biopolitical"]').click();
+  const biopoliticalLens = page.locator('[data-lens="biopolitical"]');
+  await biopoliticalLens.click();
+  await expect(biopoliticalLens).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("body")).toHaveClass(/bio-v2/);
   await expect(page.locator("#lensContextLabel")).toContainText(/Biopolitical|بيوسياس|biopolitique/i);
   await page.locator("#loadSampleBtn").click();
   await expect(page.locator("#reviewNavShortcut")).toBeEnabled();
