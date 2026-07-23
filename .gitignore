@@ -8,3 +8,4 @@ visual-audit-evidence-local/
 build/
 .DS_Store
 *.log
+/Local.zip
