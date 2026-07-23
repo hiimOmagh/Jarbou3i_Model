@@ -74,7 +74,7 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
           },
           { lang: locale.id, savedTheme: theme },
         );
-        await page.goto("/");
+        await page.goto("./");
         await synchronizeAuditState(page, locale, theme);
 
         await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
@@ -155,7 +155,7 @@ test("system-color resilience and keyboard focus remain perceivable", async ({ p
     forcedColors: forcedColors ? "active" : "none",
     reducedMotion: "reduce",
   });
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator('[data-lens="biopolitical"]').focus();
   await expect(page.locator('[data-lens="biopolitical"]')).toBeFocused();

@@ -12,7 +12,7 @@ async function readFixture(name) {
 async function importFixture(page, fixtureName, wrongInitialLens) {
   const data = await readFixture(fixtureName);
 
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.locator('#copyPromptBtn')).toBeVisible();
   await page.locator('#langEn').click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -92,7 +92,7 @@ test.describe('Imported analysis lens contract', () => {
     const data = await readFixture('sample-analysis-en.json');
     data.subject.executive_thesis = 'Portable strategic thesis. \uE200cite\uE202turn8search1\uE201';
     data.evidence.items[0].source_note = 'Portable source note. \uE200filecite\uE202turn0file0\uE202L2-L4\uE201';
-    await page.goto('/');
+    await page.goto('./');
     await page.locator('#langEn').click();
     await page.locator('#jsonInput').fill(JSON.stringify(data));
     await expect(page.locator('#importBtn')).toBeEnabled();

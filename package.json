@@ -6,6 +6,7 @@
   "description": "Jarbou3i Model: a trilingual dual-lens workbench with a preserved Strategic engine and a first-class Biopolitical Training Map v2.1 contract covering human functions, power systems, capture tests, distribution, evidence, agency, alternatives, and calibrated judgment.",
   "scripts": {
     "dev": "node scripts/static-server.mjs",
+    "build:pages": "node scripts/build-pages-artifact.mjs",
     "upgrade:layout": "node scripts/migrate-release-layout.mjs",
     "test": "npm run test:ci",
     "build:validator": "node scripts/generate-biopolitical-validator.mjs && node scripts/generate-strategic-validator.mjs",

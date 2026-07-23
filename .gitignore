@@ -5,5 +5,6 @@ hosted-demo-evidence/
 hosted-demo-evidence-local/
 visual-audit-evidence/
 visual-audit-evidence-local/
+build/
 .DS_Store
 *.log

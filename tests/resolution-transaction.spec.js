@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 async function start(page, lens = "strategic") {
-  await page.goto("/");
+  await page.goto("./");
   await page.evaluate(() => new Promise((resolve) => {
     const request = indexedDB.deleteDatabase("jarbou3i-model-workspaces");
     request.onsuccess = request.onerror = request.onblocked = () => resolve();

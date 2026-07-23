@@ -101,7 +101,7 @@ test.describe("Release Candidate visual audit evidence", () => {
           },
         });
       });
-      await page.goto("/");
+      await page.goto("./");
       await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
       await expect(page.locator("html")).toHaveAttribute("dir", locale.dir);
       await waitForVisualAssets(page);
@@ -265,7 +265,7 @@ test.describe("Release Candidate visual audit evidence", () => {
     const key = `${locale.id}-${viewport.id}`;
     test(`standalone-report-${key}`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto("/");
+      await page.goto("./");
       await page.locator(locale.button).click();
       await page.locator("#analysisLang").selectOption(locale.id);
       await page.locator('[data-lens="biopolitical"]').click();

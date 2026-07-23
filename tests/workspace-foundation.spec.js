@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 
 async function useEnglish(page) {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
 }
 

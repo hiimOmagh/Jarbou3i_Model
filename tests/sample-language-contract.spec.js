@@ -36,7 +36,7 @@ async function readLoadedSample(page) {
 test("sample topics follow the chosen interface language for both lenses", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("./");
 
   for (const locale of LOCALES) {
     await page.locator(locale.button).click();
@@ -69,7 +69,7 @@ test("sample topics follow the chosen interface language for both lenses", async
 test("an explicit analysis-language override persists and can be relinked", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("./");
 
   await page.locator("#langFr").click();
   await expect(page.locator("#analysisLang")).toHaveValue("fr");

@@ -33,7 +33,7 @@ const LENSES = [
 ];
 
 async function exportLocalizedSample(page, testInfo, locale, lens) {
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.locator('#copyPromptBtn')).toBeVisible();
 
   await page.locator(locale.button).click();

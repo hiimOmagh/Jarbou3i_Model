@@ -55,7 +55,7 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
             ),
             { lang: locale.id, savedTheme: theme },
           );
-          await page.goto("/");
+          await page.goto("./");
 
           await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
           await expect(page.locator("html")).toHaveAttribute("dir", locale.dir);

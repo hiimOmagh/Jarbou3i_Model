@@ -48,6 +48,9 @@ for (const gate of [
 if (pkg.scripts?.["upgrade:layout"] !== "node scripts/migrate-release-layout.mjs") {
   fail("upgrade:layout must execute the guarded release-layout migration");
 }
+if (pkg.scripts?.["build:pages"] !== "node scripts/build-pages-artifact.mjs") {
+  fail("build:pages must execute the explicit deployment-artifact builder");
+}
 
 const core = pkg.scripts?.["test:browser:core"] || "";
 for (const spec of [
@@ -112,6 +115,7 @@ for (const token of [
   "timeout: 60_000",
   "expect: { timeout: 10_000 }",
   "workers: workerCount",
+  "failOnFlakyTests: Boolean(process.env.CI)",
   "const reuseLocalServer = process.env.PLAYWRIGHT_REUSE_SERVER === '1';",
   "reuseExistingServer: reuseLocalServer",
 ]) {
@@ -151,8 +155,29 @@ for (const token of [
   "name: browser-debug",
   "failure() && hashFiles('test-results/**', 'playwright-report/**') != ''",
   "actions/upload-artifact@v5",
+  "permissions:",
+  "contents: read",
+  "concurrency:",
+  "timeout-minutes:",
+  "name: Deploy accepted GitHub Pages build",
+  "needs: browser",
+  "pages: write",
+  "id-token: write",
+  "node scripts/build-pages-artifact.mjs",
+  "actions/configure-pages@v5",
+  "actions/upload-pages-artifact@v4",
+  "actions/deploy-pages@v4",
 ]) {
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
+}
+
+const absoluteRootNavigation = [];
+for (const file of fs.readdirSync("tests").filter((name) => name.endsWith(".spec.js"))) {
+  const source = read(`tests/${file}`);
+  if (/page\.goto\(\s*["']\/["']\s*\)/.test(source)) absoluteRootNavigation.push(file);
+}
+if (absoluteRootNavigation.length) {
+  fail(`browser specs must preserve a deployed base path: ${absoluteRootNavigation.join(", ")}`);
 }
 for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   if (workflow.includes(forbidden)) {

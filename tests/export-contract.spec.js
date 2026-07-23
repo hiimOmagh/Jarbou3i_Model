@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 const EXPECTED_VERSION = '2.1.0-alpha.45';
 
 async function exportSampleReport(page, testInfo, lens) {
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.locator('#copyPromptBtn')).toBeVisible();
 
   // Sample content is localized; pin English before asserting English sample tokens.

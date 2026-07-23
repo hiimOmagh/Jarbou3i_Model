@@ -76,7 +76,7 @@ async function visibleTextSnapshot(page, lang) {
 
 test.describe('Hosted demo public UI evidence', () => {
   test('captures public UI evidence and visible text snapshots', async ({ page }, testInfo) => {
-    await page.goto('/');
+    await page.goto('./');
     await waitForVisualAssets(page);
     await expect(page.locator('#copyPromptBtn')).toBeVisible();
     await expect(page.locator('meta[name="app-version"]')).toHaveAttribute('content', EXPECTED_VERSION);

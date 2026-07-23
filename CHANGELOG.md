@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Repository governance
+
+- Gate the GitHub Pages mirror behind successful no-browser and browser CI.
+- Fail CI when Playwright passes only on retry.
+- Make browser navigation safe for repository-subpath deployments.
+- Build an explicit static deployment artifact instead of publishing the repository root.
+- Establish current documentation, deployment, and versioning authorities.
+
 ## 2.1.0-alpha.45 — Crash-Safe Editor Recovery
 
 - Added a separate checksummed `jarbou3i-editor-recovery@1` journal for unsaved editor state.

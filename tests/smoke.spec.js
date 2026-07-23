@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('Jarbou3i Model core flow', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.locator('#copyPromptBtn')).toBeVisible();
 
   const platform = await page.evaluate(() => window.Jarbou3iPlatformDiagnostics?.inspect());

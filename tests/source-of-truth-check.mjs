@@ -26,7 +26,7 @@ if (packageJson.version !== '2.1.0-alpha.45') {
   fail('root package version must be 2.1.0-alpha.45');
 }
 
-for (const script of ['test:platform', 'test:platform:services', 'test:platform:runtime', 'test:workspace', 'test:review-ledger', 'test:strategic:integrity', 'test:results:inspection', 'test:relationship:intelligence', 'test:evidence:intelligence', 'test:evidence:traceability', 'test:evidence:review-plan', 'test:performance', 'test:provenance', 'test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {
+for (const script of ['build:pages', 'test:platform', 'test:platform:services', 'test:platform:runtime', 'test:workspace', 'test:review-ledger', 'test:strategic:integrity', 'test:results:inspection', 'test:relationship:intelligence', 'test:evidence:intelligence', 'test:evidence:traceability', 'test:evidence:review-plan', 'test:performance', 'test:provenance', 'test:bio:v2', 'test:ci:no-browser', 'test:ci:browser', 'test:ci', 'test:hygiene']) {
   if (!packageJson.scripts?.[script]) fail(`missing package script: ${script}`);
 }
 

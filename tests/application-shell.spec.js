@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("premium shell preserves orientation, density, and lens parity", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
 
   await expect(page.locator("#appHeader")).toBeVisible();
   await expect(page.locator("#workspaceBar")).toBeVisible();
@@ -41,7 +41,7 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
 });
 
 test("responsive commands and workspace navigation preserve keyboard continuity", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
 
   const nextAction = page.locator("#shellNextAction");

@@ -17,6 +17,7 @@ export default defineConfig({
   fullyParallel: true,
   workers: workerCount,
   retries: process.env.CI ? 1 : 0,
+  failOnFlakyTests: Boolean(process.env.CI),
   reporter: [['list'], ['html', { open: 'never' }]],
   webServer: externalBaseURL || managedBaseURL
     ? undefined

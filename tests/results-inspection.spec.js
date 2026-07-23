@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 async function loadStrategicSample(page) {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator("#loadSampleBtn").click();
 }
@@ -53,7 +53,7 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
 });
 
 test("biopolitical inspection traverses linked records without losing return focus", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
@@ -87,7 +87,7 @@ test("biopolitical inspection traverses linked records without losing return foc
 });
 
 test("evidence trails expose back-references and stable cross-lens deep links", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();

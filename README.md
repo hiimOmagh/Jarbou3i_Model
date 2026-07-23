@@ -2,6 +2,8 @@
 
 Version `2.1.0-alpha.45` adds a crash-safe, checksummed editor recovery journal anchored to the exact saved workspace revision and draft. Debounced snapshots preserve both parsed canonical state and incomplete field input, expire after seven days, and can be explicitly restored or discarded. Stale, expired, or corrupt records fail closed and never become canonical history. Alpha.44 workspace, export, review, resolution, and evidence contracts remain preserved.
 
+Start with the [documentation index](docs/README.md). Current release operations are in [deployment and release operations](docs/operations/deployment.md), and product/contract identities are separated in the [versioning policy](docs/VERSIONING.md).
+
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
 

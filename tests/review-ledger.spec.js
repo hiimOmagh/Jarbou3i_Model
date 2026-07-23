@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 
 async function openLedger(page) {
-  await page.goto("/");
+  await page.goto("./");
   await page.evaluate(() => new Promise((resolve) => {
     const request = indexedDB.deleteDatabase("jarbou3i-model-workspaces");
     request.onsuccess = request.onerror = request.onblocked = () => resolve();

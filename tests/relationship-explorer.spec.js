@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 async function openExplorer(page, lang = "en") {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
   await page.locator("#analysisLang").selectOption(lang);
   await page.locator('[data-lens="biopolitical"]').click();

@@ -9,7 +9,7 @@ async function fixture(name) {
 }
 
 async function openBiopoliticalImport(page) {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator('[data-lens="biopolitical"]').click();
 }
@@ -111,7 +111,7 @@ test.describe("Runtime import validation", () => {
       },
     ];
     for (const current of cases) {
-      await page.goto("/");
+      await page.goto("./");
       await page.locator(current.button).click();
       await page.locator('[data-lens="biopolitical"]').click();
       const reviewable = await fixture(current.fixture);

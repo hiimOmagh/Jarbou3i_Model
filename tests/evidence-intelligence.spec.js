@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 
 async function openInspection(page, lens) {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   if (lens === "biopolitical") await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();

@@ -27,7 +27,7 @@ Both generated prompts serialize topic and context as untrusted analytical mater
 
 Workspace analyses are stored in IndexedDB inside the current browser profile. They are not encrypted by the application, authenticated, remotely backed up, or protected from another person or process controlling that profile. Hash chains detect covered mutations during verification; they are not digital signatures and can be recomputed by a malicious local actor replacing the whole workspace. Export portable backups for important work and do not use a shared browser profile for sensitive analysis.
 
-Cloud deployment includes a restrictive response-header policy. Inline styles remain allowed until existing deterministic style attributes are removed; scripts and runtime connections remain self-only or denied.
+The canonical Cloudflare Pages deployment applies the tracked restrictive response-header policy. Inline styles remain allowed until existing deterministic style attributes are removed; scripts and runtime connections remain self-only or denied. GitHub Pages ignores `_headers`, so the GitHub mirror is not evidence that those response headers are enforced.
 
 ## Reporting
 

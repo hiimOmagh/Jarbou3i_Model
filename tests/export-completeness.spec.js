@@ -95,7 +95,7 @@ test("biopolitical HTML and JSON exports preserve the complete canonical contrac
   page,
 }, testInfo) => {
   const fixture = addSentinels(await readFixture());
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langFr").click();
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#jsonInput").fill(JSON.stringify(fixture));

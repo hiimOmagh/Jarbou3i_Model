@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 
 test("named evidence references open an accessible relationship inspector", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator("#analysisLang").selectOption("en");
   await page.locator('[data-lens="biopolitical"]').click();
@@ -32,7 +32,7 @@ test("named evidence references open an accessible relationship inspector", asyn
 });
 
 test("biopolitical HTML export includes names and a canonical reference directory", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator("#analysisLang").selectOption("en");
   await page.locator('[data-lens="biopolitical"]').click();

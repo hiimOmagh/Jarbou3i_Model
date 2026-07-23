@@ -10,7 +10,7 @@ async function expectNoSeriousViolations(page) {
 }
 
 test("runtime accessibility and keyboard contract", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await expect(page.locator("html")).toHaveAttribute("lang", /^(ar|en|fr)$/);
   await expect(page.locator("#toast")).toHaveAttribute("role", "status");
   await expect(page.locator("#modalBackdrop")).toHaveAttribute(

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("shared explanation hierarchy drills into authored details across both lenses", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("./");
   await page.locator("#langEn").click();
   await page.locator("#loadSampleBtn").click();
 

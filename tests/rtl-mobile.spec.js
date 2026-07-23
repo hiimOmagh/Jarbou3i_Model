@@ -4,7 +4,7 @@ test.describe('RTL and mobile layout smoke', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test('Arabic mobile flow remains readable and does not overflow horizontally', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.locator('#langAr').click();
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
     await expect(page.locator('.welcomeCard')).toBeVisible();
