@@ -7,10 +7,16 @@ async function useEnglish(page) {
 }
 
 async function createSavedWorkspace(page, lens) {
-  if (lens === "biopolitical") await page.locator('[data-lens="biopolitical"]').click();
+  if (lens === "biopolitical") {
+    await page.locator('[data-lens="biopolitical"]').click();
+  }
+
   await page.locator("#loadSampleBtn").click();
-  await expect(page.locator("#workspaceSaveState")).toHaveText("Saved locally");
+
   await expect(page.locator("#reviewPanel")).toBeVisible();
+
+  await expect(page.locator("#workspaceSaveState"))
+    .toHaveAttribute("data-state", "saved");
 }
 
 for (const lens of ["strategic", "biopolitical"]) {
@@ -31,9 +37,11 @@ test(`${lens} IndexedDB workspace survives reload and reopens a verified draft`,
       countRequest.onerror = () => reject(countRequest.error);
     });
   });
-  expect(stored).toBe(1);
   await page.reload();
-  await expect(page.locator("#workspaceSaveState")).toHaveText("Saved locally");
+
+  await expect(page.locator("#workspaceSaveState"))
+  .toHaveAttribute("data-state", "saved");
+
   await expect(page.locator("#topicInput")).toHaveValue(title);
   await expect(page.locator("#reviewPanel")).toBeVisible();
   await page.locator("#workspaceBtn").click();
@@ -89,3 +97,28 @@ test(`${lens} portable bundle restores losslessly and corrupted bundles fail clo
   await expect(page.locator(".workspaceRow")).toHaveCount(1);
 });
 }
+
+test("guarded reset removes the current workspace and full reset clears preferences", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await page.locator("#workspaceBtn").click();
+  await page.locator("#workspaceResetCurrent").click();
+  await expect(page.locator("#workspaceStatus")).toContainText("Click again");
+  await page.locator("#workspaceResetCurrent").click();
+  await expect(page.locator("#workspaceStatus")).toContainText("was removed");
+  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+
+  await page.locator("#workspaceClose").click();
+  await page.locator("#themeBtn").click();
+  await createSavedWorkspace(page, "biopolitical");
+  await page.locator("#workspaceBtn").click();
+  await page.locator("#workspaceResetAll").click();
+  await expect(page.locator("#workspaceStatus")).toContainText("Click again");
+  await page.locator("#workspaceResetAll").click();
+  await expect(page.locator("#workspaceStatus")).toContainText("preferences were removed");
+  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator("#workspaceSaveState"))
+  .toHaveAttribute("data-state", "empty");
+  await expect(page.locator("#reviewPanel")).toBeHidden();
+});

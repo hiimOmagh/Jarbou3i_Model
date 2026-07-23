@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.41` preserves Alpha.40's commit-grade resolution transactions and corrects the light-theme muted-text token with a contrast safety margin. A static token-level regression guard now complements the unchanged runtime Axe authority. Canonical analysis behavior and export remain unchanged.
+Version `2.1.0-alpha.44` completes the Alpha.43 recovery hardening by exposing locale-independent workspace persistence state, removing hover-driven button movement that could destabilize real pointer interaction in WebKit, and aligning workspace, export, evidence-manifest, and release-version contracts. It preserves the repaired Strategic samples, guarded workspace resets, immutable revisions, review and resolution ledgers, import and export semantics, and Biopolitical behavior.
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.

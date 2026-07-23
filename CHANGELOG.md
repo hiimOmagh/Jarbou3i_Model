@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.1.0-alpha.44 — Workspace State and Interaction Stability
+
+- Exposed workspace persistence through locale-independent `data-state` values.
+- Preserved localized Arabic, English, and French status text as presentation rather than machine state.
+- Updated workspace browser tests to assert semantic persistence state.
+- Removed positional button hover movement that could destabilize WebKit pointer actionability.
+- Preserved guarded current-workspace removal and full application reset behavior.
+- Reconciled Strategic evidence-gap assertions with the corrected dated sample.
+- Preserved immutable revisions, review and resolution ledgers, import and export contracts, and Biopolitical behavior.
+
+## 2.1.0-alpha.43 — Strategic Sample Recovery and Workspace Reset
+
+- Reconciled all AR/EN/FR runtime Strategic samples with the canonical v1.1 evidence and relationship contract.
+- Added a runtime-sample round-trip gate so the product cannot ship samples rejected by its own validator.
+- Added fail-visible, copyable operation diagnostics with stable codes, JSON paths, timestamps, version identity, and correlation IDs.
+- Added explicit two-step removal for the current workspace and a two-step full reset for all local workspaces and preferences.
+- Added repository-level reset primitives for IndexedDB and in-memory test backends.
+- Preserved canonical imports, immutable revisions, review ledger, resolution ledger, exports, and Biopolitical semantics.
+
+## 2.1.0-alpha.42 — Pre-stable Integrity and Data-Survivability Hardening
+
+- Generated a browser Strategic validator directly from the published v1.1 schema.
+- Enforced nested field, numeric range, semantic ID, and relationship-reference integrity before Strategic draft save or immutable resolution.
+- Sanitized non-HTTP(S) Strategic evidence URLs into review warnings.
+- Fixed the no-source prompt placeholder to use the canonical 1–5 evidence-strength range.
+- Prevented focused textarea edits from bypassing Escape/reload dirty guards.
+- Made section navigation, undo, redo, and save apply or reject pending textarea input deterministically.
+- Added browser storage persistence and quota-pressure diagnostics with an explicit user-initiated persistence request.
+- Added adversarial contract tests for malformed Strategic revisions, prompt drift, editor event ordering, and storage-health states.
+
 ## 2.1.0-alpha.41 — Resolution Accessibility Correction
 
 - Darkened the shared light-theme muted-text token from `#65758b` to `#5f6f84`, raising contrast on `#f8fafc` soft surfaces from 4.48:1 to approximately 4.90:1.

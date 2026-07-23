@@ -126,7 +126,7 @@ test("source clusters and evidence gaps remain authored, navigable, and lens-spe
     "Historical power distribution reference",
   );
   await expect(strategic.locator('[data-evidence-gap="uncitedEvidence"]')).toContainText("E1");
-  await expect(strategic.locator('[data-evidence-gap="missingSourceDate"]')).toContainText("E1");
+  await expect(strategic.locator('[data-evidence-gap="missingSourceDate"]')).toHaveCount(0);
   await strategic.locator('[data-source-cluster="SC1"] [data-reference-id="E1"]').click();
   await expect(page.locator("#referenceInspectorTitle")).toHaveText(
     "Historical power distribution reference",

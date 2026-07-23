@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.41";
+const EXPECTED_VERSION = "2.1.0-alpha.44";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl", button: "#langAr" },
@@ -16,7 +16,7 @@ const VIEWPORTS = [
   { id: "phone", width: 390, height: 844 },
 ];
 const REPORT_VIEWPORTS = VIEWPORTS.filter(({ id }) => id !== "tablet");
-const SCREENSHOT_KINDS = ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit"];
+const SCREENSHOT_KINDS = ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit"];
 const REPORT_DETAIL_SURFACES = [
   { id: "pillar", selector: "#pillar-question_context" },
   { id: "relationships", selector: "#relationships" },
@@ -91,6 +91,16 @@ test.describe("Release Candidate visual audit evidence", () => {
         ),
         { lang: locale.id, savedTheme: theme },
       );
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, "storage", {
+          configurable: true,
+          value: {
+            persisted: async () => false,
+            estimate: async () => ({ usage: 25, quota: 100 }),
+            persist: async () => false,
+          },
+        });
+      });
       await page.goto("/");
       await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
       await expect(page.locator("html")).toHaveAttribute("dir", locale.dir);
@@ -104,6 +114,12 @@ test.describe("Release Candidate visual audit evidence", () => {
       await clearTransientUi(page);
       await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `strategic-results-${key}.png`);
+
+      await page.locator("#workspaceBtn").click();
+      await expect(page.locator("#workspaceDialog")).toBeVisible();
+      await expect(page.locator("#storageHealth")).toHaveAttribute("data-state", "best_effort");
+      await saveScreenshot(page, testInfo, `workspace-health-${key}.png`);
+      await page.locator("#workspaceClose").click();
 
       await page.locator('[data-lens="biopolitical"]').click();
       await page.locator("#loadSampleBtn").click();
@@ -318,7 +334,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       report_case_count: reportCases.length,
       report_surface_count: 1 + REPORT_DETAIL_SURFACES.length,
       screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length * (1 + REPORT_DETAIL_SURFACES.length),
-      coverage: ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"],
+      coverage: ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"],
       required_files: [...requiredFiles, ...reportFiles, "visual-audit-metadata.json"],
     }, null, 2)}\n`, "utf8");
   });

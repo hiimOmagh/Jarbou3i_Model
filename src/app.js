@@ -1,5 +1,6 @@
-/* Jarbou3i Model v2.1.0-alpha.41 — resolution transactions */
+/* Jarbou3i Model v2.1.0-alpha.44 — resolution transactions */
 import "./biopolitics-schema-validator.js";
+import "./strategic-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
 import "./biopolitics.js";
@@ -35,6 +36,8 @@ import {
   reviewTaskKey,
 } from "./core/review-ledger.js";
 import { commitResolution, createResolutionProposal } from "./core/resolution-transaction.js";
+import { validateStrategicAnalysis } from "./strategic-integrity.js";
+import { inspectStorageHealth, requestStoragePersistence } from "./core/storage-health.js";
 
 "use strict";
 const I18N = {
@@ -1280,9 +1283,17 @@ function renderApplicationShell() {
     saved: labelText("Saved locally", "محفوظ محليًا", "Enregistré localement"),
     error: labelText("Local save needs attention", "الحفظ المحلي يحتاج مراجعة", "L’enregistrement local exige une vérification"),
   };
-  if ($("workspaceSaveState")) {
-    $("workspaceSaveState").textContent = saveLabels[state.workspaceSaveState] || saveLabels.idle;
-  }
+const workspaceSaveState = $("workspaceSaveState");
+
+if (workspaceSaveState) {
+  const currentSaveState = state.workspaceSaveState || "idle";
+
+  workspaceSaveState.textContent =
+    saveLabels[currentSaveState] || saveLabels.idle;
+
+  workspaceSaveState.dataset.state =
+    currentSaveState === "idle" ? "empty" : currentSaveState;
+}
 }
 function setDensity(value, persist = true) {
   state.density = SHELL_PREFERENCES.apply(value, { persist });
@@ -1456,21 +1467,6 @@ function normalizeAnalysis(raw) {
   }
   const citationCount = BIO.countNonPortableCitationMarkers(source);
   const a = BIO.sanitizePortableValue(source);
-  state.importValidation = citationCount
-    ? {
-        ok: true,
-        state: "strategic",
-        warnings: [
-          {
-            code: "NON_PORTABLE_CITATION_MARKERS_REMOVED",
-            path: "/",
-            severity: "warning",
-            count: citationCount,
-            message: `${citationCount} non-portable citation marker${citationCount === 1 ? " was" : "s were"} removed.`,
-          },
-        ],
-      }
-    : null;
   const out = {
     schema_version: a.schema_version || a.schemaVersion || "1.0.0",
     analysis_id: a.analysis_id || a.analysisId || "",
@@ -1491,7 +1487,30 @@ function normalizeAnalysis(raw) {
   out.scenarios.items = normalizeArray(out.scenarios.items);
   out.evidence.items = normalizeArray(out.evidence.items);
   out.assumptions.items = normalizeArray(out.assumptions.items);
-  return out;
+  const validation = validateStrategicAnalysis(out);
+  if (!validation.ok) {
+    const error = new Error(validation.errors[0]?.message || "invalid");
+    error.validation = validation;
+    throw error;
+  }
+  const warnings = [...validation.warnings];
+  if (citationCount) {
+    warnings.unshift({
+      code: "NON_PORTABLE_CITATION_MARKERS_REMOVED",
+      path: "/",
+      severity: "warning",
+      count: citationCount,
+      message: `${citationCount} non-portable citation marker${citationCount === 1 ? " was" : "s were"} removed.`,
+    });
+  }
+  for (const warning of warnings) {
+    const invalidUrl = warning.path?.match(/^\/evidence\/items\/(\d+)\/source_url$/);
+    if (warning.code === "INVALID_SOURCE_URL" && invalidUrl) {
+      validation.analysis.evidence.items[Number(invalidUrl[1])].source_url = "";
+    }
+  }
+  state.importValidation = { ...validation, state: "strategic", warnings };
+  return validation.analysis;
 }
 function extractJson(text) {
   return JSON_TOOLS.extractJson(text);
@@ -1946,7 +1965,7 @@ function buildSchema(
           source_url: "",
           source_date: "",
           source_note: "No external source access; publication-blocking placeholder",
-          evidence_strength: 0,
+          evidence_strength: 1,
           counter_evidence: "Not assessed without source access",
           confidence: "low",
         },
@@ -2260,8 +2279,12 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               "Les États-Unis sortent de la guerre avec une puissance industrielle et financière exceptionnelle.",
             basis: "source_based",
             source_title: "Référence sur la distribution historique de la puissance",
+            source_url: "",
+            source_date: "2026-07-17",
+            source_type: "internal_sample",
             source_note:
               "Données historiques générales sur la production et le financement de guerre.",
+            evidence_strength: 1,
             counter_evidence:
               "Certains États européens ont conservé une capacité institutionnelle et économique substantielle après 1945.",
             uncertainty:
@@ -2285,9 +2308,9 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
         ],
       },
       links: [
-        { from: "I1", to: "A1", relation: "motivates", confidence: "high" },
-        { from: "A1", to: "T1", relation: "uses", confidence: "high" },
-        { from: "T1", to: "R1", relation: "produces", confidence: "medium" },
+        { from: "I1", to: "A1", relation: "motivates", strength: 4 },
+        { from: "A1", to: "T1", relation: "uses", strength: 5 },
+        { from: "T1", to: "R1", relation: "produces", strength: 4 },
       ],
     });
   const ar = lang === "ar";
@@ -2474,7 +2497,11 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                 claim: "أوروبا فقدت مركزية النظام الدولي بعد الحرب.",
                 basis: "inference",
                 source_title: "مرجع تاريخي لتوزيع القوة",
+                source_url: "",
+                source_date: "2026-07-17",
+                source_type: "internal_sample",
                 source_note: "مستنتج من توزيع القوة بعد 1945",
+                evidence_strength: 1,
                 counter_evidence:
                   "احتفظت بعض الدول الأوروبية بقدرات مؤسسية واقتصادية مهمة بعد عام 1945.",
                 uncertainty:
@@ -2498,9 +2525,9 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
             ],
           },
           links: [
-            { from: "I1", to: "A1", relation: "motivates", confidence: "high" },
-            { from: "A1", to: "T1", relation: "uses", confidence: "high" },
-            { from: "T1", to: "R1", relation: "produces", confidence: "medium" },
+            { from: "I1", to: "A1", relation: "motivates", strength: 4 },
+            { from: "A1", to: "T1", relation: "uses", strength: 5 },
+            { from: "T1", to: "R1", relation: "produces", strength: 4 },
           ],
         }
       : {
@@ -2693,7 +2720,11 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
                   "Europe lost centrality in the international system after the war.",
                 basis: "inference",
                 source_title: "Historical power distribution reference",
+                source_url: "",
+                source_date: "2026-07-17",
+                source_type: "internal_sample",
                 source_note: "Inferred from post-1945 power distribution",
+                evidence_strength: 1,
                 counter_evidence:
                   "Some European states retained substantial institutional and economic capacity after 1945.",
                 uncertainty:
@@ -2717,9 +2748,9 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
             ],
           },
           links: [
-            { from: "I1", to: "A1", relation: "motivates", confidence: "high" },
-            { from: "A1", to: "T1", relation: "uses", confidence: "high" },
-            { from: "T1", to: "R1", relation: "produces", confidence: "medium" },
+            { from: "I1", to: "A1", relation: "motivates", strength: 4 },
+            { from: "A1", to: "T1", relation: "uses", strength: 5 },
+            { from: "T1", to: "R1", relation: "produces", strength: 4 },
           ],
         },
   );
@@ -4381,7 +4412,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.41";
+    "2.1.0-alpha.44";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4959,7 +4990,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.41";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.44";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4967,7 +4998,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.41";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.44";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5413,7 +5444,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.41";
+    "2.1.0-alpha.44";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -5551,6 +5582,17 @@ function workspaceText(key, values = {}) {
     hint: ["Local to this browser profile: no account, telemetry, or network transfer. Data is not encrypted by the app; export backups for important work.", "محلية داخل ملف تعريف المتصفح: بلا حساب أو تتبع أو نقل شبكي. لا تشفّر الأداة البيانات؛ صدّر نسخًا احتياطية للأعمال المهمة.", "Local à ce profil de navigateur, sans compte, télémétrie ni transfert réseau. L’application ne chiffre pas les données ; exportez les travaux importants."],
     export: ["Export workspace bundle", "تصدير حزمة مساحة العمل", "Exporter le paquet de l’espace"],
     import: ["Import workspace bundle", "استيراد حزمة مساحة عمل", "Importer un paquet d’espace"],
+    protect: ["Request persistent storage", "طلب تخزين دائم", "Demander un stockage persistant"],
+    resetAll: ["Reset app data", "إعادة ضبط بيانات الأداة", "Réinitialiser les données"],
+    resetCurrent: ["Remove current workspace", "حذف مساحة العمل الحالية", "Supprimer l’espace actuel"],
+    resetCurrentConfirm: ["Click again to permanently remove the current workspace", "انقر مرة أخرى لحذف مساحة العمل الحالية نهائيًا", "Cliquez à nouveau pour supprimer définitivement l’espace actuel"],
+    resetCurrentDone: ["The current workspace was removed.", "حُذفت مساحة العمل الحالية.", "L’espace actuel a été supprimé."],
+    resetConfirm: ["Click again to permanently remove every local workspace and reset app preferences", "انقر مرة أخرى لحذف كل مساحات العمل المحلية وإعادة ضبط تفضيلات الأداة نهائيًا", "Cliquez à nouveau pour supprimer définitivement tous les espaces locaux et réinitialiser les préférences"],
+    resetDone: ["All local workspaces and app preferences were removed.", "حُذفت كل مساحات العمل المحلية وتفضيلات الأداة.", "Tous les espaces locaux et préférences ont été supprimés."],
+    storagePersistent: ["Persistent storage granted. Browser eviction risk is reduced, but exported backups remain necessary.", "تم منح التخزين الدائم. انخفض خطر حذف المتصفح للبيانات، لكن النسخ الاحتياطية المصدّرة تظل ضرورية.", "Stockage persistant accordé. Le risque d’éviction diminue, mais les sauvegardes exportées restent nécessaires."],
+    storageBestEffort: ["Best-effort browser storage: data may be evicted under device pressure. Request persistence and export backups.", "تخزين المتصفح بأفضل جهد: قد تُحذف البيانات تحت ضغط مساحة الجهاز. اطلب التخزين الدائم وصدّر نسخًا احتياطية.", "Stockage navigateur au mieux : les données peuvent être évincées sous pression. Demandez la persistance et exportez des sauvegardes."],
+    storagePressure: ["Storage pressure detected ({percent}% used). Export a backup before adding more work.", "تم اكتشاف ضغط في التخزين ({percent}% مستخدم). صدّر نسخة احتياطية قبل إضافة عمل جديد.", "Pression de stockage détectée ({percent} % utilisés). Exportez une sauvegarde avant d’ajouter du travail."],
+    storageUnknown: ["Storage durability or quota cannot be measured in this browser. Treat local data as best effort and export backups.", "لا يمكن قياس ديمومة التخزين أو حصته في هذا المتصفح. اعتبر البيانات المحلية بأفضل جهد وصدّر نسخًا احتياطية.", "La durabilité ou le quota ne peut pas être mesuré. Considérez les données locales comme provisoires et exportez des sauvegardes."],
     empty: ["No local workspaces yet. Import or load an analysis to create one.", "لا توجد مساحات عمل محلية بعد. استورد تحليلًا أو حمّل مثالًا لإنشاء واحدة.", "Aucun espace local. Importez ou chargez une analyse pour en créer un."],
     open: ["Open", "فتح", "Ouvrir"],
     current: ["Current", "الحالية", "Actuel"],
@@ -5569,6 +5611,24 @@ function workspaceText(key, values = {}) {
   );
 }
 
+function formatStorageHealth(health) {
+  if (health.state === "persistent") return workspaceText("storagePersistent");
+  if (["pressure", "critical"].includes(health.state)) {
+    return workspaceText("storagePressure", { percent: Math.round((health.usageRatio || 0) * 100) });
+  }
+  if (!health.supported || (health.persisted === null && health.usageRatio === null)) return workspaceText("storageUnknown");
+  return workspaceText("storageBestEffort");
+}
+
+async function renderStorageHealth({ request = false } = {}) {
+  const target = $("storageHealth");
+  if (!target) return;
+  const health = request ? await requestStoragePersistence() : await inspectStorageHealth();
+  target.dataset.state = health.state;
+  target.textContent = formatStorageHealth(health);
+  $("workspaceProtectStorage").hidden = health.persisted === true || !health.canPersist;
+}
+
 function setWorkspaceStatus(kind, message) {
   state.workspaceSaveState = kind === "bad" ? "error" : state.activeWorkspaceId ? "saved" : "idle";
   const target = $("workspaceStatus");
@@ -5582,6 +5642,35 @@ function setWorkspaceStatus(kind, message) {
 function workspaceFailureMessage(error) {
   if (error?.code === "WORKSPACE_EXISTS") return workspaceText("duplicate");
   return workspaceText("error", { message: error?.message || error?.code || "unknown" });
+}
+
+function operationDiagnostic(error, operation) {
+  const first = error?.validation?.errors?.[0];
+  const code = first?.code || error?.code || error?.name || "UNKNOWN_FAILURE";
+  const path = first?.path || "/";
+  return {
+    id: `diag-${Date.now().toString(36)}-${globalThis.crypto?.randomUUID?.().slice(0, 8) || "local"}`,
+    operation,
+    code: String(code),
+    path: String(path),
+    message: String(first?.message || error?.message || "Unknown failure"),
+    app_version: document.querySelector('meta[name="app-version"]')?.content || "unknown",
+    occurred_at: new Date().toISOString(),
+  };
+}
+
+function showOperationFailure(error, operation, invoker) {
+  const diagnostic = operationDiagnostic(error, operation);
+  console.error("Jarbou3i operation failed", diagnostic, error);
+  const summary = labelText(
+    `The operation stopped safely. ${diagnostic.code} at ${diagnostic.path}. Diagnostic ${diagnostic.id}.`,
+    `توقفت العملية بأمان. ${diagnostic.code} عند ${diagnostic.path}. التشخيص ${diagnostic.id}.`,
+    `L’opération s’est arrêtée sans altérer les données. ${diagnostic.code} à ${diagnostic.path}. Diagnostic ${diagnostic.id}.`,
+  );
+  setWorkspaceStatus("bad", summary);
+  toast(summary);
+  showModal(labelText("Operation diagnostics", "تشخيص العملية", "Diagnostic de l’opération"), JSON.stringify(diagnostic, null, 2), invoker);
+  return diagnostic;
 }
 
 function editorText(key) {
@@ -5618,12 +5707,18 @@ function validateWorkspacePayload(workspace, payload) {
     errors.push(...(result.errors || []));
     return { valid: errors.length === 0, errors, warnings: result.warnings || [] };
   }
-  for (const key of PILLARS) if (!Array.isArray(payload?.[key])) errors.push({ path: `/${key}`, code: "SCHEMA_TYPE", message: `${key} must be an array.` });
-  if (!payload?.subject || typeof payload.subject !== "object" || Array.isArray(payload.subject)) errors.push({ path: "/subject", code: "SCHEMA_TYPE", message: "subject must be an object." });
-  for (const key of ["contradictions", "scenarios", "evidence", "assumptions"]) {
-    if (!payload?.[key] || !Array.isArray(payload[key].items)) errors.push({ path: `/${key}/items`, code: "SCHEMA_TYPE", message: `${key}.items must be an array.` });
+  const result = validateStrategicAnalysis(payload);
+  errors.push(...(result.errors || []));
+  const warnings = result.warnings || [];
+  for (const warning of warnings) {
+    if (warning.code !== "INVALID_SOURCE_URL") continue;
+    errors.push({
+      ...warning,
+      severity: "error",
+      message: "Source URL must be an absolute HTTP(S) URL before this draft can be saved or committed.",
+    });
   }
-  return { valid: errors.length === 0, errors, warnings: [] };
+  return { valid: errors.length === 0, errors, warnings };
 }
 
 function validateEditorPayload(payload) {
@@ -5646,7 +5741,13 @@ function renderCanonicalEditor() {
   $("editorResolve").disabled = snapshot.dirty || !state.editorWorkspace?.working_draft?.dirty || !snapshot.validation.valid;
   $("editorDirty").textContent = editorText(snapshot.dirty ? "dirty" : "clean");
   $("editorSections").innerHTML = keys.map((key) => `<button class="btn editorSection${state.editorPath === `/${key}` ? " active" : ""}" type="button" data-editor-path="/${escapeHtml(key)}">${escapeHtml(key)}</button>`).join("");
-  $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => { button.onclick = () => { state.editorPath = button.dataset.editorPath; renderCanonicalEditor(); }; });
+  $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => {
+    button.onclick = () => {
+      if (!applyEditorField()) return;
+      state.editorPath = button.dataset.editorPath;
+      renderCanonicalEditor();
+    };
+  });
   const key = state.editorPath.slice(1);
   $("editorFieldLabel").textContent = key;
   $("editorPath").textContent = state.editorPath;
@@ -5673,27 +5774,35 @@ async function openCanonicalEditor(workspace = null) {
 
 function closeCanonicalEditor() {
   if (!$("editorBackdrop").classList.contains("show")) return;
-  if (state.editorSession?.inspect().dirty && !window.confirm(editorText("dirty"))) return;
+  if ((editorHasPendingInput() || state.editorSession?.inspect().dirty) && !window.confirm(editorText("dirty"))) return;
   $("editorBackdrop").classList.remove("show");
   $("editorBackdrop").setAttribute("aria-hidden", "true");
   state.editorSession = null; state.editorWorkspace = null; state.editorPath = null;
   $("workspaceBtn").focus();
 }
 
+function editorHasPendingInput() {
+  const field = $("editorField");
+  return Boolean(state.editorSession && field && field.value !== field.dataset.appliedValue);
+}
+
 function applyEditorField() {
   try {
     const field = $("editorField");
-    if (field.value === field.dataset.appliedValue) return;
+    if (field.value === field.dataset.appliedValue) return true;
     const value = JSON.parse(field.value);
     state.editorSession.replace(state.editorPath, value);
     renderCanonicalEditor();
+    return true;
   } catch (error) {
     $("editorFieldStatus").className = "status bad";
     $("editorFieldStatus").textContent = `${editorText("parse")} ${error.message}`;
+    return false;
   }
 }
 
 async function saveEditorDraft() {
+  if (!applyEditorField()) return;
   const snapshot = state.editorSession.inspect();
   if (!snapshot.validation.valid) return;
   state.workspaceSaveState = "saving"; renderApplicationShell();
@@ -6132,6 +6241,7 @@ async function renderWorkspaceList() {
     target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceEdit); closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceResolve); closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceBtn")); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
+    $("workspaceResetCurrent").disabled = !state.activeWorkspaceId;
   } catch (error) {
     target.innerHTML = "";
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
@@ -6147,10 +6257,14 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   ));
   $("workspaceExport").textContent = workspaceText("export");
   $("workspaceImport").textContent = workspaceText("import");
+  $("workspaceProtectStorage").textContent = workspaceText("protect");
+  $("workspaceResetAll").textContent = workspaceText("resetAll");
+  $("workspaceResetCurrent").textContent = workspaceText("resetCurrent");
   $("workspaceBackdrop").classList.add("show");
   $("workspaceBackdrop").setAttribute("aria-hidden", "false");
   setWorkspaceStatus("good", workspaceText("ready"));
   await renderWorkspaceList();
+  await renderStorageHealth();
   $("workspaceDialog").focus();
 }
 
@@ -6408,6 +6522,8 @@ $("importBtn").onclick = async () => {
   $("timeframeInput").value = a.subject.context || state.context;
   state.topic = $("topicInput").value;
   state.context = $("timeframeInput").value;
+  // Present the accepted canonical payload, not the provider's irregular spacing.
+  $("jsonInput").value = JSON.stringify(a, null, 2);
   $("topicStatus").className = "status good";
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"));
@@ -6424,7 +6540,8 @@ $("repairPromptBtn").onclick = async (event) => {
   toast(ok ? t("repairCopied") : t("copyFailed"));
   if (!ok) showModal(t("repairPrompt"), p, invoker);
 };
-$("loadSampleBtn").onclick = async () => {
+$("loadSampleBtn").onclick = async (event) => {
+  try {
   const a = sampleAnalysis(state.analysisLang);
   if (a.analysis_lens === "biopolitical") {
     const validation = BIO_INTEGRITY.validateImport(a);
@@ -6454,27 +6571,94 @@ $("loadSampleBtn").onclick = async () => {
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
+  } catch (error) {
+    showOperationFailure(error, "load_sample", event.currentTarget);
+  }
 };
 $("modalClose").onclick = closeModal;
 $("workspaceBtn").onclick = (event) => openWorkspaceDialog(event.currentTarget);
 $("workspaceClose").onclick = closeWorkspaceDialog;
 $("workspaceExport").onclick = exportActiveWorkspace;
 $("workspaceImport").onclick = () => $("workspaceImportFile").click();
+$("workspaceProtectStorage").onclick = () => renderStorageHealth({ request: true });
+let resetCurrentArmedUntil = 0;
+$("workspaceResetCurrent").onclick = async () => {
+  const button = $("workspaceResetCurrent");
+  if (!state.activeWorkspaceId) return;
+  if (Date.now() > resetCurrentArmedUntil) {
+    resetCurrentArmedUntil = Date.now() + 8000;
+    button.textContent = workspaceText("resetCurrentConfirm");
+    button.dataset.armed = "true";
+    setWorkspaceStatus("warn", workspaceText("resetCurrentConfirm"));
+    return;
+  }
+  button.disabled = true;
+  try {
+    const current = await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
+    if (current) await WORKSPACE_REPOSITORY.remove(current.workspace_id, { expectedRevision: current.repository_revision });
+    state.activeWorkspaceId = null;
+    state.analysis = null;
+    state.stage = "topic";
+    state.shellSection = "workflow";
+    state.workspaceSaveState = "idle";
+    writeSettings({ activeWorkspaceId: null });
+    resetCurrentArmedUntil = 0;
+    button.dataset.armed = "false";
+    button.textContent = workspaceText("resetCurrent");
+    renderAll();
+    await renderWorkspaceList();
+    setWorkspaceStatus("good", workspaceText("resetCurrentDone"));
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+  } finally {
+    button.disabled = !state.activeWorkspaceId;
+  }
+};
+let resetAllArmedUntil = 0;
+$("workspaceResetAll").onclick = async () => {
+  const button = $("workspaceResetAll");
+  if (Date.now() > resetAllArmedUntil) {
+    resetAllArmedUntil = Date.now() + 8000;
+    button.textContent = workspaceText("resetConfirm");
+    button.dataset.armed = "true";
+    setWorkspaceStatus("warn", workspaceText("resetConfirm"));
+    return;
+  }
+  button.disabled = true;
+  try {
+    await WORKSPACE_REPOSITORY.clear();
+    SETTINGS.remove();
+    state.activeWorkspaceId = null;
+    state.analysis = null;
+    state.stage = "topic";
+    state.shellSection = "workflow";
+    state.workspaceSaveState = "idle";
+    resetAllArmedUntil = 0;
+    button.dataset.armed = "false";
+    button.textContent = workspaceText("resetAll");
+    renderAll();
+    await renderWorkspaceList();
+    setWorkspaceStatus("good", workspaceText("resetDone"));
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+  } finally {
+    button.disabled = false;
+  }
+};
 $("workspaceImportFile").onchange = async (event) => {
   const [file] = event.target.files || [];
   if (file) await importWorkspaceFile(file);
   event.target.value = "";
 };
 $("editorClose").onclick = closeCanonicalEditor;
-$("editorUndo").onclick = () => { state.editorSession?.undo(); renderCanonicalEditor(); };
-$("editorRedo").onclick = () => { state.editorSession?.redo(); renderCanonicalEditor(); };
+$("editorUndo").onclick = () => { if (applyEditorField()) { state.editorSession?.undo(); renderCanonicalEditor(); } };
+$("editorRedo").onclick = () => { if (applyEditorField()) { state.editorSession?.redo(); renderCanonicalEditor(); } };
 $("editorSave").onclick = saveEditorDraft;
 $("editorResolve").onclick = async (event) => {
   const workspace = state.editorWorkspace;
   closeCanonicalEditor();
   await openResolutionTransaction(workspace, $("workspaceBtn"));
 };
-$("editorField").addEventListener("change", applyEditorField);
 $("editorField").addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); applyEditorField(); }
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); applyEditorField(); if (state.editorSession?.inspect().validation.valid) saveEditorDraft(); }
@@ -6512,7 +6696,7 @@ document.addEventListener("keydown", (e) => {
   trapResolutionFocus(e);
 });
 window.addEventListener("beforeunload", (event) => {
-  if (!state.editorSession?.inspect().dirty) return;
+  if (!editorHasPendingInput() && !state.editorSession?.inspect().dirty) return;
   event.preventDefault();
   event.returnValue = "";
 });

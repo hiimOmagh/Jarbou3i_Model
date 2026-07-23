@@ -44,4 +44,60 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
     await expect(page.locator("#editorSave")).toBeDisabled();
   });
+
+  test("treats focused textarea input as unsaved and never loses it on Escape", async ({ page }) => {
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    const subject = JSON.parse(await field.inputValue());
+    subject.title = "Pending input must survive";
+    await field.fill(JSON.stringify(subject, null, 2));
+    page.once("dialog", async (dialog) => dialog.dismiss());
+    await field.press("Escape");
+    await expect(page.locator("#editorDialog")).toBeVisible();
+    await expect.poll(async () => JSON.parse(await field.inputValue()).title).toBe("Pending input must survive");
+  });
+
+  test("applies the current field before switching canonical sections", async ({ page }) => {
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    const subject = JSON.parse(await field.inputValue());
+    subject.title = "Section transition proof";
+    await field.fill(JSON.stringify(subject, null, 2));
+    await page.locator('[data-editor-path="/actors"]').click();
+    await expect(page.locator("#editorPath")).toHaveText("/actors");
+    await expect(page.locator("#editorDirty")).toContainText("Unsaved");
+    await page.locator('[data-editor-path="/subject"]').click();
+    await expect.poll(async () => JSON.parse(await field.inputValue()).title).toBe("Section transition proof");
+  });
+
+  test("blocks malformed strategic values from immutable resolution", async ({ page }) => {
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/actors"]').click();
+    const field = page.locator("#editorField");
+    const actors = JSON.parse(await field.inputValue());
+    const originalFinancial = actors[0].financial;
+    actors[0].financial = 99;
+    await field.fill(JSON.stringify(actors, null, 2));
+    await field.press("Control+Enter");
+    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorSave")).toBeDisabled();
+    await expect(page.locator("#editorResolve")).toBeDisabled();
+
+    actors[0].financial = originalFinancial;
+    await field.fill(JSON.stringify(actors, null, 2));
+    await field.press("Control+Enter");
+    await page.locator('[data-editor-path="/evidence"]').click();
+    const evidence = JSON.parse(await field.inputValue());
+    evidence.items[0].source_url = "javascript:alert(1)";
+    await field.fill(JSON.stringify(evidence, null, 2));
+    await field.press("Control+Enter");
+    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorSave")).toBeDisabled();
+    await expect(page.locator("#editorResolve")).toBeDisabled();
+  });
 });

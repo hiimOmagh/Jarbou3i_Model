@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const EXPECTED_VERSION = "2.1.0-alpha.41";
+const EXPECTED_VERSION = "2.1.0-alpha.44";
 const fail = (message) => {
   console.error(`Visual audit evidence review failed: ${message}`);
   process.exit(1);
@@ -23,9 +23,9 @@ if (metadata.deterministic_viewport_anchors !== true) fail("viewport captures we
 if (metadata.report_top_anchor_verified !== true) fail("standalone report hero was not verified at the top anchor");
 if (metadata.phone_connections_target !== "relationshipExplorerMount") fail("phone Connections evidence does not target the explorer");
 if (metadata.generated_by !== "tests/visual-audit-evidence.spec.js") fail("unexpected evidence generator");
-if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 5 || metadata.screenshot_count !== 156) fail("visual evidence counts must be 18 matrix cases, 6 report cases, 5 report surfaces, and 156 screenshots");
-if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 175) fail("required_files must contain 175 artifacts");
-for (const target of ["shell", "strategic-results", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"]) {
+if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 5 || metadata.screenshot_count !== 174) fail("visual evidence counts must be 18 matrix cases, 6 report cases, 5 report surfaces, and 174 screenshots");
+if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 193) fail("required_files must contain 193 artifacts");
+for (const target of ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"]) {
   if (!metadata.coverage?.includes(target)) fail(`coverage must include ${target}`);
 }
 
@@ -54,4 +54,4 @@ for (const locale of ["ar", "en", "fr"]) {
   }
 }
 
-console.log(`Visual audit evidence review passed: 18 matrix cases, 6 report cases, 5 report surfaces, 156 screenshots, ${metadata.required_files.length} artifacts`);
+console.log(`Visual audit evidence review passed: 18 matrix cases, 6 report cases, 5 report surfaces, 174 screenshots, ${metadata.required_files.length} artifacts`);

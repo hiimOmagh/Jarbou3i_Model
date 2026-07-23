@@ -60,12 +60,15 @@ for (const file of [
   "src/relationship-explorer.js",
   "src/relationship-explorer.css",
   "src/biopolitics-schema-validator.js",
+  "src/strategic-schema-validator.js",
+  "src/strategic-integrity.js",
   "src/biopolitics-sample-i18n.js",
   "src/json-parser.js",
   "src/styles.css",
   "src/core/lens-registry.js",
   "src/core/platform-state.js",
   "src/core/persistence.js",
+  "src/core/storage-health.js",
   "src/core/localization.js",
   "src/core/render-regions.js",
   "src/core/performance.js",
@@ -89,6 +92,7 @@ if (!index.includes('<script type="module" src="src/app.js"></script>')) {
 }
 const scriptOrder = [
   "src/biopolitics-schema-validator.js",
+  "src/strategic-schema-validator.js",
   "src/biopolitics-sample-i18n.js",
   "src/core/provenance.js",
   "src/biopolitics.js",
@@ -104,8 +108,8 @@ if (scriptOrder.some((position, index) => index && position <= scriptOrder[index
   fail("runtime side-effect imports load in an unsafe order");
 }
 
-if (pkg.version !== "2.1.0-alpha.41") fail("package version is wrong");
-if (!index.includes('name="app-version" content="2.1.0-alpha.41"')) {
+if (pkg.version !== "2.1.0-alpha.44") fail("package version is wrong");
+if (!index.includes('name="app-version" content="2.1.0-alpha.44"')) {
   fail("app version metadata is wrong");
 }
 for (const token of [

@@ -113,6 +113,9 @@ await expectCode(() => repository.replace(stale, { expectedRevision: 1 }), "WRIT
 await expectCode(() => repository.create(workspace), "WORKSPACE_EXISTS");
 assert(await repository.remove(workspace.workspace_id, { expectedRevision: 2 }), "revision-guarded delete failed");
 assert((await repository.list()).length === 0, "deleted workspace remained in repository");
+await repository.create(workspace);
+await repository.clear();
+assert((await repository.list()).length === 0, "workspace reset left local records behind");
 
 const versionOne = structuredClone(workspace);
 versionOne.format_version = 1;

@@ -212,6 +212,7 @@
           "$ref": "#/$defs/base"
         },
         {
+          "type": "object",
           "required": [
             "id",
             "name",
@@ -268,6 +269,7 @@
           "$ref": "#/$defs/base"
         },
         {
+          "type": "object",
           "required": [
             "id",
             "name",
@@ -307,6 +309,7 @@
           "$ref": "#/$defs/base"
         },
         {
+          "type": "object",
           "required": [
             "id",
             "name",
@@ -350,6 +353,7 @@
           "$ref": "#/$defs/base"
         },
         {
+          "type": "object",
           "required": [
             "id",
             "name",
@@ -385,6 +389,7 @@
           "$ref": "#/$defs/base"
         },
         {
+          "type": "object",
           "required": [
             "id",
             "name",
@@ -422,6 +427,7 @@
           "$ref": "#/$defs/base"
         },
         {
+          "type": "object",
           "required": [
             "id",
             "description",

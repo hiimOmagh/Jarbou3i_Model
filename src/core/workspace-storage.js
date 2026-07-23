@@ -122,6 +122,12 @@ export function createIndexedDbWorkspaceBackend({
         return true;
       });
     },
+    async clear() {
+      return transaction("readwrite", async (store) => {
+        await requestResult(store.clear());
+        return true;
+      });
+    },
     close() {
       connection?.close();
       connection = undefined;
@@ -152,6 +158,7 @@ export function createMemoryWorkspaceBackend(initial = []) {
       }
       return values.delete(id);
     },
+    async clear() { values.clear(); return true; },
     close() {},
   });
 }
@@ -212,6 +219,12 @@ export function createWorkspaceRepository({ backend, cryptoImpl } = {}) {
     },
     async remove(id, { expectedRevision } = {}) {
       return backend.delete(id, { expectedRevision });
+    },
+    async clear() {
+      if (typeof backend.clear !== "function") {
+        throw storageError("CLEAR_UNSUPPORTED", "Workspace storage cannot be reset safely.");
+      }
+      return backend.clear();
     },
     close() { backend.close?.(); },
   });

@@ -15,7 +15,7 @@
 <meta property="og:description" content="Client-side trilingual workbench for schema-governed strategic and biopolitical analysis." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.41" />
+<meta name="app-version" content="2.1.0-alpha.44" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/relationship-explorer.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
@@ -70,7 +70,7 @@
       </button>
     </nav>
     <div class="workspaceCommands">
-      <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span><span aria-hidden="true">·</span><span id="workspaceSaveState">لا توجد مساحة محفوظة</span></div>
+      <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span><span aria-hidden="true">·</span><span id="workspaceSaveState" data-state="empty">لا توجد مساحة محفوظة</span></div>
       <button class="btn primary shellNextAction" id="shellNextAction" type="button">
         <span class="shellNextActionCopy"><small data-i18n="nextActionLabel">الإجراء التالي</small><strong id="shellNextActionLabel">ابدأ بالموضوع</strong></span>
         <span class="shellNextActionIcon" aria-hidden="true">←</span>
@@ -212,8 +212,12 @@
     <div class="workspaceDialogActions">
       <button class="btn" id="workspaceExport" type="button" disabled>تصدير مساحة العمل</button>
       <button class="btn" id="workspaceImport" type="button">استيراد حزمة</button>
+      <button class="btn" id="workspaceProtectStorage" type="button">حماية التخزين</button>
+      <button class="btn danger" id="workspaceResetCurrent" type="button" disabled>حذف الحالية</button>
+      <button class="btn danger" id="workspaceResetAll" type="button">إعادة ضبط الكل</button>
       <input class="srOnly" id="workspaceImportFile" type="file" accept="application/json,.json" />
     </div>
+    <div class="storageHealth" id="storageHealth" role="status" aria-live="polite"></div>
     <div class="status" id="workspaceStatus" role="status" aria-live="polite"></div>
     <div class="workspaceList" id="workspaceList"></div>
   </section>

@@ -1,0 +1,67 @@
+{
+  "audit_date": "2026-07-23",
+  "baseline": {
+    "version": "2.1.0-alpha.41",
+    "commit": "0148dfa"
+  },
+  "candidate": "2.1.0-alpha.42",
+  "scope_boundary": "Local-first pre-stable hardening; no collaboration, accounts, remote storage, provider integration, OAuth, analytics, or new analytical lens.",
+  "confirmed_defects": [
+    {
+      "severity": "high",
+      "id": "STRATEGIC_DEEP_VALIDATION",
+      "status": "corrected",
+      "summary": "Strategic draft and resolution validation was shallow despite claiming whole-document validation.",
+      "control": "Generated JSON Schema validator plus duplicate-ID, reference-integrity, and safe-URL checks."
+    },
+    {
+      "severity": "high",
+      "id": "EDITOR_PENDING_INPUT_LOSS",
+      "status": "corrected",
+      "summary": "Focused textarea input could bypass dirty guards and be lost during close, reload, or section navigation.",
+      "control": "Raw pending input participates in guards and is applied before navigation, save, undo, and redo."
+    },
+    {
+      "severity": "medium",
+      "id": "PROMPT_SCHEMA_MISMATCH",
+      "status": "corrected",
+      "summary": "The Strategic no-source prompt emitted evidence_strength 0 while the schema requires 1 through 5.",
+      "control": "Schema-valid placeholder and regression assertion."
+    },
+    {
+      "severity": "medium",
+      "id": "STORAGE_DURABILITY_OVERCLAIM",
+      "status": "corrected",
+      "summary": "Workspace status did not distinguish persistent storage, best effort, quota pressure, or unsupported measurement.",
+      "control": "StorageManager health inspection, user-initiated persistence request, and explicit backup guidance."
+    }
+  ],
+  "residual_risks": [
+    { "priority": "P0", "id": "NO_CRASH_RECOVERY_JOURNAL", "probability_range": "30-60%", "impact": "Unsaved field loss after interruption" },
+    { "priority": "P0", "id": "NO_REVISION_RESTORE_UI", "probability_range": "40-70%", "impact": "Immutable history exists without practical recovery" },
+    { "priority": "P0", "id": "NO_CORRUPT_ROW_QUARANTINE", "probability_range": "15-35%", "impact": "Unrecoverable local rows can block user recovery" },
+    { "priority": "P1", "id": "LATE_CROSS_TAB_CONFLICT_NOTICE", "probability_range": "20-45%", "impact": "Surprise conflicts and repeated work" },
+    { "priority": "P1", "id": "UNBOUNDED_INDEXEDDB_BLOCKED_UPGRADE", "probability_range": "10-30%", "impact": "Workspace opening can appear hung" },
+    { "priority": "P1", "id": "NO_BACKUP_FRESHNESS", "probability_range": "35-65%", "impact": "Old exports may be mistaken for current protection" },
+    { "priority": "P1", "id": "OVERSIZED_COMPOSITION_ROOT", "probability_range": "60-85%", "impact": "Wide regression radius" },
+    { "priority": "P1", "id": "NO_GLOBAL_ASYNC_ERROR_BOUNDARY", "probability_range": "20-40%", "impact": "Stuck pending UI and weak diagnostics" },
+    { "priority": "P2", "id": "LOCAL_HASHES_NOT_NOTARIZED", "probability_range": "certain-by-design", "impact": "No non-repudiation" },
+    { "priority": "P2", "id": "INLINE_STYLE_CSP", "probability_range": "20-40% impact amplifier", "impact": "Larger injection consequence surface" },
+    { "priority": "P2", "id": "NO_HUMAN_AR_FR_AT_SIGNOFF", "probability_range": "certain limitation", "impact": "Automated checks cannot prove linguistic or assistive quality" },
+    { "priority": "P2", "id": "ONE_SHOT_PROMPT_TRUNCATION", "probability_range": "25-55%", "impact": "Truncated JSON and repair loops" }
+  ],
+  "candidate_authority": {
+    "canonical_editor_cases_per_browser": 5,
+    "browser_projects": ["chromium", "firefox", "webkit", "mobile-chrome"],
+    "browser_core_cases": 348,
+    "resolution_cases": 8,
+    "hosted_cases": 2,
+    "visual_screenshots": 174,
+    "visual_artifacts": 193
+  },
+  "stable_release_blockers": [
+    "P0 recovery controls",
+    "Complete browser, visual, CI, and deployed-production authority",
+    "Human Arabic, French, assistive-technology, and epistemic sign-off"
+  ]
+}

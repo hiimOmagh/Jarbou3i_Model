@@ -31,7 +31,7 @@ test("strategic claim–evidence matrix exports an explicitly derived audit arti
 
   const manifest = await downloadManifest(page, intelligence);
   expect(manifest.format).toBe("jarbou3i-evidence-intelligence-v1");
-  expect(manifest.app_version).toBe("2.1.0-alpha.41");
+  expect(manifest.app_version).toBe("2.1.0-alpha.44");
   expect(manifest.analysis_lens).toBe("strategic");
   expect(manifest.derived).toBe(true);
   expect(manifest.canonical_transport).toBe(false);
