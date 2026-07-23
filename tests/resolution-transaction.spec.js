@@ -49,7 +49,7 @@ test.describe("Resolution transactions", () => {
     await approve(page, "Approved after reviewing the exact Strategic subject diff.");
     await expect(page.locator("#topicInput")).toHaveValue("Committed strategic resolution");
     const stored = await page.evaluate(async () => {
-      const request = indexedDB.open("jarbou3i-model-workspaces", 1);
+      const request = indexedDB.open("jarbou3i-model-workspaces");
       const database = await new Promise((resolve, reject) => {
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);

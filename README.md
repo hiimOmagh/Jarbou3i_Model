@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.44` completes the Alpha.43 recovery hardening by exposing locale-independent workspace persistence state, removing hover-driven button movement that could destabilize real pointer interaction in WebKit, and aligning workspace, export, evidence-manifest, and release-version contracts. It preserves the repaired Strategic samples, guarded workspace resets, immutable revisions, review and resolution ledgers, import and export semantics, and Biopolitical behavior.
+Version `2.1.0-alpha.45` adds a crash-safe, checksummed editor recovery journal anchored to the exact saved workspace revision and draft. Debounced snapshots preserve both parsed canonical state and incomplete field input, expire after seven days, and can be explicitly restored or discarded. Stale, expired, or corrupt records fail closed and never become canonical history. Alpha.44 workspace, export, review, resolution, and evidence contracts remain preserved.
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.

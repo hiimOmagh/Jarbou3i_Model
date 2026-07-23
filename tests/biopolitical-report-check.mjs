@@ -38,7 +38,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
   const html = reportApi.build({
     analysis,
     lang,
-    version: "2.1.0-alpha.44",
+    version: "2.1.0-alpha.45",
     bio,
     graphApi,
   });
@@ -58,7 +58,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
 const html = reportApi.build({
   analysis: fixture,
   lang: "en",
-  version: "2.1.0-alpha.44",
+  version: "2.1.0-alpha.45",
   bio,
   graphApi,
 });

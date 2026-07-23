@@ -25,7 +25,7 @@ test(`${lens} IndexedDB workspace survives reload and reopens a verified draft`,
   await createSavedWorkspace(page, lens);
   const title = await page.locator("#topicInput").inputValue();
   const stored = await page.evaluate(async () => {
-    const request = indexedDB.open("jarbou3i-model-workspaces", 1);
+    const request = indexedDB.open("jarbou3i-model-workspaces");
     const database = await new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -67,7 +67,7 @@ test(`${lens} portable bundle restores losslessly and corrupted bundles fail clo
 
   await page.evaluate(async () => {
     localStorage.removeItem("jarbou3i-model-settings");
-    const request = indexedDB.open("jarbou3i-model-workspaces", 1);
+    const request = indexedDB.open("jarbou3i-model-workspaces");
     const database = await new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);

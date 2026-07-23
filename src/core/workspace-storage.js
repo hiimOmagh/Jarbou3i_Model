@@ -3,8 +3,9 @@
 import { migrateWorkspace, verifyWorkspace, WorkspaceContractError } from "./workspace-contract.js";
 
 export const WORKSPACE_DATABASE_NAME = "jarbou3i-model-workspaces";
-export const WORKSPACE_DATABASE_VERSION = 1;
+export const WORKSPACE_DATABASE_VERSION = 2;
 export const WORKSPACE_STORE_NAME = "workspaces";
+export const RECOVERY_JOURNAL_STORE_NAME = "recovery-journal";
 
 export class WorkspaceStorageError extends Error {
   constructor(code, message, cause) {
@@ -61,6 +62,10 @@ export function createIndexedDbWorkspaceBackend({
           const store = database.createObjectStore(WORKSPACE_STORE_NAME, { keyPath: "workspace_id" });
           store.createIndex("updated_at", "metadata.updated_at", { unique: false });
           store.createIndex("archived_at", "metadata.archived_at", { unique: false });
+        }
+        if (!database.objectStoreNames.contains(RECOVERY_JOURNAL_STORE_NAME)) {
+          const recoveryStore = database.createObjectStore(RECOVERY_JOURNAL_STORE_NAME, { keyPath: "workspace_id" });
+          recoveryStore.createIndex("expires_at", "expires_at", { unique: false });
         }
       };
       connection = await requestResult(request);

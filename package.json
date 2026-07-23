@@ -1,6 +1,6 @@
 {
   "name": "jarbou3i-model",
-  "version": "2.1.0-alpha.44",
+  "version": "2.1.0-alpha.45",
   "type": "module",
   "private": true,
   "description": "Jarbou3i Model: a trilingual dual-lens workbench with a preserved Strategic engine and a first-class Biopolitical Training Map v2.1 contract covering human functions, power systems, capture tests, distribution, evidence, agency, alternatives, and calibrated judgment.",
@@ -29,7 +29,7 @@
     "test:evidence:intelligence": "node tests/evidence-intelligence-check.mjs",
     "test:evidence:traceability": "node tests/evidence-traceability-check.mjs",
     "test:evidence:review-plan": "node tests/evidence-review-plan-check.mjs",
-    "test:workspace": "node tests/workspace-foundation-check.mjs && node tests/storage-health-check.mjs && node tests/canonical-editor-check.mjs && node tests/resolution-transaction-check.mjs",
+    "test:workspace": "node tests/workspace-foundation-check.mjs && node tests/storage-health-check.mjs && node tests/canonical-editor-check.mjs && node tests/recovery-journal-check.mjs && node tests/resolution-transaction-check.mjs",
     "test:strategic:integrity": "node tests/strategic-integrity-check.mjs",
     "test:strategic:samples": "node tests/runtime-sample-contract-check.mjs",
     "test:review-ledger": "node tests/review-ledger-check.mjs",

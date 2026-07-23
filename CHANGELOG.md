@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0-alpha.45 — Crash-Safe Editor Recovery
+
+- Added a separate checksummed `jarbou3i-editor-recovery@1` journal for unsaved editor state.
+- Anchored every recovery snapshot to workspace ID, repository revision, draft ID, base revision, and saved payload checksum.
+- Preserved parsed canonical state together with incomplete or malformed active-field input.
+- Added a 500 ms debounced capture path and seven-day expiry.
+- Added explicit restore and discard controls in Arabic, English, and French.
+- Deleted recovery snapshots after successful draft saves and guarded workspace resets.
+- Rejected and removed stale, expired, corrupt, and contract-incompatible recovery records.
+- Kept recovery state non-canonical and outside immutable revision, review-ledger, and resolution-ledger history.
+
 ## 2.1.0-alpha.44 — Workspace State and Interaction Stability
 
 - Exposed workspace persistence through locale-independent `data-state` values.

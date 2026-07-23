@@ -100,4 +100,50 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#editorSave")).toBeDisabled();
     await expect(page.locator("#editorResolve")).toBeDisabled();
   });
+
+  test("restores a revision-anchored snapshot after an interrupted editor session", async ({ page }) => {
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    const subject = JSON.parse(await field.inputValue());
+    subject.title = "Crash recovery proof";
+    await field.fill(JSON.stringify(subject, null, 2));
+    await field.press("Control+Enter");
+    await expect(page.locator("#editorDirty")).toContainText("Unsaved");
+    await page.waitForTimeout(700);
+
+    page.once("dialog", async (dialog) => dialog.accept());
+    await page.reload();
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await expect(page.locator("#editorRecovery")).toBeVisible();
+    await page.locator("#editorRecoveryRestore").click();
+    await expect.poll(async () => JSON.parse(await field.inputValue()).title).toBe("Crash recovery proof");
+    await expect(page.locator("#editorDirty")).toContainText("Unsaved");
+    await page.locator("#editorSave").click();
+    await expect(page.locator("#editorDirty")).toContainText("No unsaved");
+    await page.locator("#editorClose").click();
+    await page.reload();
+    await expect(page.locator("#topicInput")).toHaveValue("Crash recovery proof");
+  });
+
+  test("preserves incomplete field JSON without mutating canonical history", async ({ page }) => {
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    await field.fill('{"title":"Interrupted');
+    await page.waitForTimeout(700);
+
+    page.once("dialog", async (dialog) => dialog.accept());
+    await page.reload();
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator("#editorRecoveryRestore").click();
+    await expect(field).toHaveValue('{"title":"Interrupted');
+    await field.press("Control+Enter");
+    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorSave")).toBeDisabled();
+  });
 });

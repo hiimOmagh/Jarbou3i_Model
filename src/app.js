@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.44 — resolution transactions */
+/* Jarbou3i Model v2.1.0-alpha.45 — crash-safe editor recovery */
 import "./biopolitics-schema-validator.js";
 import "./strategic-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
@@ -29,6 +29,10 @@ import {
   createWorkspaceRepository,
 } from "./core/workspace-storage.js";
 import { createCanonicalEditorSession, writeEditorDraft } from "./core/canonical-editor.js";
+import {
+  createIndexedDbRecoveryBackend,
+  createRecoveryJournal,
+} from "./core/recovery-journal.js";
 import {
   appendReviewEvent,
   projectReviewLedger,
@@ -1047,6 +1051,7 @@ const PLATFORM = createPlatformRuntime({
       editorSession: null,
       editorWorkspace: null,
       editorPath: null,
+      editorRecovery: null,
       ledgerWorkspace: null,
       ledgerTasks: [],
       ledgerSelectedTaskId: null,
@@ -1087,6 +1092,9 @@ const state = PLATFORM_STATE.state;
 const $ = (id) => document.getElementById(id);
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),
+});
+const RECOVERY_JOURNAL = createRecoveryJournal({
+  backend: createIndexedDbRecoveryBackend(),
 });
 const SHELL_PREFERENCES = createShellPreferences({
   document,
@@ -4412,7 +4420,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.44";
+    "2.1.0-alpha.45";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4990,7 +4998,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.44";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.45";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4998,7 +5006,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.44";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.45";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5444,7 +5452,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.44";
+    "2.1.0-alpha.45";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
@@ -5686,6 +5694,13 @@ function editorText(key) {
     parse: ["Enter valid JSON for this canonical field.", "أدخل JSON صالحًا لهذا الحقل النظامي.", "Saisissez un JSON valide pour ce champ canonique."],
     saved: ["Working draft saved locally.", "تم حفظ مسودة العمل محليًا.", "Brouillon enregistré localement."],
     invalid: ["Resolve contract errors before saving.", "أصلح أخطاء العقد قبل الحفظ.", "Corrigez les erreurs de contrat avant l’enregistrement."],
+    recoveryTitle: ["Unsaved recovery snapshot found", "تم العثور على لقطة استرداد غير محفوظة", "Un instantané de récupération non enregistré a été trouvé"],
+    recoveryHint: ["It matches this exact saved draft. Restore it or discard it before continuing.", "تطابق هذه اللقطة المسودة المحفوظة نفسها. استعدها أو تجاهلها قبل المتابعة.", "Il correspond exactement à ce brouillon enregistré. Restaurez-le ou supprimez-le avant de continuer."],
+    restore: ["Restore snapshot", "استعادة اللقطة", "Restaurer l’instantané"],
+    discard: ["Discard snapshot", "تجاهل اللقطة", "Supprimer l’instantané"],
+    recovered: ["Unsaved editor state restored.", "تمت استعادة حالة المحرر غير المحفوظة.", "L’état non enregistré de l’éditeur a été restauré."],
+    discarded: ["Recovery snapshot discarded.", "تم تجاهل لقطة الاسترداد.", "L’instantané de récupération a été supprimé."],
+    recoverySaved: ["Crash recovery active", "الاسترداد من الأعطال نشط", "Récupération après incident active"],
   }[key] || [key, key, key];
   return state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
 }
@@ -5735,12 +5750,23 @@ function renderCanonicalEditor() {
   $("editorUndo").textContent = editorText("undo");
   $("editorRedo").textContent = editorText("redo");
   $("editorSave").textContent = editorText("save");
+  $("editorRecoveryTitle").textContent = editorText("recoveryTitle");
+  $("editorRecoveryHint").textContent = editorText("recoveryHint");
+  $("editorRecoveryRestore").textContent = editorText("restore");
+  $("editorRecoveryDiscard").textContent = editorText("discard");
+  $("editorRecovery").hidden = !state.editorRecovery;
   $("editorUndo").disabled = !snapshot.canUndo;
   $("editorRedo").disabled = !snapshot.canRedo;
   $("editorSave").disabled = !snapshot.dirty || !snapshot.validation.valid;
   $("editorResolve").disabled = snapshot.dirty || !state.editorWorkspace?.working_draft?.dirty || !snapshot.validation.valid;
+  if (state.editorRecovery) {
+    $("editorUndo").disabled = true;
+    $("editorRedo").disabled = true;
+    $("editorSave").disabled = true;
+    $("editorResolve").disabled = true;
+  }
   $("editorDirty").textContent = editorText(snapshot.dirty ? "dirty" : "clean");
-  $("editorSections").innerHTML = keys.map((key) => `<button class="btn editorSection${state.editorPath === `/${key}` ? " active" : ""}" type="button" data-editor-path="/${escapeHtml(key)}">${escapeHtml(key)}</button>`).join("");
+  $("editorSections").innerHTML = keys.map((key) => `<button class="btn editorSection${state.editorPath === `/${key}` ? " active" : ""}" type="button" data-editor-path="/${escapeHtml(key)}"${state.editorRecovery ? " disabled" : ""}>${escapeHtml(key)}</button>`).join("");
   $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => {
     button.onclick = () => {
       if (!applyEditorField()) return;
@@ -5752,6 +5778,7 @@ function renderCanonicalEditor() {
   $("editorFieldLabel").textContent = key;
   $("editorPath").textContent = state.editorPath;
   const editorField = $("editorField");
+  editorField.disabled = Boolean(state.editorRecovery);
   editorField.value = JSON.stringify(snapshot.payload[key], null, 2);
   editorField.dataset.appliedValue = editorField.value;
   const relevant = (snapshot.validation.errors || []).filter((issue) => String(issue.path || "/").startsWith(state.editorPath));
@@ -5766,6 +5793,8 @@ async function openCanonicalEditor(workspace = null) {
   state.editorWorkspace = loaded;
   state.editorSession = createCanonicalEditorSession({ payload: loaded.working_draft.canonical_payload, validate: validateEditorPayload });
   state.editorPath = null;
+  const recovery = await RECOVERY_JOURNAL.inspect(loaded);
+  state.editorRecovery = recovery.status === "recoverable" ? recovery.record : null;
   $("editorBackdrop").classList.add("show");
   $("editorBackdrop").setAttribute("aria-hidden", "false");
   renderCanonicalEditor();
@@ -5777,7 +5806,8 @@ function closeCanonicalEditor() {
   if ((editorHasPendingInput() || state.editorSession?.inspect().dirty) && !window.confirm(editorText("dirty"))) return;
   $("editorBackdrop").classList.remove("show");
   $("editorBackdrop").setAttribute("aria-hidden", "true");
-  state.editorSession = null; state.editorWorkspace = null; state.editorPath = null;
+  clearTimeout(editorRecoveryTimer);
+  state.editorSession = null; state.editorWorkspace = null; state.editorPath = null; state.editorRecovery = null;
   $("workspaceBtn").focus();
 }
 
@@ -5793,12 +5823,60 @@ function applyEditorField() {
     const value = JSON.parse(field.value);
     state.editorSession.replace(state.editorPath, value);
     renderCanonicalEditor();
+    scheduleEditorRecovery();
     return true;
   } catch (error) {
     $("editorFieldStatus").className = "status bad";
     $("editorFieldStatus").textContent = `${editorText("parse")} ${error.message}`;
     return false;
   }
+}
+
+let editorRecoveryTimer = null;
+function scheduleEditorRecovery() {
+  clearTimeout(editorRecoveryTimer);
+  if (!state.editorWorkspace || !state.editorSession) return;
+  editorRecoveryTimer = setTimeout(async () => {
+    const field = $("editorField");
+    try {
+      await RECOVERY_JOURNAL.capture({
+        workspace: state.editorWorkspace,
+        payload: state.editorSession.inspect().payload,
+        activePath: state.editorPath,
+        rawValue: field?.value || "",
+      });
+      $("editorRecoveryState").textContent = editorText("recoverySaved");
+    } catch (error) {
+      console.error("Editor recovery capture failed", operationDiagnostic(error, "editor_recovery_capture"));
+    }
+  }, 500);
+}
+
+function restoreEditorRecovery() {
+  const recovery = state.editorRecovery;
+  if (!recovery || !state.editorWorkspace) return;
+
+  state.editorSession = createCanonicalEditorSession({
+    payload: state.editorWorkspace.working_draft.canonical_payload,
+    validate: validateEditorPayload,
+  });
+
+  state.editorSession.replace("/", recovery.canonical_payload);
+  state.editorPath = recovery.active_path;
+  state.editorRecovery = null;
+
+  renderCanonicalEditor();
+  $("editorField").value = recovery.raw_value;
+  $("editorRecoveryState").textContent = editorText("recovered");
+  scheduleEditorRecovery();
+}
+
+async function discardEditorRecovery() {
+  if (!state.editorWorkspace) return;
+  await RECOVERY_JOURNAL.discard(state.editorWorkspace.workspace_id);
+  state.editorRecovery = null;
+  renderCanonicalEditor();
+  $("editorRecoveryState").textContent = editorText("discarded");
 }
 
 async function saveEditorDraft() {
@@ -5812,6 +5890,8 @@ async function saveEditorDraft() {
     const saved = await WORKSPACE_REPOSITORY.replace(next, { expectedRevision });
     state.editorWorkspace = saved;
     state.editorSession = createCanonicalEditorSession({ payload: saved.working_draft.canonical_payload, validate: validateEditorPayload });
+    await RECOVERY_JOURNAL.discard(saved.workspace_id);
+    state.editorRecovery = null;
     applyWorkspaceAnalysis(saved);
     setWorkspaceStatus("good", editorText("saved"));
     renderCanonicalEditor();
@@ -6596,6 +6676,7 @@ $("workspaceResetCurrent").onclick = async () => {
   try {
     const current = await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
     if (current) await WORKSPACE_REPOSITORY.remove(current.workspace_id, { expectedRevision: current.repository_revision });
+    await RECOVERY_JOURNAL.discard(state.activeWorkspaceId);
     state.activeWorkspaceId = null;
     state.analysis = null;
     state.stage = "topic";
@@ -6627,6 +6708,7 @@ $("workspaceResetAll").onclick = async () => {
   button.disabled = true;
   try {
     await WORKSPACE_REPOSITORY.clear();
+    await RECOVERY_JOURNAL.clear();
     SETTINGS.remove();
     state.activeWorkspaceId = null;
     state.analysis = null;
@@ -6651,9 +6733,11 @@ $("workspaceImportFile").onchange = async (event) => {
   event.target.value = "";
 };
 $("editorClose").onclick = closeCanonicalEditor;
-$("editorUndo").onclick = () => { if (applyEditorField()) { state.editorSession?.undo(); renderCanonicalEditor(); } };
-$("editorRedo").onclick = () => { if (applyEditorField()) { state.editorSession?.redo(); renderCanonicalEditor(); } };
+$("editorUndo").onclick = () => { if (applyEditorField()) { state.editorSession?.undo(); renderCanonicalEditor(); scheduleEditorRecovery(); } };
+$("editorRedo").onclick = () => { if (applyEditorField()) { state.editorSession?.redo(); renderCanonicalEditor(); scheduleEditorRecovery(); } };
 $("editorSave").onclick = saveEditorDraft;
+$("editorRecoveryRestore").onclick = restoreEditorRecovery;
+$("editorRecoveryDiscard").onclick = discardEditorRecovery;
 $("editorResolve").onclick = async (event) => {
   const workspace = state.editorWorkspace;
   closeCanonicalEditor();
@@ -6663,6 +6747,7 @@ $("editorField").addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); applyEditorField(); }
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); applyEditorField(); if (state.editorSession?.inspect().validation.valid) saveEditorDraft(); }
 });
+$("editorField").addEventListener("input", scheduleEditorRecovery);
 $("editorBackdrop").addEventListener("click", (event) => { if (event.target === $("editorBackdrop")) closeCanonicalEditor(); });
 $("ledgerClose").onclick = closeReviewLedger;
 $("ledgerAction").onchange = toggleLedgerWaiver;
