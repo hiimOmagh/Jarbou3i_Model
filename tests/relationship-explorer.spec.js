@@ -139,6 +139,16 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await expect(temporalOverlay).toHaveAttribute("aria-pressed", "true");
   const search = page.locator("#relationshipSearch");
   const saveView = page.locator("[data-save-view]");
+
+  // Model the Firefox failure boundary directly: the control may contain a
+  // newer draft than the mirrored state when another control triggers a full
+  // explorer render. The replacement must commit that live draft first.
+  await search.evaluate((input) => { input.value = "Public-health authorities"; });
+  await page.locator('[data-map-depth="guided"]').click();
+  await expect(search).toHaveValue("Public-health authorities");
+  await page.locator('[data-map-depth="analyst"]').click();
+  await expect(search).toHaveValue("Public-health authorities");
+
   const searchNode = await search.elementHandle();
   const saveNode = await saveView.elementHandle();
   await search.fill("Public-health authorities");
@@ -161,6 +171,7 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await page.locator("[data-map-reset]").click();
   await expect(page.locator('[data-map-mode="story"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator('[data-map-overlay="none"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#relationshipSearch")).toHaveValue("");
   const restoreView = page.locator("[data-restore-view]");
   await restoreView.focus();
   await restoreView.press("Enter");

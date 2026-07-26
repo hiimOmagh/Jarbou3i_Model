@@ -297,7 +297,7 @@
     return { nodes, edges };
   }
 
-  function setMode(mode) {
+  function setMode(mode, renderOptions) {
     state.mode = mode;
     state.families = mode === "story"
       ? new Set(["explicit"])
@@ -306,7 +306,7 @@
         : new Set(["explicit", "evidence", "structural"]);
     state.relation = "";
     state.tourIndex = 0;
-    render(`relationshipMode-${mode}`);
+    render(`relationshipMode-${mode}`, renderOptions);
   }
 
   function edgeExplanation(edge) {
@@ -554,8 +554,14 @@
     else resizeObserver?.disconnect();
   }
 
-  function render(focusId = "") {
+  function syncSearchDraft() {
+    const search = container?.querySelector("#relationshipSearch");
+    if (search) state.query = search.value;
+  }
+
+  function render(focusId = "", { preserveSearchDraft = true } = {}) {
     if (!container || !graph) return;
+    if (preserveSearchDraft) syncSearchDraft();
     if (searchRenderFrame) {
       cancelAnimationFrame(searchRenderFrame);
       searchRenderFrame = 0;
@@ -744,7 +750,7 @@
       const saved = savedViews.find((item) => item.id === state.savedViewId);
       if (!saved) return;
       restoreSnapshot(saved.snapshot);
-      render();
+      render("", { preserveSearchDraft: false });
     });
     bindClick("[data-delete-view]", () => {
       savedViews = savedViews.filter((item) => item.id !== state.savedViewId);
@@ -779,7 +785,7 @@
     bindClick("[data-reveal-selection]", () => {
       Object.assign(state, { mode: "network", view: "map", query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: false });
       state.families = new Set(["explicit", "evidence", "structural"]);
-      render();
+      render("", { preserveSearchDraft: false });
       requestAnimationFrame(() => {
         const id = state.selectedId || graph.edges.find((edge) => edge.id === state.selectedEdgeId)?.source;
         if (id) container.querySelector(`[data-map-node="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center", inline: "center" });
@@ -793,7 +799,7 @@
       if (!state.selectedId) return;
       Object.assign(state, { mode: "network", view: "map", query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: true });
       state.families = new Set(["explicit", "evidence", "structural"]);
-      render();
+      render("", { preserveSearchDraft: false });
     });
     container.querySelectorAll("[data-focus-toggle]").forEach((button) => button.onclick = () => {
       const entering = !state.focused;
@@ -831,7 +837,7 @@
     });
     bindClick("[data-map-reset]", () => {
       Object.assign(state, { query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: false, selectedId: "", selectedEdgeId: "", zoom: 1, tour: false, tourIndex: 0, overlay: "none", spatialYaw: -18, spatialPitch: 48, spatialZoom: 0.68 });
-      setMode("story");
+      setMode("story", { preserveSearchDraft: false });
     });
   }
 
@@ -884,7 +890,7 @@
     onOpenNode = options.onOpenNode || null;
     loadSavedViews(options.analysisScope || analysis?.analysis_id || analysis?.subject?.title || "analysis");
     if ((options.mobileDefault || !spatialAvailable && state.view === "spatial") && !state.selectedId) state.view = "list";
-    render();
+    render("", { preserveSearchDraft: false });
   }
 
   function focusNode(id) {
