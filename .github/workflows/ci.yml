@@ -37,11 +37,23 @@ jobs:
       - name: Run no-browser gates
         run: npm run test:ci:no-browser
 
-  browser:
-    name: Browser gates
+  browser-core:
+    name: Browser core (${{ matrix.project }})
     runs-on: ubuntu-latest
     needs: no-browser
-    timeout-minutes: 30
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            browser: chromium
+          - project: firefox
+            browser: firefox
+          - project: webkit
+            browser: webkit
+          - project: mobile-chrome
+            browser: chromium
     steps:
       - uses: actions/checkout@v5
 
@@ -58,14 +70,57 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
-      - name: Run browser gates and review evidence
-        run: npm run test:ci:browser
+      - name: Run core suite for ${{ matrix.project }}
+        run: >
+          npm run test:browser:core --
+          --project=${{ matrix.project }}
+          --workers=2
+
+      - uses: actions/upload-artifact@v5
+        if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
+        with:
+          name: browser-debug-${{ matrix.project }}
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+
+  browser-evidence:
+    name: Browser evidence
+    runs-on: ubuntu-latest
+    needs: no-browser
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Show runtime
+        run: |
+          node --version
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Capture and review hosted evidence
+        run: npm run test:browser:hosted
         env:
-          PLAYWRIGHT_WORKERS: 2
           HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence
+
+      - name: Capture and review visual-audit evidence
+        run: npm run test:browser:visual-audit
+        env:
           VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence
 
       - uses: actions/upload-artifact@v5
@@ -74,6 +129,7 @@ jobs:
           name: hosted-demo-evidence
           path: hosted-demo-evidence
           if-no-files-found: warn
+          retention-days: 14
 
       - uses: actions/upload-artifact@v5
         if: ${{ always() && hashFiles('visual-audit-evidence/**') != '' }}
@@ -81,15 +137,36 @@ jobs:
           name: visual-audit-evidence
           path: visual-audit-evidence
           if-no-files-found: warn
+          retention-days: 14
 
       - uses: actions/upload-artifact@v5
         if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
         with:
-          name: browser-debug
+          name: browser-evidence-debug
           path: |
             test-results
             playwright-report
           if-no-files-found: ignore
+          retention-days: 7
+
+  browser:
+    name: Browser gates
+    if: ${{ always() }}
+    needs:
+      - browser-core
+      - browser-evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify all browser gates
+        env:
+          CORE_RESULT: ${{ needs.browser-core.result }}
+          EVIDENCE_RESULT: ${{ needs.browser-evidence.result }}
+        run: |
+          echo "Browser core result: $CORE_RESULT"
+          echo "Browser evidence result: $EVIDENCE_RESULT"
+          test "$CORE_RESULT" = "success"
+          test "$EVIDENCE_RESULT" = "success"
 
   deploy-pages:
     name: Deploy accepted GitHub Pages build

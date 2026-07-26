@@ -138,22 +138,39 @@ if ((playwright.match(/channel: 'chromium'/g) || []).length !== 2) {
 
 for (const token of [
   "name: No-browser gates",
+  "name: Browser core (${{ matrix.project }})",
+  "name: Browser evidence",
   "name: Browser gates",
   "needs: no-browser",
+  "fail-fast: false",
+  "- project: chromium",
+  "- project: firefox",
+  "- project: webkit",
+  "- project: mobile-chrome",
   "actions/checkout@v5",
   "actions/setup-node@v5",
   "node-version: 24",
   "cache: npm",
   "npm ci",
   "npm run test:ci:no-browser",
-  "npx playwright install --with-deps",
-  "npm run test:ci:browser",
+  "npx playwright install --with-deps ${{ matrix.browser }}",
+  "npx playwright install --with-deps chromium",
+  "npm run test:browser:core --",
+  "--project=${{ matrix.project }}",
+  "--workers=2",
+  "npm run test:browser:hosted",
+  "npm run test:browser:visual-audit",
   "HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence",
   "VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence",
-  "PLAYWRIGHT_WORKERS: 2",
   "name: visual-audit-evidence",
-  "name: browser-debug",
+  "name: browser-debug-${{ matrix.project }}",
+  "name: browser-evidence-debug",
   "failure() && hashFiles('test-results/**', 'playwright-report/**') != ''",
+  "if: ${{ always() }}",
+  "CORE_RESULT: ${{ needs.browser-core.result }}",
+  "EVIDENCE_RESULT: ${{ needs.browser-evidence.result }}",
+  'test "$CORE_RESULT" = "success"',
+  'test "$EVIDENCE_RESULT" = "success"',
   "actions/upload-artifact@v5",
   "permissions:",
   "contents: read",
@@ -169,6 +186,15 @@ for (const token of [
   "actions/deploy-pages@v4",
 ]) {
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
+}
+for (const forbidden of [
+  "run: npm run test:ci:browser",
+  "PLAYWRIGHT_WORKERS: 2",
+  "name: browser-debug\n",
+]) {
+  if (workflow.includes(forbidden)) {
+    fail(`workflow retains the monolithic browser topology: ${forbidden.trim()}`);
+  }
 }
 
 const absoluteRootNavigation = [];
