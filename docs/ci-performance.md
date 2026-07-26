@@ -32,6 +32,20 @@ The lightweight `Browser gates` aggregation job succeeds only when both the
 complete core matrix and evidence job succeed. Its stable job name remains the
 branch-protection and deployment dependency.
 
+## Action runtime authority
+
+Artifact and Pages actions use their Node.js 24 release lines:
+
+- `actions/upload-artifact@v7`
+- `actions/configure-pages@v6`
+- `actions/upload-pages-artifact@v5`
+- `actions/deploy-pages@v5`
+
+The CI contract rejects the retired Node.js 20 action lines and requires exactly
+four general artifact-upload steps. This maintenance boundary does not change
+artifact names, paths, retention, Pages permissions, environment identity,
+deployment sequencing, or the validated browser execution topology.
+
 ## Failure and artifact behavior
 
 - Matrix fail-fast is disabled so one browser failure does not erase diagnostic
@@ -74,6 +88,7 @@ all of the following:
 5. Median end-to-end workflow duration is below 10 minutes.
 6. No test passes only on retry because CI retains `failOnFlakyTests`.
 7. A subsequent accepted `main` run deploys only after `Browser gates`.
+8. GitHub Actions reports no Node.js 20 runtime annotations.
 
 If the median remains above 10 minutes, inspect both WebKit shard durations and
 runner queue time before changing worker counts. If one shard is consistently
