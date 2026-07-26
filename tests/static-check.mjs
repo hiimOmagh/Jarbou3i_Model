@@ -302,6 +302,29 @@ for (const token of ['matchMedia("print").matches', "expect.poll", "synchronizeA
   if (!releaseAudit.includes(token)) fail(`final audit synchronization contract missing: ${token}`);
 }
 const relationshipBrowser = read("tests/relationship-explorer.spec.js");
+if (app.includes('import "./biopolitics-graph.js";')) {
+  fail("biopolitical graph still has an eager side-effect import");
+}
+for (const token of [
+  '"./biopolitics-graph.js"',
+  "biopoliticalGraphPromise",
+  "loadBiopoliticalGraph",
+  "biopoliticalGraph.attempts",
+  "data-retry-biopolitical-graph",
+]) {
+  if (!app.includes(token)) fail(`biopolitical graph capability loader missing: ${token}`);
+}
+for (const token of [
+  "typeof window.Jarbou3iBiopoliticsGraph",
+  "biopoliticalGraph?.attempts",
+  "Jarbou3iCapabilityLoads.biopoliticalGraph",
+  'route("**/biopolitics-graph.js"',
+  'unroute("**/biopolitics-graph.js"',
+]) {
+  if (!relationshipBrowser.includes(token)) {
+    fail(`biopolitical graph lazy-load browser contract missing: ${token}`);
+  }
+}
 if (app.includes('import "./relationship-explorer.js";')) {
   fail("relationship explorer still has an eager side-effect import");
 }

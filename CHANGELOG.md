@@ -1,5 +1,14 @@
 # Changelog
 
+## Alpha.53 — Capability-Gated Biopolitical Graph Module
+
+- Defers the shared biopolitical graph module until an accepted biopolitical analysis enters review.
+- Preserves one coherent graph authority for named references, inspection, connection counts, relationship exploration, and HTML reporting.
+- Memoizes successful capability loading and uses a fresh same-origin URL for recovery after a rejected dynamic import.
+- Adds localized loading and accessible failure/retry states instead of rendering a degraded graphless review.
+- Extends the existing relationship browser case to prove zero boot/lens attempts, one-time loading, visible failure, and successful retry.
+- Removes 18,916 raw source bytes from the initial module request graph while preserving Alpha.51 and Alpha.52 boundaries.
+
 ## Alpha.52 — Capability-Gated Biopolitical Report Renderer
 
 - Defers the standalone biopolitical report renderer until HTML report export is requested.

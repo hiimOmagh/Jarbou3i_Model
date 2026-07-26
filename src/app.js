@@ -5,7 +5,6 @@ import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
 import "./biopolitics.js";
 import "./biopolitics-integrity.js";
-import "./biopolitics-graph.js";
 import "./reference-ui.js";
 import "./json-parser.js";
 import "./contract-repair.js";
@@ -943,15 +942,40 @@ if (!BIO) throw new Error("Biopolitical analysis contract failed to load.");
 const BIO_INTEGRITY = window.Jarbou3iBiopoliticsIntegrity;
 if (!BIO_INTEGRITY)
   throw new Error("Biopolitical integrity gate failed to load.");
-const BIO_GRAPH = window.Jarbou3iBiopoliticsGraph;
-if (!BIO_GRAPH) throw new Error("Biopolitical relationship index failed to load.");
+let BIO_GRAPH = null;
 const REFERENCE_UI = window.Jarbou3iReferenceUi;
 if (!REFERENCE_UI) throw new Error("Named-reference interface failed to load.");
 const capabilityLoads = {
+  biopoliticalGraph: { attempts: 0, fulfilled: 0, failures: 0 },
   relationshipExplorer: { attempts: 0, fulfilled: 0, failures: 0 },
   biopoliticalReportRenderer: { attempts: 0, fulfilled: 0, failures: 0 },
 };
 window.Jarbou3iCapabilityLoads = capabilityLoads;
+let biopoliticalGraphPromise = null;
+function loadBiopoliticalGraph() {
+  if (!biopoliticalGraphPromise) {
+    capabilityLoads.biopoliticalGraph.attempts += 1;
+    const attempt = capabilityLoads.biopoliticalGraph.attempts;
+    const specifier =
+      attempt === 1
+        ? "./biopolitics-graph.js"
+        : `./biopolitics-graph.js?retry=${attempt}`;
+    biopoliticalGraphPromise = import(specifier)
+      .then(() => {
+        const graph = window.Jarbou3iBiopoliticsGraph;
+        if (!graph) throw new Error("Biopolitical graph failed to register.");
+        BIO_GRAPH = graph;
+        capabilityLoads.biopoliticalGraph.fulfilled += 1;
+        return graph;
+      })
+      .catch((error) => {
+        capabilityLoads.biopoliticalGraph.failures += 1;
+        biopoliticalGraphPromise = null;
+        throw error;
+      });
+  }
+  return biopoliticalGraphPromise;
+}
 let relationshipExplorerPromise = null;
 function loadRelationshipExplorer() {
   if (!relationshipExplorerPromise) {
@@ -4993,6 +5017,9 @@ function bindResultsInspection(lens) {
 }
 
 function currentBiopoliticalGraph(lang = state.lang) {
+  if (!BIO_GRAPH) {
+    throw new Error("Biopolitical graph capability is unavailable.");
+  }
   return BIO_GRAPH.build(state.analysis, lang);
 }
 function namedBioText(value, graph = currentBiopoliticalGraph()) {
@@ -5289,6 +5316,37 @@ function wireReviewTabs(selector, datasetKey, render) {
 function renderBiopoliticalReview() {
   if (!state.analysis || state.analysis.analysis_lens !== "biopolitical") {
     $("reviewPanel").classList.add("hide");
+    return;
+  }
+  if (!BIO_GRAPH) {
+    const requestedAnalysis = state.analysis;
+    $("reviewPanel").classList.remove("hide");
+    $("reviewNav").innerHTML = "";
+    $("reviewContent").setAttribute("aria-labelledby", "reviewTitle");
+    $("reviewContent").innerHTML =
+      `<div class="warning good" role="status">${escapeHtml(labelText("Loading the biopolitical graph…", "جارٍ تحميل الرسم البياني البيوسياسي…", "Chargement du graphe biopolitique…"))}</div>`;
+    loadBiopoliticalGraph()
+      .then(() => {
+        if (
+          state.analysis === requestedAnalysis
+          && state.analysis?.analysis_lens === "biopolitical"
+        ) {
+          renderBiopoliticalReview();
+        }
+      })
+      .catch(() => {
+        if (
+          state.analysis !== requestedAnalysis
+          || state.analysis?.analysis_lens !== "biopolitical"
+        ) {
+          return;
+        }
+        $("reviewContent").innerHTML =
+          `<div class="warning" role="alert"><p>${escapeHtml(labelText("The biopolitical graph could not be loaded.", "تعذّر تحميل الرسم البياني البيوسياسي.", "Impossible de charger le graphe biopolitique."))}</p><button type="button" class="secondary" data-retry-biopolitical-graph>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
+        $("reviewContent")
+          .querySelector("[data-retry-biopolitical-graph]")
+          ?.addEventListener("click", renderBiopoliticalReview, { once: true });
+      });
     return;
   }
   const valid = [
