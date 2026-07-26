@@ -1305,7 +1305,7 @@ if (workspaceSaveState) {
 }
 function setDensity(value, persist = true) {
   state.density = SHELL_PREFERENCES.apply(value, { persist });
-  renderApplicationShell();
+  renderRegions("shell");
 }
 function navigateShell(section, { focusTarget = null, announce = true } = {}) {
   const targets = {
@@ -1315,7 +1315,7 @@ function navigateShell(section, { focusTarget = null, announce = true } = {}) {
   };
   if (!targets[section] || (section === "review" && !state.analysis)) return;
   state.shellSection = section;
-  renderApplicationShell();
+  renderRegions("shell");
   requestAnimationFrame(() => {
     $(targets[section])?.scrollIntoView({
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -6445,6 +6445,9 @@ async function restoreLastWorkspace() {
 
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
+}
+function renderRegions(...names) {
+  PLATFORM_RENDERER.render(names);
 }
 function showModal(title, content, invoker = document.activeElement) {
   state.modalInvoker = invoker;
