@@ -10,6 +10,16 @@
 - Build an explicit static deployment artifact instead of publishing the repository root.
 - Establish current documentation, deployment, and versioning authorities.
 
+## 2.1.0-alpha.46 — Governed Release Operations
+
+- Protected `main` behind required no-browser and browser CI checks with no bypass actors.
+- Required pull-request-based changes and blocked force pushes and branch deletion.
+- Gated the GitHub Pages production build behind the accepted CI pipeline.
+- Retained automatic Cloudflare production deployment exclusively from protected `main`.
+- Documented exact-commit deployment parity checks for GitHub Pages and Cloudflare.
+- Aligned contributor and deployment guidance with the enforced governance workflow.
+- Preserved runtime behavior and all Alpha.45 recovery, workspace, export, review, resolution, and evidence contracts.
+
 ## 2.1.0-alpha.45 — Crash-Safe Editor Recovery
 
 - Added a separate checksummed `jarbou3i-editor-recovery@1` journal for unsaved editor state.

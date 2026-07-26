@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.45` adds a crash-safe, checksummed editor recovery journal anchored to the exact saved workspace revision and draft. Debounced snapshots preserve both parsed canonical state and incomplete field input, expire after seven days, and can be explicitly restored or discarded. Stale, expired, or corrupt records fail closed and never become canonical history. Alpha.44 workspace, export, review, resolution, and evidence contracts remain preserved.
+Version `2.1.0-alpha.46` establishes governed release operations around a protected `main` branch. Required no-browser and browser checks gate pull-request merges; accepted commits then drive commit-identical GitHub Pages and Cloudflare production deployments. Contributor and deployment documentation now describe the enforced pull-request workflow, exact-SHA verification, deployment parity, and release-tag discipline. Runtime behavior and the Alpha.45 recovery, workspace, export, review, resolution, and evidence contracts remain unchanged.
 
 Start with the [documentation index](docs/README.md). Current release operations are in [deployment and release operations](docs/operations/deployment.md), and product/contract identities are separated in the [versioning policy](docs/VERSIONING.md).
 

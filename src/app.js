@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.45 — crash-safe editor recovery */
+/* Jarbou3i Model v2.1.0-alpha.46 — Governed Release Operations */
 import "./biopolitics-schema-validator.js";
 import "./strategic-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
@@ -4420,7 +4420,7 @@ function htmlReport() {
     : state.analysisLens;
   const reportVersion =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.45";
+    "2.1.0-alpha.46";
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4998,7 +4998,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.45";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.46";
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5006,7 +5006,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.45";
+      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.46";
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5452,7 +5452,7 @@ function buildLosslessBiopoliticalReport() {
     : "en";
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.45";
+    "2.1.0-alpha.46";
   return BIO_REPORT.build({
     analysis,
     lang: reportLang,
