@@ -8,38 +8,46 @@ async function startWithoutPersistedWorkspace(page) {
   });
 }
 
-async function openExplorer(page, lang = "en") {
+async function openExplorer(
+  page,
+  lang = "en",
+  { expectColdStart = true } = {},
+) {
   await page.goto("./");
-  await expect
-    .poll(() => page.evaluate(() => typeof window.Jarbou3iBiopoliticsGraph))
-    .toBe("undefined");
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => window.Jarbou3iCapabilityLoads?.biopoliticalGraph?.attempts,
-      ),
-    )
-    .toBe(0);
-  await expect
-    .poll(() => page.evaluate(() => typeof window.Jarbou3iRelationshipExplorer))
-    .toBe("undefined");
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => window.Jarbou3iCapabilityLoads?.relationshipExplorer?.attempts,
-      ),
-    )
-    .toBe(0);
+  if (expectColdStart) {
+    await expect
+      .poll(() => page.evaluate(() => typeof window.Jarbou3iBiopoliticsGraph))
+      .toBe("undefined");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.Jarbou3iCapabilityLoads?.biopoliticalGraph?.attempts,
+        ),
+      )
+      .toBe(0);
+    await expect
+      .poll(() => page.evaluate(() => typeof window.Jarbou3iRelationshipExplorer))
+      .toBe("undefined");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.Jarbou3iCapabilityLoads?.relationshipExplorer?.attempts,
+        ),
+      )
+      .toBe(0);
+  }
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
   await page.locator("#analysisLang").selectOption(lang);
   await page.locator('[data-lens="biopolitical"]').click();
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => window.Jarbou3iCapabilityLoads?.biopoliticalGraph?.attempts,
-      ),
-    )
-    .toBe(0);
+  if (expectColdStart) {
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.Jarbou3iCapabilityLoads?.biopoliticalGraph?.attempts,
+        ),
+      )
+      .toBe(0);
+  }
   await page.locator("#loadSampleBtn").click();
   await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-selected", "true");
   await expect
@@ -194,6 +202,7 @@ test("localized relationship views never leak English relation enums or raw resi
     fr: ["Permet", "Classe", "Distribue", "Résiste", "Travailleurs et résidents soumis aux contrôles d’accès"],
   };
   for (const [locale, labels] of Object.entries(expectations)) {
+    await startWithoutPersistedWorkspace(page);
     await openExplorer(page, locale);
     await page.locator('[data-map-view="map"]').click();
     const explorer = page.locator("#relationshipExplorerMount");
@@ -330,7 +339,7 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await expect(page.locator('[data-map-overlay="temporal"]')).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#relationshipSearch")).toHaveValue("Public-health authorities");
 
-  await openExplorer(page);
+  await openExplorer(page, "en", { expectColdStart: false });
   await expect(page.locator(`#relationshipSavedView option[value="${savedId}"]`)).toHaveCount(1);
   await page.locator("#relationshipSavedView").selectOption(savedId);
   const deleteView = page.locator("[data-delete-view]");
