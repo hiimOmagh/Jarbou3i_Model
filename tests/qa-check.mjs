@@ -103,12 +103,24 @@ const scriptOrder = [
   "src/biopolitics-graph.js",
   "src/biopolitical-report.js",
   "src/reference-ui.js",
-  "src/relationship-explorer.js",
   "src/json-parser.js",
 ].map((file) => app.indexOf(`import "./${file.slice(4)}";`));
 if (scriptOrder.some((position) => position < 0)) fail("runtime side-effect import is missing");
 if (scriptOrder.some((position, index) => index && position <= scriptOrder[index - 1])) {
   fail("runtime side-effect imports load in an unsafe order");
+}
+if (app.includes('import "./relationship-explorer.js";')) {
+  fail("relationship explorer must not load from the application entry point");
+}
+for (const token of [
+  '"./relationship-explorer.js"',
+  "import(specifier)",
+  "?retry=${attempt}",
+  "relationshipExplorerPromise",
+  "Jarbou3iCapabilityLoads",
+  "data-retry-relationship-explorer",
+]) {
+  if (!app.includes(token)) fail(`relationship lazy-loading contract missing: ${token}`);
 }
 
 if (pkg.version !== "2.1.0-alpha.46") fail("package version is wrong");

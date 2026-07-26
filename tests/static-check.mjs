@@ -302,6 +302,28 @@ for (const token of ['matchMedia("print").matches', "expect.poll", "synchronizeA
   if (!releaseAudit.includes(token)) fail(`final audit synchronization contract missing: ${token}`);
 }
 const relationshipBrowser = read("tests/relationship-explorer.spec.js");
+if (app.includes('import "./relationship-explorer.js";')) {
+  fail("relationship explorer still has an eager side-effect import");
+}
+for (const token of [
+  '"./relationship-explorer.js"',
+  "import(specifier)",
+  "?retry=${attempt}",
+  "relationshipExplorerPromise",
+  "Jarbou3iCapabilityLoads",
+  "data-retry-relationship-explorer",
+]) {
+  if (!app.includes(token)) fail(`relationship capability loader missing: ${token}`);
+}
+for (const token of [
+  "typeof window.Jarbou3iRelationshipExplorer",
+  "relationshipExplorer.attempts",
+  "relationshipExplorer.failures",
+  'route("**/relationship-explorer.js"',
+  'unroute("**/relationship-explorer.js"',
+]) {
+  if (!relationshipBrowser.includes(token)) fail(`relationship lazy-load browser contract missing: ${token}`);
+}
 for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFocused()', 'saveView.press("Enter")', 'restoreView.press("Enter")', 'openSelected.press("Enter")']) {
   if (!relationshipBrowser.includes(token)) fail(`Firefox explorer stabilization contract missing: ${token}`);
 }

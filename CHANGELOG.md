@@ -20,6 +20,9 @@
 - Expose immutable render-region counters through local runtime diagnostics and assert shell-only density and navigation increments in the real browser.
 - Commit the live relationship-search draft before full explorer renders so Firefox cannot replace a newer input value with stale mirrored state.
 - Preserve explicit reset, saved-view restoration, analysis mounting, and selection-reveal query transitions as intentional state authorities.
+- Remove the Relationship Explorer from the initial application module graph and load it only when the Connections capability is activated.
+- Memoize the explorer capability after its first successful load, ignore late completion after navigation away, and expose localized loading, failure, and retry states.
+- Add browser contracts proving pre-activation absence, one-time successful loading, revisit reuse, and recovery after a deliberately failed dynamic import.
 
 ## 2.1.0-alpha.46 — Governed Release Operations
 
