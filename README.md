@@ -114,6 +114,7 @@ The analysis language stored in imported JSON controls report language and direc
 ```text
 index.html
 src/app.js
+src/features/application-shell.js
 src/core/platform-runtime.js
 src/core/lens-registry.js
 src/core/platform-state.js

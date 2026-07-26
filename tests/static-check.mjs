@@ -26,6 +26,7 @@ const parser = read("src/json-parser.js");
 const platformState = read("src/core/platform-state.js");
 const shellPreferences = read("src/core/shell-preferences.js");
 const shellNavigation = read("src/core/shell-navigation.js");
+const applicationShell = read("src/features/application-shell.js");
 const resultsOrientation = read("src/core/results-orientation.js");
 const resultsExplanation = read("src/core/results-explanation.js");
 const resultsInspection = read("src/core/results-inspection.js");
@@ -81,6 +82,7 @@ for (const [file, source] of [
   ["src/core/platform-state.js", platformState],
   ["src/core/shell-preferences.js", shellPreferences],
   ["src/core/shell-navigation.js", shellNavigation],
+  ["src/features/application-shell.js", applicationShell],
   ["src/core/results-orientation.js", resultsOrientation],
   ["src/core/results-explanation.js", resultsExplanation],
   ["src/core/results-inspection.js", resultsInspection],
@@ -178,15 +180,24 @@ for (const token of [
   if (!index.includes(token)) fail(`Phase 2 application-shell token missing: ${token}`);
 }
 for (const token of [
-  "createShellPreferences",
-  "renderApplicationShell",
-  "navigateShell",
-  "bindWorkspaceNavigation",
-  "resolveShellCommand",
-  "SHELL_PREFERENCES.apply",
+  "createApplicationShell",
+  "APPLICATION_SHELL.render()",
+  "APPLICATION_SHELL.bind()",
   "state.shellSection = \"review\"",
 ]) {
-  if (!app.includes(token)) fail(`Phase 2 shell runtime token missing: ${token}`);
+  if (!app.includes(token)) fail(`Phase 2 shell composition token missing: ${token}`);
+}
+for (const token of [
+  "createShellPreferences",
+  "function render()",
+  "function navigate(",
+  "function bind()",
+  "resolveShellCommand",
+  'renderRegion("shell")',
+]) {
+  if (!applicationShell.includes(token)) {
+    fail(`Phase 2 shell feature token missing: ${token}`);
+  }
 }
 for (const token of [
   'body[data-density="compact"]',

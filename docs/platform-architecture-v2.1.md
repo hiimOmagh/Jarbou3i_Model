@@ -41,9 +41,15 @@ src/core/platform-state.js
 src/core/persistence.js
 src/core/localization.js
 src/core/render-regions.js
+src/features/application-shell.js
 src/lenses/strategic/adapter.js
 src/lenses/biopolitical/adapter.js
 src/app.js
 ```
 
-`src/app.js` remains the temporary composition root. Shared state, persistence, localization, and render-region contracts now sit behind stable modules. Subsequent phases can extract reference indexing, inspectors, feature renderers, and selective invalidation in measured increments.
+`src/app.js` remains the temporary composition root. Shared state, persistence,
+localization, and render-region contracts sit behind stable modules. Alpha.50
+extracts the application-shell feature controller while leaving analytical
+contracts in the composition root. Subsequent phases can extract reference
+indexing, inspectors, and heavier feature renderers before capability-gated
+loading is activated.

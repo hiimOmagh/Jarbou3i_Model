@@ -38,6 +38,7 @@ export function createPlatformRuntime({
       runtimeVersion: PLATFORM_RUNTIME_VERSION,
       stateRevision: state.revision(),
       renderCycle: renderer.cycle(),
+      renderRegions: renderer.stats(),
       lenses: registry.manifests(),
       performance: monitor.snapshot(),
       pendingTasks: scheduler.pending(),

@@ -15,6 +15,7 @@ const graph = read("src/biopolitics-graph.js");
 const referenceUi = read("src/reference-ui.js");
 const explorer = read("src/relationship-explorer.js");
 const parser = read("src/json-parser.js");
+const applicationShell = read("src/features/application-shell.js");
 const css = read("src/styles.css");
 const pkg = JSON.parse(read("package.json"));
 
@@ -26,6 +27,7 @@ for (const [file, source] of [
   ["src/relationship-explorer.js", explorer],
   ["src/json-parser.js", parser],
   ["src/app.js", app],
+  ["src/features/application-shell.js", applicationShell],
   ["src/core/lens-registry.js", read("src/core/lens-registry.js")],
   ["src/core/performance.js", read("src/core/performance.js")],
   ["src/core/platform-runtime.js", read("src/core/platform-runtime.js")],
@@ -65,6 +67,7 @@ for (const file of [
   "src/biopolitics-sample-i18n.js",
   "src/json-parser.js",
   "src/styles.css",
+  "src/features/application-shell.js",
   "src/core/lens-registry.js",
   "src/core/platform-state.js",
   "src/core/persistence.js",

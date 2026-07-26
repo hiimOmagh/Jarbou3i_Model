@@ -12,8 +12,8 @@ import "./relationship-explorer.js";
 import "./json-parser.js";
 import "./contract-repair.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
-import { createShellPreferences, normalizeShellDensity } from "./core/shell-preferences.js";
-import { nextShellSection, resolveShellCommand } from "./core/shell-navigation.js";
+import { normalizeShellDensity } from "./core/shell-preferences.js";
+import { createApplicationShell } from "./features/application-shell.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
 import { createResultsExplanation } from "./core/results-explanation.js";
 import { createResultsInspectionIndex } from "./core/results-inspection.js";
@@ -1063,7 +1063,7 @@ const PLATFORM = createPlatformRuntime({
     shell() {
       applyI18n();
       renderLensToggle();
-      renderApplicationShell();
+      APPLICATION_SHELL.render();
     },
     workflow() {
       $("analysisLang").value = state.analysisLang;
@@ -1090,16 +1090,19 @@ const LENS_REGISTRY = PLATFORM.registry;
 const PLATFORM_RENDERER = PLATFORM.renderer;
 const state = PLATFORM_STATE.state;
 const $ = (id) => document.getElementById(id);
+const APPLICATION_SHELL = createApplicationShell({
+  document,
+  state,
+  settings: SETTINGS,
+  translate: t,
+  localize: labelText,
+  renderRegion: (name) => PLATFORM_RENDERER.render(name),
+});
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),
 });
 const RECOVERY_JOURNAL = createRecoveryJournal({
   backend: createIndexedDbRecoveryBackend(),
-});
-const SHELL_PREFERENCES = createShellPreferences({
-  document,
-  settings: SETTINGS,
-  initialDensity: state.density,
 });
 const isSupportedLanguage = LOCALIZATION.isSupported;
 function readSettings() {
@@ -1221,135 +1224,6 @@ function renderLensToggle() {
       state.analysisLens === "biopolitical"
         ? t("lensBiopoliticalHint")
         : t("lensStrategicHint");
-}
-function renderApplicationShell() {
-  const density = SHELL_PREFERENCES.current();
-  const compact = density === "compact";
-  const densityLabel = compact ? t("densityCompact") : t("densityComfortable");
-  const densityButton = $("densityBtn");
-  if (densityButton) {
-    densityButton.setAttribute("aria-pressed", compact ? "true" : "false");
-    densityButton.setAttribute("aria-label", `${t("densityTitle")}: ${densityLabel}`);
-    densityButton.title = `${t("densityTitle")}: ${densityLabel}`;
-  }
-  if ($("densityLabel")) $("densityLabel").textContent = densityLabel;
-  if ($("lensContextLabel")) {
-    $("lensContextLabel").textContent = t(
-      state.analysisLens === "biopolitical"
-        ? "lensContextBiopolitical"
-        : "lensContextStrategic",
-    );
-  }
-  for (const id of ["workspaceBar", "workspaceNav"]) {
-    $(id)?.setAttribute("aria-label", t("workspaceNavigation"));
-  }
-
-  const reviewAvailable = Boolean(state.analysis);
-  const reviewShortcut = $("reviewNavShortcut");
-  if (reviewShortcut) reviewShortcut.disabled = !reviewAvailable;
-  if (state.shellSection === "review" && !reviewAvailable) {
-    state.shellSection = "workflow";
-  }
-  document.querySelectorAll("[data-shell-nav]").forEach((button) => {
-    const active = button.dataset.shellNav === state.shellSection;
-    button.classList.toggle("active", active);
-    button.tabIndex = active && !button.disabled ? 0 : -1;
-    if (active) button.setAttribute("aria-current", "step");
-    else button.removeAttribute("aria-current");
-  });
-
-  const command = resolveShellCommand({
-    stage: state.stage,
-    hasAnalysis: reviewAvailable,
-  });
-  const commandLabel = t(
-    {
-      topic: "shellActionTopic",
-      import: "shellActionImport",
-      review: "shellActionReview",
-    }[command.id],
-  );
-  const nextAction = $("shellNextAction");
-  if (nextAction) {
-    nextAction.dataset.shellCommand = command.id;
-    nextAction.setAttribute("aria-label", `${t("nextActionLabel")}: ${commandLabel}`);
-  }
-  if ($("shellNextActionLabel")) $("shellNextActionLabel").textContent = commandLabel;
-  const nextIcon = nextAction?.querySelector(".shellNextActionIcon");
-  if (nextIcon) nextIcon.textContent = state.lang === "ar" ? "←" : "→";
-  if ($("workspaceButtonLabel")) {
-    $("workspaceButtonLabel").textContent = labelText("Workspaces", "مساحات العمل", "Espaces de travail");
-  }
-  if ($("workspaceBtn")) {
-    $("workspaceBtn").setAttribute("aria-label", labelText(
-      "Open local workspaces", "فتح مساحات العمل المحلية", "Ouvrir les espaces de travail locaux",
-    ));
-  }
-  const saveLabels = {
-    idle: labelText("No saved workspace", "لا توجد مساحة محفوظة", "Aucun espace enregistré"),
-    saving: labelText("Saving locally…", "جارٍ الحفظ محليًا…", "Enregistrement local…"),
-    saved: labelText("Saved locally", "محفوظ محليًا", "Enregistré localement"),
-    error: labelText("Local save needs attention", "الحفظ المحلي يحتاج مراجعة", "L’enregistrement local exige une vérification"),
-  };
-const workspaceSaveState = $("workspaceSaveState");
-
-if (workspaceSaveState) {
-  const currentSaveState = state.workspaceSaveState || "idle";
-
-  workspaceSaveState.textContent =
-    saveLabels[currentSaveState] || saveLabels.idle;
-
-  workspaceSaveState.dataset.state =
-    currentSaveState === "idle" ? "empty" : currentSaveState;
-}
-}
-function setDensity(value, persist = true) {
-  state.density = SHELL_PREFERENCES.apply(value, { persist });
-  renderRegions("shell");
-}
-function navigateShell(section, { focusTarget = null, announce = true } = {}) {
-  const targets = {
-    workflow: "workflowPanel",
-    engine: "enginePanel",
-    review: "reviewPanel",
-  };
-  if (!targets[section] || (section === "review" && !state.analysis)) return;
-  state.shellSection = section;
-  renderRegions("shell");
-  requestAnimationFrame(() => {
-    $(targets[section])?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-      block: "start",
-    });
-    if (focusTarget) $(focusTarget)?.focus({ preventScroll: true });
-    if (announce && $("shellAnnouncement")) {
-      $("shellAnnouncement").textContent = t(
-        {
-          workflow: "shellMovedToSetup",
-          engine: "shellMovedToModel",
-          review: "shellMovedToReview",
-        }[section],
-      );
-    }
-  });
-}
-function bindWorkspaceNavigation() {
-  const buttons = [...document.querySelectorAll("[data-shell-nav]")];
-  buttons.forEach((button) => {
-    button.onclick = () => navigateShell(button.dataset.shellNav);
-    button.addEventListener("keydown", (event) => {
-      const section = nextShellSection(button.dataset.shellNav, event.key, {
-        reviewAvailable: Boolean(state.analysis),
-        direction: document.documentElement.dir,
-      });
-      if (!section) return;
-      event.preventDefault();
-      navigateShell(section);
-      document.querySelector(`[data-shell-nav="${section}"]`)?.focus();
-    });
-  });
 }
 function setAnalysisLens(lens) {
   if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
@@ -5644,7 +5518,7 @@ function setWorkspaceStatus(kind, message) {
     target.className = `status ${kind || ""}`.trim();
     target.textContent = message;
   }
-  renderApplicationShell();
+  APPLICATION_SHELL.render();
 }
 
 function workspaceFailureMessage(error) {
@@ -5883,7 +5757,7 @@ async function saveEditorDraft() {
   if (!applyEditorField()) return;
   const snapshot = state.editorSession.inspect();
   if (!snapshot.validation.valid) return;
-  state.workspaceSaveState = "saving"; renderApplicationShell();
+  state.workspaceSaveState = "saving"; APPLICATION_SHELL.render();
   try {
     const expectedRevision = state.editorWorkspace.repository_revision;
     const next = await writeEditorDraft(state.editorWorkspace, snapshot.payload);
@@ -6225,7 +6099,7 @@ async function applyReviewLedgerEvent() {
     await renderReviewLedger();
     $("ledgerStatus").className = "status good";
     $("ledgerStatus").textContent = ledgerText("saved");
-    renderApplicationShell();
+    APPLICATION_SHELL.render();
   } catch (error) {
     ledgerEventPending = false;
     await renderReviewLedger();
@@ -6242,7 +6116,7 @@ async function exportReviewLedger() {
 
 async function persistImportedAnalysis(analysis) {
   state.workspaceSaveState = "saving";
-  renderApplicationShell();
+  APPLICATION_SHELL.render();
   try {
     const manifest = LENS_REGISTRY.manifest(analysis.analysis_lens || state.analysisLens);
     const workspace = await createWorkspace({
@@ -6446,9 +6320,6 @@ async function restoreLastWorkspace() {
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
 }
-function renderRegions(...names) {
-  PLATFORM_RENDERER.render(names);
-}
 function showModal(title, content, invoker = document.activeElement) {
   state.modalInvoker = invoker;
   $("modalTitle").textContent = title;
@@ -6536,16 +6407,7 @@ bindRadioGroupKeyboard("#analysisLens [role=radio]", (button) =>
 );
 $("themeBtn").onclick = () =>
   setTheme(!document.body.classList.contains("dark"));
-$("densityBtn").onclick = () =>
-  setDensity(SHELL_PREFERENCES.current() === "compact" ? "comfortable" : "compact");
-bindWorkspaceNavigation();
-$("shellNextAction").onclick = () => {
-  const command = resolveShellCommand({
-    stage: state.stage,
-    hasAnalysis: Boolean(state.analysis),
-  });
-  navigateShell(command.section, { focusTarget: command.focusTarget });
-};
+APPLICATION_SHELL.bind();
 $("copyPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
   state.topic = $("topicInput").value.trim();
@@ -6820,7 +6682,7 @@ PLATFORM.performance.measure(
   "boot.initialize",
   () => {
     initializeTheme();
-    setDensity(state.density, false);
+    APPLICATION_SHELL.setDensity(state.density, { persist: false });
     renderAll();
     validateJsonInput();
   },

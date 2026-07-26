@@ -16,6 +16,8 @@
 - Route density changes and workspace navigation through the named shell render region.
 - Preserve full-region rendering for language, lens, analysis, workspace, import, and reset transitions.
 - Add deterministic coverage proving a selective shell cycle does not execute or increment workflow, engine, or review regions.
+- Extract density, navigation, focus, command activation, and shell rendering from the application entry point into a bounded application-shell feature controller.
+- Expose immutable render-region counters through local runtime diagnostics and assert shell-only density and navigation increments in the real browser.
 
 ## 2.1.0-alpha.46 — Governed Release Operations
 

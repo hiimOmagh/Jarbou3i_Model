@@ -108,6 +108,7 @@ assert(incompleteCapabilitiesRejected, "incomplete lens capabilities were accept
 
 const index = fs.readFileSync("index.html", "utf8");
 const app = fs.readFileSync("src/app.js", "utf8");
+const applicationShell = fs.readFileSync("src/features/application-shell.js", "utf8");
 const smoke = fs.readFileSync("tests/smoke.spec.js", "utf8");
 assert(
   index.includes('<script type="module" src="src/app.js"></script>'),
@@ -126,6 +127,21 @@ for (const token of [
 ]) {
   assert(app.includes(token), `runtime is not routed through the platform contract: ${token}`);
 }
+for (const token of [
+  "createApplicationShell",
+  "APPLICATION_SHELL.render()",
+  "APPLICATION_SHELL.bind()",
+]) {
+  assert(app.includes(token), `entry-point feature composition is missing: ${token}`);
+}
+for (const token of [
+  "createShellPreferences",
+  "nextShellSection",
+  "resolveShellCommand",
+  'renderRegion("shell")',
+]) {
+  assert(applicationShell.includes(token), `application-shell feature is incomplete: ${token}`);
+}
 for (const file of [
   "src/core/platform-state.js",
   "src/core/persistence.js",
@@ -133,6 +149,7 @@ for (const file of [
   "src/core/render-regions.js",
   "src/core/performance.js",
   "src/core/platform-runtime.js",
+  "src/features/application-shell.js",
 ]) {
   assert(fs.existsSync(file), `shared platform service is missing: ${file}`);
 }

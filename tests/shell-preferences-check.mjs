@@ -33,6 +33,10 @@ assert(updates.at(-1)?.density === "comfortable", "density toggle was not persis
 assert(Object.isFrozen(preferences.snapshot()), "preference snapshot must be immutable");
 
 const app = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+const feature = fs.readFileSync(
+  new URL("../src/features/application-shell.js", import.meta.url),
+  "utf8",
+);
 const strategicSchema = fs.readFileSync(
   new URL("../schema/strategic-analysis.schema.json", import.meta.url),
   "utf8",
@@ -68,5 +72,10 @@ for (const schema of [strategicSchema, biopoliticalSchema]) {
   assert(!schema.includes('"density"'), "display density leaked into a canonical schema");
   assert(!schema.includes('"shellSection"'), "shell position leaked into a canonical schema");
 }
+assert(
+  feature.includes("createShellPreferences") &&
+    !app.includes("createShellPreferences({"),
+  "shell preferences were not isolated behind the application-shell feature",
+);
 
 console.log("Shell preferences checks passed.");
