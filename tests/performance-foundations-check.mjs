@@ -3,6 +3,7 @@ import {
   createRevisionCache,
   createTaskScheduler,
 } from "../src/core/performance.js";
+import { createRegionRenderer } from "../src/core/render-regions.js";
 
 const fail = (message) => {
   console.error(`Performance foundations check failed: ${message}`);
@@ -52,5 +53,28 @@ assert(scheduled.length === 1, "a coalesced task batch scheduled more than once"
 scheduled[0]();
 assert(queued.join(",") === "latest,persist", "scheduled work was not deduplicated deterministically");
 assert(scheduler.pending().length === 0, "completed tasks remain pending");
+
+const regionCalls = [];
+const regionRenderer = createRegionRenderer({
+  shell: () => regionCalls.push("shell"),
+  workflow: () => regionCalls.push("workflow"),
+  engine: () => regionCalls.push("engine"),
+  review: () => regionCalls.push("review"),
+});
+regionRenderer.render(["shell"]);
+assert(
+  regionCalls.join(",") === "shell",
+  "selective rendering executed a region outside the requested shell boundary",
+);
+assert(
+  regionRenderer.stats().find(({ name }) => name === "shell")?.count === 1 &&
+    regionRenderer.stats().filter(({ name }) => name !== "shell").every(({ count }) => count === 0),
+  "selective rendering changed a non-shell render counter",
+);
+regionRenderer.renderAll();
+assert(
+  regionRenderer.stats().every(({ name, count }) => count === (name === "shell" ? 2 : 1)),
+  "full rendering did not remain available after a selective cycle",
+);
 
 console.log("Performance foundations checks passed.");

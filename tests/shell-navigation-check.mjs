@@ -57,9 +57,14 @@ for (const token of [
   "resolveShellCommand",
   "bindWorkspaceNavigation",
   "shellNextAction",
+  'renderRegions("shell")',
 ]) {
   assert(app.includes(token), `runtime integration is missing ${token}`);
 }
+assert(
+  (app.match(/renderRegions\("shell"\)/g) || []).length === 2,
+  "density and navigation must be the only shell-selective render paths in this slice",
+);
 for (const token of [
   'id="shellNextAction"',
   'id="shellAnnouncement"',

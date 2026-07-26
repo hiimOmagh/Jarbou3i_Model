@@ -11,6 +11,12 @@
 - Establish current documentation, deployment, and versioning authorities.
 - Move artifact and GitHub Pages actions to their Node.js 24 release lines while preserving the accepted CI topology and deployment authority.
 
+### Performance architecture
+
+- Route density changes and workspace navigation through the named shell render region.
+- Preserve full-region rendering for language, lens, analysis, workspace, import, and reset transitions.
+- Add deterministic coverage proving a selective shell cycle does not execute or increment workflow, engine, or review regions.
+
 ## 2.1.0-alpha.46 — Governed Release Operations
 
 - Protected `main` behind required no-browser and browser CI checks with no bypass actors.
