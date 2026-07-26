@@ -5,6 +5,7 @@ import {
   nextShellSection,
   resolveShellCommand,
 } from "../src/core/shell-navigation.js";
+import { createApplicationShell } from "../src/features/application-shell.js";
 
 const fail = (message) => {
   console.error(`Shell navigation check failed: ${message}`);
@@ -50,20 +51,132 @@ assert(
   "analysis did not promote review",
 );
 
+class FakeElement {
+  constructor(id) {
+    this.id = id;
+    this.dataset = {};
+    this.style = {};
+    this.disabled = false;
+    this.tabIndex = 0;
+    this.attributes = new Map();
+    this.classList = { toggle() {} };
+  }
+
+  setAttribute(name, value) {
+    this.attributes.set(name, String(value));
+  }
+
+  removeAttribute(name) {
+    this.attributes.delete(name);
+  }
+
+  querySelector() {
+    return null;
+  }
+
+  addEventListener() {}
+
+  focus() {
+    this.focused = true;
+  }
+
+  scrollIntoView(options) {
+    this.scrollOptions = options;
+  }
+}
+
+const elements = new Map();
+const fakeDocument = {
+  body: new FakeElement("body"),
+  documentElement: new FakeElement("html"),
+  getElementById(id) {
+    if (!elements.has(id)) elements.set(id, new FakeElement(id));
+    return elements.get(id);
+  },
+  querySelectorAll() {
+    return [];
+  },
+  querySelector() {
+    return null;
+  },
+};
+fakeDocument.documentElement.dir = "ltr";
+const shellState = {
+  density: "comfortable",
+  analysisLens: "strategic",
+  analysis: null,
+  shellSection: "workflow",
+  stage: "topic",
+  lang: "en",
+  workspaceSaveState: "idle",
+};
+const regionCalls = [];
+let shellController;
+shellController = createApplicationShell({
+  document: fakeDocument,
+  state: shellState,
+  settings: { update() {} },
+  translate: (key) => key,
+  localize: (english) => english,
+  renderRegion: (name) => {
+    regionCalls.push(name);
+    if (name === "shell") shellController.render();
+  },
+  requestFrame: (operation) => operation(),
+  reducedMotion: () => true,
+});
+shellController.setDensity("compact");
+assert(shellState.density === "compact", "feature did not update shell density");
+assert(
+  regionCalls.join(",") === "shell",
+  "feature density change escaped the shell render boundary",
+);
+shellController.navigate("engine");
+assert(shellState.shellSection === "engine", "feature navigation did not update shell state");
+assert(
+  regionCalls.join(",") === "shell,shell",
+  "feature navigation escaped the shell render boundary",
+);
+assert(
+  elements.get("enginePanel")?.scrollOptions?.behavior === "auto",
+  "feature navigation lost reduced-motion behavior",
+);
+
 const app = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+const feature = fs.readFileSync(
+  new URL("../src/features/application-shell.js", import.meta.url),
+  "utf8",
+);
 const index = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 for (const token of [
-  "nextShellSection",
-  "resolveShellCommand",
-  "bindWorkspaceNavigation",
-  "shellNextAction",
-  'renderRegions("shell")',
+  "createApplicationShell",
+  "APPLICATION_SHELL.render()",
+  "APPLICATION_SHELL.bind()",
+  "APPLICATION_SHELL.setDensity",
 ]) {
   assert(app.includes(token), `runtime integration is missing ${token}`);
 }
 assert(
-  (app.match(/renderRegions\("shell"\)/g) || []).length === 2,
-  "density and navigation must be the only shell-selective render paths in this slice",
+  !app.includes("function renderApplicationShell") &&
+    !app.includes("function navigateShell") &&
+    !app.includes("function bindWorkspaceNavigation"),
+  "the entry point still owns extracted shell feature behavior",
+);
+for (const token of [
+  "createShellPreferences",
+  "nextShellSection",
+  "resolveShellCommand",
+  "function render()",
+  "function setDensity(",
+  "function navigate(",
+  "function activateNext()",
+  "function bind()",
+]) {
+  assert(feature.includes(token), `application-shell feature is missing ${token}`);
+}
+assert(
+  (feature.match(/renderRegion\("shell"\)/g) || []).length === 2,
+  "density and navigation must remain the only selective shell render paths",
 );
 for (const token of [
   'id="shellNextAction"',

@@ -1,5 +1,23 @@
 import { test, expect } from "@playwright/test";
 
+async function renderRegionCounts(page) {
+  return page.evaluate(() =>
+    Object.fromEntries(
+      window.Jarbou3iPlatformDiagnostics
+        .inspect()
+        .renderRegions
+        .map(({ name, count }) => [name, count]),
+    ),
+  );
+}
+
+function expectShellOnlyIncrement(before, after) {
+  expect(after.shell - before.shell).toBe(1);
+  for (const region of ["workflow", "engine", "review"]) {
+    expect(after[region] - before[region]).toBe(0);
+  }
+}
+
 test("premium shell preserves orientation, density, and lens parity", async ({ page }) => {
   await page.goto("./");
 
@@ -18,14 +36,20 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
   await expect(page.locator('.workspaceNavItem.active .workspaceNavIndex')).toBeVisible();
 
   const density = page.locator("#densityBtn");
+  const beforeDensity = await renderRegionCounts(page);
   await density.focus();
   await density.press("Enter");
+  const afterDensity = await renderRegionCounts(page);
+  expectShellOnlyIncrement(beforeDensity, afterDensity);
   await expect(page.locator("body")).toHaveAttribute("data-density", "compact");
   await expect(density).toHaveAttribute("aria-pressed", "true");
   await page.reload();
   await expect(page.locator("body")).toHaveAttribute("data-density", "compact");
 
+  const beforeNavigation = await renderRegionCounts(page);
   await page.locator('[data-shell-nav="engine"]').click();
+  const afterNavigation = await renderRegionCounts(page);
+  expectShellOnlyIncrement(beforeNavigation, afterNavigation);
   await expect(page.locator('[data-shell-nav="engine"]')).toHaveAttribute("aria-current", "step");
   await page.locator("#enginePanel").scrollIntoViewIfNeeded();
 

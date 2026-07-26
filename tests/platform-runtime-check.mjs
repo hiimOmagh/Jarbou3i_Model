@@ -44,6 +44,10 @@ assert(runtime.registry.ids().length === 2, "runtime did not compose both lenses
 runtime.renderer.renderAll();
 const inspection = runtime.inspect();
 assert(inspection.renderCycle === 1, "runtime inspection lost the render cycle");
+assert(
+  inspection.renderRegions.find(({ name }) => name === "shell")?.count === 1,
+  "runtime inspection lost exact render-region counters",
+);
 assert(inspection.performance.entryCount === 1, "runtime did not measure its render region");
 assert(Object.isFrozen(inspection), "runtime inspection must be immutable");
 
