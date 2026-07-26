@@ -177,7 +177,7 @@ for (const token of [
   "EVIDENCE_RESULT: ${{ needs.browser-evidence.result }}",
   'test "$CORE_RESULT" = "success"',
   'test "$EVIDENCE_RESULT" = "success"',
-  "actions/upload-artifact@v5",
+  "actions/upload-artifact@v7",
   "permissions:",
   "contents: read",
   "concurrency:",
@@ -187,11 +187,25 @@ for (const token of [
   "pages: write",
   "id-token: write",
   "node scripts/build-pages-artifact.mjs",
+  "actions/configure-pages@v6",
+  "actions/upload-pages-artifact@v5",
+  "actions/deploy-pages@v5",
+]) {
+  if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
+}
+for (const retiredAction of [
+  "actions/upload-artifact@v5",
+  "actions/upload-artifact@v6",
   "actions/configure-pages@v5",
   "actions/upload-pages-artifact@v4",
   "actions/deploy-pages@v4",
 ]) {
-  if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
+  if (workflow.includes(retiredAction)) {
+    fail(`workflow retains a retired action runtime: ${retiredAction}`);
+  }
+}
+if ((workflow.match(/actions\/upload-artifact@v7/g) || []).length !== 4) {
+  fail("workflow must use upload-artifact@v7 for exactly four artifact steps");
 }
 if ((workflow.match(/project: webkit/g) || []).length !== 2) {
   fail("WebKit must be represented by exactly two core shards");

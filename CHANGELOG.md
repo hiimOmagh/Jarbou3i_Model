@@ -9,6 +9,7 @@
 - Make browser navigation safe for repository-subpath deployments.
 - Build an explicit static deployment artifact instead of publishing the repository root.
 - Establish current documentation, deployment, and versioning authorities.
+- Move artifact and GitHub Pages actions to their Node.js 24 release lines while preserving the accepted CI topology and deployment authority.
 
 ## 2.1.0-alpha.46 — Governed Release Operations
 
