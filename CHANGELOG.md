@@ -18,6 +18,8 @@
 - Add deterministic coverage proving a selective shell cycle does not execute or increment workflow, engine, or review regions.
 - Extract density, navigation, focus, command activation, and shell rendering from the application entry point into a bounded application-shell feature controller.
 - Expose immutable render-region counters through local runtime diagnostics and assert shell-only density and navigation increments in the real browser.
+- Commit the live relationship-search draft before full explorer renders so Firefox cannot replace a newer input value with stale mirrored state.
+- Preserve explicit reset, saved-view restoration, analysis mounting, and selection-reveal query transitions as intentional state authorities.
 
 ## 2.1.0-alpha.46 — Governed Release Operations
 

@@ -305,6 +305,16 @@ const relationshipBrowser = read("tests/relationship-explorer.spec.js");
 for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFocused()', 'saveView.press("Enter")', 'restoreView.press("Enter")', 'openSelected.press("Enter")']) {
   if (!relationshipBrowser.includes(token)) fail(`Firefox explorer stabilization contract missing: ${token}`);
 }
+for (const token of ["syncSearchDraft", "preserveSearchDraft = true", "preserveSearchDraft: false"]) {
+  if (!explorer.includes(token)) fail(`relationship live-draft synchronization contract missing: ${token}`);
+}
+for (const token of [
+  'input.value = "Public-health authorities"',
+  'data-map-depth="guided"',
+  'toHaveValue("")',
+]) {
+  if (!relationshipBrowser.includes(token)) fail(`relationship render-race browser contract missing: ${token}`);
+}
 for (const token of ["preventScroll: true", 'deleteView.press("Enter")']) {
   if (!relationshipBrowser.includes(token)) fail(`saved-view keyboard regression token missing: ${token}`);
 }
