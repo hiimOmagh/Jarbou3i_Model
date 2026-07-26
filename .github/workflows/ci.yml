@@ -77,7 +77,7 @@ jobs:
         run: >
           npm run test:browser:core --
           --project=${{ matrix.project }}
-          --workers=2
+          --workers=8
 
       - uses: actions/upload-artifact@v5
         if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
