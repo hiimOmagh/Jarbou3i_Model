@@ -93,9 +93,23 @@ async function downloadFrom(page, selector, target) {
 
 test("biopolitical HTML and JSON exports preserve the complete canonical contract", async ({
   page,
+  context,
 }, testInfo) => {
   const fixture = addSentinels(await readFixture());
   await page.goto("./");
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        registered: typeof window.Jarbou3iBiopoliticalReport,
+        ...window.Jarbou3iCapabilityLoads?.biopoliticalReportRenderer,
+      })),
+    )
+    .toEqual({
+      registered: "undefined",
+      attempts: 0,
+      fulfilled: 0,
+      failures: 0,
+    });
   await page.locator("#langFr").click();
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#jsonInput").fill(JSON.stringify(fixture));
@@ -106,9 +120,40 @@ test("biopolitical HTML and JSON exports preserve the complete canonical contrac
   await expect(exportTab).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#exportHtml")).toBeVisible();
   await expect(page.locator("#exportJson")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalReportRenderer.attempts,
+      ),
+    )
+    .toBe(0);
 
   const htmlPath = testInfo.outputPath("complete-biopolitical-report.html");
   const html = await downloadFrom(page, "#exportHtml", htmlPath);
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        registered: typeof window.Jarbou3iBiopoliticalReport,
+        ...window.Jarbou3iCapabilityLoads.biopoliticalReportRenderer,
+      })),
+    )
+    .toEqual({
+      registered: "object",
+      attempts: 1,
+      fulfilled: 1,
+      failures: 0,
+    });
+  await page.locator('[data-bio-review="overview"]').click();
+  await page.locator('[data-bio-review="exports"]').click();
+  const repeatHtmlPath = testInfo.outputPath("repeat-biopolitical-report.html");
+  await downloadFrom(page, "#exportHtml", repeatHtmlPath);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalReportRenderer.attempts,
+      ),
+    )
+    .toBe(1);
   const jsonPath = testInfo.outputPath("complete-biopolitical-analysis.json");
   const jsonText = await downloadFrom(page, "#exportJson", jsonPath);
 
@@ -128,6 +173,42 @@ test("biopolitical HTML and JSON exports preserve the complete canonical contrac
 
   const exported = JSON.parse(jsonText);
   expect(exported).toEqual(fixture);
+
+  const failurePage = await context.newPage();
+  await failurePage.route("**/biopolitical-report.js", (route) => route.abort());
+  await failurePage.goto("./");
+  await failurePage.locator("#langEn").click();
+  await failurePage.locator("#analysisLang").selectOption("en");
+  await failurePage.locator('[data-lens="biopolitical"]').click();
+  await failurePage.locator("#loadSampleBtn").click();
+  await failurePage.locator('[data-bio-review="exports"]').click();
+  await failurePage.locator("#exportHtml").click();
+  await expect(failurePage.locator("#exportHtmlStatus")).toHaveAttribute(
+    "role",
+    "alert",
+  );
+  await expect(failurePage.locator("#exportHtmlStatus")).toContainText(
+    "The biopolitical report renderer could not be loaded.",
+  );
+  await expect
+    .poll(() =>
+      failurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalReportRenderer.failures,
+      ),
+    )
+    .toBe(1);
+  await failurePage.unroute("**/biopolitical-report.js");
+  const retryDownload = failurePage.waitForEvent("download");
+  await failurePage.locator("[data-retry-biopolitical-report]").click();
+  await retryDownload;
+  await expect
+    .poll(() =>
+      failurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalReportRenderer,
+      ),
+    )
+    .toEqual({ attempts: 2, fulfilled: 1, failures: 1 });
+  await failurePage.close();
 
   await testInfo.attach("complete-biopolitical-report.html", {
     path: htmlPath,

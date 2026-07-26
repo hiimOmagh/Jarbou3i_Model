@@ -1,5 +1,13 @@
 # Changelog
 
+## Alpha.52 — Capability-Gated Biopolitical Report Renderer
+
+- Defers the standalone biopolitical report renderer until HTML report export is requested.
+- Memoizes successful capability loading and uses a fresh same-origin URL for recovery after a rejected dynamic import.
+- Adds localized loading and accessible failure/retry states without changing canonical HTML or JSON export contracts.
+- Extends the existing export browser case to prove zero initial requests, one-time loading, repeat-export reuse, visible failure, and successful retry.
+- Removes 34,369 raw source bytes from the initial module request graph while preserving Alpha.51 explorer lazy loading.
+
 ## Unreleased
 
 ### Repository governance
