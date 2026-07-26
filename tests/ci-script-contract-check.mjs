@@ -138,22 +138,45 @@ if ((playwright.match(/channel: 'chromium'/g) || []).length !== 2) {
 
 for (const token of [
   "name: No-browser gates",
+  "name: Browser core (${{ matrix.label }})",
+  "name: Browser evidence",
   "name: Browser gates",
   "needs: no-browser",
+  "fail-fast: false",
+  "- label: chromium",
+  "- label: firefox",
+  "- label: webkit shard 1 of 2",
+  "- label: webkit shard 2 of 2",
+  "- label: mobile-chrome",
+  'shard: "1/2"',
+  'shard: "2/2"',
+  "artifact: webkit-1-of-2",
+  "artifact: webkit-2-of-2",
   "actions/checkout@v5",
   "actions/setup-node@v5",
   "node-version: 24",
   "cache: npm",
   "npm ci",
   "npm run test:ci:no-browser",
-  "npx playwright install --with-deps",
-  "npm run test:ci:browser",
+  "npx playwright install --with-deps ${{ matrix.browser }}",
+  "npx playwright install --with-deps chromium",
+  "npm run test:browser:core --",
+  "--project=${{ matrix.project }}",
+  "--shard=${{ matrix.shard }}",
+  "--workers=2",
+  "npm run test:browser:hosted",
+  "npm run test:browser:visual-audit",
   "HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence",
   "VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence",
-  "PLAYWRIGHT_WORKERS: 2",
   "name: visual-audit-evidence",
-  "name: browser-debug",
+  "name: browser-debug-${{ matrix.artifact }}",
+  "name: browser-evidence-debug",
   "failure() && hashFiles('test-results/**', 'playwright-report/**') != ''",
+  "if: ${{ always() }}",
+  "CORE_RESULT: ${{ needs.browser-core.result }}",
+  "EVIDENCE_RESULT: ${{ needs.browser-evidence.result }}",
+  'test "$CORE_RESULT" = "success"',
+  'test "$EVIDENCE_RESULT" = "success"',
   "actions/upload-artifact@v5",
   "permissions:",
   "contents: read",
@@ -169,6 +192,29 @@ for (const token of [
   "actions/deploy-pages@v4",
 ]) {
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
+}
+if ((workflow.match(/project: webkit/g) || []).length !== 2) {
+  fail("WebKit must be represented by exactly two core shards");
+}
+if ((workflow.match(/project: chromium/g) || []).length !== 1) {
+  fail("desktop Chromium must be represented by exactly one core matrix leg");
+}
+if ((workflow.match(/project: firefox/g) || []).length !== 1) {
+  fail("Firefox must be represented by exactly one core matrix leg");
+}
+if ((workflow.match(/project: mobile-chrome/g) || []).length !== 1) {
+  fail("mobile Chromium must be represented by exactly one core matrix leg");
+}
+for (const forbidden of [
+  "run: npm run test:ci:browser",
+  "PLAYWRIGHT_WORKERS: 2",
+  "name: browser-debug\n",
+  "name: Browser core (${{ matrix.project }})",
+  "name: browser-debug-${{ matrix.project }}",
+]) {
+  if (workflow.includes(forbidden)) {
+    fail(`workflow retains the monolithic browser topology: ${forbidden.trim()}`);
+  }
 }
 
 const absoluteRootNavigation = [];
