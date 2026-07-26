@@ -3,6 +3,16 @@ import AxeBuilder from "@axe-core/playwright";
 
 async function openExplorer(page, lang = "en") {
   await page.goto("./");
+  await expect
+    .poll(() => page.evaluate(() => typeof window.Jarbou3iRelationshipExplorer))
+    .toBe("undefined");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.Jarbou3iCapabilityLoads?.relationshipExplorer?.attempts,
+      ),
+    )
+    .toBe(0);
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
   await page.locator("#analysisLang").selectOption(lang);
   await page.locator('[data-lens="biopolitical"]').click();
@@ -14,9 +24,23 @@ async function openExplorer(page, lang = "en") {
   await connections.press("Enter");
   await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
+  await expect(page.locator(".relationshipExplorer")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        registered: typeof window.Jarbou3iRelationshipExplorer,
+        ...window.Jarbou3iCapabilityLoads.relationshipExplorer,
+      })),
+    )
+    .toEqual({
+      registered: "object",
+      attempts: 1,
+      fulfilled: 1,
+      failures: 0,
+    });
 }
 
-test("Story, Evidence trail, and Network modes expose deterministic graph layers", async ({ page }) => {
+test("Story, Evidence trail, and Network modes expose deterministic graph layers", async ({ page, context }) => {
   await openExplorer(page);
   await page.locator('[data-map-view="map"]').click();
 
@@ -36,6 +60,47 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
   await expect(page.locator(".relationshipCount")).toContainText("28 connections");
   await expect(page.locator('[data-map-lane]')).toHaveCount(9);
   await expect(page.locator(".relationshipEdge--explicit")).toHaveCount(4);
+
+  await page.locator('[data-bio-review="overview"]').click();
+  await page.locator('[data-bio-review="connections"]').click();
+  await expect(page.locator(".relationshipExplorer")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.Jarbou3iCapabilityLoads.relationshipExplorer.attempts,
+      ),
+    )
+    .toBe(1);
+
+  const failurePage = await context.newPage();
+  await failurePage.route("**/relationship-explorer.js", (route) => route.abort());
+  await failurePage.goto("./");
+  await failurePage.locator("#langEn").click();
+  await failurePage.locator("#analysisLang").selectOption("en");
+  await failurePage.locator('[data-lens="biopolitical"]').click();
+  await failurePage.locator("#loadSampleBtn").click();
+  await failurePage.locator('[data-bio-review="connections"]').click();
+  await expect(failurePage.locator('[role="alert"]')).toContainText(
+    "The relationship explorer could not be loaded.",
+  );
+  await expect
+    .poll(() =>
+      failurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.relationshipExplorer.failures,
+      ),
+    )
+    .toBe(1);
+  await failurePage.unroute("**/relationship-explorer.js");
+  await failurePage.locator("[data-retry-relationship-explorer]").click();
+  await expect(failurePage.locator(".relationshipExplorer")).toBeVisible();
+  await expect
+    .poll(() =>
+      failurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.relationshipExplorer.attempts,
+      ),
+    )
+    .toBe(2);
+  await failurePage.close();
 });
 
 test("localized relationship views never leak English relation enums or raw resistance forms", async ({ page }) => {

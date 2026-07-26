@@ -8,7 +8,6 @@ import "./biopolitics-integrity.js";
 import "./biopolitics-graph.js";
 import "./biopolitical-report.js";
 import "./reference-ui.js";
-import "./relationship-explorer.js";
 import "./json-parser.js";
 import "./contract-repair.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
@@ -951,9 +950,34 @@ const BIO_REPORT = window.Jarbou3iBiopoliticalReport;
 if (!BIO_REPORT) throw new Error("Biopolitical report renderer failed to load.");
 const REFERENCE_UI = window.Jarbou3iReferenceUi;
 if (!REFERENCE_UI) throw new Error("Named-reference interface failed to load.");
-const RELATIONSHIP_EXPLORER = window.Jarbou3iRelationshipExplorer;
-if (!RELATIONSHIP_EXPLORER)
-  throw new Error("Relationship explorer failed to load.");
+const capabilityLoads = {
+  relationshipExplorer: { attempts: 0, fulfilled: 0, failures: 0 },
+};
+window.Jarbou3iCapabilityLoads = capabilityLoads;
+let relationshipExplorerPromise = null;
+function loadRelationshipExplorer() {
+  if (!relationshipExplorerPromise) {
+    capabilityLoads.relationshipExplorer.attempts += 1;
+    const attempt = capabilityLoads.relationshipExplorer.attempts;
+    const specifier =
+      attempt === 1
+        ? "./relationship-explorer.js"
+        : `./relationship-explorer.js?retry=${attempt}`;
+    relationshipExplorerPromise = import(specifier)
+      .then(() => {
+        const explorer = window.Jarbou3iRelationshipExplorer;
+        if (!explorer) throw new Error("Relationship explorer failed to register.");
+        capabilityLoads.relationshipExplorer.fulfilled += 1;
+        return explorer;
+      })
+      .catch((error) => {
+        capabilityLoads.relationshipExplorer.failures += 1;
+        relationshipExplorerPromise = null;
+        throw error;
+      });
+  }
+  return relationshipExplorerPromise;
+}
 const JSON_TOOLS = window.Jarbou3iJson;
 if (!JSON_TOOLS) throw new Error("Conservative JSON parser failed to load.");
 const CONTRACT_REPAIR = window.Jarbou3iContractRepair;
@@ -5125,7 +5149,7 @@ function renderBiopoliticalEvidence() {
   return `<h3>${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.0"))}</h3><div class="bioEvidenceIntro">${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.1"))}</div><div class="bioRecordStack">${bioRecordsHtml(records)}</div>`;
 }
 function renderBiopoliticalConnections() {
-  return `<div id="relationshipExplorerMount"></div>`;
+  return `<div id="relationshipExplorerMount" aria-live="polite"><div class="warning good" role="status">${escapeHtml(labelText("Loading relationship explorer…", "جارٍ تحميل مستكشف العلاقات…", "Chargement de l’explorateur de relations…"))}</div></div>`;
 }
 function renderBiopoliticalConclusion() {
   const a = state.analysis;
@@ -5266,7 +5290,8 @@ function renderBiopoliticalReview() {
   if (state.activeReview === "inspection")
     html = renderInspectionDirectory(currentResultsInspectionIndex("biopolitical"));
   if (state.activeReview === "exports") html = renderExports();
-  if (state.activeReview !== "connections") RELATIONSHIP_EXPLORER.deactivate?.();
+  if (state.activeReview !== "connections")
+    window.Jarbou3iRelationshipExplorer?.deactivate?.();
   $("reviewContent").innerHTML = html;
   $("reviewContent").setAttribute(
     "aria-labelledby",
@@ -5275,17 +5300,36 @@ function renderBiopoliticalReview() {
   wireResultsExplanation("biopolitical");
   bindResultsInspection("biopolitical");
   if (state.activeReview === "connections") {
-    RELATIONSHIP_EXPLORER.mount(
-      $("relationshipExplorerMount"),
-      currentBiopoliticalGraph(),
-      {
-        lang: state.lang,
-        analysis: state.analysis,
-        analysisScope: state.analysis?.analysis_id || state.analysis?.subject?.title,
-        mobileDefault: window.matchMedia("(max-width: 760px)").matches,
-        onOpenNode: (node, trigger) => REFERENCE_UI.open(node.id, trigger),
-      },
-    );
+    const mountRelationshipExplorer = () => {
+      const target = $("relationshipExplorerMount");
+      if (!target || state.activeReview !== "connections") return;
+      loadRelationshipExplorer()
+        .then((explorer) => {
+          const currentTarget = $("relationshipExplorerMount");
+          if (!currentTarget || state.activeReview !== "connections") return;
+          explorer.mount(
+            currentTarget,
+            currentBiopoliticalGraph(),
+            {
+              lang: state.lang,
+              analysis: state.analysis,
+              analysisScope:
+                state.analysis?.analysis_id || state.analysis?.subject?.title,
+              mobileDefault: window.matchMedia("(max-width: 760px)").matches,
+              onOpenNode: (node, trigger) => REFERENCE_UI.open(node.id, trigger),
+            },
+          );
+        })
+        .catch(() => {
+          const currentTarget = $("relationshipExplorerMount");
+          if (!currentTarget || state.activeReview !== "connections") return;
+          currentTarget.innerHTML = `<div class="warning" role="alert"><p>${escapeHtml(labelText("The relationship explorer could not be loaded.", "تعذّر تحميل مستكشف العلاقات.", "Impossible de charger l’explorateur de relations."))}</p><button type="button" class="secondary" data-retry-relationship-explorer>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
+          currentTarget
+            .querySelector("[data-retry-relationship-explorer]")
+            ?.addEventListener("click", mountRelationshipExplorer, { once: true });
+        });
+    };
+    mountRelationshipExplorer();
   }
   document.querySelectorAll("[data-bio-acc]").forEach(
     (button) =>
