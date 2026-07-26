@@ -101,7 +101,6 @@ const scriptOrder = [
   "src/biopolitics.js",
   "src/biopolitics-integrity.js",
   "src/biopolitics-graph.js",
-  "src/biopolitical-report.js",
   "src/reference-ui.js",
   "src/json-parser.js",
 ].map((file) => app.indexOf(`import "./${file.slice(4)}";`));
@@ -112,6 +111,9 @@ if (scriptOrder.some((position, index) => index && position <= scriptOrder[index
 if (app.includes('import "./relationship-explorer.js";')) {
   fail("relationship explorer must not load from the application entry point");
 }
+if (app.includes('import "./biopolitical-report.js";')) {
+  fail("biopolitical report renderer must not load from the application entry point");
+}
 for (const token of [
   '"./relationship-explorer.js"',
   "import(specifier)",
@@ -121,6 +123,16 @@ for (const token of [
   "data-retry-relationship-explorer",
 ]) {
   if (!app.includes(token)) fail(`relationship lazy-loading contract missing: ${token}`);
+}
+for (const token of [
+  '"./biopolitical-report.js"',
+  "biopoliticalReportRendererPromise",
+  "loadBiopoliticalReportRenderer",
+  "?retry=${attempt}",
+  "data-retry-biopolitical-report",
+  "buildLosslessBiopoliticalReport(renderer)",
+]) {
+  if (!app.includes(token)) fail(`report renderer lazy-loading contract missing: ${token}`);
 }
 
 if (pkg.version !== "2.1.0-alpha.46") fail("package version is wrong");

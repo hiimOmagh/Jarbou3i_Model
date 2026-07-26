@@ -275,8 +275,8 @@ for (const token of [
     fail(`standalone report resilience contract missing: ${token}`);
   }
 }
-if (!app.includes('import "./biopolitical-report.js";')) {
-  fail("standalone report renderer is not loaded by the release shell");
+if (app.includes('import "./biopolitical-report.js";')) {
+  fail("standalone report renderer still has an eager side-effect import");
 }
 for (const token of [
   "data-relationship-spatial",
@@ -329,6 +329,27 @@ for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFoc
 }
 for (const token of ["syncSearchDraft", "preserveSearchDraft = true", "preserveSearchDraft: false"]) {
   if (!explorer.includes(token)) fail(`relationship live-draft synchronization contract missing: ${token}`);
+}
+const exportCompletenessBrowser = read("tests/export-completeness.spec.js");
+for (const token of [
+  '"./biopolitical-report.js"',
+  "biopoliticalReportRendererPromise",
+  "biopoliticalReportRenderer.attempts",
+  "data-retry-biopolitical-report",
+  "buildLosslessBiopoliticalReport(renderer)",
+]) {
+  if (!app.includes(token)) fail(`report renderer capability loader missing: ${token}`);
+}
+for (const token of [
+  "typeof window.Jarbou3iBiopoliticalReport",
+  "biopoliticalReportRenderer.attempts",
+  "biopoliticalReportRenderer.failures",
+  'route("**/biopolitical-report.js"',
+  'unroute("**/biopolitical-report.js"',
+]) {
+  if (!exportCompletenessBrowser.includes(token)) {
+    fail(`report renderer lazy-load browser contract missing: ${token}`);
+  }
 }
 for (const token of [
   'input.value = "Public-health authorities"',

@@ -6,7 +6,6 @@ import "./core/provenance.js";
 import "./biopolitics.js";
 import "./biopolitics-integrity.js";
 import "./biopolitics-graph.js";
-import "./biopolitical-report.js";
 import "./reference-ui.js";
 import "./json-parser.js";
 import "./contract-repair.js";
@@ -946,12 +945,11 @@ if (!BIO_INTEGRITY)
   throw new Error("Biopolitical integrity gate failed to load.");
 const BIO_GRAPH = window.Jarbou3iBiopoliticsGraph;
 if (!BIO_GRAPH) throw new Error("Biopolitical relationship index failed to load.");
-const BIO_REPORT = window.Jarbou3iBiopoliticalReport;
-if (!BIO_REPORT) throw new Error("Biopolitical report renderer failed to load.");
 const REFERENCE_UI = window.Jarbou3iReferenceUi;
 if (!REFERENCE_UI) throw new Error("Named-reference interface failed to load.");
 const capabilityLoads = {
   relationshipExplorer: { attempts: 0, fulfilled: 0, failures: 0 },
+  biopoliticalReportRenderer: { attempts: 0, fulfilled: 0, failures: 0 },
 };
 window.Jarbou3iCapabilityLoads = capabilityLoads;
 let relationshipExplorerPromise = null;
@@ -977,6 +975,32 @@ function loadRelationshipExplorer() {
       });
   }
   return relationshipExplorerPromise;
+}
+let biopoliticalReportRendererPromise = null;
+function loadBiopoliticalReportRenderer() {
+  if (!biopoliticalReportRendererPromise) {
+    capabilityLoads.biopoliticalReportRenderer.attempts += 1;
+    const attempt = capabilityLoads.biopoliticalReportRenderer.attempts;
+    const specifier =
+      attempt === 1
+        ? "./biopolitical-report.js"
+        : `./biopolitical-report.js?retry=${attempt}`;
+    biopoliticalReportRendererPromise = import(specifier)
+      .then(() => {
+        const renderer = window.Jarbou3iBiopoliticalReport;
+        if (!renderer) {
+          throw new Error("Biopolitical report renderer failed to register.");
+        }
+        capabilityLoads.biopoliticalReportRenderer.fulfilled += 1;
+        return renderer;
+      })
+      .catch((error) => {
+        capabilityLoads.biopoliticalReportRenderer.failures += 1;
+        biopoliticalReportRendererPromise = null;
+        throw error;
+      });
+  }
+  return biopoliticalReportRendererPromise;
 }
 const JSON_TOOLS = window.Jarbou3iJson;
 if (!JSON_TOOLS) throw new Error("Conservative JSON parser failed to load.");
@@ -5347,13 +5371,7 @@ function renderBiopoliticalReview() {
       }),
   );
   const exportButton = $("exportHtml");
-  if (exportButton)
-    exportButton.onclick = () =>
-      download(
-        `${safeFileSlug(state.analysis?.subject?.title || state.topic)}-biopolitical-v2-report.html`,
-        buildLosslessBiopoliticalReport(),
-        "text/html",
-      );
+  if (exportButton) exportButton.onclick = exportBiopoliticalReport;
   const jsonButton = $("exportJson");
   if (jsonButton)
     jsonButton.onclick = () =>
@@ -5363,7 +5381,49 @@ function renderBiopoliticalReview() {
         "application/json",
       );
 }
-function buildLosslessBiopoliticalReport() {
+async function exportBiopoliticalReport() {
+  const exportButton = $("exportHtml");
+  const status = $("exportHtmlStatus");
+  if (!exportButton || exportButton.disabled) return;
+  const readyLabel = exportButton.textContent;
+  exportButton.disabled = true;
+  exportButton.setAttribute("aria-busy", "true");
+  exportButton.textContent = labelText(
+    "Preparing report…",
+    "جارٍ إعداد التقرير…",
+    "Préparation du rapport…",
+  );
+  if (status) {
+    status.innerHTML = "";
+    status.classList.remove("warning");
+    status.removeAttribute("role");
+  }
+  try {
+    const renderer = await loadBiopoliticalReportRenderer();
+    download(
+      `${safeFileSlug(state.analysis?.subject?.title || state.topic)}-biopolitical-v2-report.html`,
+      buildLosslessBiopoliticalReport(renderer),
+      "text/html",
+    );
+  } catch {
+    if (status) {
+      status.classList.add("warning");
+      status.setAttribute("role", "alert");
+      status.innerHTML = `<p>${escapeHtml(labelText("The biopolitical report renderer could not be loaded.", "تعذّر تحميل مُصيّر التقرير الحيوسياسي.", "Impossible de charger le moteur de rendu du rapport biopolitique."))}</p><button type="button" class="secondary" data-retry-biopolitical-report>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button>`;
+      status
+        .querySelector("[data-retry-biopolitical-report]")
+        ?.addEventListener("click", exportBiopoliticalReport, { once: true });
+    }
+  } finally {
+    const currentButton = $("exportHtml");
+    if (currentButton === exportButton) {
+      exportButton.disabled = false;
+      exportButton.removeAttribute("aria-busy");
+      exportButton.textContent = readyLabel;
+    }
+  }
+}
+function buildLosslessBiopoliticalReport(reportRenderer) {
   const analysis = state.analysis;
   const reportLang = ["ar", "en", "fr"].includes(analysis?.language)
     ? analysis.language
@@ -5371,7 +5431,7 @@ function buildLosslessBiopoliticalReport() {
   const version =
     document.querySelector('meta[name="app-version"]')?.content ||
     "2.1.0-alpha.46";
-  return BIO_REPORT.build({
+  return reportRenderer.build({
     analysis,
     lang: reportLang,
     version,
@@ -5388,7 +5448,7 @@ function renderExports() {
   const canonicalInspector = state.analysis
     ? `<details class="canonicalInspector"><summary>${escapeHtml(labelText("Inspect the complete canonical contract", "افحص العقد النظامي الكامل", "Inspecter le contrat canonique complet"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
     : "";
-  return `<h3>${t("exports")}</h3><div class="exportGrid"><div class="exportCard exportWide"><h4>${t("downloadHtml")}</h4><p>${d[state.lang] || d.en}</p><button class="btn primary" id="exportHtml" type="button">${t("downloadHtml")}</button></div><div class="exportCard"><h4>${t("downloadJson")}</h4><p>${escapeHtml(labelText("Lossless machine-readable analysis for verification, re-import, and archival.", "تحليل آلي كامل للتحقق وإعادة الاستيراد والأرشفة.", "Analyse lisible par machine, sans perte, pour vérification, réimport et archivage."))}</p><button class="btn" id="exportJson" type="button">${t("downloadJson")}</button></div></div>${canonicalInspector}`;
+  return `<h3>${t("exports")}</h3><div class="exportGrid"><div class="exportCard exportWide"><h4>${t("downloadHtml")}</h4><p>${d[state.lang] || d.en}</p><button class="btn primary" id="exportHtml" type="button" aria-describedby="exportHtmlStatus">${t("downloadHtml")}</button><div id="exportHtmlStatus" class="capabilityStatus" aria-live="polite"></div></div><div class="exportCard"><h4>${t("downloadJson")}</h4><p>${escapeHtml(labelText("Lossless machine-readable analysis for verification, re-import, and archival.", "تحليل آلي كامل للتحقق وإعادة الاستيراد والأرشفة.", "Analyse lisible par machine, sans perte, pour vérification, réimport et archivage."))}</p><button class="btn" id="exportJson" type="button">${t("downloadJson")}</button></div></div>${canonicalInspector}`;
 }
 function renderReviewNav() {
   const counts = {
