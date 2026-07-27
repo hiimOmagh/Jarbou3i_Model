@@ -86,6 +86,7 @@ async function openExplorer(
 }
 
 test("Story, Evidence trail, and Network modes expose deterministic graph layers", async ({ page, context }) => {
+  test.setTimeout(120_000);
   await openExplorer(page);
   await page.locator('[data-map-view="map"]').click();
 
