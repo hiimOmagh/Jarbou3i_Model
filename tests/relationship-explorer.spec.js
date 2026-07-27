@@ -35,6 +35,21 @@ async function openExplorer(
         ),
       )
       .toBe(0);
+    await expect
+      .poll(() =>
+        page.evaluate(() => ({
+          linkCount: document.querySelectorAll(
+            'link[data-relationship-explorer-styles="true"]',
+          ).length,
+          ...window.Jarbou3iCapabilityLoads?.relationshipExplorerStyles,
+        })),
+      )
+      .toEqual({
+        linkCount: 0,
+        attempts: 0,
+        fulfilled: 0,
+        failures: 0,
+      });
   }
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
   await page.locator("#analysisLang").selectOption(lang);
@@ -63,6 +78,21 @@ async function openExplorer(
       fulfilled: 1,
       failures: 0,
     });
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        linkCount: document.querySelectorAll(
+          'link[data-relationship-explorer-styles="true"]',
+        ).length,
+        ...window.Jarbou3iCapabilityLoads.relationshipExplorerStyles,
+      })),
+    )
+    .toEqual({
+      linkCount: 0,
+      attempts: 0,
+      fulfilled: 0,
+      failures: 0,
+    });
   const connections = page.locator('[data-bio-review="connections"]');
   await connections.focus();
   await expect(connections).toBeFocused();
@@ -70,6 +100,25 @@ async function openExplorer(
   await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
   await expect(page.locator(".relationshipExplorer")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        display: getComputedStyle(
+          document.querySelector(".relationshipExplorer"),
+        ).display,
+        linkCount: document.querySelectorAll(
+          'link[data-relationship-explorer-styles="true"]',
+        ).length,
+        ...window.Jarbou3iCapabilityLoads.relationshipExplorerStyles,
+      })),
+    )
+    .toEqual({
+      display: "grid",
+      linkCount: 1,
+      attempts: 1,
+      fulfilled: 1,
+      failures: 0,
+    });
   await expect
     .poll(() =>
       page.evaluate(() => ({
@@ -124,6 +173,13 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
       ),
     )
     .toBe(1);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.Jarbou3iCapabilityLoads.relationshipExplorerStyles.attempts,
+      ),
+    )
+    .toBe(1);
 
   const failurePage = await context.newPage();
   await startWithoutPersistedWorkspace(failurePage);
@@ -155,6 +211,63 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
     )
     .toBe(2);
   await failurePage.close();
+
+  const styleFailurePage = await context.newPage();
+  await startWithoutPersistedWorkspace(styleFailurePage);
+  await styleFailurePage.route("**/relationship-explorer.css", (route) =>
+    route.abort(),
+  );
+  await styleFailurePage.goto("./");
+  await styleFailurePage.locator("#langEn").click();
+  await styleFailurePage.locator("#analysisLang").selectOption("en");
+  await styleFailurePage.locator('[data-lens="biopolitical"]').click();
+  await expect
+    .poll(() =>
+      styleFailurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.relationshipExplorerStyles,
+      ),
+    )
+    .toEqual({ attempts: 0, fulfilled: 0, failures: 0 });
+  await styleFailurePage.locator("#loadSampleBtn").click();
+  await styleFailurePage.locator('[data-bio-review="connections"]').click();
+  await expect(styleFailurePage.locator('[role="alert"]')).toContainText(
+    "The relationship explorer could not be loaded.",
+  );
+  await expect(styleFailurePage.locator(".relationshipExplorer")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      styleFailurePage.evaluate(() => ({
+        linkCount: document.querySelectorAll(
+          'link[data-relationship-explorer-styles="true"]',
+        ).length,
+        ...window.Jarbou3iCapabilityLoads.relationshipExplorerStyles,
+      })),
+    )
+    .toEqual({
+      linkCount: 0,
+      attempts: 1,
+      fulfilled: 0,
+      failures: 1,
+    });
+  await styleFailurePage.unroute("**/relationship-explorer.css");
+  await styleFailurePage.locator("[data-retry-relationship-explorer]").click();
+  await expect(styleFailurePage.locator(".relationshipExplorer")).toBeVisible();
+  await expect
+    .poll(() =>
+      styleFailurePage.evaluate(() => ({
+        display: getComputedStyle(
+          document.querySelector(".relationshipExplorer"),
+        ).display,
+        ...window.Jarbou3iCapabilityLoads.relationshipExplorerStyles,
+      })),
+    )
+    .toEqual({
+      display: "grid",
+      attempts: 2,
+      fulfilled: 1,
+      failures: 1,
+    });
+  await styleFailurePage.close();
 
   const graphFailurePage = await context.newPage();
   await startWithoutPersistedWorkspace(graphFailurePage);

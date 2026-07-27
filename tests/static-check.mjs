@@ -302,6 +302,33 @@ for (const token of ['matchMedia("print").matches', "expect.poll", "synchronizeA
   if (!releaseAudit.includes(token)) fail(`final audit synchronization contract missing: ${token}`);
 }
 const relationshipBrowser = read("tests/relationship-explorer.spec.js");
+if (index.includes('rel="stylesheet" href="src/relationship-explorer.css"')) {
+  fail("relationship explorer stylesheet remains in the initial document");
+}
+for (const token of [
+  '"./relationship-explorer.css"',
+  'new URL("./relationship-explorer.css", import.meta.url)',
+  'stylesheetUrl.searchParams.set("retry", String(attempt))',
+  "relationshipExplorerStylesPromise",
+  "loadRelationshipExplorerStyles",
+  'stylesheet.dataset.relationshipExplorerStyles = "true"',
+  "relationshipExplorerStyles.attempts",
+]) {
+  if (!app.includes(token)) {
+    fail(`relationship stylesheet capability loader missing: ${token}`);
+  }
+}
+for (const token of [
+  'link[data-relationship-explorer-styles="true"]',
+  "Jarbou3iCapabilityLoads.relationshipExplorerStyles",
+  'route("**/relationship-explorer.css"',
+  'unroute("**/relationship-explorer.css"',
+  'display: "grid"',
+]) {
+  if (!relationshipBrowser.includes(token)) {
+    fail(`relationship stylesheet browser contract missing: ${token}`);
+  }
+}
 if (app.includes('import "./biopolitics-graph.js";')) {
   fail("biopolitical graph still has an eager side-effect import");
 }

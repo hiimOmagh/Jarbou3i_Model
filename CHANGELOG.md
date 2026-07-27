@@ -1,5 +1,15 @@
 # Changelog
 
+## Alpha.54 — Capability-Gated Relationship Explorer Styles
+
+- Removes the 33,938-byte relationship explorer stylesheet from the initial document request graph.
+- Loads the stylesheet only when the Connections capability is activated, coordinated with the already deferred explorer module.
+- Blocks explorer mounting until both JavaScript and CSS are available, preventing an unstyled intermediate explorer.
+- Memoizes successful stylesheet loading and removes failed links before retrying with a fresh same-origin URL.
+- Adds explicit load diagnostics plus browser coverage for absence, application, failure, recovery, and revisit memoization.
+- Preserves the Alpha.51–53 module boundaries, localized recovery surface, and existing browser/evidence inventories.
+- Brings the cumulative Alpha.51–54 raw initial-request reduction to 157,758 bytes across JavaScript and CSS.
+
 ## Alpha.53 — Capability-Gated Biopolitical Graph Module
 
 - Defers the shared biopolitical graph module until an accepted biopolitical analysis enters review.
