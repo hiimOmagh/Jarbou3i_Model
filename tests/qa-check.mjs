@@ -116,6 +116,22 @@ if (app.includes('import "./biopolitical-report.js";')) {
 if (app.includes('import "./biopolitics-graph.js";')) {
   fail("biopolitical graph must not load from the application entry point");
 }
+if (index.includes('rel="stylesheet" href="src/relationship-explorer.css"')) {
+  fail("relationship explorer styles must not load from the application shell");
+}
+for (const token of [
+  '"./relationship-explorer.css"',
+  'new URL("./relationship-explorer.css", import.meta.url)',
+  'stylesheetUrl.searchParams.set("retry", String(attempt))',
+  "relationshipExplorerStylesPromise",
+  "loadRelationshipExplorerStyles",
+  'stylesheet.dataset.relationshipExplorerStyles = "true"',
+  "relationshipExplorerStyles: { attempts: 0, fulfilled: 0, failures: 0 }",
+]) {
+  if (!app.includes(token)) {
+    fail(`relationship stylesheet lazy-loading contract missing: ${token}`);
+  }
+}
 for (const token of [
   '"./biopolitics-graph.js"',
   "biopoliticalGraphPromise",

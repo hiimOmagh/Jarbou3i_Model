@@ -948,6 +948,7 @@ if (!REFERENCE_UI) throw new Error("Named-reference interface failed to load.");
 const capabilityLoads = {
   biopoliticalGraph: { attempts: 0, fulfilled: 0, failures: 0 },
   relationshipExplorer: { attempts: 0, fulfilled: 0, failures: 0 },
+  relationshipExplorerStyles: { attempts: 0, fulfilled: 0, failures: 0 },
   biopoliticalReportRenderer: { attempts: 0, fulfilled: 0, failures: 0 },
 };
 window.Jarbou3iCapabilityLoads = capabilityLoads;
@@ -976,6 +977,41 @@ function loadBiopoliticalGraph() {
   }
   return biopoliticalGraphPromise;
 }
+let relationshipExplorerStylesPromise = null;
+function loadRelationshipExplorerStyles() {
+  if (!relationshipExplorerStylesPromise) {
+    capabilityLoads.relationshipExplorerStyles.attempts += 1;
+    const attempt = capabilityLoads.relationshipExplorerStyles.attempts;
+    const stylesheetUrl = new URL("./relationship-explorer.css", import.meta.url);
+    if (attempt > 1) stylesheetUrl.searchParams.set("retry", String(attempt));
+    relationshipExplorerStylesPromise = new Promise((resolve, reject) => {
+      const stylesheet = document.createElement("link");
+      stylesheet.rel = "stylesheet";
+      stylesheet.href = stylesheetUrl.href;
+      stylesheet.dataset.relationshipExplorerStyles = "true";
+      stylesheet.addEventListener(
+        "load",
+        () => {
+          capabilityLoads.relationshipExplorerStyles.fulfilled += 1;
+          resolve(stylesheet);
+        },
+        { once: true },
+      );
+      stylesheet.addEventListener(
+        "error",
+        () => {
+          capabilityLoads.relationshipExplorerStyles.failures += 1;
+          relationshipExplorerStylesPromise = null;
+          stylesheet.remove();
+          reject(new Error("Relationship explorer styles failed to load."));
+        },
+        { once: true },
+      );
+      document.head.append(stylesheet);
+    });
+  }
+  return relationshipExplorerStylesPromise;
+}
 let relationshipExplorerPromise = null;
 function loadRelationshipExplorer() {
   if (!relationshipExplorerPromise) {
@@ -998,7 +1034,10 @@ function loadRelationshipExplorer() {
         throw error;
       });
   }
-  return relationshipExplorerPromise;
+  return Promise.all([
+    relationshipExplorerPromise,
+    loadRelationshipExplorerStyles(),
+  ]).then(([explorer]) => explorer);
 }
 let biopoliticalReportRendererPromise = null;
 function loadBiopoliticalReportRenderer() {
