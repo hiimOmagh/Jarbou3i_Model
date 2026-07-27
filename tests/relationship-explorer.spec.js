@@ -1,23 +1,68 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-async function openExplorer(page, lang = "en") {
+async function startWithoutPersistedWorkspace(page) {
+  await page.addInitScript(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+}
+
+async function openExplorer(
+  page,
+  lang = "en",
+  { expectColdStart = true } = {},
+) {
   await page.goto("./");
-  await expect
-    .poll(() => page.evaluate(() => typeof window.Jarbou3iRelationshipExplorer))
-    .toBe("undefined");
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => window.Jarbou3iCapabilityLoads?.relationshipExplorer?.attempts,
-      ),
-    )
-    .toBe(0);
+  if (expectColdStart) {
+    await expect
+      .poll(() => page.evaluate(() => typeof window.Jarbou3iBiopoliticsGraph))
+      .toBe("undefined");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.Jarbou3iCapabilityLoads?.biopoliticalGraph?.attempts,
+        ),
+      )
+      .toBe(0);
+    await expect
+      .poll(() => page.evaluate(() => typeof window.Jarbou3iRelationshipExplorer))
+      .toBe("undefined");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.Jarbou3iCapabilityLoads?.relationshipExplorer?.attempts,
+        ),
+      )
+      .toBe(0);
+  }
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
   await page.locator("#analysisLang").selectOption(lang);
   await page.locator('[data-lens="biopolitical"]').click();
+  if (expectColdStart) {
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.Jarbou3iCapabilityLoads?.biopoliticalGraph?.attempts,
+        ),
+      )
+      .toBe(0);
+  }
   await page.locator("#loadSampleBtn").click();
   await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-selected", "true");
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        registered: typeof window.Jarbou3iBiopoliticsGraph,
+        ...window.Jarbou3iCapabilityLoads.biopoliticalGraph,
+      })),
+    )
+    .toEqual({
+      registered: "object",
+      attempts: 1,
+      fulfilled: 1,
+      failures: 0,
+    });
   const connections = page.locator('[data-bio-review="connections"]');
   await connections.focus();
   await expect(connections).toBeFocused();
@@ -41,6 +86,7 @@ async function openExplorer(page, lang = "en") {
 }
 
 test("Story, Evidence trail, and Network modes expose deterministic graph layers", async ({ page, context }) => {
+  test.setTimeout(120_000);
   await openExplorer(page);
   await page.locator('[data-map-view="map"]').click();
 
@@ -71,8 +117,16 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
       ),
     )
     .toBe(1);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalGraph.attempts,
+      ),
+    )
+    .toBe(1);
 
   const failurePage = await context.newPage();
+  await startWithoutPersistedWorkspace(failurePage);
   await failurePage.route("**/relationship-explorer.js", (route) => route.abort());
   await failurePage.goto("./");
   await failurePage.locator("#langEn").click();
@@ -101,6 +155,46 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
     )
     .toBe(2);
   await failurePage.close();
+
+  const graphFailurePage = await context.newPage();
+  await startWithoutPersistedWorkspace(graphFailurePage);
+  await graphFailurePage.route("**/biopolitics-graph.js", (route) => route.abort());
+  await graphFailurePage.goto("./");
+  await graphFailurePage.locator("#langEn").click();
+  await graphFailurePage.locator("#analysisLang").selectOption("en");
+  await graphFailurePage.locator('[data-lens="biopolitical"]').click();
+  await expect
+    .poll(() =>
+      graphFailurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalGraph,
+      ),
+    )
+    .toEqual({ attempts: 0, fulfilled: 0, failures: 0 });
+  await graphFailurePage.locator("#loadSampleBtn").click();
+  await expect(graphFailurePage.locator('[role="alert"]')).toContainText(
+    "The biopolitical graph could not be loaded.",
+  );
+  await expect
+    .poll(() =>
+      graphFailurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalGraph,
+      ),
+    )
+    .toEqual({ attempts: 1, fulfilled: 0, failures: 1 });
+  await graphFailurePage.unroute("**/biopolitics-graph.js");
+  await graphFailurePage.locator("[data-retry-biopolitical-graph]").click();
+  await expect(graphFailurePage.locator('[data-bio-review="overview"]')).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect
+    .poll(() =>
+      graphFailurePage.evaluate(
+        () => window.Jarbou3iCapabilityLoads.biopoliticalGraph,
+      ),
+    )
+    .toEqual({ attempts: 2, fulfilled: 1, failures: 1 });
+  await graphFailurePage.close();
 });
 
 test("localized relationship views never leak English relation enums or raw resistance forms", async ({ page }) => {
@@ -109,6 +203,7 @@ test("localized relationship views never leak English relation enums or raw resi
     fr: ["Permet", "Classe", "Distribue", "Résiste", "Travailleurs et résidents soumis aux contrôles d’accès"],
   };
   for (const [locale, labels] of Object.entries(expectations)) {
+    await startWithoutPersistedWorkspace(page);
     await openExplorer(page, locale);
     await page.locator('[data-map-view="map"]').click();
     const explorer = page.locator("#relationshipExplorerMount");
@@ -245,7 +340,7 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await expect(page.locator('[data-map-overlay="temporal"]')).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#relationshipSearch")).toHaveValue("Public-health authorities");
 
-  await openExplorer(page);
+  await openExplorer(page, "en", { expectColdStart: false });
   await expect(page.locator(`#relationshipSavedView option[value="${savedId}"]`)).toHaveCount(1);
   await page.locator("#relationshipSavedView").selectOption(savedId);
   const deleteView = page.locator("[data-delete-view]");
