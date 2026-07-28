@@ -1,0 +1,2 @@
+bottleneck_id,lens,observation_ids,observed_frequency,failure_severity,user_impact,confidence,implementation_cost,score,competing_hypothesis,falsifier,proposed_response,decision,status
+B-001,cross-lens,,,,,,,,,,,,

@@ -13,6 +13,7 @@ const noBrowser = pkg.scripts?.["test:ci:no-browser"] || "";
 for (const gate of [
   "build:validator",
   "test:version-authority",
+  "test:gate0:kit",
   "test:qa",
   "test:static",
   "test:platform",
@@ -55,6 +56,12 @@ if (pkg.scripts?.["build:pages"] !== "node scripts/build-pages-artifact.mjs") {
 }
 if (pkg.scripts?.["test:ci:persistence-policy"] !== "node tests/browser-persistence-policy-check.mjs") {
   fail("test:ci:persistence-policy must execute the bounded browser persistence authority");
+}
+if (pkg.scripts?.["test:gate0:kit"] !== "node tests/gate0-benchmark-kit-check.mjs") {
+  fail("test:gate0:kit must execute the human benchmark kit authority");
+}
+if (pkg.scripts?.["benchmark:gate0"] !== "node scripts/gate0-benchmark.mjs") {
+  fail("benchmark:gate0 must execute the benchmark preparation and reporting CLI");
 }
 
 const core = pkg.scripts?.["test:browser:core"] || "";

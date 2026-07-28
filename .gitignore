@@ -9,3 +9,4 @@ build/
 .DS_Store
 *.log
 /Local.zip
+/gate0-benchmark-local/

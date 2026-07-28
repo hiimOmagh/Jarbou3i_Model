@@ -1,0 +1,241 @@
+{
+  "format": "jarbou3i-gate0-case-manifest-v1",
+  "script_version": "1.0.0",
+  "baseline_locale": "en",
+  "comparable_trials_required_per_lens": 3,
+  "task_ids": [
+    "T0",
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7"
+  ],
+  "cases": [
+    {
+      "case_id": "gate0-strategic-v1",
+      "case_version": "1.0.0",
+      "lens": "strategic",
+      "fixture_path": "fixtures/sample-analysis-en.json",
+      "generated_filename": "gate0-strategic-seeded-v1.json",
+      "participant_script": "docs/benchmarks/gate-0/strategic-task-script.md",
+      "seeds": [
+        {
+          "seed_id": "ST-S01",
+          "category": "broken_reference",
+          "severity": "critical",
+          "expected_signal": "The participant identifies a relationship target that does not exist.",
+          "expected_disposition": "Remove or replace the reference only after locating the intended authority."
+        },
+        {
+          "seed_id": "ST-S02",
+          "category": "unsupported_intent",
+          "severity": "critical",
+          "expected_signal": "The participant rejects or qualifies deliberate-engineering language unsupported by the evidence.",
+          "expected_disposition": "Reformulate as an outcome or testable hypothesis."
+        },
+        {
+          "seed_id": "ST-S03",
+          "category": "missing_provenance",
+          "severity": "critical",
+          "expected_signal": "The participant finds that the central evidence record has no reproducible source or locator.",
+          "expected_disposition": "Keep unverified and require a precise source and locator."
+        },
+        {
+          "seed_id": "ST-S04",
+          "category": "confidence_mismatch",
+          "severity": "major",
+          "expected_signal": "The participant identifies high confidence attached to weak, non-reproducible evidence.",
+          "expected_disposition": "Lower confidence or add evidence sufficient to justify it."
+        },
+        {
+          "seed_id": "ST-S05",
+          "category": "publication_gate_contradiction",
+          "severity": "critical",
+          "expected_signal": "The participant rejects low publication risk while material evidence defects remain.",
+          "expected_disposition": "Restore a blocked or qualified publication state."
+        }
+      ],
+      "mutations": [
+        {
+          "operation": "set",
+          "path": [
+            "subject",
+            "executive_thesis"
+          ],
+          "value": "The Allied powers deliberately engineered bipolarity to eliminate Europe as an independent center of power."
+        },
+        {
+          "operation": "set",
+          "path": [
+            "evidence",
+            "items",
+            0,
+            "source_title"
+          ],
+          "value": "Postwar order overview — publisher and edition not recorded"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "evidence",
+            "items",
+            0,
+            "source_note"
+          ],
+          "value": "Widely accepted historical account; exact source and locator unavailable."
+        },
+        {
+          "operation": "append",
+          "path": [
+            "links"
+          ],
+          "value": {
+            "from": "E1",
+            "to": "R404",
+            "relation": "supports",
+            "strength": 5
+          }
+        },
+        {
+          "operation": "set",
+          "path": [
+            "quality_gate",
+            "publication_risk"
+          ],
+          "value": "low"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "quality_gate",
+            "weakest_layer"
+          ],
+          "value": "results"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "quality_gate",
+            "next_improvement"
+          ],
+          "value": "Ready for publication without further sourcing."
+        }
+      ]
+    },
+    {
+      "case_id": "gate0-biopolitical-v1",
+      "case_version": "1.0.0",
+      "lens": "biopolitical",
+      "fixture_path": "fixtures/sample-analysis-bio-en.json",
+      "generated_filename": "gate0-biopolitical-seeded-v1.json",
+      "participant_script": "docs/benchmarks/gate-0/biopolitical-task-script.md",
+      "seeds": [
+        {
+          "seed_id": "BIO-S01",
+          "category": "broken_reference",
+          "severity": "critical",
+          "expected_signal": "The participant identifies evidence ID E404 as unresolved.",
+          "expected_disposition": "Remove or replace it only after identifying the intended evidence."
+        },
+        {
+          "seed_id": "BIO-S02",
+          "category": "verification_contradiction",
+          "severity": "critical",
+          "expected_signal": "The participant rejects verified status without a source URL and locator.",
+          "expected_disposition": "Return the record to unverified or supply reproducible provenance."
+        },
+        {
+          "seed_id": "BIO-S03",
+          "category": "unsupported_intent",
+          "severity": "critical",
+          "expected_signal": "The participant rejects the claim of a permanent-control design as unsupported intent.",
+          "expected_disposition": "Separate observed infrastructure from a falsifiable intent hypothesis."
+        },
+        {
+          "seed_id": "BIO-S04",
+          "category": "confidence_mismatch",
+          "severity": "major",
+          "expected_signal": "The participant rejects high overall confidence while key sources and comparisons remain unverified.",
+          "expected_disposition": "Lower confidence and preserve jurisdictional uncertainty."
+        },
+        {
+          "seed_id": "BIO-S05",
+          "category": "self_audit_contradiction",
+          "severity": "major",
+          "expected_signal": "The participant identifies that the self-audit conceals material limitations.",
+          "expected_disposition": "Restore explicit limitations and concern status."
+        }
+      ],
+      "mutations": [
+        {
+          "operation": "set",
+          "path": [
+            "subject",
+            "executive_finding"
+          ],
+          "value": "Digital health passes were designed to normalize permanent social control through conditional mobility."
+        },
+        {
+          "operation": "set",
+          "path": [
+            "evidence",
+            "items",
+            0,
+            "verification_status"
+          ],
+          "value": "verified"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "evidence",
+            "items",
+            0,
+            "verified_by"
+          ],
+          "value": "Benchmark seed"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "evidence",
+            "items",
+            0,
+            "verification_date"
+          ],
+          "value": "2026-07-28"
+        },
+        {
+          "operation": "append",
+          "path": [
+            "intervention_assessment",
+            "interventions",
+            0,
+            "evidence_of_benefit"
+          ],
+          "value": "E404"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "calibrated_conclusion",
+            "overall_confidence"
+          ],
+          "value": "high"
+        },
+        {
+          "operation": "set",
+          "path": [
+            "self_audit_notes"
+          ],
+          "value": [
+            "No material limitations remain; the analysis is ready for publication."
+          ]
+        }
+      ]
+    }
+  ]
+}
