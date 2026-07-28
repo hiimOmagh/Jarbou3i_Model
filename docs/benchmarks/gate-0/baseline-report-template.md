@@ -82,4 +82,3 @@ Choose one:
   leading hypotheses.
 
 This is a human decision. The bottleneck score is decision support only.
-

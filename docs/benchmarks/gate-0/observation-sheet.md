@@ -56,4 +56,3 @@ timestamps and state a competing explanation.
 
 Do not write a design solution until observations and competing explanations
 are recorded. Every proposal must state what later evidence would disprove it.
-

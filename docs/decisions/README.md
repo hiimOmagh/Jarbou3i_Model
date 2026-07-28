@@ -10,4 +10,3 @@ superseded, but its history is not rewritten.
 `Proposed` means the decision is part of an unmerged implementation package.
 After the package is accepted, the status becomes `Accepted` in a dedicated
 documentation change or as part of the merge candidate.
-

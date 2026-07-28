@@ -84,4 +84,3 @@ Keep invalidated records. Do not delete inconvenient trials.
 
 Ask every post-task question in order. Record the participant’s words before
 coding correctness. Do not convert uncertainty into a confident answer.
-

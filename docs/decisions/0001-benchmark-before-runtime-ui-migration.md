@@ -75,4 +75,3 @@ a working product and rollback path.
 Reconsider this decision if the benchmark instruments cannot produce reliable
 comparable observations, or if measured workflow friction is immaterial and a
 smaller correction dominates the expected benefit of the overhaul.
-
