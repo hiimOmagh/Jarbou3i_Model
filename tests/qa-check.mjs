@@ -175,10 +175,6 @@ for (const token of [
   if (!app.includes(token)) fail(`report renderer lazy-loading contract missing: ${token}`);
 }
 
-if (pkg.version !== "2.1.0-alpha.46") fail("package version is wrong");
-if (!index.includes('name="app-version" content="2.1.0-alpha.46"')) {
-  fail("app version metadata is wrong");
-}
 for (const token of [
   'const SCHEMA_VERSION = "2.1.0"',
   'const APP_CONTRACT = "biopolitical-training-map-v2"',
@@ -214,6 +210,7 @@ for (const script of [
   "test:bio:integrity",
   "test:bio:graph",
   "test:bio:report",
+  "test:version-authority",
   "test:platform",
   "test:platform:services",
   "test:provenance",

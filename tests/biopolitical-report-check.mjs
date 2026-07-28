@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import vm from "node:vm";
 import assert from "node:assert/strict";
+import { PRODUCT_VERSION } from "./helpers/product-version.mjs";
 
 const window = {};
 window.window = window;
@@ -38,7 +39,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
   const html = reportApi.build({
     analysis,
     lang,
-    version: "2.1.0-alpha.46",
+    version: PRODUCT_VERSION,
     bio,
     graphApi,
   });
@@ -58,7 +59,7 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
 const html = reportApi.build({
   analysis: fixture,
   lang: "en",
-  version: "2.1.0-alpha.46",
+  version: PRODUCT_VERSION,
   bio,
   graphApi,
 });

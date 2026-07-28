@@ -1,8 +1,18 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.46` establishes governed release operations around a protected `main` branch. Required no-browser and browser checks gate pull-request merges; accepted commits then drive commit-identical GitHub Pages and Cloudflare production deployments. Contributor and deployment documentation now describe the enforced pull-request workflow, exact-SHA verification, deployment parity, and release-tag discipline. Runtime behavior and the Alpha.45 recovery, workspace, export, review, resolution, and evidence contracts remain unchanged.
+Version `2.1.0-alpha.55` is a governed analytical workbench for producing,
+challenging, revising, recovering, and publishing evidence-traceable Strategic
+and Biopolitical analysis. It combines canonical schemas, evidence and
+relationship inspection, operational review, exact resolution transactions,
+immutable local revisions, safe append-only restoration, synchronized exports,
+and commit-identical deployment evidence.
 
-Start with the [documentation index](docs/README.md). Current release operations are in [deployment and release operations](docs/operations/deployment.md), and product/contract identities are separated in the [versioning policy](docs/VERSIONING.md).
+Start with the [documentation index](docs/README.md). The
+[capability authority map](docs/capability-authority-map.md) distinguishes
+complete, partial, experimental, planned, and retired capabilities. Current
+release operations are in [deployment and release operations](docs/operations/deployment.md),
+and product, initiative, and compatibility identities are separated in the
+[versioning policy](docs/VERSIONING.md).
 
 - Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
 - Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.

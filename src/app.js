@@ -1,4 +1,4 @@
-/* Jarbou3i Model v2.1.0-alpha.46 — Governed Release Operations */
+/* Jarbou3i Model — application composition root */
 import "./biopolitics-schema-validator.js";
 import "./strategic-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
@@ -4403,6 +4403,9 @@ function download(name, text, type = "text/plain") {
     a.remove();
   }, 30_000);
 }
+function currentAppVersion() {
+  return document.querySelector('meta[name="app-version"]')?.content || "development";
+}
 function htmlReport() {
   const a = state.analysis || normalizeAnalysis({});
   const b = scoreBreakdown(a);
@@ -4411,9 +4414,7 @@ function htmlReport() {
   const reportLens = ["strategic", "biopolitical"].includes(a.analysis_lens)
     ? a.analysis_lens
     : state.analysisLens;
-  const reportVersion =
-    document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.46";
+  const reportVersion = currentAppVersion();
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -4991,7 +4992,7 @@ function wireInspectionDirectory() {
   const exportButton = $("exportIntelligence");
   if (exportButton) {
     exportButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.46";
+      const appVersion = currentAppVersion();
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -4999,7 +5000,7 @@ function wireInspectionDirectory() {
   const reviewPlanButton = $("exportReviewPlan");
   if (reviewPlanButton) {
     reviewPlanButton.onclick = () => {
-      const appVersion = document.querySelector('meta[name="app-version"]')?.content || "2.1.0-alpha.46";
+      const appVersion = currentAppVersion();
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
       download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
@@ -5533,9 +5534,7 @@ function buildLosslessBiopoliticalReport(reportRenderer) {
   const reportLang = ["ar", "en", "fr"].includes(analysis?.language)
     ? analysis.language
     : "en";
-  const version =
-    document.querySelector('meta[name="app-version"]')?.content ||
-    "2.1.0-alpha.46";
+  const version = currentAppVersion();
   return reportRenderer.build({
     analysis,
     lang: reportLang,
