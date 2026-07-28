@@ -34,6 +34,7 @@ const relationshipIntelligence = read("src/core/relationship-intelligence.js");
 const evidenceIntelligence = read("src/core/evidence-intelligence.js");
 const evidenceTraceability = read("src/core/evidence-traceability.js");
 const evidenceReviewPlan = read("src/core/evidence-review-plan.js");
+const revisionHistory = read("src/core/revision-history.js");
 const reviewLedger = read("src/core/review-ledger.js");
 const persistence = read("src/core/persistence.js");
 const localization = read("src/core/localization.js");
@@ -89,6 +90,7 @@ for (const [file, source] of [
   ["src/core/relationship-intelligence.js", relationshipIntelligence],
   ["src/core/evidence-intelligence.js", evidenceIntelligence],
   ["src/core/evidence-traceability.js", evidenceTraceability],
+  ["src/core/revision-history.js", revisionHistory],
   ["src/core/persistence.js", persistence],
   ["src/core/localization.js", localization],
   ["src/core/render-regions.js", renderRegions],
@@ -149,12 +151,33 @@ for (const file of [
   "tests/results-explanation.spec.js",
   "tests/results-inspection.spec.js",
   "tests/application-shell.spec.js",
+  "tests/revision-history-check.mjs",
+  "tests/revision-history.spec.js",
   "docs/final-audit-matrix.md",
   "docs/manual-release-audit.md",
   "scripts/migrate-release-layout.mjs",
   "tests/release-layout-migration-check.mjs",
 ]) {
   if (!fs.existsSync(file)) fail(`missing audit regression file: ${file}`);
+}
+for (const token of [
+  'id="revisionBackdrop"',
+  'id="revisionDialog"',
+  'id="revisionList"',
+  'id="revisionDiff"',
+  'id="revisionRestore"',
+]) {
+  if (!index.includes(token)) fail(`Alpha.55 revision-history UI token missing: ${token}`);
+}
+for (const token of [
+  "projectRevisionHistory",
+  "compareRevisions",
+  "prepareRevisionRestore",
+  "revision_restore",
+]) {
+  if (!revisionHistory.includes(token) && !app.includes(token)) {
+    fail(`Alpha.55 revision-history integration token missing: ${token}`);
+  }
 }
 
 for (const token of [

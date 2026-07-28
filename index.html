@@ -296,6 +296,29 @@
     </div>
   </section>
 </div>
+<div class="workspaceBackdrop" id="revisionBackdrop" aria-hidden="true">
+  <section class="workspaceDialog revisionDialog" id="revisionDialog" role="dialog" aria-modal="true" aria-labelledby="revisionTitle" tabindex="-1">
+    <header class="modalHead">
+      <div><h3 id="revisionTitle">Revision history</h3><p class="muted" id="revisionHint"></p></div>
+      <button class="btn iconBtn" id="revisionClose" type="button" aria-label="Close revision history">×</button>
+    </header>
+    <div class="revisionTrust" id="revisionTrust"></div>
+    <div class="revisionLayout">
+      <section class="revisionListPanel" aria-labelledby="revisionListTitle">
+        <div class="ledgerSectionHead"><h4 id="revisionListTitle"></h4><span class="chip" id="revisionCount"></span></div>
+        <div class="revisionList" id="revisionList"></div>
+      </section>
+      <section class="revisionComparePanel" aria-labelledby="revisionCompareTitle">
+        <div class="ledgerSectionHead"><h4 id="revisionCompareTitle"></h4><span class="chip" id="revisionChangeCount"></span></div>
+        <div class="revisionMetadata" id="revisionMetadata"></div>
+        <ol class="resolutionDiff revisionDiff" id="revisionDiff"></ol>
+        <div class="revisionBlocked status warn" id="revisionBlocked" role="status" aria-live="polite" hidden></div>
+        <div class="status" id="revisionStatus" role="status" aria-live="polite"></div>
+        <div class="actions"><button class="btn primary" id="revisionRestore" type="button" disabled></button></div>
+      </section>
+    </div>
+  </section>
+</div>
 <div class="workspaceBackdrop" id="resolutionBackdrop" aria-hidden="true">
   <section class="workspaceDialog resolutionDialog" id="resolutionDialog" role="dialog" aria-modal="true" aria-labelledby="resolutionTitle" tabindex="-1">
     <header class="modalHead">

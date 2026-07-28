@@ -37,6 +37,11 @@ import {
   reviewTaskKey,
 } from "./core/review-ledger.js";
 import { commitResolution, createResolutionProposal } from "./core/resolution-transaction.js";
+import {
+  compareRevisions,
+  prepareRevisionRestore,
+  projectRevisionHistory,
+} from "./core/revision-history.js";
 import { validateStrategicAnalysis } from "./strategic-integrity.js";
 import { inspectStorageHealth, requestStoragePersistence } from "./core/storage-health.js";
 
@@ -1168,6 +1173,9 @@ const PLATFORM = createPlatformRuntime({
       ledgerSelectedTaskId: null,
       resolutionWorkspace: null,
       resolutionProposal: null,
+      revisionWorkspace: null,
+      revisionHistory: null,
+      revisionSelectedId: null,
     };
   },
   regions: {
@@ -5973,6 +5981,161 @@ async function saveEditorDraft() {
   } catch (error) { setWorkspaceStatus("bad", workspaceFailureMessage(error)); }
 }
 
+let revisionDialogInvoker = null;
+let revisionRestorePending = false;
+
+function revisionText(key, values = {}) {
+  const copy = {
+    title: ["Revision history", "سجل النسخ", "Historique des révisions"],
+    hint: ["Browse immutable local revisions, compare any historical state with the current head, and restore only through reviewed append-only history.", "تصفح النسخ المحلية غير القابلة للتغيير، وقارن أي حالة تاريخية بالنسخة الحالية، واستعدها فقط عبر سجل إضافي خاضع للمراجعة.", "Parcourez les révisions locales immuables, comparez un état historique à la tête actuelle et restaurez-le uniquement par ajout contrôlé."],
+    trust: ["Read-only history · restore never overwrites a revision or moves the head backward", "سجل للقراءة فقط · لا تستبدل الاستعادة أي نسخة ولا تعيد المؤشر إلى الخلف", "Historique en lecture seule · une restauration n’écrase rien et ne fait jamais reculer la tête"],
+    revisions: ["Immutable revisions", "النسخ غير القابلة للتغيير", "Révisions immuables"],
+    compare: ["Compared with current head", "مقارنة بالنسخة الحالية", "Comparaison avec la tête actuelle"],
+    count: ["{count} revisions", "{count} نسخ", "{count} révisions"],
+    changes: ["{count} changes", "{count} تغييرات", "{count} modifications"],
+    revision: ["Revision {sequence}", "النسخة {sequence}", "Révision {sequence}"],
+    imported: ["Imported", "مستوردة", "Importée"],
+    committed: ["Committed", "معتمدة", "Validée"],
+    head: ["Current head", "النسخة الحالية", "Tête actuelle"],
+    restored: ["Restored", "مستعادة", "Restaurée"],
+    created: ["Created", "تاريخ الإنشاء", "Créée"],
+    kind: ["Kind", "النوع", "Type"],
+    parent: ["Parent", "الأصل", "Parent"],
+    checksum: ["Payload checksum", "بصمة المحتوى", "Empreinte du contenu"],
+    restore: ["Prepare safe restore", "تحضير استعادة آمنة", "Préparer la restauration sûre"],
+    dirtyBlocked: ["Restore is blocked because the working draft has uncommitted changes. Commit or remove that draft first.", "الاستعادة محظورة لأن مسودة العمل تحتوي تغييرات غير معتمدة. اعتمد المسودة أو أزل تغييراتها أولًا.", "La restauration est bloquée car le brouillon contient des modifications non validées. Validez-les ou supprimez-les d’abord."],
+    headBlocked: ["This revision is already the current head.", "هذه النسخة هي الحالية بالفعل.", "Cette révision est déjà la tête actuelle."],
+    identicalBlocked: ["This revision has the same canonical payload as the current head; no restore transaction is needed.", "محتوى هذه النسخة مطابق للنسخة الحالية؛ لا حاجة إلى معاملة استعادة.", "Cette révision possède le même contenu canonique que la tête actuelle ; aucune restauration n’est nécessaire."],
+    preparing: ["Preparing verified restore transaction…", "جارٍ تحضير معاملة الاستعادة المتحقق منها…", "Préparation de la restauration vérifiée…"],
+    error: ["Revision operation failed safely: {message}", "فشلت عملية النسخة بأمان: {message}", "L’opération de révision a échoué sans altération : {message}"],
+  }[key] || [key, key, key];
+  const template = state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
+  return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
+}
+
+function revisionKindText(kind) {
+  if (kind === "imported_canonical") return revisionText("imported");
+  if (kind === "restored_revision") return revisionText("restored");
+  return revisionText("committed");
+}
+
+async function renderRevisionHistory() {
+  if (!state.revisionWorkspace || !state.revisionHistory) return;
+  const history = state.revisionHistory;
+  const selected = history.revisions.find((revision) => revision.revision_id === state.revisionSelectedId)
+    || history.revisions.find((revision) => !revision.is_head)
+    || history.revisions.at(-1);
+  state.revisionSelectedId = selected?.revision_id || null;
+  $("revisionTitle").textContent = revisionText("title");
+  $("revisionHint").textContent = revisionText("hint");
+  $("revisionTrust").textContent = revisionText("trust");
+  $("revisionListTitle").textContent = revisionText("revisions");
+  $("revisionCompareTitle").textContent = revisionText("compare");
+  $("revisionCount").textContent = revisionText("count", { count: history.revision_count });
+  $("revisionRestore").textContent = revisionText("restore");
+  $("revisionList").innerHTML = [...history.revisions].reverse().map((revision) => {
+    const badges = [
+      revision.is_head ? `<span class="revisionBadge head">${escapeHtml(revisionText("head"))}</span>` : "",
+      revision.is_imported ? `<span class="revisionBadge">${escapeHtml(revisionText("imported"))}</span>` : "",
+      revision.kind === "restored_revision" ? `<span class="revisionBadge">${escapeHtml(revisionText("restored"))}</span>` : "",
+    ].join("");
+    return `<button class="revisionItem${revision.revision_id === selected?.revision_id ? " active" : ""}" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="revisionItemTop"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><code dir="ltr">${escapeHtml(revision.revision_id)}</code><span class="revisionItemMeta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
+  }).join("");
+  $("revisionList").querySelectorAll("[data-revision-id]").forEach((button) => {
+    button.onclick = async () => {
+      state.revisionSelectedId = button.dataset.revisionId;
+      await renderRevisionHistory();
+    };
+  });
+  if (!selected) return;
+  const comparison = await compareRevisions(state.revisionWorkspace, {
+    baseRevisionId: history.head_revision_id,
+    targetRevisionId: selected.revision_id,
+  });
+  $("revisionChangeCount").textContent = revisionText("changes", { count: comparison.diff.change_count });
+  $("revisionMetadata").innerHTML = [
+    [revisionText("created"), new Date(selected.created_at).toLocaleString(state.lang)],
+    [revisionText("kind"), revisionKindText(selected.kind)],
+    [revisionText("parent"), selected.parent_revision_id || "—"],
+    [revisionText("checksum"), selected.payload_checksum],
+  ].map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong${label === revisionText("checksum") || label === revisionText("parent") ? ' dir="ltr"' : ""}>${escapeHtml(value)}</strong></div>`).join("");
+  $("revisionDiff").innerHTML = comparison.diff.changes.length
+    ? comparison.diff.changes.map((change) => `<li class="resolutionChange"><span class="resolutionOperation">${escapeHtml(change.operation)}</span><code class="resolutionPath" dir="ltr">${escapeHtml(change.path)}</code><div class="resolutionValues"><div class="resolutionValue"><span>${escapeHtml(resolutionText("before"))}</span><code>${escapeHtml(formatResolutionValue(change.before))}</code></div><div class="resolutionValue"><span>${escapeHtml(resolutionText("after"))}</span><code>${escapeHtml(formatResolutionValue(change.after))}</code></div></div></li>`).join("")
+    : "";
+  const blockedMessage = history.draft_dirty
+    ? revisionText("dirtyBlocked")
+    : selected.is_head
+      ? revisionText("headBlocked")
+      : comparison.identical
+        ? revisionText("identicalBlocked")
+        : "";
+  $("revisionBlocked").hidden = !blockedMessage;
+  $("revisionBlocked").textContent = blockedMessage;
+  $("revisionRestore").disabled = Boolean(blockedMessage) || revisionRestorePending;
+}
+
+async function openRevisionHistory(workspace = null, invoker = document.activeElement) {
+  try {
+    const loaded = workspace || await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
+    if (!loaded) throw new Error("Workspace was not found on this device.");
+    state.revisionWorkspace = loaded;
+    state.revisionHistory = await projectRevisionHistory(loaded);
+    state.revisionSelectedId = state.revisionHistory.revisions.find((revision) => !revision.is_head)?.revision_id
+      || state.revisionHistory.head_revision_id;
+    revisionDialogInvoker = invoker;
+    $("revisionClose").setAttribute("aria-label", labelText(
+      "Close revision history", "إغلاق سجل النسخ", "Fermer l’historique des révisions",
+    ));
+    $("revisionStatus").textContent = "";
+    $("revisionBackdrop").classList.add("show");
+    $("revisionBackdrop").setAttribute("aria-hidden", "false");
+    await renderRevisionHistory();
+    $("revisionDialog").focus();
+  } catch (error) {
+    setWorkspaceStatus("bad", revisionText("error", { message: error?.message || error?.code || "unknown" }));
+  }
+}
+
+function closeRevisionHistory() {
+  if (!$("revisionBackdrop").classList.contains("show") || revisionRestorePending) return;
+  $("revisionBackdrop").classList.remove("show");
+  $("revisionBackdrop").setAttribute("aria-hidden", "true");
+  state.revisionWorkspace = null;
+  state.revisionHistory = null;
+  state.revisionSelectedId = null;
+  if (revisionDialogInvoker?.isConnected) revisionDialogInvoker.focus();
+  revisionDialogInvoker = null;
+}
+
+async function prepareSelectedRevisionRestore() {
+  if (revisionRestorePending || !state.revisionWorkspace || !state.revisionSelectedId) return;
+  revisionRestorePending = true;
+  $("revisionRestore").disabled = true;
+  $("revisionStatus").className = "status";
+  $("revisionStatus").textContent = revisionText("preparing");
+  try {
+    const workspace = state.revisionWorkspace;
+    const prepared = await prepareRevisionRestore(workspace, {
+      sourceRevisionId: state.revisionSelectedId,
+      validate: (payload) => validateWorkspacePayload(workspace, payload),
+      deriveDiagnostics: (payload) => resolutionDiagnosticsFor(workspace, payload),
+    });
+    revisionRestorePending = false;
+    $("revisionBackdrop").classList.remove("show");
+    $("revisionBackdrop").setAttribute("aria-hidden", "true");
+    state.revisionWorkspace = null;
+    state.revisionHistory = null;
+    state.revisionSelectedId = null;
+    revisionDialogInvoker = null;
+    await openResolutionTransaction(prepared.workspace, $("workspaceBtn"), prepared.proposal);
+  } catch (error) {
+    revisionRestorePending = false;
+    $("revisionStatus").className = "status bad";
+    $("revisionStatus").textContent = revisionText("error", { message: error?.message || error?.code || "unknown" });
+    await renderRevisionHistory();
+  }
+}
+
 let resolutionDialogInvoker = null;
 let resolutionCommitPending = false;
 
@@ -5998,13 +6161,19 @@ function resolutionText(key) {
     after: ["After", "بعد", "Après"],
     integrity: ["Proposal integrity", "سلامة الاقتراح", "Intégrité de la proposition"],
     verified: ["Verified", "متحقق منها", "Vérifiée"],
+    restoreTitle: ["Safe revision restore", "استعادة آمنة لنسخة سابقة", "Restauration sûre d’une révision"],
+    restoreHint: ["Review the exact historical-to-current difference and approve a new child revision. The head never moves backward.", "راجع الفرق الدقيق بين النسخة التاريخية والحالية ووافق على نسخة فرعية جديدة. لا يعود مؤشر النسخة الحالية إلى الخلف.", "Examinez la différence exacte avec l’historique et approuvez une nouvelle révision enfant. La tête ne recule jamais."],
+    restoreTrust: ["Restore appends a new immutable child of the current head · selected history remains unchanged", "تضيف الاستعادة نسخة فرعية جديدة غير قابلة للتغيير من النسخة الحالية · ويبقى التاريخ المحدد دون تعديل", "La restauration ajoute un nouvel enfant immuable à la tête actuelle · l’historique sélectionné reste inchangé"],
+    restoreCommit: ["Approve & append restored revision", "الموافقة وإضافة النسخة المستعادة", "Approuver et ajouter la révision restaurée"],
+    source: ["Historical source", "المصدر التاريخي", "Source historique"],
+    restored: ["Historical state restored as a new immutable revision.", "تمت استعادة الحالة التاريخية كنسخة جديدة غير قابلة للتغيير.", "État historique restauré sous forme d’une nouvelle révision immuable."],
   }[key] || [key, key, key];
   const template = state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
   return template;
 }
 
-function resolutionDiagnostics(payload) {
-  const result = validateWorkspacePayload(state.resolutionWorkspace, payload);
+function resolutionDiagnosticsFor(workspace, payload) {
+  const result = validateWorkspacePayload(workspace, payload);
   const evidence = payload?.evidence?.items || payload?.evidence || [];
   return {
     contract_valid: Boolean(result.valid),
@@ -6012,6 +6181,10 @@ function resolutionDiagnostics(payload) {
     validation_warning_count: result.warnings?.length || 0,
     evidence_record_count: Array.isArray(evidence) ? evidence.length : 0,
   };
+}
+
+function resolutionDiagnostics(payload) {
+  return resolutionDiagnosticsFor(state.resolutionWorkspace, payload);
 }
 
 function formatResolutionValue(value) {
@@ -6033,17 +6206,19 @@ function updateResolutionCommitState() {
 function renderResolutionProposal() {
   const proposal = state.resolutionProposal;
   if (!proposal) return;
-  $("resolutionTitle").textContent = resolutionText("title");
-  $("resolutionHint").textContent = resolutionText("hint");
-  $("resolutionTrust").textContent = resolutionText("trust");
+  const restoring = proposal.transaction?.type === "revision_restore";
+  $("resolutionTitle").textContent = resolutionText(restoring ? "restoreTitle" : "title");
+  $("resolutionHint").textContent = resolutionText(restoring ? "restoreHint" : "hint");
+  $("resolutionTrust").textContent = resolutionText(restoring ? "restoreTrust" : "trust");
   $("resolutionDiffTitle").textContent = resolutionText("diff");
   $("resolutionReviewerLabel").textContent = resolutionText("reviewer");
   $("resolutionRationaleLabel").textContent = resolutionText("rationale");
   $("resolutionConfirmLabel").textContent = resolutionText("confirm");
-  $("resolutionCommit").textContent = resolutionText("commit");
+  $("resolutionCommit").textContent = resolutionText(restoring ? "restoreCommit" : "commit");
   $("resolutionChangeCount").textContent = resolutionText("changes").replace("{count}", proposal.diff.change_count);
   $("resolutionSummary").innerHTML = [
     [resolutionText("base"), proposal.base_revision_id],
+    ...(restoring ? [[resolutionText("source"), proposal.transaction.source_revision_id]] : []),
     [resolutionText("validation"), proposal.validation.valid ? resolutionText("valid") : resolutionText("stale")],
     [resolutionText("integrity"), resolutionText("verified")],
   ].map(([label, value]) => `<div class="resolutionMetric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
@@ -6051,14 +6226,14 @@ function renderResolutionProposal() {
   updateResolutionCommitState();
 }
 
-async function openResolutionTransaction(workspace = null, invoker = document.activeElement) {
+async function openResolutionTransaction(workspace = null, invoker = document.activeElement, preparedProposal = null) {
   try {
     const loaded = workspace || await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
     if (!loaded) throw new Error("Workspace was not found on this device.");
     state.resolutionWorkspace = loaded;
-    state.resolutionProposal = await createResolutionProposal(loaded, {
+    state.resolutionProposal = preparedProposal || await createResolutionProposal(loaded, {
       validate: (payload) => validateWorkspacePayload(loaded, payload),
-      deriveDiagnostics: resolutionDiagnostics,
+      deriveDiagnostics: (payload) => resolutionDiagnosticsFor(loaded, payload),
     });
     resolutionDialogInvoker = invoker;
     const settings = readSettings();
@@ -6102,7 +6277,7 @@ async function commitResolutionTransaction() {
     const expectedRevision = state.resolutionWorkspace.repository_revision;
     const next = await commitResolution(state.resolutionWorkspace, state.resolutionProposal, {
       validate: (payload) => validateWorkspacePayload(state.resolutionWorkspace, payload),
-      deriveDiagnostics: resolutionDiagnostics,
+      deriveDiagnostics: (payload) => resolutionDiagnosticsFor(state.resolutionWorkspace, payload),
       reviewer: { reviewer_id: reviewerId, display_name: reviewerName },
       rationale: $("resolutionRationale").value,
       approved: $("resolutionConfirm").checked,
@@ -6110,10 +6285,11 @@ async function commitResolutionTransaction() {
     const saved = await WORKSPACE_REPOSITORY.replace(next, { expectedRevision });
     resolutionCommitPending = false;
     $("resolutionStatus").className = "status good";
-    $("resolutionStatus").textContent = resolutionText("committed");
+    const message = resolutionText(state.resolutionProposal.transaction?.type === "revision_restore" ? "restored" : "committed");
+    $("resolutionStatus").textContent = message;
     applyWorkspaceAnalysis(saved);
     closeResolutionTransaction();
-    setWorkspaceStatus("good", resolutionText("committed"));
+    setWorkspaceStatus("good", message);
   } catch (error) {
     resolutionCommitPending = false;
     $("resolutionStatus").className = "status bad";
@@ -6384,7 +6560,7 @@ async function renderWorkspaceList() {
           const active = entry.workspace_id === state.activeWorkspaceId;
           const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" })
             .format(new Date(entry.metadata.updated_at));
-          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(entry.analysis_identity.lens_id)}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(entry.integrity_status)}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="actions"><button class="btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}<button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
+          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(entry.analysis_identity.lens_id)}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(entry.integrity_status)}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="actions"><button class="btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}<button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
         }).join("")
       : `<div class="empty"><strong>${escapeHtml(workspaceText("empty"))}</strong></div>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
@@ -6394,6 +6570,7 @@ async function renderWorkspaceList() {
       };
     });
     target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceEdit); closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
+    target.querySelectorAll("[data-workspace-history]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceHistory); closeWorkspaceDialog(); await openRevisionHistory(workspace, $("workspaceBtn")); }; });
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceResolve); closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceBtn")); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
     $("workspaceResetCurrent").disabled = !state.activeWorkspaceId;
@@ -6468,6 +6645,19 @@ function trapLedgerFocus(event) {
 
 function trapResolutionFocus(event) {
   const backdrop = $("resolutionBackdrop");
+  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
+  const focusable = [...backdrop.querySelectorAll(
+    'button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
+  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) { last.focus(); event.preventDefault(); }
+  else if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
+}
+
+function trapRevisionFocus(event) {
+  const backdrop = $("revisionBackdrop");
   if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
   const focusable = [...backdrop.querySelectorAll(
     'button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
@@ -6827,6 +7017,9 @@ $("resolutionReviewer").addEventListener("input", updateResolutionCommitState);
 $("resolutionRationale").addEventListener("input", updateResolutionCommitState);
 $("resolutionConfirm").addEventListener("change", updateResolutionCommitState);
 $("resolutionBackdrop").addEventListener("click", (event) => { if (event.target === $("resolutionBackdrop")) closeResolutionTransaction(); });
+$("revisionClose").onclick = closeRevisionHistory;
+$("revisionRestore").onclick = prepareSelectedRevisionRestore;
+$("revisionBackdrop").addEventListener("click", (event) => { if (event.target === $("revisionBackdrop")) closeRevisionHistory(); });
 $("workspaceBackdrop").addEventListener("click", (event) => {
   if (event.target === $("workspaceBackdrop")) closeWorkspaceDialog();
 });
@@ -6839,11 +7032,13 @@ document.addEventListener("keydown", (e) => {
     closeWorkspaceDialog();
     closeCanonicalEditor();
     closeReviewLedger();
+    closeRevisionHistory();
     closeResolutionTransaction();
   }
   trapModalFocus(e);
   trapWorkspaceFocus(e);
   trapLedgerFocus(e);
+  trapRevisionFocus(e);
   trapResolutionFocus(e);
 });
 window.addEventListener("beforeunload", (event) => {
