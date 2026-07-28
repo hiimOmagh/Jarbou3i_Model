@@ -55,15 +55,24 @@ versions and do not imply a release:
 
 ```text
 REL-AUTH-1
+BR-0
+GATE-0
+UX-0
+UIX-1 ... UIX-4
 RESEARCH-1
 COMPARE-1
 CHALLENGE-1
+DECIDE-1
 CALIBRATE-1
 PRODUCT-MODEL-1
 ```
 
-An initiative may span several commits or pull requests. A product version
-changes only when those changes form a coherent user-facing state. Tests and
-runtime code must derive the current product version from `package.json` or from
-the validated `app-version` metadata mirror; they must not create independent
-hard-coded version authorities.
+`GATE-0` is a decision gate and `UX-0` is a design-evidence milestone; neither
+claims a runtime capability. `BR-0` is documentation and measurement authority
+maintenance. `UIX-*` identifies bounded UI-migration slices.
+
+An initiative or milestone may span several commits or pull requests. A product
+version changes only when those changes form a coherent user-facing state.
+Tests and runtime code must derive the current product version from
+`package.json` or from the validated `app-version` metadata mirror; they must
+not create independent hard-coded version authorities.

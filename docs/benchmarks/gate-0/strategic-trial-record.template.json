@@ -1,0 +1,143 @@
+{
+  "format": "jarbou3i-gate0-trial-v1",
+  "trial_id": "STR-001",
+  "case_id": "gate0-strategic-v1",
+  "case_version": "1.0.0",
+  "script_version": "1.0.0",
+  "lens": "strategic",
+  "repository_commit": "0000000000000000000000000000000000000000",
+  "deployed_url": "",
+  "participant": {
+    "anonymous_id": "P-001",
+    "experience_level": "first_time",
+    "locale": "en"
+  },
+  "started_at": "2026-07-28T10:00:00+02:00",
+  "ended_at": "2026-07-28T10:45:00+02:00",
+  "active_seconds": 2700,
+  "status": "complete",
+  "task_results": [
+    {
+      "task_id": "T0",
+      "started_at": "2026-07-28T10:00:00+02:00",
+      "ended_at": "2026-07-28T10:03:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T1",
+      "started_at": "2026-07-28T10:03:00+02:00",
+      "ended_at": "2026-07-28T10:08:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T2",
+      "started_at": "2026-07-28T10:08:00+02:00",
+      "ended_at": "2026-07-28T10:14:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T3",
+      "started_at": "2026-07-28T10:14:00+02:00",
+      "ended_at": "2026-07-28T10:22:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T4",
+      "started_at": "2026-07-28T10:22:00+02:00",
+      "ended_at": "2026-07-28T10:29:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T5",
+      "started_at": "2026-07-28T10:29:00+02:00",
+      "ended_at": "2026-07-28T10:35:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T6",
+      "started_at": "2026-07-28T10:35:00+02:00",
+      "ended_at": "2026-07-28T10:40:00+02:00",
+      "status": "complete",
+      "notes": ""
+    },
+    {
+      "task_id": "T7",
+      "started_at": "2026-07-28T10:40:00+02:00",
+      "ended_at": "2026-07-28T10:45:00+02:00",
+      "status": "complete",
+      "notes": ""
+    }
+  ],
+  "events": [],
+  "seed_findings": [
+    {
+      "seed_id": "ST-S01",
+      "detected": false,
+      "corrected": false,
+      "first_detected_at": null,
+      "disposition": ""
+    },
+    {
+      "seed_id": "ST-S02",
+      "detected": false,
+      "corrected": false,
+      "first_detected_at": null,
+      "disposition": ""
+    },
+    {
+      "seed_id": "ST-S03",
+      "detected": false,
+      "corrected": false,
+      "first_detected_at": null,
+      "disposition": ""
+    },
+    {
+      "seed_id": "ST-S04",
+      "detected": false,
+      "corrected": false,
+      "first_detected_at": null,
+      "disposition": ""
+    },
+    {
+      "seed_id": "ST-S05",
+      "detected": false,
+      "corrected": false,
+      "first_detected_at": null,
+      "disposition": ""
+    }
+  ],
+  "comprehension": {
+    "confidence_state": {
+      "rating": "not_answered",
+      "answer": ""
+    },
+    "verification_state": {
+      "rating": "not_answered",
+      "answer": ""
+    },
+    "publication_state": {
+      "rating": "not_answered",
+      "answer": ""
+    },
+    "recovery_state": {
+      "rating": "not_answered",
+      "answer": ""
+    }
+  },
+  "participant_explanations": [],
+  "observer_inferences": [],
+  "proposed_responses": [],
+  "data_quality": {
+    "recording_available": false,
+    "timestamps_complete": true,
+    "script_deviation": "",
+    "invalidation_reason": ""
+  }
+}
+
