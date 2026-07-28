@@ -230,6 +230,9 @@ const incompleteCanonical =
 if (incompleteCanonical.ok) {
   fail("structurally incomplete interchange was promoted to canonical");
 }
+if (!compiler.canRecoverAsDraft(incompleteCanonical)) {
+  fail("analytical completion gap was not classified as reviewable");
+}
 const reviewableDraft = compiler.asReviewableDraft(
   incompleteCompilation.value,
   incompleteCanonical.errors,
@@ -245,6 +248,103 @@ if (
   )
 ) {
   fail("incomplete interchange was not preserved as a generated draft");
+}
+
+const reusedCanonical = structuredClone(fixture);
+while (reusedCanonical.evidence.items.length < 8) {
+  const index = reusedCanonical.evidence.items.length;
+  reusedCanonical.evidence.items.push({
+    ...structuredClone(reusedCanonical.evidence.items[index % 2]),
+    id: `E${index + 1}`,
+  });
+}
+reusedCanonical.evidence.items.forEach((item) => {
+  item.counter_evidence = "";
+});
+const reusedValidation =
+  window.Jarbou3iBiopoliticsIntegrity.validateImport(reusedCanonical);
+if (
+  reusedValidation.ok ||
+  reusedValidation.errors.length !== 8 ||
+  !reusedValidation.errors.every(
+    (item) =>
+      item.code === "SCHEMA_MINLENGTH" &&
+      /\/evidence\/items\/\d+\/counter_evidence$/.test(item.path),
+  )
+) {
+  fail("observed eight-gap canonical reuse case was not reproduced");
+}
+if (!compiler.canRecoverAsDraft(reusedValidation)) {
+  fail("canonical-shaped AI completion gaps were not recoverable");
+}
+const reusedDraft = compiler.asReviewableDraft(
+  reusedCanonical,
+  reusedValidation.errors,
+  { origin: "canonical" },
+);
+const reusedDraftValidation =
+  window.Jarbou3iBiopoliticsIntegrity.validateImport(reusedDraft);
+if (
+  !reusedDraftValidation.ok ||
+  reusedDraftValidation.canonical ||
+  reusedDraft.migration.from_schema !==
+    "biopolitical-training-map-v2@2.1.0" ||
+  reusedDraft.migration.adapter !==
+    "canonical-ai-result-to-reviewable-draft-v1" ||
+  reusedDraft.evidence.items.some((item) => item.counter_evidence !== "")
+) {
+  fail("canonical reuse gaps were not preserved losslessly as a draft");
+}
+const completionPrompt = compiler.buildCompletionPrompt(
+  reusedCanonical,
+  reusedValidation.errors,
+  "en",
+);
+if (
+  !completionPrompt.includes("/evidence/items/0/counter_evidence") ||
+  !completionPrompt.includes("/evidence/items/7/counter_evidence") ||
+  !completionPrompt.includes("modify only the paths listed") ||
+  !completionPrompt.includes(JSON.stringify(reusedCanonical))
+) {
+  fail("targeted completion prompt lost the base payload or exact gap paths");
+}
+for (const [lang, marker] of [
+  ["ar", "المسارات المطلوب استكمالها"],
+  ["fr", "Chemins à compléter"],
+]) {
+  const localizedCompletion = compiler.buildCompletionPrompt(
+    reusedCanonical,
+    reusedValidation.errors,
+    lang,
+  );
+  if (
+    !localizedCompletion.includes(marker) ||
+    !localizedCompletion.includes("/evidence/items/7/counter_evidence") ||
+    !localizedCompletion.includes(JSON.stringify(reusedCanonical))
+  ) {
+    fail(`${lang} targeted completion prompt lost its contract content`);
+  }
+}
+
+const malformedCanonical = structuredClone(fixture);
+malformedCanonical.evidence.items[0].counter_evidence = 42;
+const malformedValidation =
+  window.Jarbou3iBiopoliticsIntegrity.validateImport(malformedCanonical);
+if (
+  malformedValidation.ok ||
+  compiler.canRecoverAsDraft(malformedValidation)
+) {
+  fail("malformed field types must remain fail-closed");
+}
+const brokenReference = structuredClone(fixture);
+brokenReference.links[0].to = "MISSING-ENDPOINT";
+const brokenReferenceValidation =
+  window.Jarbou3iBiopoliticsIntegrity.validateImport(brokenReference);
+if (
+  brokenReferenceValidation.ok ||
+  compiler.canRecoverAsDraft(brokenReferenceValidation)
+) {
+  fail("broken canonical references must remain fail-closed");
 }
 
 let truncationDetected = false;

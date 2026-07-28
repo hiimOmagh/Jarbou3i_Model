@@ -23,12 +23,33 @@ or promotes model-declared verification.
 |---|---|---:|---:|
 | Canonical | Compilation passes strict schema and semantic integrity | Allowed | Existing evidence/review gates decide |
 | `reviewable_generated_draft` | Recoverable analytical content remains incomplete or inconsistent | Allowed | Blocked |
+| Canonical-shaped AI result with reviewable gaps | Empty required prose or arrays are reclassified losslessly as `reviewable_generated_draft` | Allowed | Blocked |
 | Truncated | JSON structure ends before the opened object, array, or string closes | Blocked | Blocked |
 | Unsupported | Contract/lens identity is unknown | Blocked | Blocked |
 
 Canonical promotion is fail-closed. If the compiled candidate fails a strict
 structural or semantic requirement, the same content is reclassified as a
 generated draft. The fallback does not weaken the canonical schema.
+
+Canonical-shaped AI output receives the same fallback only when every failure
+is a bounded completion gap (`minLength`, `minItems`, or a non-identity
+`required` field). Invalid types or enums, missing contract identity, missing
+record IDs, duplicate IDs, and broken references remain blocked. Reclassifying
+a gap never inserts replacement prose.
+
+## Targeted completion
+
+When a canonical-shaped result contains only reviewable completion gaps, the
+application keeps the import button available, lists the exact JSON Pointer
+paths, and offers a targeted completion prompt. The prompt includes the
+preserved canonical candidate and permits changes only at those paths. It
+requires specific content grounded in the existing record or an explicit
+statement of what evidence remains unlocated; it forbids invented sources,
+verification states, and unrelated rewrites.
+
+This is an adaptive single-pass completion layer. A future multi-packet merge
+protocol would require its own base-revision binding, conflict rules, and
+replay protection; those guarantees are not implied here.
 
 ## Deterministic compilation
 
@@ -92,6 +113,8 @@ budgets.
   the input is cleared.
 - Quarantined values remain review data and never enter canonical exports.
 - Missing analytical content is never synthesized by deterministic repair.
+- Empty analytical requirements are preserved as visible completion work.
+- Malformed types, identities, IDs, and references remain fail-closed.
 - Generated drafts are explicitly non-canonical.
 - Truncated output is never promoted to a reviewable analysis.
 - AI output cannot self-approve evidence or publication.

@@ -38,8 +38,18 @@
       "type": "object",
       "required": ["from_schema", "adapter", "warnings", "canonical_target"],
       "properties": {
-        "from_schema": { "const": "jarbou3i-ai-interchange/1" },
-        "adapter": { "const": "ai-interchange-v1-to-biopolitical-v2" },
+        "from_schema": {
+          "enum": [
+            "jarbou3i-ai-interchange/1",
+            "biopolitical-training-map-v2@2.1.0"
+          ]
+        },
+        "adapter": {
+          "enum": [
+            "ai-interchange-v1-to-biopolitical-v2",
+            "canonical-ai-result-to-reviewable-draft-v1"
+          ]
+        },
         "warnings": {
           "type": "array",
           "minItems": 1,

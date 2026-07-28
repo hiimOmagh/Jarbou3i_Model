@@ -17,6 +17,7 @@ This index distinguishes current operating authority from historical implementat
 ## Product contracts
 
 - [Biopolitical v2 contract](biopolitical-v2-contract.md)
+- [AI interchange and recoverable completion](ai-interchange-contract-v1.md)
 - [Export contract](export-contract.md)
 - [Workspace storage and portability](phase5-workspace-storage-portability.md)
 - [Structured canonical editor](phase5-structured-canonical-editor.md)
