@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
+import {
+  beginLongPersistenceWorkflow,
+  clearWorkspaceStorage,
+  readFirstWorkspace,
+} from "./helpers/browser-persistence.js";
 
 async function start(page, lens = "strategic") {
   await page.goto("./");
-  await page.evaluate(() => new Promise((resolve) => {
-    const request = indexedDB.deleteDatabase("jarbou3i-model-workspaces");
-    request.onsuccess = request.onerror = request.onblocked = () => resolve();
-  }));
+  await clearWorkspaceStorage(page);
   await page.reload();
   await page.locator("#langEn").click();
   if (lens === "biopolitical") await page.locator('[data-lens="biopolitical"]').click();
@@ -45,19 +47,7 @@ async function commitTitle(page, title) {
 }
 
 async function storedWorkspace(page) {
-  return page.evaluate(async () => {
-    const request = indexedDB.open("jarbou3i-model-workspaces");
-    const database = await new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    const tx = database.transaction("workspaces", "readonly");
-    const get = tx.objectStore("workspaces").getAll();
-    return new Promise((resolve, reject) => {
-      get.onsuccess = () => resolve(get.result[0]);
-      get.onerror = () => reject(get.error);
-    });
-  });
+  return readFirstWorkspace(page);
 }
 
 test.describe("Revision history and safe restore", () => {
@@ -96,7 +86,11 @@ test.describe("Revision history and safe restore", () => {
     expect(stored.audit_events.at(-1).type).toBe("revision_restored");
   });
 
-  test("blocks restore when a draft is dirty and localizes the read-only history workflow", async ({ page }) => {
+  test("blocks restore when a draft is dirty and localizes the read-only history workflow", async ({ page }, testInfo) => {
+    const finishLongWorkflow = beginLongPersistenceWorkflow(
+      testInfo,
+      "revision-history-dirty-localization",
+    );
     await start(page, "biopolitical");
     await commitTitle(page, "Committed biopolitical head");
     await openEditor(page);
@@ -121,5 +115,6 @@ test.describe("Revision history and safe restore", () => {
     expect(stored.revisions).toHaveLength(2);
     expect(stored.head_revision_id).toBe(stored.revisions[1].revision_id);
     expect(stored.working_draft.dirty).toBe(true);
+    await finishLongWorkflow();
   });
 });

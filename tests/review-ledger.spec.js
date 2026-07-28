@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
+import {
+  beginLongPersistenceWorkflow,
+  clearWorkspaceStorage,
+} from "./helpers/browser-persistence.js";
 
 async function openLedger(page) {
   await page.goto("./");
-  await page.evaluate(() => new Promise((resolve) => {
-    const request = indexedDB.deleteDatabase("jarbou3i-model-workspaces");
-    request.onsuccess = request.onerror = request.onblocked = () => resolve();
-  }));
+  await clearWorkspaceStorage(page);
   await page.reload();
   await page.locator("#langEn").click();
   await page.locator("#loadSampleBtn").click();
@@ -28,7 +29,11 @@ async function append(page, action, rationale) {
 }
 
 test.describe("Operational review ledger", () => {
-  test("records start, note, completion, identity, and persistence", async ({ page }) => {
+  test("records start, note, completion, identity, and persistence", async ({ page }, testInfo) => {
+    const finishLongWorkflow = beginLongPersistenceWorkflow(
+      testInfo,
+      "review-ledger-persistence-staleness",
+    );
     await openLedger(page);
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Pending");
     await append(page, "task_started", "Review ownership accepted for provenance verification.");
@@ -63,6 +68,7 @@ test.describe("Operational review ledger", () => {
     await page.locator("#openReviewLedger").click();
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
     await expect(page.locator("#ledgerTaskList .ledgerStatus.stale").first()).toContainText(/Stale after draft change/i);
+    await finishLongWorkflow();
   });
 
   test("records a bounded waiver, reopens it, and exports the hash chain", async ({ page }) => {

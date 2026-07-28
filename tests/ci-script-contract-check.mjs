@@ -39,6 +39,7 @@ for (const gate of [
   "test:layout:migration",
   "test:i18n:bio",
   "test:a11y:static",
+  "test:ci:persistence-policy",
   "test:ci:contract",
   "test:hygiene",
 ]) {
@@ -51,6 +52,9 @@ if (pkg.scripts?.["upgrade:layout"] !== "node scripts/migrate-release-layout.mjs
 }
 if (pkg.scripts?.["build:pages"] !== "node scripts/build-pages-artifact.mjs") {
   fail("build:pages must execute the explicit deployment-artifact builder");
+}
+if (pkg.scripts?.["test:ci:persistence-policy"] !== "node tests/browser-persistence-policy-check.mjs") {
+  fail("test:ci:persistence-policy must execute the bounded browser persistence authority");
 }
 
 const core = pkg.scripts?.["test:browser:core"] || "";

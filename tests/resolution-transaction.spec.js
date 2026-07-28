@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
+import {
+  clearWorkspaceStorage,
+  readFirstWorkspace,
+} from "./helpers/browser-persistence.js";
 
 async function start(page, lens = "strategic") {
   await page.goto("./");
-  await page.evaluate(() => new Promise((resolve) => {
-    const request = indexedDB.deleteDatabase("jarbou3i-model-workspaces");
-    request.onsuccess = request.onerror = request.onblocked = () => resolve();
-  }));
+  await clearWorkspaceStorage(page);
   await page.reload();
   await page.locator("#langEn").click();
   if (lens === "biopolitical") await page.locator('[data-lens="biopolitical"]').click();
@@ -48,19 +49,7 @@ test.describe("Resolution transactions", () => {
     await page.locator("#editorResolve").click();
     await approve(page, "Approved after reviewing the exact Strategic subject diff.");
     await expect(page.locator("#topicInput")).toHaveValue("Committed strategic resolution");
-    const stored = await page.evaluate(async () => {
-      const request = indexedDB.open("jarbou3i-model-workspaces");
-      const database = await new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-      const tx = database.transaction("workspaces", "readonly");
-      const get = tx.objectStore("workspaces").getAll();
-      return new Promise((resolve, reject) => {
-        get.onsuccess = () => resolve(get.result[0]);
-        get.onerror = () => reject(get.error);
-      });
-    });
+    const stored = await readFirstWorkspace(page);
     expect(stored.revisions).toHaveLength(2);
     expect(stored.revisions[0].kind).toBe("imported_canonical");
     expect(stored.revisions[1].kind).toBe("committed_resolution");
