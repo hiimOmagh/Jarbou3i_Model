@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
+import { PRODUCT_VERSION } from "./helpers/product-version.mjs";
 
 async function openQueue(page, lens) {
   await page.goto("./");
@@ -32,7 +33,7 @@ test("biopolitical review plan downloads as a separate derived artifact", async 
   ]);
   const manifest = JSON.parse(await fs.readFile(await download.path(), "utf8"));
   expect(manifest.format).toBe("jarbou3i-evidence-review-plan-v1");
-  expect(manifest.app_version).toBe("2.1.0-alpha.46");
+  expect(manifest.app_version).toBe(PRODUCT_VERSION);
   expect(manifest.analysis_lens).toBe("biopolitical");
   expect(manifest.derived).toBe(true);
   expect(manifest.canonical_transport).toBe(false);

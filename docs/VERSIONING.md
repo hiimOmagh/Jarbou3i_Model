@@ -47,3 +47,23 @@ A product release may change without changing any compatibility namespace. A com
 7. Never move or recreate an accepted tag.
 
 Historical version labels without a proven tag remain documentary records, not retroactively verified releases.
+
+## Initiative identities
+
+Initiative IDs name bounded engineering or product work; they are not product
+versions and do not imply a release:
+
+```text
+REL-AUTH-1
+RESEARCH-1
+COMPARE-1
+CHALLENGE-1
+CALIBRATE-1
+PRODUCT-MODEL-1
+```
+
+An initiative may span several commits or pull requests. A product version
+changes only when those changes form a coherent user-facing state. Tests and
+runtime code must derive the current product version from `package.json` or from
+the validated `app-version` metadata mirror; they must not create independent
+hard-coded version authorities.

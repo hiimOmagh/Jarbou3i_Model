@@ -1,6 +1,13 @@
 # Changelog
 
-## Alpha.55 — Revision History and Safe Restore
+## 2.1.0-alpha.55 — Revision History and Safe Restore
+
+- Normalizes package, application, export, evidence, documentation, and test
+  identities under one declared product version.
+- Makes `package.json` the development authority and verifies every required
+  derived surface through a dedicated CI contract.
+- Establishes an authoritative capability map and the `REL-AUTH-1` baseline
+  for the research-to-report workflow.
 
 - Adds a read-only, trilingual revision browser with lineage, checksum, kind, timestamp, and current-head status.
 - Compares any selected historical canonical payload with the current head using the existing exact diff authority.

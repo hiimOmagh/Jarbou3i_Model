@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { createResultsInspectionIndex } from "../src/core/results-inspection.js";
 import { assessEvidenceProvenance } from "../src/core/provenance.js";
 import "../src/biopolitics-graph.js";
+import { PRODUCT_VERSION } from "./helpers/product-version.mjs";
 
 const fail = (message) => { console.error(`Evidence traceability check failed: ${message}`); process.exit(1); };
 const assert = (condition, message) => { if (!condition) fail(message); };
@@ -26,11 +27,11 @@ const bioIndex = createResultsInspectionIndex({
 const intervention = bioIndex.traceability.row("IV1");
 assert(intervention.supportingIds.includes("E1"), "intervention support route missing");
 assert(bioIndex.traceability.routesForEvidence("E1").some((route) => route.recordId === "IV1"), "reverse evidence route missing");
-const manifest = bioIndex.traceability.manifest({ appVersion: "2.1.0-alpha.46", language: "en" });
+const manifest = bioIndex.traceability.manifest({ appVersion: PRODUCT_VERSION, language: "en" });
 assert(Object.isFrozen(manifest), "derived manifest must be immutable");
 assert(manifest.format === "jarbou3i-evidence-intelligence-v1", "manifest identity drifted");
 assert(manifest.derived === true && manifest.canonical_transport === false, "derived boundary missing");
-assert(manifest.app_version === "2.1.0-alpha.46", "manifest version missing");
+assert(manifest.app_version === PRODUCT_VERSION, "manifest version missing");
 assert(manifest.analysis_lens === "biopolitical", "manifest lens missing");
 assert(manifest.claim_evidence_matrix.some((row) => row.recordId === "IV1"), "matrix row missing");
 assert(manifest.authored_routes.some((route) => route.evidenceId === "E1"), "authored route missing");

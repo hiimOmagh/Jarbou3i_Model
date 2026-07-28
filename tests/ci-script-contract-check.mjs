@@ -12,6 +12,7 @@ const playwright = read("playwright.config.js");
 const noBrowser = pkg.scripts?.["test:ci:no-browser"] || "";
 for (const gate of [
   "build:validator",
+  "test:version-authority",
   "test:qa",
   "test:static",
   "test:platform",
@@ -245,9 +246,6 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.version !== "2.1.0-alpha.46") {
-  fail("package version must be 2.1.0-alpha.46");
-}
 if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
   fail("@playwright/test must remain pinned to 1.61.1");
 }

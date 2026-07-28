@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
-
-const EXPECTED_VERSION = '2.1.0-alpha.46';
+import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
 
 async function exportSampleReport(page, testInfo, lens) {
   await page.goto('./');

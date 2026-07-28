@@ -8,6 +8,8 @@ This index distinguishes current operating authority from historical implementat
 - [Usage guide](usage-guide.md)
 - [Deployment and release operations](operations/deployment.md)
 - [Versioning policy](VERSIONING.md)
+- [Capability authority map](capability-authority-map.md)
+- [REL-AUTH-1 product authority baseline](rel-auth-1-product-authority.md)
 - [Security policy](../SECURITY.md)
 - [Contributing](../CONTRIBUTING.md)
 - [Changelog](../CHANGELOG.md)

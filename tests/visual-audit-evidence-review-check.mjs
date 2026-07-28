@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-
-const EXPECTED_VERSION = "2.1.0-alpha.46";
+import { PRODUCT_VERSION as EXPECTED_VERSION } from "./helpers/product-version.mjs";
 const fail = (message) => {
   console.error(`Visual audit evidence review failed: ${message}`);
   process.exit(1);
