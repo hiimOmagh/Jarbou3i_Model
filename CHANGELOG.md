@@ -1,5 +1,15 @@
 # Changelog
 
+## Alpha.55 — Revision History and Safe Restore
+
+- Adds a read-only, trilingual revision browser with lineage, checksum, kind, timestamp, and current-head status.
+- Compares any selected historical canonical payload with the current head using the existing exact diff authority.
+- Restores only by creating a reviewed immutable child revision; the head never moves backward and history is never rewritten.
+- Binds restore proposals and hash-chained resolution records to the selected source revision ID, kind, and payload checksum.
+- Blocks restore when the working draft is dirty, the selected revision is the current head, or both payloads are identical.
+- Preserves whole-document validation, explicit reviewer approval, rationale, optimistic repository concurrency, and audit provenance.
+- Adds deterministic tamper/failure coverage and end-to-end Strategic, Biopolitical, Arabic, English, and French browser contracts.
+
 ## Alpha.54 — Capability-Gated Relationship Explorer Styles
 
 - Removes the 33,938-byte relationship explorer stylesheet from the initial document request graph.

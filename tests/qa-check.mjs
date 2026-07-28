@@ -16,6 +16,7 @@ const referenceUi = read("src/reference-ui.js");
 const explorer = read("src/relationship-explorer.js");
 const parser = read("src/json-parser.js");
 const applicationShell = read("src/features/application-shell.js");
+const revisionHistory = read("src/core/revision-history.js");
 const css = read("src/styles.css");
 const pkg = JSON.parse(read("package.json"));
 
@@ -36,6 +37,7 @@ for (const [file, source] of [
   ["src/core/relationship-intelligence.js", read("src/core/relationship-intelligence.js")],
   ["src/core/evidence-intelligence.js", read("src/core/evidence-intelligence.js")],
   ["src/core/evidence-traceability.js", read("src/core/evidence-traceability.js")],
+  ["src/core/revision-history.js", revisionHistory],
 ]) {
   try {
     void source;
@@ -81,6 +83,7 @@ for (const file of [
   "src/core/relationship-intelligence.js",
   "src/core/evidence-intelligence.js",
   "src/core/evidence-traceability.js",
+  "src/core/revision-history.js",
   "src/lenses/strategic/adapter.js",
   "src/lenses/biopolitical/adapter.js",
   "schema/strategic-analysis.schema.json",
@@ -88,6 +91,15 @@ for (const file of [
   "schema/biopolitical-migrated-draft.schema.json",
 ]) {
   if (!fs.existsSync(file)) fail(`missing required file: ${file}`);
+}
+for (const token of [
+  "projectRevisionHistory",
+  "compareRevisions",
+  "prepareRevisionRestore",
+  "DIRTY_DRAFT_BLOCKS_RESTORE",
+  "HEAD_REVISION_CANNOT_BE_RESTORED",
+]) {
+  if (!revisionHistory.includes(token)) fail(`revision-history contract missing: ${token}`);
 }
 
 if (!index.includes('<script type="module" src="src/app.js"></script>')) {

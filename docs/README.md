@@ -21,6 +21,7 @@ This index distinguishes current operating authority from historical implementat
 - [Operational review ledger](phase5-operational-review-ledger.md)
 - [Resolution transactions](phase5-resolution-transactions.md)
 - [Crash-safe editor recovery](alpha45-crash-safe-editor-recovery.md)
+- [Revision history and safe restore](alpha55-revision-history-safe-restore.md)
 
 ## Historical records
 

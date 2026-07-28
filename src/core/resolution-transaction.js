@@ -104,6 +104,7 @@ function normalizeValidation(result) {
 export async function createResolutionProposal(workspace, {
   validate,
   deriveDiagnostics = () => ({}),
+  transaction = null,
   clock,
   idFactory = idFactoryDefault,
   cryptoImpl,
@@ -131,6 +132,7 @@ export async function createResolutionProposal(workspace, {
     diagnostics_after: clone(deriveDiagnostics(clone(verified.working_draft.canonical_payload))),
     canonical_transport: false,
     approval_required: true,
+    ...(transaction ? { transaction: clone(transaction) } : {}),
   };
   return Object.freeze({ ...proposalBody, proposal_checksum: await sha256(proposalBody, cryptoImpl) });
 }
@@ -141,6 +143,18 @@ function validateProposal(proposal) {
   }
   if (!proposal.approval_required || proposal.canonical_transport !== false || !proposal.diff?.change_count) {
     fail("INVALID_RESOLUTION_PROPOSAL", "Resolution proposal boundaries are malformed.");
+  }
+  if (proposal.transaction !== undefined) {
+    validateRestoreTransaction(proposal.transaction, "INVALID_RESOLUTION_PROPOSAL");
+  }
+}
+
+function validateRestoreTransaction(transaction, code = "INVALID_RESTORE_PROVENANCE") {
+  if (transaction?.type !== "revision_restore"
+      || !clean(transaction?.source_revision_id)
+      || !/^[a-f0-9]{64}$/.test(transaction?.source_payload_checksum || "")
+      || !clean(transaction?.source_revision_kind)) {
+    fail(code, "Revision-restore provenance is malformed.");
   }
 }
 
@@ -178,6 +192,21 @@ export async function verifyResolutionLedger(ledger, { workspace, cryptoImpl } =
       const diff = canonicalDiff(base.canonical_payload, committed.canonical_payload);
       if (diff.change_count !== record.change_count || await sha256(diff, cryptoImpl) !== record.diff_checksum) {
         fail("RESOLUTION_DIFF_MISMATCH", "Resolution diff no longer matches its committed revision.", { sequence: index + 1 });
+      }
+      if (record.transaction?.type === "revision_restore") {
+        validateRestoreTransaction(record.transaction);
+        const source = workspace.revisions.find((revision) => revision.revision_id === record.transaction.source_revision_id);
+        if (!source
+            || source.payload_checksum !== record.transaction.source_payload_checksum
+            || source.kind !== record.transaction.source_revision_kind
+            || committed.kind !== "restored_revision"
+            || committed.restored_from_revision_id !== source.revision_id
+            || committed.payload_checksum !== source.payload_checksum) {
+          fail("RESTORE_PROVENANCE_MISMATCH", "Restore provenance no longer matches immutable revision history.", { sequence: index + 1 });
+        }
+      } else if (record.transaction !== undefined || committed.kind !== "committed_resolution"
+          || committed.restored_from_revision_id !== undefined) {
+        fail("INVALID_RESTORE_PROVENANCE", "Resolution and restore revision semantics are inconsistent.", { sequence: index + 1 });
       }
     }
     const expected = await sha256(recordBody(record), cryptoImpl);
@@ -231,6 +260,18 @@ export async function commitResolution(workspace, proposal, {
   const recordId = idFactory("resolution");
   const payload = clone(next.working_draft.canonical_payload);
   const payloadChecksum = await sha256(payload, cryptoImpl);
+  let transaction = null;
+  if (proposal.transaction?.type === "revision_restore") {
+    const source = next.revisions.find((revision) => revision.revision_id === proposal.transaction.source_revision_id);
+    if (!source
+        || source.revision_id === head.revision_id
+        || source.payload_checksum !== proposal.transaction.source_payload_checksum
+        || source.kind !== proposal.transaction.source_revision_kind
+        || payloadChecksum !== source.payload_checksum) {
+      fail("STALE_RESTORE_SOURCE", "The selected restore source no longer matches this workspace.");
+    }
+    transaction = clone(proposal.transaction);
+  }
   const recordBodyValue = {
     record_id: recordId,
     sequence: next.resolution_ledger.records.length + 1,
@@ -256,16 +297,18 @@ export async function commitResolution(workspace, proposal, {
     diagnostics_after: diagnosticsAfter,
     identity_assurance: "local_assertion",
     approval_mode: "explicit_local_confirmation",
+    ...(transaction ? { transaction } : {}),
   };
   const record = { ...recordBodyValue, record_hash: await sha256(recordBodyValue, cryptoImpl) };
   next.revisions.push({
     revision_id: revisionId,
     parent_revision_id: head.revision_id,
-    kind: "committed_resolution",
+    kind: transaction ? "restored_revision" : "committed_resolution",
     created_at: occurredAt,
     payload_checksum: payloadChecksum,
     canonical_payload: payload,
     resolution_record_id: recordId,
+    ...(transaction ? { restored_from_revision_id: transaction.source_revision_id } : {}),
   });
   next.resolution_ledger.records.push(record);
   next.resolution_ledger.head_record_hash = record.record_hash;
@@ -278,7 +321,13 @@ export async function commitResolution(workspace, proposal, {
     canonical_payload: clone(payload),
     dirty: false,
   };
-  next.audit_events.push({ event_id: idFactory("evt"), type: "resolution_committed", occurred_at: occurredAt, revision_id: revisionId });
+  next.audit_events.push({
+    event_id: idFactory("evt"),
+    type: transaction ? "revision_restored" : "resolution_committed",
+    occurred_at: occurredAt,
+    revision_id: revisionId,
+    ...(transaction ? { source_revision_id: transaction.source_revision_id } : {}),
+  });
   next.repository_revision += 1;
   next.metadata.updated_at = occurredAt;
   await verifyResolutionLedger(next.resolution_ledger, { workspace: next, cryptoImpl });
