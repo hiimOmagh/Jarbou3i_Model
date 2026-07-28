@@ -8,6 +8,8 @@
   const GENERATED_DRAFT_SCHEMA_VERSION = "1.0.0";
   const CANONICAL_CONTRACT = "biopolitical-training-map-v2";
   const CANONICAL_SCHEMA_VERSION = "2.1.0";
+  const CANONICAL_SOURCE =
+    `${CANONICAL_CONTRACT}@${CANONICAL_SCHEMA_VERSION}`;
   const LANGUAGES = new Set(["ar", "en", "fr"]);
   const MODES = new Set(["simple", "focused", "expert", "research"]);
   const isObject = (value) =>
@@ -410,14 +412,71 @@
     });
   }
 
-  function asReviewableDraft(candidate, diagnostics = []) {
+  const HARD_REQUIRED_PROPERTIES = new Set([
+    "schema_version",
+    "analysis_contract",
+    "contract_status",
+    "analysis_lens",
+    "analysis_id",
+    "language",
+    "subject",
+    "id",
+  ]);
+
+  function isReviewableCompletionGap(item) {
+    const diagnostic = object(item);
+    const keyword = text(diagnostic.keyword).toLowerCase();
+    const code = text(diagnostic.code).toUpperCase();
+    const path = text(diagnostic.path || diagnostic.instancePath || "/");
+    const missing = text(diagnostic.params?.missingProperty);
+    const allowed =
+      ["minlength", "minitems", "required"].includes(keyword) ||
+      ["SCHEMA_MINLENGTH", "SCHEMA_MINITEMS", "SCHEMA_REQUIRED"].includes(
+        code,
+      );
+    if (!allowed) return false;
+    if (/(^|\/)(analysis_id|id)$/.test(path)) return false;
+    if (
+      (keyword === "required" || code === "SCHEMA_REQUIRED") &&
+      HARD_REQUIRED_PROPERTIES.has(missing)
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  function canRecoverAsDraft(validation) {
+    const result = object(validation);
+    const diagnostics = array(result.errors);
+    return (
+      result.state === "canonical" &&
+      diagnostics.length > 0 &&
+      diagnostics.every(isReviewableCompletionGap)
+    );
+  }
+
+  function draftOrigin(options = {}) {
+    if (options.origin === "canonical") {
+      return {
+        fromSchema: CANONICAL_SOURCE,
+        adapter: "canonical-ai-result-to-reviewable-draft-v1",
+      };
+    }
+    return {
+      fromSchema: CONTRACT,
+      adapter: "ai-interchange-v1-to-biopolitical-v2",
+    };
+  }
+
+  function asReviewableDraft(candidate, diagnostics = [], options = {}) {
     const value = clone(candidate);
+    const origin = draftOrigin(options);
     value.schema_version = GENERATED_DRAFT_SCHEMA_VERSION;
     value.analysis_contract = GENERATED_DRAFT_CONTRACT;
     value.contract_status = "reviewable_generated_draft";
     value.migration = {
-      from_schema: CONTRACT,
-      adapter: "ai-interchange-v1-to-biopolitical-v2",
+      from_schema: origin.fromSchema,
+      adapter: origin.adapter,
       warnings: array(diagnostics)
         .slice(0, 50)
         .map((item) =>
@@ -428,7 +487,7 @@
           ),
         )
         .filter(Boolean),
-      canonical_target: `${CANONICAL_CONTRACT}@${CANONICAL_SCHEMA_VERSION}`,
+      canonical_target: CANONICAL_SOURCE,
     };
     if (!value.migration.warnings.length) {
       value.migration.warnings.push(
@@ -717,6 +776,52 @@
     ].join("\n");
   }
 
+  function buildCompletionPrompt(candidate, diagnostics = [], lang = "en") {
+    const gaps = array(diagnostics).filter(isReviewableCompletionGap);
+    if (!gaps.length || gaps.length !== array(diagnostics).length) {
+      const error = new Error(
+        "A completion prompt can be built only for reviewable completion gaps.",
+      );
+      error.code = "AI_COMPLETION_UNSAFE_DIAGNOSTICS";
+      throw error;
+    }
+    const diagnosticBlock = gaps
+      .slice(0, 50)
+      .map(
+        (item) =>
+          `${text(item.path || item.instancePath || "/")}: ${text(
+            item.message || item.code || "completion required",
+          )}`,
+      )
+      .join("\n");
+    const payload = JSON.stringify(candidate);
+    if (lang === "ar") {
+      return `هذه مهمة استكمال تحليلي موجّه وليست إعادة كتابة شاملة أو إصلاح تنسيق JSON. أعد كائن JSON نظاميًا واحدًا كاملًا ومضغوطًا فقط. حافظ على كل المحتوى والمعرّفات والقيم كما هي، وعدّل فقط المسارات المدرجة في التشخيص. املأ كل قيمة فارغة بمحتوى تحليلي محدد ومقتصد يستند إلى الأدلة الموجودة في السجل. إذا لم يحدد السجل دليلًا مضادًا، اذكر ذلك صراحة وحدد ما الذي يجب البحث عنه لاختبار الادعاء؛ لا تختلق مصدرًا أو رابطًا أو محددًا أو حالة تحقق. لا تحذف سجل دليل ولا تغيّر claim أو confidence أو verification_status. لا تُعد Markdown أو أسوار كود أو شرحًا أو JSON Patch أو علامات cite/filecite/turn.
+
+المسارات المطلوب استكمالها:
+${diagnosticBlock}
+
+JSON النظامي الأساسي:
+${payload}`;
+    }
+    if (lang === "fr") {
+      return `Il s’agit d’une complétion analytique ciblée, pas d’une réécriture générale ni d’une réparation de sérialisation JSON. Retournez exactement un objet JSON canonique complet et minifié. Préservez tout le contenu, les identifiants et les valeurs ; modifiez uniquement les chemins listés dans le diagnostic. Remplissez chaque valeur vide avec un contenu analytique précis et concis fondé sur les preuves déjà présentes. Si le dossier n’identifie aucune contre-preuve, dites-le explicitement et précisez ce qu’il faudrait rechercher pour tester l’affirmation ; n’inventez aucune source, URL, aucun localisateur ni état de vérification. Ne supprimez aucun élément de preuve et ne modifiez ni claim, ni confidence, ni verification_status. Ne retournez ni Markdown, ni bloc de code, ni explication, ni JSON Patch, ni marqueur cite/filecite/turn.
+
+Chemins à compléter :
+${diagnosticBlock}
+
+JSON canonique de base :
+${payload}`;
+    }
+    return `This is a targeted analytical completion task, not a general rewrite or JSON serialization repair. Return exactly one complete minified canonical JSON object. Preserve all existing content, IDs, and values; modify only the paths listed in the diagnostics. Fill each empty value with specific, concise analytical content grounded in evidence already present in the record. If the record identifies no counter-evidence, state that explicitly and specify what should be searched to test the claim; do not invent a source, URL, locator, or verification state. Do not delete any evidence record or change claim, confidence, or verification_status. Do not return Markdown, code fences, explanations, JSON Patch, or cite/filecite/turn markers.
+
+Paths to complete:
+${diagnosticBlock}
+
+Canonical base JSON:
+${payload}`;
+  }
+
   root.Jarbou3iAiInterchange = Object.freeze({
     CONTRACT,
     LENS,
@@ -724,8 +829,11 @@
     GENERATED_DRAFT_SCHEMA_VERSION,
     supports,
     compile,
+    canRecoverAsDraft,
+    isReviewableCompletionGap,
     asReviewableDraft,
     buildTemplate,
     buildFieldGuide,
+    buildCompletionPrompt,
   });
 })(typeof window !== "undefined" ? window : globalThis);

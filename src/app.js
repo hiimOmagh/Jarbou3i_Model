@@ -124,12 +124,14 @@ const I18N = {
     jsonPlaceholder: "الصق JSON هنا...",
     importAnalysis: "استيراد التحليل",
     repairPrompt: "برومبت إصلاح JSON",
+    completionPrompt: "برومبت استكمال موجّه",
     clear: "مسح",
     jsonWaiting: "الصق نتيجة JSON للتحقق.",
     jsonValid: "JSON صالح. يمكنك الآن استيراد التحليل.",
     jsonInvalid: "JSON غير صالح أو غير مكتمل. استخدم برومبت الإصلاح إذا لزم.",
     analysisImported: "تم استيراد التحليل. انتقل الآن إلى مراجعة الطبقات.",
     repairCopied: "تم نسخ برومبت الإصلاح.",
+    completionCopied: "تم نسخ برومبت الاستكمال.",
     engineTitle: "خريطة محرك التحليل",
     engineSubtitle:
       "المسار السببي للنموذج: من الحوافز إلى التكيف. بعد الاستيراد تصبح كل طبقة قابلة للفحص.",
@@ -406,6 +408,7 @@ const I18N = {
     jsonPlaceholder: "Paste JSON here...",
     importAnalysis: "Import analysis",
     repairPrompt: "JSON repair prompt",
+    completionPrompt: "Targeted completion prompt",
     clear: "Clear",
     jsonWaiting: "Paste JSON to validate.",
     jsonValid: "Valid JSON. You can import the analysis now.",
@@ -413,6 +416,7 @@ const I18N = {
     analysisImported:
       "Analysis imported. You can now review the engine layers.",
     repairCopied: "Repair prompt copied.",
+    completionCopied: "Completion prompt copied.",
     engineTitle: "Analysis Engine Map",
     engineSubtitle:
       "The causal path of the model: from incentives to adaptation. After import, each layer becomes inspectable.",
@@ -699,6 +703,7 @@ const I18N = {
     jsonPlaceholder: "Collez le JSON ici...",
     importAnalysis: "Importer l’analyse",
     repairPrompt: "Prompt de réparation JSON",
+    completionPrompt: "Prompt de complétion ciblée",
     clear: "Effacer",
     jsonWaiting: "Collez un JSON pour le valider.",
     jsonValid: "JSON valide. Vous pouvez maintenant importer l’analyse.",
@@ -707,6 +712,7 @@ const I18N = {
     analysisImported:
       "Analyse importée. Vous pouvez maintenant examiner les couches du moteur.",
     repairCopied: "Prompt de réparation copié.",
+    completionCopied: "Prompt de complétion copié.",
     engineTitle: "Carte du moteur d’analyse",
     engineSubtitle:
       "Le chemin causal du modèle : des intérêts à l’adaptation. Après import, chaque couche devient inspectable.",
@@ -1625,7 +1631,11 @@ function renderImportAuditDetails({
     (parsed?.recovered ? Math.max(1, parserRepairCount) : 0) +
     contractRepairs.reduce((total, item) => total + (item.count || 1), 0) +
     (compilerAudit?.transformations || []).reduce(
-      (total, item) => total + (item.count || 1),
+      (total, item) =>
+        total +
+        (item.code === "REVIEWABLE_GAPS_RECLASSIFIED"
+          ? 0
+          : item.count || 1),
       0,
     ) +
     (citationRepair?.count || 0);
@@ -1706,6 +1716,12 @@ function renderImportAuditDetails({
           `أُنشئ ${repair.path} حتميًا بالقيمة ${repair.value}.`,
           `${repair.path} a été généré de façon déterministe avec la valeur ${repair.value}.`,
         );
+      if (repair.code === "REVIEWABLE_GAPS_RECLASSIFIED")
+        return labelText(
+          `${repair.count || 1} empty analytical requirement${repair.count === 1 ? " was" : "s were"} preserved as targeted completion work; no analytical value was invented.`,
+          `حُفظت ${repair.count || 1} ${repair.count === 1 ? "فجوة تحليلية فارغة" : "فجوات تحليلية فارغة"} كعمل استكمال موجّه دون اختلاق أي قيمة تحليلية.`,
+          `${repair.count || 1} exigence${repair.count === 1 ? " analytique vide a été conservée" : "s analytiques vides ont été conservées"} comme travail de complétion ciblée ; aucune valeur analytique n’a été inventée.`,
+        );
       return labelText(
         `${repair.path || "/"} was compiled locally.`,
         `جرت ترجمة ${repair.path || "/"} محليًا.`,
@@ -1743,6 +1759,7 @@ function validateJsonInput() {
     state.importAudit = null;
     $("importBtn").disabled = true;
     $("repairPromptBtn").disabled = true;
+    $("repairPromptBtn").textContent = t("repairPrompt");
     $("jsonStatus").className = "status";
     $("jsonStatus").textContent = t("jsonWaiting");
     $("pasteCard").classList.remove("ready", "invalid");
@@ -1753,6 +1770,8 @@ function validateJsonInput() {
   let contractRepairs = [];
   let contractQuarantine = [];
   let compilerAudit = null;
+  let completionDiagnostics = [];
+  let completionCandidate = null;
   try {
     state.importValidation = null;
     parsed = extractJson(text);
@@ -1770,11 +1789,32 @@ function validateJsonInput() {
     try {
       analysis = normalizeAnalysis(raw);
     } catch (error) {
-      if (!compilerAudit || !error?.validation) throw error;
+      if (
+        !error?.validation ||
+        !AI_INTERCHANGE.canRecoverAsDraft(error.validation)
+      ) {
+        throw error;
+      }
+      completionDiagnostics = [...error.validation.errors];
+      completionCandidate = raw;
+      const origin = compilerAudit ? "interchange" : "canonical";
       const draft = AI_INTERCHANGE.asReviewableDraft(
         raw,
         error.validation.errors,
+        { origin },
       );
+      compilerAudit = {
+        transformations: [
+          ...(compilerAudit?.transformations || []),
+          Object.freeze({
+            code: "REVIEWABLE_GAPS_RECLASSIFIED",
+            path: "/",
+            count: completionDiagnostics.length,
+            origin,
+          }),
+        ],
+        quarantine: [...(compilerAudit?.quarantine || [])],
+      };
       analysis = normalizeAnalysis(draft);
     }
     const has =
@@ -1787,7 +1827,10 @@ function validateJsonInput() {
     state.jsonValid = true;
     $("importBtn").disabled = false;
     $("repairPromptBtn").disabled = false;
-    const warnings = state.importValidation?.warnings || [];
+    const warnings = [
+      ...completionDiagnostics,
+      ...(state.importValidation?.warnings || []),
+    ];
     const provenance = PROVENANCE.assessEvidenceProvenance(analysis, {
       lens: analysis.analysis_lens,
     });
@@ -1809,6 +1852,10 @@ function validateJsonInput() {
       contractRepairs: Object.freeze([...contractRepairs]),
       contractQuarantine: Object.freeze([...contractQuarantine]),
       compilerAudit,
+      completionDiagnostics: Object.freeze([...completionDiagnostics]),
+      completionCandidate: completionCandidate
+        ? Object.freeze(completionCandidate)
+        : null,
       provenance,
     });
     renderImportAuditDetails({
@@ -1827,15 +1874,30 @@ function validateJsonInput() {
       warnings.length || parsed.recovered || needsIndependentReview
         ? "status warn"
         : "status good";
+    $("repairPromptBtn").textContent = completionCandidate
+      ? t("completionPrompt")
+      : t("repairPrompt");
     const draft = ["migrated_draft", "generated_draft"].includes(
       state.importValidation?.state,
     );
     const validationMessage = draft
-      ? labelText(
-          "Legacy material is valid as a migrated draft; publication remains blocked until canonical completion.",
-          "المادة القديمة صالحة كمسودة مُرحّلة، ويظل النشر محظورًا حتى استكمال العقد النظامي.",
-          "Le contenu historique est valide comme brouillon migré ; la publication reste bloquée jusqu’à sa mise en conformité canonique.",
-        )
+      ? state.importValidation?.state === "generated_draft"
+        ? completionDiagnostics.length
+          ? labelText(
+              `AI result preserved as a reviewable generated draft with ${completionDiagnostics.length} targeted completion gap${completionDiagnostics.length === 1 ? "" : "s"}. Import is allowed; publication remains blocked until canonical completion.`,
+              `حُفظت نتيجة الذكاء الاصطناعي كمسودة مولّدة قابلة للمراجعة مع ${completionDiagnostics.length} ${completionDiagnostics.length === 1 ? "فجوة استكمال موجّهة" : "فجوات استكمال موجّهة"}. الاستيراد مسموح، ويظل النشر محظورًا حتى الاستكمال النظامي.`,
+              `Le résultat IA est conservé comme brouillon généré révisable avec ${completionDiagnostics.length} lacune${completionDiagnostics.length === 1 ? "" : "s"} de complétion ciblée. L’import est permis ; la publication reste bloquée jusqu’à la complétion canonique.`,
+            )
+          : labelText(
+              "AI-generated material is valid as a reviewable generated draft; publication remains blocked until canonical completion.",
+              "المادة المولّدة بالذكاء الاصطناعي صالحة كمسودة مولّدة قابلة للمراجعة، ويظل النشر محظورًا حتى الاستكمال النظامي.",
+              "Le contenu généré par IA est valide comme brouillon généré révisable ; la publication reste bloquée jusqu’à la complétion canonique.",
+            )
+        : labelText(
+            "Legacy material is valid as a migrated draft; publication remains blocked until canonical completion.",
+            "المادة القديمة صالحة كمسودة مُرحّلة، ويظل النشر محظورًا حتى استكمال العقد النظامي.",
+            "Le contenu historique est valide comme brouillon migré ; la publication reste bloquée jusqu’à sa mise en conformité canonique.",
+          )
       : needsIndependentReview
         ? labelText(
             `Reviewable draft. Publication blockers: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${warnings.length} contract or integrity warning${warnings.length === 1 ? "" : "s"}. Draft import is allowed; publication is blocked.`,
@@ -1876,6 +1938,7 @@ function validateJsonInput() {
     state.jsonValid = false;
     $("importBtn").disabled = true;
     $("repairPromptBtn").disabled = false;
+    $("repairPromptBtn").textContent = t("repairPrompt");
     $("jsonStatus").className = "status bad";
     $("jsonStatus").textContent = importErrorText(e);
     $("pasteCard").classList.remove("ready");
@@ -6852,6 +6915,16 @@ function trapModalFocus(e) {
   }
 }
 function repairPrompt() {
+  if (
+    state.importAudit?.completionCandidate &&
+    state.importAudit?.completionDiagnostics?.length
+  ) {
+    return AI_INTERCHANGE.buildCompletionPrompt(
+      state.importAudit.completionCandidate,
+      state.importAudit.completionDiagnostics,
+      state.analysisLang,
+    );
+  }
   const ar = state.analysisLang === "ar";
   const fr = state.analysisLang === "fr";
   const bad = $("jsonInput").value.trim();
@@ -6972,10 +7045,12 @@ $("importBtn").onclick = async () => {
 };
 $("repairPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
+  const completion = Boolean(state.importAudit?.completionCandidate);
   const p = repairPrompt();
   const ok = await copyText(p);
-  toast(ok ? t("repairCopied") : t("copyFailed"));
-  if (!ok) showModal(t("repairPrompt"), p, invoker);
+  toast(ok ? t(completion ? "completionCopied" : "repairCopied") : t("copyFailed"));
+  if (!ok)
+    showModal(t(completion ? "completionPrompt" : "repairPrompt"), p, invoker);
 };
 $("loadSampleBtn").onclick = async (event) => {
   try {

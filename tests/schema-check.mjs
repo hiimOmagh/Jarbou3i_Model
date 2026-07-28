@@ -47,6 +47,25 @@ if (
 ) {
   fail("generated drafts need a distinct non-canonical identity and status");
 }
+for (const origin of [
+  "jarbou3i-ai-interchange/1",
+  "biopolitical-training-map-v2@2.1.0",
+]) {
+  if (
+    !generatedDraftSchema.properties?.migration?.properties?.from_schema?.enum?.includes(
+      origin,
+    )
+  ) {
+    fail(`generated drafts do not preserve the ${origin} origin`);
+  }
+}
+if (
+  !generatedDraftSchema.properties?.migration?.properties?.adapter?.enum?.includes(
+    "canonical-ai-result-to-reviewable-draft-v1",
+  )
+) {
+  fail("canonical-shaped AI results lack a governed draft adapter");
+}
 if (
   interchangeSchema.properties?.contract?.const !==
     "jarbou3i-ai-interchange/1" ||

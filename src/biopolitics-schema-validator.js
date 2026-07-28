@@ -13628,7 +13628,7 @@ return errors === 0;
 validate93.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
 exports.generatedDraft = validate94;
-const schema205 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://jarbou3i.example/schema/biopolitical-generated-draft-v1.schema.json","title":"Jarbou3i Biopolitical Generated Draft Contract v1","description":"A canonical-shaped but explicitly non-canonical review state compiled from AI Interchange v1 when strict structural or semantic gates remain unresolved.","type":"object","required":["schema_version","analysis_contract","contract_status","analysis_lens","analysis_id","language","subject","migration"],"properties":{"schema_version":{"const":"1.0.0"},"analysis_contract":{"const":"biopolitical-generated-draft-v1"},"contract_status":{"const":"reviewable_generated_draft"},"analysis_lens":{"const":"biopolitical"},"analysis_id":{"type":"string"},"generated_at":{"type":"string"},"language":{"enum":["ar","en","fr"]},"model_mode":{"type":"string"},"subject":{"type":"object","required":["title","context","research_question","executive_finding"],"properties":{"title":{"type":"string"},"context":{"type":"string"},"research_question":{"type":"string"},"executive_finding":{"type":"string"}},"additionalProperties":false},"migration":{"type":"object","required":["from_schema","adapter","warnings","canonical_target"],"properties":{"from_schema":{"const":"jarbou3i-ai-interchange/1"},"adapter":{"const":"ai-interchange-v1-to-biopolitical-v2"},"warnings":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"canonical_target":{"const":"biopolitical-training-map-v2@2.1.0"}},"additionalProperties":false}},"additionalProperties":true};
+const schema205 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://jarbou3i.example/schema/biopolitical-generated-draft-v1.schema.json","title":"Jarbou3i Biopolitical Generated Draft Contract v1","description":"A canonical-shaped but explicitly non-canonical review state compiled from AI Interchange v1 when strict structural or semantic gates remain unresolved.","type":"object","required":["schema_version","analysis_contract","contract_status","analysis_lens","analysis_id","language","subject","migration"],"properties":{"schema_version":{"const":"1.0.0"},"analysis_contract":{"const":"biopolitical-generated-draft-v1"},"contract_status":{"const":"reviewable_generated_draft"},"analysis_lens":{"const":"biopolitical"},"analysis_id":{"type":"string"},"generated_at":{"type":"string"},"language":{"enum":["ar","en","fr"]},"model_mode":{"type":"string"},"subject":{"type":"object","required":["title","context","research_question","executive_finding"],"properties":{"title":{"type":"string"},"context":{"type":"string"},"research_question":{"type":"string"},"executive_finding":{"type":"string"}},"additionalProperties":false},"migration":{"type":"object","required":["from_schema","adapter","warnings","canonical_target"],"properties":{"from_schema":{"enum":["jarbou3i-ai-interchange/1","biopolitical-training-map-v2@2.1.0"]},"adapter":{"enum":["ai-interchange-v1-to-biopolitical-v2","canonical-ai-result-to-reviewable-draft-v1"]},"warnings":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"canonical_target":{"const":"biopolitical-training-map-v2@2.1.0"}},"additionalProperties":false}},"additionalProperties":true};
 
 function validate94(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
 /*# sourceURL="https://jarbou3i.example/schema/biopolitical-generated-draft-v1.schema.json" */;
@@ -13990,8 +13990,9 @@ errors++;
 }
 }
 if(data13.from_schema !== undefined){
-if("jarbou3i-ai-interchange/1" !== data13.from_schema){
-const err31 = {instancePath:instancePath+"/migration/from_schema",schemaPath:"#/properties/migration/properties/from_schema/const",keyword:"const",params:{allowedValue: "jarbou3i-ai-interchange/1"},message:"must be equal to constant"};
+let data14 = data13.from_schema;
+if(!((data14 === "jarbou3i-ai-interchange/1") || (data14 === "biopolitical-training-map-v2@2.1.0"))){
+const err31 = {instancePath:instancePath+"/migration/from_schema",schemaPath:"#/properties/migration/properties/from_schema/enum",keyword:"enum",params:{allowedValues: schema205.properties.migration.properties.from_schema.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err31];
 }
@@ -14002,8 +14003,9 @@ errors++;
 }
 }
 if(data13.adapter !== undefined){
-if("ai-interchange-v1-to-biopolitical-v2" !== data13.adapter){
-const err32 = {instancePath:instancePath+"/migration/adapter",schemaPath:"#/properties/migration/properties/adapter/const",keyword:"const",params:{allowedValue: "ai-interchange-v1-to-biopolitical-v2"},message:"must be equal to constant"};
+let data15 = data13.adapter;
+if(!((data15 === "ai-interchange-v1-to-biopolitical-v2") || (data15 === "canonical-ai-result-to-reviewable-draft-v1"))){
+const err32 = {instancePath:instancePath+"/migration/adapter",schemaPath:"#/properties/migration/properties/adapter/enum",keyword:"enum",params:{allowedValues: schema205.properties.migration.properties.adapter.enum},message:"must be equal to one of the allowed values"};
 if(vErrors === null){
 vErrors = [err32];
 }

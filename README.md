@@ -41,6 +41,13 @@ Phase 5 Slice 4 advances the workspace to v3 and adds exact canonical proposals,
 
 Alpha.37 is an interchange reliability interlock before the operational review ledger. The source-access selector distinguishes unsourced conceptual drafting, user-supplied sources, and live research. The parser and contract-repair layer can recover only auditable syntax and type-shape mistakes; it never rewrites analytical claims, confidence, or evidence. See [`docs/phase5-ai-interchange-reliability.md`](docs/phase5-ai-interchange-reliability.md).
 
+AI Interchange v1 provides a compact Biopolitical generation boundary and a
+lossless reviewable-draft fallback. Canonical-shaped AI results whose only
+defects are empty analytical requirements remain importable for review and
+receive an exact-path completion prompt; malformed types, identities, IDs, and
+references remain blocked. See
+[`docs/ai-interchange-contract-v1.md`](docs/ai-interchange-contract-v1.md).
+
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
 
 Biopolitical result references are resolved through a read-only relationship index. Review cards show the referenced record’s name alongside its stable canonical ID; selecting a reference opens its type, analytical pillar, confidence, and indexed incoming/outgoing relationships. Standalone HTML reports expand the same names and include a reference directory, while canonical JSON remains unchanged for re-import and verification. RC 12 removes assistant-interface citation artifacts during import, links valid public sources directly, and separates analytical readiness from the independent publication gate in the report hero. RC 13 preserves authored French punctuation; RC 14 completes content-safe Relationship Explorer containment at the 320px/400%-equivalent boundary.
@@ -81,6 +88,7 @@ An 18-point self-audit covers intent attribution, institutional claims, mechanis
 |---|---|---|---|
 | Canonical analysis | `2.1.0` | `biopolitical-training-map-v2` | Eligible only after semantic and evidence-verification gates pass |
 | Migrated legacy draft | `1.0.0` | `biopolitical-migrated-draft-v1` | Always blocked until completed as a canonical analysis |
+| Reviewable generated draft | `1.0.0` | `biopolitical-generated-draft-v1` | Always blocked until canonical completion and review |
 | Strategic analysis | `1.1.0` | Strategic schema | Preserved behavior |
 
 Imported `analysis_lens`, contract, schema version, and status are authoritative. Unknown or future Biopolitical versions are rejected. Canonical input is validated against the generated browser validator before normalization, then checked for global ID uniqueness, typed references, exact 13/9/5 coverage, evidence traceability, placeholder misuse, and self-audit contradictions. Structurally canonical analyses with unresolved evidence or audit concerns may be imported for review with visible warnings, but those warnings keep publication blocked. Non-verified malformed source URLs are safely cleared and contradictory verification self-audits are corrected to `concern`; verified evidence with malformed provenance remains a hard error.

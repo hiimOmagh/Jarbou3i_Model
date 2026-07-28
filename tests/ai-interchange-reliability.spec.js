@@ -96,4 +96,69 @@ test.describe("AI interchange reliability", () => {
       "Truncated JSON detected",
     );
   });
+
+  test("preserves canonical AI reuse gaps and offers targeted completion", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+
+    const data = await fixture("sample-analysis-bio-en.json");
+    data.theoretical_comparison[0].confidence = "medium";
+    while (data.evidence.items.length < 8) {
+      const index = data.evidence.items.length;
+      data.evidence.items.push({
+        ...structuredClone(data.evidence.items[index % 2]),
+        id: `E${index + 1}`,
+      });
+    }
+    data.evidence.items.forEach((item) => {
+      item.counter_evidence = "";
+    });
+
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      /reviewable generated draft with 8 targeted completion gaps/i,
+    );
+    await expect(page.locator("#repairPromptBtn")).toHaveText(
+      "Targeted completion prompt",
+    );
+
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText(
+      "/evidence/items/0/counter_evidence",
+    );
+    await expect(audit).toContainText(
+      "/evidence/items/7/counter_evidence",
+    );
+    await expect(audit).toContainText(
+      "/theoretical_comparison/0/confidence",
+    );
+    await expect(audit).toContainText(
+      /preserved as targeted completion work/i,
+    );
+
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText(
+      "Completion prompt copied",
+    );
+
+    data.evidence.items[0].counter_evidence = 42;
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#repairPromptBtn")).toHaveText(
+      "JSON repair prompt",
+    );
+
+    data.evidence.items[0].counter_evidence = "";
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#reviewContent")).toContainText(
+      data.subject.executive_finding,
+    );
+  });
 });

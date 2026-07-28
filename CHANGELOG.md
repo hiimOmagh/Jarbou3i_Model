@@ -46,6 +46,17 @@
 
 ## Unreleased
 
+### AI interchange completion
+
+- Preserve canonical-shaped AI results with only empty analytical requirements
+  as explicit reviewable generated drafts instead of disabling import.
+- List exact completion paths and generate a targeted, trilingual completion
+  prompt without inventing analytical content or provenance.
+- Keep invalid types, contract identity, record IDs, duplicate IDs, and broken
+  references fail-closed.
+- Cover the observed eight-empty-`counter_evidence` reuse case and preserved
+  extension audit in deterministic and browser contracts.
+
 ### Repository governance
 
 - Gate the GitHub Pages mirror behind successful no-browser and browser CI.
