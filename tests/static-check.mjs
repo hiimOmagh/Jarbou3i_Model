@@ -23,6 +23,7 @@ const resultsWorkspaceBrowser = read("tests/results-workspace.spec.js");
 const resultsExplanationBrowser = read("tests/results-explanation.spec.js");
 const resultsInspectionBrowser = read("tests/results-inspection.spec.js");
 const parser = read("src/json-parser.js");
+const aiInterchange = read("src/ai-interchange.js");
 const platformState = read("src/core/platform-state.js");
 const shellPreferences = read("src/core/shell-preferences.js");
 const shellNavigation = read("src/core/shell-navigation.js");
@@ -80,6 +81,7 @@ for (const [file, source] of [
   ["src/reference-ui.js", referenceUi],
   ["src/relationship-explorer.js", explorer],
   ["src/json-parser.js", parser],
+  ["src/ai-interchange.js", aiInterchange],
   ["src/core/platform-state.js", platformState],
   ["src/core/shell-preferences.js", shellPreferences],
   ["src/core/shell-navigation.js", shellNavigation],
@@ -113,12 +115,17 @@ if (validator.includes("require(")) fail("browser validator contains CommonJS im
 for (const file of [
   "schema/biopolitical-analysis.schema.json",
   "schema/biopolitical-migrated-draft.schema.json",
+  "schema/biopolitical-generated-draft.schema.json",
+  "schema/ai-interchange-v1.schema.json",
   "tests/biopolitical-integrity-check.mjs",
   "tests/biopolitical-graph-check.mjs",
   "tests/biopolitical-report-check.mjs",
   "tests/reference-resolution.spec.js",
   "tests/relationship-explorer.spec.js",
   "tests/json-parser-check.mjs",
+  "tests/ai-interchange-reliability-check.mjs",
+  "tests/ai-interchange-reliability.spec.js",
+  "docs/ai-interchange-contract-v1.md",
   "tests/biopolitical-language-check.mjs",
   "tests/export-completeness.spec.js",
   "tests/import-validation.spec.js",

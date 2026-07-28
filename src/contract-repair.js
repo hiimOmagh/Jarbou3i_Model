@@ -6,6 +6,64 @@
   const isObject = (value) =>
     Boolean(value) && typeof value === "object" && !Array.isArray(value);
   const clone = (value) => JSON.parse(JSON.stringify(value));
+  const pointerParts = (pointer) =>
+    String(pointer || "")
+      .split("/")
+      .slice(1)
+      .map((part) => part.replaceAll("~1", "/").replaceAll("~0", "~"));
+
+  function ownerAtPointer(value, pointer) {
+    return pointerParts(pointer).reduce(
+      (current, key) => current?.[key],
+      value,
+    );
+  }
+
+  function quarantineUnknownProperties(value, repairs, quarantine) {
+    const validate =
+      root.Jarbou3iBiopoliticsSchemaValidators?.canonical;
+    if (typeof validate !== "function") return;
+    for (let pass = 0; pass < 64; pass += 1) {
+      validate(value);
+      const extras = (validate.errors || []).filter(
+        (error) => error.keyword === "additionalProperties",
+      );
+      if (!extras.length) return;
+      let changed = false;
+      for (const error of extras) {
+        const property = error.params?.additionalProperty;
+        const owner = ownerAtPointer(value, error.instancePath);
+        if (
+          !property ||
+          !isObject(owner) ||
+          !Object.prototype.hasOwnProperty.call(owner, property)
+        ) {
+          continue;
+        }
+        const path = `${error.instancePath || ""}/${String(property)
+          .replaceAll("~", "~0")
+          .replaceAll("/", "~1")}`;
+        const originalValue = clone(owner[property]);
+        delete owner[property];
+        quarantine.push(
+          Object.freeze({
+            code: "UNKNOWN_PROPERTY_QUARANTINED",
+            path: path || "/",
+            value: originalValue,
+            action: "preserved_in_import_audit",
+            severity: "information",
+          }),
+        );
+        repairs.push({
+          code: "UNKNOWN_PROPERTY_QUARANTINED",
+          path: path || "/",
+          count: 1,
+        });
+        changed = true;
+      }
+      if (!changed) return;
+    }
+  }
 
   function mappedCollection(value, path, repairs) {
     if (!isObject(value)) return value;
@@ -26,16 +84,26 @@
   }
 
   function repairBiopolitical(raw) {
-    if (!isObject(raw)) return { value: raw, repairs: Object.freeze([]) };
+    if (!isObject(raw))
+      return {
+        value: raw,
+        repairs: Object.freeze([]),
+        quarantine: Object.freeze([]),
+      };
     if (
       raw.analysis_lens !== "biopolitical" ||
       raw.analysis_contract !== "biopolitical-training-map-v2" ||
       raw.schema_version !== "2.1.0"
     ) {
-      return { value: raw, repairs: Object.freeze([]) };
+      return {
+        value: raw,
+        repairs: Object.freeze([]),
+        quarantine: Object.freeze([]),
+      };
     }
     const value = clone(raw);
     const repairs = [];
+    const quarantine = [];
 
     for (const key of [
       "international_comparison",
@@ -84,7 +152,12 @@
       });
     });
 
-    return { value, repairs: Object.freeze(repairs.map(Object.freeze)) };
+    quarantineUnknownProperties(value, repairs, quarantine);
+    return {
+      value,
+      repairs: Object.freeze(repairs.map(Object.freeze)),
+      quarantine: Object.freeze(quarantine),
+    };
   }
 
   root.Jarbou3iContractRepair = Object.freeze({ repairBiopolitical });

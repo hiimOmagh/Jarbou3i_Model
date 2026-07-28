@@ -23,9 +23,14 @@ ajv.addSchema(
   readJson("schema/biopolitical-migrated-draft.schema.json"),
   "migratedDraft",
 );
+ajv.addSchema(
+  readJson("schema/biopolitical-generated-draft.schema.json"),
+  "generatedDraft",
+);
 const standalone = standaloneCode(ajv, {
   canonical: "canonical",
   migratedDraft: "migratedDraft",
+  generatedDraft: "generatedDraft",
 });
 const generated = standalone.replace(
   /const (func\d+) = require\("ajv\/dist\/runtime\/ucs2length"\)\.default;/g,
