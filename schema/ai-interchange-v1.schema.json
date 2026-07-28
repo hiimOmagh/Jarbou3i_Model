@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jarbou3i.example/schema/ai-interchange-v1.schema.json",
+  "title": "Jarbou3i AI Interchange Contract v1",
+  "description": "A compact, tolerant generation contract compiled locally into the strict Biopolitical v2.1 application contract. Unknown properties are preserved in the import audit rather than silently discarded.",
+  "type": "object",
+  "required": [
+    "contract",
+    "lens",
+    "language",
+    "subject",
+    "human_functions",
+    "power",
+    "mechanisms",
+    "meaning",
+    "intervention",
+    "distribution",
+    "explanations",
+    "evidence",
+    "alternatives",
+    "conclusion"
+  ],
+  "properties": {
+    "contract": { "const": "jarbou3i-ai-interchange/1" },
+    "lens": { "const": "biopolitical" },
+    "language": { "enum": ["ar", "en", "fr"] },
+    "mode": { "enum": ["simple", "focused", "expert", "research"] },
+    "analysis_id": { "type": "string" },
+    "subject": { "$ref": "#/$defs/object" },
+    "framing": { "$ref": "#/$defs/object" },
+    "legal_framework": { "$ref": "#/$defs/object" },
+    "international_comparison": { "$ref": "#/$defs/collection" },
+    "capture_levels": { "$ref": "#/$defs/object" },
+    "theoretical_comparison": { "$ref": "#/$defs/collection" },
+    "human_functions": { "$ref": "#/$defs/collection" },
+    "power": { "$ref": "#/$defs/object" },
+    "mechanisms": { "$ref": "#/$defs/object" },
+    "meaning": { "$ref": "#/$defs/object" },
+    "intervention": { "$ref": "#/$defs/object" },
+    "scale_time": { "$ref": "#/$defs/object" },
+    "distribution": { "$ref": "#/$defs/object" },
+    "consent_exit": { "$ref": "#/$defs/object" },
+    "explanations": { "$ref": "#/$defs/object" },
+    "evidence": { "$ref": "#/$defs/collection" },
+    "assumptions": { "$ref": "#/$defs/collection" },
+    "resistance": { "$ref": "#/$defs/collection" },
+    "alternatives": { "$ref": "#/$defs/collection" },
+    "conclusion": { "$ref": "#/$defs/object" },
+    "self_audit": { "$ref": "#/$defs/object" },
+    "self_audit_notes": { "type": "array", "items": { "type": "string" } },
+    "links": { "$ref": "#/$defs/collection" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "object": { "type": "object", "additionalProperties": true },
+    "collection": {
+      "oneOf": [
+        { "type": "array", "items": { "$ref": "#/$defs/object" } },
+        {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/object" }
+        }
+      ]
+    }
+  }
+}

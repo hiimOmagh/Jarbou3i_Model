@@ -56,4 +56,18 @@ for (const invalid of ["", "plain prose", '{"open": [1, 2}']) {
   if (!rejected) fail(`invalid input was accepted: ${invalid}`);
 }
 
+for (const truncated of [
+  '{"open":[1,2',
+  '{"text":"unterminated',
+  'prefix ```json\n{"contract":"jarbou3i-ai-interchange/1"',
+]) {
+  let detected = false;
+  try {
+    parser.extractJson(truncated);
+  } catch (error) {
+    detected = error.code === "TRUNCATED_JSON";
+  }
+  if (!detected) fail(`truncated input was not classified: ${truncated}`);
+}
+
 console.log("JSON parser checks passed.");

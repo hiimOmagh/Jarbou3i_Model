@@ -195,6 +195,52 @@
     return repairLabeledArrayEntries(conservative).source;
   }
 
+  function structuralState(source) {
+    const text = String(source || "");
+    const stack = [];
+    let started = false;
+    let inString = false;
+    let escaped = false;
+    let mismatched = false;
+    for (let index = 0; index < text.length; index += 1) {
+      const char = text[index];
+      if (!started) {
+        if (!["{", "["].includes(char)) continue;
+        started = true;
+        stack.push(char);
+        continue;
+      }
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (char === "\\") escaped = true;
+        else if (char === '"') inString = false;
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+      if (["{", "["].includes(char)) stack.push(char);
+      if (["}", "]"].includes(char)) {
+        const expected = char === "}" ? "{" : "[";
+        if (stack.at(-1) !== expected) {
+          mismatched = true;
+          break;
+        }
+        stack.pop();
+        if (!stack.length) break;
+      }
+    }
+    return Object.freeze({
+      started,
+      incomplete:
+        started && !mismatched && (stack.length > 0 || inString || escaped),
+      openDepth: stack.length,
+      unterminatedString: inString,
+      mismatched,
+    });
+  }
+
   function extractJson(source) {
     const raw = stripBom(source);
     if (!raw) throw new Error("empty");
@@ -231,7 +277,13 @@
         };
       } catch {}
     }
-    throw new Error("invalid");
+    const structure = structuralState(raw);
+    const error = new Error(structure.incomplete ? "truncated" : "invalid");
+    error.code = structure.incomplete
+      ? "TRUNCATED_JSON"
+      : "INVALID_JSON";
+    error.structure = structure;
+    throw error;
   }
 
   root.Jarbou3iJson = Object.freeze({
@@ -240,6 +292,7 @@
     repairLabeledArrayEntries,
     balancedJsonSlice,
     recoverCandidate,
+    structuralState,
     extractJson,
   });
 })(typeof window !== "undefined" ? window : globalThis);

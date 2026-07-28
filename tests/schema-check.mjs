@@ -14,12 +14,18 @@ const readJson = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 
 const canonicalSchema = readJson("schema/biopolitical-analysis.schema.json");
 const draftSchema = readJson("schema/biopolitical-migrated-draft.schema.json");
+const generatedDraftSchema = readJson(
+  "schema/biopolitical-generated-draft.schema.json",
+);
+const interchangeSchema = readJson("schema/ai-interchange-v1.schema.json");
 const strategicSchema = readJson("schema/strategic-analysis.schema.json");
 const workspaceSchema = readJson("schema/workspace.schema.json");
 const workspaceBundleSchema = readJson("schema/workspace-bundle.schema.json");
 
 let canonical;
 let migratedDraft;
+let generatedDraft;
+let interchange;
 try {
   const ajv = new Ajv2020({
     allErrors: true,
@@ -28,8 +34,28 @@ try {
   });
   canonical = ajv.compile(canonicalSchema);
   migratedDraft = ajv.compile(draftSchema);
+  generatedDraft = ajv.compile(generatedDraftSchema);
+  interchange = ajv.compile(interchangeSchema);
 } catch (error) {
   fail(`biopolitical schemas must compile in strict Ajv mode: ${error.message}`);
+}
+if (
+  generatedDraftSchema.properties?.contract_status?.const !==
+    "reviewable_generated_draft" ||
+  generatedDraftSchema.properties?.analysis_contract?.const !==
+    "biopolitical-generated-draft-v1"
+) {
+  fail("generated drafts need a distinct non-canonical identity and status");
+}
+if (
+  interchangeSchema.properties?.contract?.const !==
+    "jarbou3i-ai-interchange/1" ||
+  interchangeSchema.properties?.lens?.const !== "biopolitical"
+) {
+  fail("AI Interchange v1 identity is not locked");
+}
+if (!generatedDraft || !interchange) {
+  fail("generated-draft and interchange validators were not compiled");
 }
 
 if (canonicalSchema.properties?.schema_version?.const !== "2.1.0") {

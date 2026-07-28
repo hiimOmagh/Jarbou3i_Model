@@ -4,6 +4,7 @@ import "./strategic-schema-validator.js";
 import "./biopolitics-sample-i18n.js";
 import "./core/provenance.js";
 import "./biopolitics.js";
+import "./ai-interchange.js";
 import "./biopolitics-integrity.js";
 import "./reference-ui.js";
 import "./json-parser.js";
@@ -1075,6 +1076,9 @@ if (!JSON_TOOLS) throw new Error("Conservative JSON parser failed to load.");
 const CONTRACT_REPAIR = window.Jarbou3iContractRepair;
 if (!CONTRACT_REPAIR)
   throw new Error("Auditable contract-shape repair failed to load.");
+const AI_INTERCHANGE = window.Jarbou3iAiInterchange;
+if (!AI_INTERCHANGE)
+  throw new Error("AI Interchange Contract v1 compiler failed to load.");
 const PROVENANCE = window.Jarbou3iProvenance;
 if (!PROVENANCE) throw new Error("Evidence provenance service failed to load.");
 const SETTINGS_KEY = "jarbou3i-model-settings";
@@ -1531,6 +1535,7 @@ function localizedImportIssueMessage(issue = {}) {
       UNREFERENCED_EVIDENCE: "سجل الدليل غير مستشهد به في ادعاء خضع للتقييم.",
       QUANTITATIVE_METADATA_MISSING: "تتطلب الأدلة الكمية استكمال بيانات التصميم والقياس قبل النشر.",
       MIGRATED_DRAFT_NOT_CANONICAL: "تحافظ هذه المسودة المُرحَّلة على المادة القديمة، لكنها ليست بيانات حيوية سياسية نظامية مكتملة.",
+      GENERATED_DRAFT_NOT_CANONICAL: "حُفظت المادة التحليلية كمسودة مولّدة قابلة للمراجعة، لكنها ليست نظامية بعد.",
       MISSING_EXPLANATION_FALSIFIER: "يلزم معيار قابل للاختبار يمكنه دحض هذا التفسير قبل النشر.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "أزيلت علامات استشهاد خاصة بواجهة المساعد من النسخة المطبّعة.",
       DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف نظامي فريدًا في كامل التحليل.",
@@ -1547,6 +1552,7 @@ function localizedImportIssueMessage(issue = {}) {
       UNREFERENCED_EVIDENCE: "Cette preuve n’est citée par aucune affirmation évaluée.",
       QUANTITATIVE_METADATA_MISSING: "Les preuves quantitatives exigent des métadonnées complètes de conception et de mesure avant publication.",
       MIGRATED_DRAFT_NOT_CANONICAL: "Ce brouillon migré conserve le contenu historique, mais ne constitue pas encore des données biopolitiques canoniques complètes.",
+      GENERATED_DRAFT_NOT_CANONICAL: "Le contenu analytique est conservé comme brouillon généré révisable, mais il n’est pas encore canonique.",
       MISSING_EXPLANATION_FALSIFIER: "Un critère testable susceptible de réfuter cette explication est requis avant publication.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "Les marqueurs de citation propres à l’interface de l’assistant ont été retirés de la copie normalisée.",
       DUPLICATE_GLOBAL_ID: "Chaque identifiant canonique doit être unique dans l’ensemble de l’analyse.",
@@ -1565,6 +1571,13 @@ function localizedImportIssueMessage(issue = {}) {
     : "Ce point exige une révision avant publication.";
 }
 function importErrorText(error) {
+  if (error?.code === "TRUNCATED_JSON") {
+    return labelText(
+      "Truncated JSON detected. The missing content cannot be reconstructed safely; resume the response or request only the missing packet.",
+      "تم اكتشاف JSON مبتور. لا يمكن إعادة بناء المحتوى المفقود بأمان؛ استأنف الإجابة أو اطلب الحزمة الناقصة فقط.",
+      "JSON tronqué détecté. Le contenu manquant ne peut pas être reconstruit de manière sûre ; reprenez la réponse ou demandez uniquement le paquet manquant.",
+    );
+  }
   const first = error?.validation?.errors?.[0];
   if (!first) return t("jsonParseProblem");
   const prefix = labelText(
@@ -1579,12 +1592,20 @@ function renderImportAuditDetails({
   parsed,
   provenance,
   contractRepairs = [],
+  contractQuarantine = [],
+  compilerAudit = null,
 } = {}) {
   const details = $("importAuditDetails");
   const summary = $("importAuditSummary");
   const body = $("importAuditBody");
   if (!details || !summary || !body) return;
-  if (!parsed && !provenance && !warnings.length) {
+  if (
+    !parsed &&
+    !provenance &&
+    !warnings.length &&
+    !contractQuarantine.length &&
+    !compilerAudit
+  ) {
     details.hidden = true;
     details.open = false;
     body.textContent = "";
@@ -1603,7 +1624,15 @@ function renderImportAuditDetails({
   const repairCount =
     (parsed?.recovered ? Math.max(1, parserRepairCount) : 0) +
     contractRepairs.reduce((total, item) => total + (item.count || 1), 0) +
+    (compilerAudit?.transformations || []).reduce(
+      (total, item) => total + (item.count || 1),
+      0,
+    ) +
     (citationRepair?.count || 0);
+  const quarantined = [
+    ...(compilerAudit?.quarantine || []),
+    ...contractQuarantine,
+  ];
   summary.textContent = labelText(
     `Review details · ${blocking} publication blocker${blocking === 1 ? "" : "s"} · ${warnings.length} review · ${repairCount} repaired`,
     `تفاصيل المراجعة · ${blocking} ${blocking === 1 ? "عائق نشر" : "عوائق نشر"} · ${warnings.length} للمراجعة · ${repairCount} إصلاحات`,
@@ -1646,10 +1675,41 @@ function renderImportAuditDetails({
           `استُعيدت ${repair.path} من قيمة ثقة موضوعة في الحقل الخطأ.`,
           `${repair.path} a été récupéré depuis une valeur de confiance mal placée.`,
         );
+      if (repair.code === "UNKNOWN_PROPERTY_QUARANTINED")
+        return labelText(
+          `${repair.path} was excluded from the canonical payload and preserved in the import audit.`,
+          `استُبعد ${repair.path} من الحمولة النظامية وحُفظ في تدقيق الاستيراد.`,
+          `${repair.path} a été exclu de la charge canonique et conservé dans l’audit d’importation.`,
+        );
       return labelText(
         `${repair.path || "/"} received a conservative structural repair.`,
         `خضع ${repair.path || "/"} لإصلاح بنيوي محافظ.`,
         `${repair.path || "/"} a reçu une réparation structurelle conservative.`,
+      );
+    }),
+    ...(compilerAudit?.transformations || []).map((repair) => {
+      if (repair.code === "AI_INTERCHANGE_COMPILED")
+        return labelText(
+          "AI Interchange v1 was compiled locally into the Biopolitical v2.1 application structure.",
+          "جرت ترجمة عقد التبادل 1 محليًا إلى بنية التطبيق الحيوسياسية 2.1.",
+          "AI Interchange v1 a été compilé localement vers la structure applicative biopolitique v2.1.",
+        );
+      if (repair.code === "KEYED_SET_TO_CANONICAL_ARRAY")
+        return labelText(
+          `${repair.path} was expanded into its fixed canonical set.`,
+          `وُسّع ${repair.path} إلى مجموعته النظامية الثابتة.`,
+          `${repair.path} a été développé en son ensemble canonique fixe.`,
+        );
+      if (repair.code === "DETERMINISTIC_ID_GENERATED")
+        return labelText(
+          `${repair.path} was generated deterministically as ${repair.value}.`,
+          `أُنشئ ${repair.path} حتميًا بالقيمة ${repair.value}.`,
+          `${repair.path} a été généré de façon déterministe avec la valeur ${repair.value}.`,
+        );
+      return labelText(
+        `${repair.path || "/"} was compiled locally.`,
+        `جرت ترجمة ${repair.path || "/"} محليًا.`,
+        `${repair.path || "/"} a été compilé localement.`,
       );
     }),
     citationRepair
@@ -1660,11 +1720,20 @@ function renderImportAuditDetails({
         )
       : "",
   ].filter(Boolean);
+  const quarantineHtml = quarantined.length
+    ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h4><p>${escapeHtml(labelText("Unknown properties were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
+        .slice(0, 20)
+        .map(
+          (item) =>
+            `<li><span class="importAuditPath" dir="ltr">${escapeHtml(item.path || "/")}</span> — <code>${escapeHtml(JSON.stringify(item.value))}</code></li>`,
+        )
+        .join("")}</ul></section>`
+    : "";
   body.innerHTML = `${
     provenance?.total
       ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Draft import is allowed; model-declared verification remains untrusted.`, `يفتقر ${blocking} من ${provenance.total} سجلات أدلة إلى اعتماد مستقل. استيراد المسودة مسموح؛ ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. L’import du brouillon est permis ; la vérification déclarée par le modèle reste non fiable.`))}</p></section>`
       : ""
-  }<section class="importAuditGroup"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="importAuditGroup"><h4>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>`;
+  }<section class="importAuditGroup"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="importAuditGroup"><h4>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
   details.hidden = false;
 }
 function validateJsonInput() {
@@ -1682,13 +1751,32 @@ function validateJsonInput() {
   }
   let parsed = null;
   let contractRepairs = [];
+  let contractQuarantine = [];
+  let compilerAudit = null;
   try {
     state.importValidation = null;
     parsed = extractJson(text);
-    const contractRepair = CONTRACT_REPAIR.repairBiopolitical(parsed.value);
+    let input = parsed.value;
+    if (AI_INTERCHANGE.supports(input)) {
+      const compilation = AI_INTERCHANGE.compile(input);
+      input = compilation.value;
+      compilerAudit = compilation.audit;
+    }
+    const contractRepair = CONTRACT_REPAIR.repairBiopolitical(input);
     contractRepairs = contractRepair.repairs;
+    contractQuarantine = contractRepair.quarantine || [];
     const raw = contractRepair.value;
-    const analysis = normalizeAnalysis(raw);
+    let analysis;
+    try {
+      analysis = normalizeAnalysis(raw);
+    } catch (error) {
+      if (!compilerAudit || !error?.validation) throw error;
+      const draft = AI_INTERCHANGE.asReviewableDraft(
+        raw,
+        error.validation.errors,
+      );
+      analysis = normalizeAnalysis(draft);
+    }
     const has =
       analysis.analysis_lens === "biopolitical"
         ? BIO.hasSubstance(analysis)
@@ -1719,9 +1807,18 @@ function validateJsonInput() {
       recovered: parsed.recovered,
       warnings: Object.freeze([...warnings]),
       contractRepairs: Object.freeze([...contractRepairs]),
+      contractQuarantine: Object.freeze([...contractQuarantine]),
+      compilerAudit,
       provenance,
     });
-    renderImportAuditDetails({ warnings, parsed, provenance, contractRepairs });
+    renderImportAuditDetails({
+      warnings,
+      parsed,
+      provenance,
+      contractRepairs,
+      contractQuarantine,
+      compilerAudit,
+    });
     const needsIndependentReview =
       analysis.analysis_lens === "biopolitical" &&
       provenance.total > 0 &&
@@ -1730,7 +1827,9 @@ function validateJsonInput() {
       warnings.length || parsed.recovered || needsIndependentReview
         ? "status warn"
         : "status good";
-    const draft = state.importValidation?.state === "migrated_draft";
+    const draft = ["migrated_draft", "generated_draft"].includes(
+      state.importValidation?.state,
+    );
     const validationMessage = draft
       ? labelText(
           "Legacy material is valid as a migrated draft; publication remains blocked until canonical completion.",
@@ -1763,6 +1862,7 @@ function validateJsonInput() {
     state.importAudit = Object.freeze({
       originalText: text,
       error: importErrorText(e),
+      code: e?.code || "IMPORT_FAILED",
       errors: Object.freeze([...validationErrors]),
     });
     renderImportAuditDetails({
@@ -1770,6 +1870,8 @@ function validateJsonInput() {
       parsed,
       provenance: null,
       contractRepairs,
+      contractQuarantine,
+      compilerAudit,
     });
     state.jsonValid = false;
     $("importBtn").disabled = true;

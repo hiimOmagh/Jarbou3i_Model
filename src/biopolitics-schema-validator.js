@@ -13627,5 +13627,482 @@ return errors === 0;
 }
 validate93.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
 
+exports.generatedDraft = validate94;
+const schema205 = {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://jarbou3i.example/schema/biopolitical-generated-draft-v1.schema.json","title":"Jarbou3i Biopolitical Generated Draft Contract v1","description":"A canonical-shaped but explicitly non-canonical review state compiled from AI Interchange v1 when strict structural or semantic gates remain unresolved.","type":"object","required":["schema_version","analysis_contract","contract_status","analysis_lens","analysis_id","language","subject","migration"],"properties":{"schema_version":{"const":"1.0.0"},"analysis_contract":{"const":"biopolitical-generated-draft-v1"},"contract_status":{"const":"reviewable_generated_draft"},"analysis_lens":{"const":"biopolitical"},"analysis_id":{"type":"string"},"generated_at":{"type":"string"},"language":{"enum":["ar","en","fr"]},"model_mode":{"type":"string"},"subject":{"type":"object","required":["title","context","research_question","executive_finding"],"properties":{"title":{"type":"string"},"context":{"type":"string"},"research_question":{"type":"string"},"executive_finding":{"type":"string"}},"additionalProperties":false},"migration":{"type":"object","required":["from_schema","adapter","warnings","canonical_target"],"properties":{"from_schema":{"const":"jarbou3i-ai-interchange/1"},"adapter":{"const":"ai-interchange-v1-to-biopolitical-v2"},"warnings":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"canonical_target":{"const":"biopolitical-training-map-v2@2.1.0"}},"additionalProperties":false}},"additionalProperties":true};
+
+function validate94(data, {instancePath="", parentData, parentDataProperty, rootData=data, dynamicAnchors={}}={}){
+/*# sourceURL="https://jarbou3i.example/schema/biopolitical-generated-draft-v1.schema.json" */;
+let vErrors = null;
+let errors = 0;
+const evaluated0 = validate94.evaluated;
+if(evaluated0.dynamicProps){
+evaluated0.props = undefined;
+}
+if(evaluated0.dynamicItems){
+evaluated0.items = undefined;
+}
+if(data && typeof data == "object" && !Array.isArray(data)){
+if(data.schema_version === undefined){
+const err0 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "schema_version"},message:"must have required property '"+"schema_version"+"'"};
+if(vErrors === null){
+vErrors = [err0];
+}
+else {
+vErrors.push(err0);
+}
+errors++;
+}
+if(data.analysis_contract === undefined){
+const err1 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "analysis_contract"},message:"must have required property '"+"analysis_contract"+"'"};
+if(vErrors === null){
+vErrors = [err1];
+}
+else {
+vErrors.push(err1);
+}
+errors++;
+}
+if(data.contract_status === undefined){
+const err2 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "contract_status"},message:"must have required property '"+"contract_status"+"'"};
+if(vErrors === null){
+vErrors = [err2];
+}
+else {
+vErrors.push(err2);
+}
+errors++;
+}
+if(data.analysis_lens === undefined){
+const err3 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "analysis_lens"},message:"must have required property '"+"analysis_lens"+"'"};
+if(vErrors === null){
+vErrors = [err3];
+}
+else {
+vErrors.push(err3);
+}
+errors++;
+}
+if(data.analysis_id === undefined){
+const err4 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "analysis_id"},message:"must have required property '"+"analysis_id"+"'"};
+if(vErrors === null){
+vErrors = [err4];
+}
+else {
+vErrors.push(err4);
+}
+errors++;
+}
+if(data.language === undefined){
+const err5 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "language"},message:"must have required property '"+"language"+"'"};
+if(vErrors === null){
+vErrors = [err5];
+}
+else {
+vErrors.push(err5);
+}
+errors++;
+}
+if(data.subject === undefined){
+const err6 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "subject"},message:"must have required property '"+"subject"+"'"};
+if(vErrors === null){
+vErrors = [err6];
+}
+else {
+vErrors.push(err6);
+}
+errors++;
+}
+if(data.migration === undefined){
+const err7 = {instancePath,schemaPath:"#/required",keyword:"required",params:{missingProperty: "migration"},message:"must have required property '"+"migration"+"'"};
+if(vErrors === null){
+vErrors = [err7];
+}
+else {
+vErrors.push(err7);
+}
+errors++;
+}
+if(data.schema_version !== undefined){
+if("1.0.0" !== data.schema_version){
+const err8 = {instancePath:instancePath+"/schema_version",schemaPath:"#/properties/schema_version/const",keyword:"const",params:{allowedValue: "1.0.0"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err8];
+}
+else {
+vErrors.push(err8);
+}
+errors++;
+}
+}
+if(data.analysis_contract !== undefined){
+if("biopolitical-generated-draft-v1" !== data.analysis_contract){
+const err9 = {instancePath:instancePath+"/analysis_contract",schemaPath:"#/properties/analysis_contract/const",keyword:"const",params:{allowedValue: "biopolitical-generated-draft-v1"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err9];
+}
+else {
+vErrors.push(err9);
+}
+errors++;
+}
+}
+if(data.contract_status !== undefined){
+if("reviewable_generated_draft" !== data.contract_status){
+const err10 = {instancePath:instancePath+"/contract_status",schemaPath:"#/properties/contract_status/const",keyword:"const",params:{allowedValue: "reviewable_generated_draft"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err10];
+}
+else {
+vErrors.push(err10);
+}
+errors++;
+}
+}
+if(data.analysis_lens !== undefined){
+if("biopolitical" !== data.analysis_lens){
+const err11 = {instancePath:instancePath+"/analysis_lens",schemaPath:"#/properties/analysis_lens/const",keyword:"const",params:{allowedValue: "biopolitical"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err11];
+}
+else {
+vErrors.push(err11);
+}
+errors++;
+}
+}
+if(data.analysis_id !== undefined){
+if(typeof data.analysis_id !== "string"){
+const err12 = {instancePath:instancePath+"/analysis_id",schemaPath:"#/properties/analysis_id/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err12];
+}
+else {
+vErrors.push(err12);
+}
+errors++;
+}
+}
+if(data.generated_at !== undefined){
+if(typeof data.generated_at !== "string"){
+const err13 = {instancePath:instancePath+"/generated_at",schemaPath:"#/properties/generated_at/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err13];
+}
+else {
+vErrors.push(err13);
+}
+errors++;
+}
+}
+if(data.language !== undefined){
+let data6 = data.language;
+if(!(((data6 === "ar") || (data6 === "en")) || (data6 === "fr"))){
+const err14 = {instancePath:instancePath+"/language",schemaPath:"#/properties/language/enum",keyword:"enum",params:{allowedValues: schema205.properties.language.enum},message:"must be equal to one of the allowed values"};
+if(vErrors === null){
+vErrors = [err14];
+}
+else {
+vErrors.push(err14);
+}
+errors++;
+}
+}
+if(data.model_mode !== undefined){
+if(typeof data.model_mode !== "string"){
+const err15 = {instancePath:instancePath+"/model_mode",schemaPath:"#/properties/model_mode/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err15];
+}
+else {
+vErrors.push(err15);
+}
+errors++;
+}
+}
+if(data.subject !== undefined){
+let data8 = data.subject;
+if(data8 && typeof data8 == "object" && !Array.isArray(data8)){
+if(data8.title === undefined){
+const err16 = {instancePath:instancePath+"/subject",schemaPath:"#/properties/subject/required",keyword:"required",params:{missingProperty: "title"},message:"must have required property '"+"title"+"'"};
+if(vErrors === null){
+vErrors = [err16];
+}
+else {
+vErrors.push(err16);
+}
+errors++;
+}
+if(data8.context === undefined){
+const err17 = {instancePath:instancePath+"/subject",schemaPath:"#/properties/subject/required",keyword:"required",params:{missingProperty: "context"},message:"must have required property '"+"context"+"'"};
+if(vErrors === null){
+vErrors = [err17];
+}
+else {
+vErrors.push(err17);
+}
+errors++;
+}
+if(data8.research_question === undefined){
+const err18 = {instancePath:instancePath+"/subject",schemaPath:"#/properties/subject/required",keyword:"required",params:{missingProperty: "research_question"},message:"must have required property '"+"research_question"+"'"};
+if(vErrors === null){
+vErrors = [err18];
+}
+else {
+vErrors.push(err18);
+}
+errors++;
+}
+if(data8.executive_finding === undefined){
+const err19 = {instancePath:instancePath+"/subject",schemaPath:"#/properties/subject/required",keyword:"required",params:{missingProperty: "executive_finding"},message:"must have required property '"+"executive_finding"+"'"};
+if(vErrors === null){
+vErrors = [err19];
+}
+else {
+vErrors.push(err19);
+}
+errors++;
+}
+for(const key0 in data8){
+if(!((((key0 === "title") || (key0 === "context")) || (key0 === "research_question")) || (key0 === "executive_finding"))){
+const err20 = {instancePath:instancePath+"/subject",schemaPath:"#/properties/subject/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key0},message:"must NOT have additional properties"};
+if(vErrors === null){
+vErrors = [err20];
+}
+else {
+vErrors.push(err20);
+}
+errors++;
+}
+}
+if(data8.title !== undefined){
+if(typeof data8.title !== "string"){
+const err21 = {instancePath:instancePath+"/subject/title",schemaPath:"#/properties/subject/properties/title/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err21];
+}
+else {
+vErrors.push(err21);
+}
+errors++;
+}
+}
+if(data8.context !== undefined){
+if(typeof data8.context !== "string"){
+const err22 = {instancePath:instancePath+"/subject/context",schemaPath:"#/properties/subject/properties/context/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err22];
+}
+else {
+vErrors.push(err22);
+}
+errors++;
+}
+}
+if(data8.research_question !== undefined){
+if(typeof data8.research_question !== "string"){
+const err23 = {instancePath:instancePath+"/subject/research_question",schemaPath:"#/properties/subject/properties/research_question/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err23];
+}
+else {
+vErrors.push(err23);
+}
+errors++;
+}
+}
+if(data8.executive_finding !== undefined){
+if(typeof data8.executive_finding !== "string"){
+const err24 = {instancePath:instancePath+"/subject/executive_finding",schemaPath:"#/properties/subject/properties/executive_finding/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err24];
+}
+else {
+vErrors.push(err24);
+}
+errors++;
+}
+}
+}
+else {
+const err25 = {instancePath:instancePath+"/subject",schemaPath:"#/properties/subject/type",keyword:"type",params:{type: "object"},message:"must be object"};
+if(vErrors === null){
+vErrors = [err25];
+}
+else {
+vErrors.push(err25);
+}
+errors++;
+}
+}
+if(data.migration !== undefined){
+let data13 = data.migration;
+if(data13 && typeof data13 == "object" && !Array.isArray(data13)){
+if(data13.from_schema === undefined){
+const err26 = {instancePath:instancePath+"/migration",schemaPath:"#/properties/migration/required",keyword:"required",params:{missingProperty: "from_schema"},message:"must have required property '"+"from_schema"+"'"};
+if(vErrors === null){
+vErrors = [err26];
+}
+else {
+vErrors.push(err26);
+}
+errors++;
+}
+if(data13.adapter === undefined){
+const err27 = {instancePath:instancePath+"/migration",schemaPath:"#/properties/migration/required",keyword:"required",params:{missingProperty: "adapter"},message:"must have required property '"+"adapter"+"'"};
+if(vErrors === null){
+vErrors = [err27];
+}
+else {
+vErrors.push(err27);
+}
+errors++;
+}
+if(data13.warnings === undefined){
+const err28 = {instancePath:instancePath+"/migration",schemaPath:"#/properties/migration/required",keyword:"required",params:{missingProperty: "warnings"},message:"must have required property '"+"warnings"+"'"};
+if(vErrors === null){
+vErrors = [err28];
+}
+else {
+vErrors.push(err28);
+}
+errors++;
+}
+if(data13.canonical_target === undefined){
+const err29 = {instancePath:instancePath+"/migration",schemaPath:"#/properties/migration/required",keyword:"required",params:{missingProperty: "canonical_target"},message:"must have required property '"+"canonical_target"+"'"};
+if(vErrors === null){
+vErrors = [err29];
+}
+else {
+vErrors.push(err29);
+}
+errors++;
+}
+for(const key1 in data13){
+if(!((((key1 === "from_schema") || (key1 === "adapter")) || (key1 === "warnings")) || (key1 === "canonical_target"))){
+const err30 = {instancePath:instancePath+"/migration",schemaPath:"#/properties/migration/additionalProperties",keyword:"additionalProperties",params:{additionalProperty: key1},message:"must NOT have additional properties"};
+if(vErrors === null){
+vErrors = [err30];
+}
+else {
+vErrors.push(err30);
+}
+errors++;
+}
+}
+if(data13.from_schema !== undefined){
+if("jarbou3i-ai-interchange/1" !== data13.from_schema){
+const err31 = {instancePath:instancePath+"/migration/from_schema",schemaPath:"#/properties/migration/properties/from_schema/const",keyword:"const",params:{allowedValue: "jarbou3i-ai-interchange/1"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err31];
+}
+else {
+vErrors.push(err31);
+}
+errors++;
+}
+}
+if(data13.adapter !== undefined){
+if("ai-interchange-v1-to-biopolitical-v2" !== data13.adapter){
+const err32 = {instancePath:instancePath+"/migration/adapter",schemaPath:"#/properties/migration/properties/adapter/const",keyword:"const",params:{allowedValue: "ai-interchange-v1-to-biopolitical-v2"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err32];
+}
+else {
+vErrors.push(err32);
+}
+errors++;
+}
+}
+if(data13.warnings !== undefined){
+let data16 = data13.warnings;
+if(Array.isArray(data16)){
+if(data16.length < 1){
+const err33 = {instancePath:instancePath+"/migration/warnings",schemaPath:"#/properties/migration/properties/warnings/minItems",keyword:"minItems",params:{limit: 1},message:"must NOT have fewer than 1 items"};
+if(vErrors === null){
+vErrors = [err33];
+}
+else {
+vErrors.push(err33);
+}
+errors++;
+}
+const len0 = data16.length;
+for(let i0=0; i0<len0; i0++){
+let data17 = data16[i0];
+if(typeof data17 === "string"){
+if(func2(data17) < 1){
+const err34 = {instancePath:instancePath+"/migration/warnings/" + i0,schemaPath:"#/properties/migration/properties/warnings/items/minLength",keyword:"minLength",params:{limit: 1},message:"must NOT have fewer than 1 characters"};
+if(vErrors === null){
+vErrors = [err34];
+}
+else {
+vErrors.push(err34);
+}
+errors++;
+}
+}
+else {
+const err35 = {instancePath:instancePath+"/migration/warnings/" + i0,schemaPath:"#/properties/migration/properties/warnings/items/type",keyword:"type",params:{type: "string"},message:"must be string"};
+if(vErrors === null){
+vErrors = [err35];
+}
+else {
+vErrors.push(err35);
+}
+errors++;
+}
+}
+}
+else {
+const err36 = {instancePath:instancePath+"/migration/warnings",schemaPath:"#/properties/migration/properties/warnings/type",keyword:"type",params:{type: "array"},message:"must be array"};
+if(vErrors === null){
+vErrors = [err36];
+}
+else {
+vErrors.push(err36);
+}
+errors++;
+}
+}
+if(data13.canonical_target !== undefined){
+if("biopolitical-training-map-v2@2.1.0" !== data13.canonical_target){
+const err37 = {instancePath:instancePath+"/migration/canonical_target",schemaPath:"#/properties/migration/properties/canonical_target/const",keyword:"const",params:{allowedValue: "biopolitical-training-map-v2@2.1.0"},message:"must be equal to constant"};
+if(vErrors === null){
+vErrors = [err37];
+}
+else {
+vErrors.push(err37);
+}
+errors++;
+}
+}
+}
+else {
+const err38 = {instancePath:instancePath+"/migration",schemaPath:"#/properties/migration/type",keyword:"type",params:{type: "object"},message:"must be object"};
+if(vErrors === null){
+vErrors = [err38];
+}
+else {
+vErrors.push(err38);
+}
+errors++;
+}
+}
+}
+else {
+const err39 = {instancePath,schemaPath:"#/type",keyword:"type",params:{type: "object"},message:"must be object"};
+if(vErrors === null){
+vErrors = [err39];
+}
+else {
+vErrors.push(err39);
+}
+errors++;
+}
+validate94.errors = vErrors;
+return errors === 0;
+}
+validate94.evaluated = {"props":true,"dynamicProps":false,"dynamicItems":false};
+
   root.Jarbou3iBiopoliticsSchemaValidators = Object.freeze(module.exports);
 })(typeof window !== "undefined" ? window : globalThis);

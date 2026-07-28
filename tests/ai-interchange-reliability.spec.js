@@ -59,4 +59,41 @@ test.describe("AI interchange reliability", () => {
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewContent")).toContainText(preservedFinding);
   });
+
+  test("compiles interchange drafts, quarantines extensions, and detects truncation", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+
+    await page.locator("#topicInput").fill("Interchange contract test");
+    await page.locator("#previewPromptBtn").click();
+    await expect(page.locator("#modalContent")).toContainText(
+      '"contract":"jarbou3i-ai-interchange/1"',
+    );
+    await page.locator("#modalClose").click();
+
+    const data = await fixture("sample-analysis-bio-en.json");
+    data.theoretical_comparison[0].confidence = "medium";
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await page.locator("#importAuditDetails summary").click();
+    await expect(page.locator("#importAuditDetails")).toContainText(
+      "/theoretical_comparison/0/confidence",
+    );
+    await expect(page.locator("#importAuditDetails")).toContainText(
+      "preserved in the import audit",
+    );
+
+    await page
+      .locator("#jsonInput")
+      .fill(
+        '{"contract":"jarbou3i-ai-interchange/1","lens":"biopolitical","subject":{"title":"cut off"',
+      );
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      "Truncated JSON detected",
+    );
+  });
 });

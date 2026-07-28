@@ -7,6 +7,7 @@
   const APP_CONTRACT = "biopolitical-training-map-v2";
   const DRAFT_SCHEMA_VERSION = "1.0.0";
   const DRAFT_CONTRACT = "biopolitical-migrated-draft-v1";
+  const GENERATED_DRAFT_CONTRACT = "biopolitical-generated-draft-v1";
 
   const EXPLANATION_TYPES = [
     "official",
@@ -997,6 +998,15 @@
       out.analysis_contract = DRAFT_CONTRACT;
       out.contract_status = "migrated_draft";
     }
+    if (
+      source.analysis_contract === GENERATED_DRAFT_CONTRACT &&
+      source.schema_version === DRAFT_SCHEMA_VERSION &&
+      source.contract_status === "reviewable_generated_draft"
+    ) {
+      out.schema_version = DRAFT_SCHEMA_VERSION;
+      out.analysis_contract = GENERATED_DRAFT_CONTRACT;
+      out.contract_status = "reviewable_generated_draft";
+    }
     return sanitizePortableValue(out);
   }
 
@@ -1196,6 +1206,13 @@
     ) {
       return { kind: "migrated_draft", supported: true };
     }
+    if (
+      source.analysis_contract === GENERATED_DRAFT_CONTRACT &&
+      source.schema_version === DRAFT_SCHEMA_VERSION &&
+      source.contract_status === "reviewable_generated_draft"
+    ) {
+      return { kind: "generated_draft", supported: true };
+    }
     const legacyShape =
       Array.isArray(source.interests) ||
       Array.isArray(source.actors) ||
@@ -1215,7 +1232,7 @@
     const source = object(raw);
     const routed = route(source);
     if (routed.kind === "legacy") return migrateLegacy(source);
-    if (["canonical", "migrated_draft"].includes(routed.kind)) {
+    if (["canonical", "migrated_draft", "generated_draft"].includes(routed.kind)) {
       return normalizeV2(source);
     }
     const error = new Error(
@@ -1817,7 +1834,13 @@
     context = "",
     evidenceAccess = "web",
   }) {
-    const schema = buildSchemaTemplate(lang, mode, evidenceAccess);
+    const interchange = root.Jarbou3iAiInterchange;
+    const schema = interchange
+      ? interchange.buildTemplate(lang, mode)
+      : buildSchemaTemplate(lang, mode, evidenceAccess);
+    const interchangeGuide = interchange
+      ? `\n\n${interchange.buildFieldGuide()}`
+      : "";
     const untrustedTopic = str(topic);
     const untrustedContext = str(context);
     if (lang === "ar") {
@@ -1866,8 +1889,8 @@ ${evidenceRule}
 
 العمق: ${mode}. ${depth}
 
-أعد JSON صالحًا فقط بهذه البنية:
-${schema}`;
+أعد فقط عقد التبادل المضغوط التالي. ستتولى الأداة محليًا إنشاء البيانات الوصفية والمعرّفات الثابتة وتحويله إلى العقد النظامي:
+${schema}${interchangeGuide}`;
     }
     if (lang === "fr") {
       const evidenceRule =
@@ -1915,8 +1938,8 @@ ${evidenceRule}
 
 Profondeur : ${mode}. ${depth}
 
-Retournez uniquement un JSON valide avec cette structure :
-${schema}`;
+Retournez uniquement le contrat d’échange compact suivant. L’outil générera localement les métadonnées et ensembles fixes, puis le compilera vers le contrat canonique :
+${schema}${interchangeGuide}`;
     }
     const evidenceRule =
       evidenceAccess === "none"
@@ -1963,8 +1986,8 @@ ${evidenceRule}
 
 Depth: ${mode}. ${depth}
 
-Return valid JSON only using this structure:
-${schema}`;
+Return only the compact interchange contract below. The workbench generates metadata and fixed sets locally, then compiles it into the canonical contract:
+${schema}${interchangeGuide}`;
   }
 
   function makeSample(lang = "en", mode = "research") {
@@ -4810,6 +4833,7 @@ ${schema}`;
     DRAFT_SCHEMA_VERSION,
     APP_CONTRACT,
     DRAFT_CONTRACT,
+    GENERATED_DRAFT_CONTRACT,
     PILLARS,
     INTERVENTION_MODALITIES,
     POWER_MODES,

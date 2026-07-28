@@ -90,7 +90,11 @@
   function semanticValidate(analysis, options = {}) {
     const BIO = root.Jarbou3iBiopolitics;
     const a = object(analysis);
-    const draft = options.draft === true || a.contract_status === "migrated_draft";
+    const draft =
+      options.draft === true ||
+      ["migrated_draft", "reviewable_generated_draft"].includes(
+        a.contract_status,
+      );
     const errors = [];
     const warnings = [];
     const idIndex = new Map();
@@ -416,11 +420,16 @@
     }
 
     if (draft) {
+      const generated = a.contract_status === "reviewable_generated_draft";
       warnings.unshift(
         issue(
-          "MIGRATED_DRAFT_NOT_CANONICAL",
+          generated
+            ? "GENERATED_DRAFT_NOT_CANONICAL"
+            : "MIGRATED_DRAFT_NOT_CANONICAL",
           "/contract_status",
-          "This migrated draft preserves legacy material but is not canonical Biopolitical v2.1 data.",
+          generated
+            ? "This AI-generated draft preserves recoverable analytical material but remains non-canonical until its structural and semantic gaps are resolved."
+            : "This migrated draft preserves legacy material but is not canonical Biopolitical v2.1 data.",
           "warning",
         ),
       );
@@ -473,8 +482,13 @@
     }
     const verificationRepair = prepareReviewableVerification(candidate);
     candidate = verificationRepair.candidate;
-    const draft = state === "migrated_draft";
-    const schemaValidator = draft ? validators.migratedDraft : validators.canonical;
+    const draft = ["migrated_draft", "generated_draft"].includes(state);
+    const schemaValidator =
+      state === "generated_draft"
+        ? validators.generatedDraft
+        : draft
+          ? validators.migratedDraft
+          : validators.canonical;
     const schemaValid = schemaValidator(candidate);
     if (!schemaValid) {
       return {
