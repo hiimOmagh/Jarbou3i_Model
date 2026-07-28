@@ -1,12 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { clearWorkspaceStorage } from "./helpers/browser-persistence.js";
 
 test.describe("Structured canonical editor", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("./");
-    await page.evaluate(() => new Promise((resolve) => {
-      const request = indexedDB.deleteDatabase("jarbou3i-model-workspaces");
-      request.onsuccess = request.onerror = request.onblocked = () => resolve();
-    }));
+    await clearWorkspaceStorage(page);
     await page.reload();
     await page.locator("#langEn").click();
     await page.locator("#loadSampleBtn").click();

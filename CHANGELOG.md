@@ -65,6 +65,14 @@
 - Build an explicit static deployment artifact instead of publishing the repository root.
 - Establish current documentation, deployment, and versioning authorities.
 - Move artifact and GitHub Pages actions to their Node.js 24 release lines while preserving the accepted CI topology and deployment authority.
+- Keep the global 60-second Playwright timeout, one CI retry, and strict
+  retry-only failure policy while assigning measured WebKit budgets only to the
+  two compound persistence workflows that reached the global ceiling.
+- Enforce an 80-second completed-duration limit beneath each scoped 90-second
+  WebKit timeout and emit machine-readable duration evidence.
+- Replace raw browser-spec IndexedDB promises with a shared 10-second bounded
+  operation authority that settles open, request, transaction failure, abort,
+  and completion paths explicitly.
 
 ### Performance architecture
 

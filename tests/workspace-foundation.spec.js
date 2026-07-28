@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
+import {
+  clearWorkspaceRecords,
+  countWorkspaceRecords,
+} from "./helpers/browser-persistence.js";
 
 async function useEnglish(page) {
   await page.goto("./");
@@ -24,19 +28,8 @@ test(`${lens} IndexedDB workspace survives reload and reopens a verified draft`,
   await useEnglish(page);
   await createSavedWorkspace(page, lens);
   const title = await page.locator("#topicInput").inputValue();
-  const stored = await page.evaluate(async () => {
-    const request = indexedDB.open("jarbou3i-model-workspaces");
-    const database = await new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    const tx = database.transaction("workspaces", "readonly");
-    const countRequest = tx.objectStore("workspaces").count();
-    return new Promise((resolve, reject) => {
-      countRequest.onsuccess = () => resolve(countRequest.result);
-      countRequest.onerror = () => reject(countRequest.error);
-    });
-  });
+  const stored = await countWorkspaceRecords(page);
+  expect(stored).toBe(1);
   await page.reload();
 
   await expect(page.locator("#workspaceSaveState"))
@@ -65,20 +58,8 @@ test(`${lens} portable bundle restores losslessly and corrupted bundles fail clo
   expect(bundle.semantics).toEqual(expect.objectContaining({ local_first: true, canonical_transport: false, collaboration_state: false }));
   const originalPayload = bundle.workspace.working_draft.canonical_payload;
 
-  await page.evaluate(async () => {
-    localStorage.removeItem("jarbou3i-model-settings");
-    const request = indexedDB.open("jarbou3i-model-workspaces");
-    const database = await new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-    const tx = database.transaction("workspaces", "readwrite");
-    tx.objectStore("workspaces").clear();
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-  });
+  await page.evaluate(() => localStorage.removeItem("jarbou3i-model-settings"));
+  await clearWorkspaceRecords(page);
   await page.reload();
   await page.locator("#langEn").click();
   await page.locator("#workspaceBtn").click();

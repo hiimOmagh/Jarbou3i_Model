@@ -195,6 +195,13 @@ downloads, and accessibility scans within that budget. On a resource-constrained
 Windows host, set `$env:PLAYWRIGHT_WORKERS=2` before running
 `npm run test:browser`.
 
+Two measured compound persistence workflows retain the global 60-second budget
+outside WebKit and use a scoped 90-second WebKit ceiling with an enforced
+80-second completed-duration limit. IndexedDB operations in browser tests fail
+with a bounded diagnostic after 10 seconds. The global retry and
+`failOnFlakyTests` policy remains strict. See
+[`docs/ci-long-workflow-policy.md`](docs/ci-long-workflow-policy.md).
+
 ## Deployment and privacy
 
 The project is static and GitHub Pages compatible. Publish the release root and do not deploy duplicate `preview/` or `biopreview/` tracks. The app has no backend storage, tracking, or account system; saved explorer views use analysis-scoped browser-local presentation state. Material sent to an external AI assistant is governed by that provider’s terms; do not submit sensitive material without authorization.

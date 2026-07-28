@@ -7,6 +7,7 @@ This index distinguishes current operating authority from historical implementat
 - [Architecture](platform-architecture-v2.1.md)
 - [Usage guide](usage-guide.md)
 - [Deployment and release operations](operations/deployment.md)
+- [Long-workflow WebKit budget policy](ci-long-workflow-policy.md)
 - [Versioning policy](VERSIONING.md)
 - [Capability authority map](capability-authority-map.md)
 - [REL-AUTH-1 product authority baseline](rel-auth-1-product-authority.md)
