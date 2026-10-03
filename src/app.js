@@ -106,6 +106,8 @@ const I18N = {
     severityShort: "شدة",
     timeframeLabel: "السياق الزمني/الجغرافي",
     timeframePlaceholder: "اختياري: 2022–2026، أوروبا",
+    sourcesLabel: "المصادر المقدمة",
+    sourcesPlaceholder: "الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات.",
     copyPrompt: "انسخ البرومبت",
     previewPrompt: "معاينة البرومبت",
     editTopic: "تعديل الموضوع",
@@ -113,6 +115,7 @@ const I18N = {
     topicNeeded: "أدخل موضوع التحليل أولًا.",
     promptCopied:
       "تم نسخ البرومبت. افتح مساعدك، الصقه، ثم انسخ JSON الناتج إلى خانة الاستيراد.",
+    tripRestored: "استُعيد التحليل الذي كنت تُعدّه قبل إعادة تحميل الصفحة.",
     promptPreview: "معاينة البرومبت",
     copyShownText: "نسخ النص المعروض",
     copied: "تم النسخ.",
@@ -233,7 +236,7 @@ const I18N = {
     healthMissingEvidence: "اطلب أدلة/افتراضات أو استخدم نمط الخبير.",
     healthMissingFeedback: "أضف حلقات تغذية راجعة تربط النتائج بالتكيّف.",
     jsonAutoRecovered: "تم تنظيف النص واستخراج JSON صالح تلقائيًا.",
-    jsonParseProblem: "تعذّر فهم JSON. استخدم برومبت الإصلاح.",
+    jsonParseProblem: "لم يُعثر على تحليل في هذا النص. انسخ إجابة الذكاء الاصطناعي كاملة (كتلة كود JSON) والصقها هنا. وإذا أجاب بنص عادي، فاستخدم برومبت الإصلاح لتطلب منه JSON.",
     reportSubtitle:
       "تقرير قابل للمشاركة مبني على نموذج المصالح → الفاعلون → الأدوات → السردية → النتائج → التغذية الراجعة.",
     itemsWord: "عناصر",
@@ -393,6 +396,8 @@ const I18N = {
     severityShort: "S",
     timeframeLabel: "Time/geographic context",
     timeframePlaceholder: "Optional: 2022–2026, Europe",
+    sourcesLabel: "Supplied sources",
+    sourcesPlaceholder: "Paste the sources the AI should rely on: titles, links, and excerpts.",
     copyPrompt: "Copy prompt",
     previewPrompt: "Preview prompt",
     editTopic: "Edit topic",
@@ -401,6 +406,7 @@ const I18N = {
     topicNeeded: "Enter an analysis topic first.",
     promptCopied:
       "Prompt copied. Open your assistant, paste it, then copy the JSON result into the import box.",
+    tripRestored: "Restored the analysis you were preparing before the page reloaded.",
     promptPreview: "Prompt preview",
     copyShownText: "Copy shown text",
     copied: "Copied.",
@@ -523,7 +529,7 @@ const I18N = {
     healthMissingFeedback: "Add feedback loops linking results to adaptation.",
     jsonAutoRecovered:
       "Text was cleaned and valid JSON was extracted automatically.",
-    jsonParseProblem: "Could not parse JSON. Use the repair prompt.",
+    jsonParseProblem: "No analysis was found in this text. Copy the AI’s whole answer (the JSON code block) and paste it here. If the AI answered in plain text, use the repair prompt to ask it for the JSON.",
     reportSubtitle:
       "A shareable report built on the Interests → Actors → Tools → Narrative → Results → Feedback model.",
     itemsWord: "items",
@@ -691,6 +697,8 @@ const I18N = {
     severityShort: "S",
     timeframeLabel: "Contexte temporel/géographique",
     timeframePlaceholder: "Optionnel : 2022–2026, Europe",
+    sourcesLabel: "Sources fournies",
+    sourcesPlaceholder: "Collez les sources sur lesquelles l’IA doit s’appuyer : titres, liens et extraits.",
     copyPrompt: "Copier le prompt",
     previewPrompt: "Aperçu du prompt",
     editTopic: "Modifier le sujet",
@@ -699,6 +707,7 @@ const I18N = {
     topicNeeded: "Saisissez d’abord un sujet d’analyse.",
     promptCopied:
       "Prompt copié. Ouvrez votre assistant, collez-le, puis copiez le JSON obtenu dans la zone d’import.",
+    tripRestored: "L’analyse que vous prépariez avant le rechargement de la page a été restaurée.",
     promptPreview: "Aperçu du prompt",
     copyShownText: "Copier le texte affiché",
     copied: "Copié.",
@@ -831,7 +840,7 @@ const I18N = {
     jsonAutoRecovered:
       "Le texte a été nettoyé et un JSON valide a été extrait automatiquement.",
     jsonParseProblem:
-      "Impossible d’analyser le JSON. Utilisez le prompt de réparation.",
+      "Aucune analyse n’a été trouvée dans ce texte. Copiez toute la réponse de l’IA (le bloc de code JSON) et collez-la ici. Si l’IA a répondu en texte simple, utilisez le prompt de réparation pour lui demander le JSON.",
     reportSubtitle:
       "Rapport partageable fondé sur le modèle Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.",
     itemsWord: "éléments",
@@ -1210,6 +1219,7 @@ const PLATFORM = createPlatformRuntime({
       $("analysisLang").value = state.analysisLang;
       $("promptMode").value = state.promptMode;
       $("evidenceAccess").value = state.evidenceAccess;
+      $("sourcesField").hidden = state.evidenceAccess !== "provided";
       $("timeframeInput").value = state.context;
       $("topicInput").value = state.topic;
       renderGuide();
@@ -1242,9 +1252,73 @@ const APPLICATION_SHELL = createApplicationShell({
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),
 });
+const RECOVERY_BACKEND = createIndexedDbRecoveryBackend();
 const RECOVERY_JOURNAL = createRecoveryJournal({
-  backend: createIndexedDbRecoveryBackend(),
+  backend: RECOVERY_BACKEND,
 });
+// The analysis being prepared (topic, prompt, pasted answer), kept until it is
+// imported so a reload, or a phone closing the tab while the user is in the AI
+// app, does not lose it. It sits in the recovery store under its own key.
+const TRIP_KEY = "intake-draft";
+const TRIP_CONTRACT = "jarbou3i-intake-draft@1";
+let tripKept = false;
+let tripWrites = Promise.resolve();
+function keepTrip() {
+  const record = structuredClone({
+    workspace_id: TRIP_KEY,
+    recovery_contract: TRIP_CONTRACT,
+    active_workspace_id: state.activeWorkspaceId || null,
+    topic: $("topicInput").value,
+    context: $("timeframeInput").value,
+    sources: $("sourcesInput").value,
+    mode: state.promptMode,
+    prompt: state.lastPrompt || "",
+    reply: $("jsonInput").value,
+    stage: state.stage,
+    completion: completionBase,
+  });
+  tripKept = true;
+  tripWrites = tripWrites.then(() => RECOVERY_BACKEND.put(record)).catch(() => {});
+}
+function discardTrip() {
+  tripKept = false;
+  tripWrites = tripWrites.then(() => RECOVERY_BACKEND.delete(TRIP_KEY)).catch(() => {});
+}
+async function restoreTrip() {
+  const record = await tripWrites.then(() => RECOVERY_BACKEND.get(TRIP_KEY)).catch(() => null);
+  // Nothing kept, or the user already copied a prompt or pasted an answer since the page loaded.
+  if (record?.recovery_contract !== TRIP_CONTRACT || tripKept) return;
+  // Another analysis was opened after this one was set aside.
+  if (state.activeWorkspaceId && state.activeWorkspaceId !== record.active_workspace_id) {
+    discardTrip();
+    return;
+  }
+  if (typeof record.topic === "string") {
+    state.topic = record.topic;
+    $("topicInput").value = record.topic;
+  }
+  if (typeof record.context === "string") {
+    state.context = record.context;
+    $("timeframeInput").value = record.context;
+  }
+  if (typeof record.sources === "string") $("sourcesInput").value = record.sources;
+  if (["simple", "expert", "research"].includes(record.mode)) {
+    state.promptMode = record.mode;
+    $("promptMode").value = record.mode;
+  }
+  if (typeof record.prompt === "string") state.lastPrompt = record.prompt;
+  if (Array.isArray(record.completion?.targets)) completionBase = record.completion;
+  if (typeof record.reply === "string") $("jsonInput").value = record.reply;
+  if (record.stage === "import") {
+    state.stage = "import";
+    state.shellSection = "workflow";
+    $("editTopicBtn").classList.remove("hide");
+  }
+  renderAll();
+  validateJsonInput();
+  $("topicStatus").className = "status good";
+  $("topicStatus").textContent = t("tripRestored");
+}
 const isSupportedLanguage = LOCALIZATION.isSupported;
 function readSettings() {
   return SETTINGS.read();
@@ -1368,6 +1442,11 @@ function renderLensToggle() {
 }
 // A result set aside by a lens switch, per lens, so switching back restores it.
 const keptResults = {};
+// The analysis a completion prompt was copied for; the AI's reply holds only
+// the missing parts, which are merged into it.
+let completionBase = null;
+// The merged analysis and how many parts were added, shown while it is pasted.
+let completionNotice = null;
 function setAnalysisLens(lens) {
   if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
   const contractChanged =
@@ -1657,11 +1736,18 @@ function importErrorText(error) {
       "Ceci est le prompt, pas la réponse de l’IA. Collez-le d’abord dans votre conversation avec l’IA, attendez la réponse complète, puis copiez la réponse de l’IA et collez-la ici.",
     );
   }
+  if (error?.code === "FILL_WITHOUT_BASE") {
+    return labelText(
+      "This is a list of missing parts, but the analysis it completes is not open here. Paste the AI’s full analysis first, then ask for the missing parts again.",
+      "هذه قائمة بالأجزاء الناقصة، لكن التحليل الذي تكمله غير مفتوح هنا. الصق تحليل الذكاء الاصطناعي الكامل أولًا، ثم اطلب الأجزاء الناقصة من جديد.",
+      "Ceci est une liste de parties manquantes, mais l’analyse qu’elle complète n’est pas ouverte ici. Collez d’abord l’analyse complète de l’IA, puis redemandez les parties manquantes.",
+    );
+  }
   if (error?.code === "TRUNCATED_JSON") {
     return labelText(
-      "Truncated JSON detected. The missing content cannot be reconstructed safely; resume the response or request only the missing packet.",
-      "تم اكتشاف JSON مبتور. لا يمكن إعادة بناء المحتوى المفقود بأمان؛ استأنف الإجابة أو اطلب الحزمة الناقصة فقط.",
-      "JSON tronqué détecté. Le contenu manquant ne peut pas être reconstruit de manière sûre ; reprenez la réponse ou demandez uniquement le paquet manquant.",
+      `The AI’s answer stops in the middle. Click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears below.`,
+      `تتوقف إجابة الذكاء الاصطناعي في منتصفها. انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أدناه.`,
+      `La réponse de l’IA s’arrête au milieu. Cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessous.`,
     );
   }
   const first = error?.validation?.errors?.[0];
@@ -1671,7 +1757,12 @@ function importErrorText(error) {
     "فشل التحقق من العقد",
     "Échec de validation du contrat",
   );
-  return `${prefix}: ${first.path || "/"} — ${localizedImportIssueMessage(first)}`;
+  const plain = labelText(
+    "This answer does not match the analysis format. Use the repair prompt to ask the AI to fix it.",
+    "هذه الإجابة لا تطابق صيغة التحليل. استخدم برومبت الإصلاح لتطلب من الذكاء الاصطناعي تصحيحها.",
+    "Cette réponse ne correspond pas au format de l’analyse. Utilisez le prompt de réparation pour demander à l’IA de la corriger.",
+  );
+  return `${plain} (${prefix}: ${first.path || "/"} — ${localizedImportIssueMessage(first)})`;
 }
 function renderImportAuditDetails({
   warnings = [],
@@ -1925,6 +2016,7 @@ function validateJsonInput() {
     state.jsonValid = false;
     state.importAudit = null;
     $("importBtn").disabled = true;
+    $("importBtn").textContent = t("importAnalysis");
     $("repairPromptBtn").disabled = true;
     $("repairPromptBtn").textContent = t("repairPrompt");
     $("continuationField").hidden = true;
@@ -1948,6 +2040,25 @@ function validateJsonInput() {
       throw error;
     }
     parsed = extractJson(text);
+    if (AI_INTERCHANGE.isCompletionReply(parsed.value)) {
+      if (!completionBase) {
+        const error = new Error("missing parts without their analysis");
+        error.code = "FILL_WITHOUT_BASE";
+        throw error;
+      }
+      // The merged analysis replaces the reply, so import and review see
+      // the whole result.
+      const merged = AI_INTERCHANGE.applyCompletion(
+        completionBase.value,
+        parsed.value,
+        completionBase.targets,
+      );
+      completionBase = null;
+      const mergedText = JSON.stringify(merged.value);
+      completionNotice = { text: mergedText, applied: merged.applied };
+      $("jsonInput").value = mergedText;
+      return validateJsonInput();
+    }
     const recognized = AI_INTERCHANGE.recognize(parsed.value);
     let input = recognized.value;
     const fromInterchange = AI_INTERCHANGE.supports(input);
@@ -2027,6 +2138,40 @@ function validateJsonInput() {
       writtenIn && writtenIn !== state.analysisLang
         ? Object.freeze({ writtenIn, requested: state.analysisLang })
         : null;
+    // The saved label describes the content, so a wrong one is corrected.
+    if (writtenIn && analysis.language !== writtenIn) {
+      contractRepairs = [
+        ...contractRepairs,
+        { code: "ENVELOPE_IDENTITY_NORMALIZED", path: "/language", from: analysis.language ?? null, to: writtenIn, count: 1 },
+      ];
+      analysis.language = writtenIn;
+    }
+    // A Strategic draft is completed like a Biopolitical one: only its gaps
+    // are asked for, then merged into this analysis.
+    if (state.importValidation?.state === "strategic_draft") {
+      completionCandidate = structuredClone(analysis);
+    }
+    const completionGaps =
+      state.importValidation?.state === "strategic_draft"
+        ? state.importValidation.diagnostics || []
+        : completionDiagnostics;
+    const otherLens =
+      analysis.analysis_lens !== state.analysisLens ? analysis.analysis_lens : null;
+    const lensName = (lens) => t(lens === "biopolitical" ? "lensBiopolitical" : "lensStrategic");
+    $("importBtn").textContent = otherLens
+      ? labelText(
+          `Import as ${lensName(otherLens)} analysis`,
+          `استيراد كتحليل ${lensName(otherLens)}`,
+          `Importer comme analyse ${lensName(otherLens).toLocaleLowerCase("fr")}`,
+        )
+      : t("importAnalysis");
+    const lensNotice = otherLens
+      ? labelText(
+          `This reply is a ${lensName(otherLens)} analysis, but the ${lensName(state.analysisLens)} lens is selected. Importing it will switch to the ${lensName(otherLens)} lens.`,
+          `هذا الرد تحليل ${lensName(otherLens)}، لكن العدسة المختارة هي ${lensName(state.analysisLens)}. سيؤدي استيراده إلى الانتقال إلى العدسة ${lensName(otherLens)}.`,
+          `Cette réponse est une analyse ${lensName(otherLens).toLocaleLowerCase("fr")}, mais la lentille ${lensName(state.analysisLens).toLocaleLowerCase("fr")} est sélectionnée. L’importer basculera vers la lentille ${lensName(otherLens).toLocaleLowerCase("fr")}.`,
+        )
+      : "";
     const warnings = [
       ...completionDiagnostics,
       ...(state.importValidation?.warnings || []),
@@ -2052,7 +2197,7 @@ function validateJsonInput() {
       contractRepairs: Object.freeze([...contractRepairs]),
       contractQuarantine: Object.freeze([...contractQuarantine]),
       compilerAudit,
-      completionDiagnostics: Object.freeze([...completionDiagnostics]),
+      completionDiagnostics: Object.freeze([...completionGaps]),
       completionCandidate: completionCandidate
         ? Object.freeze(completionCandidate)
         : null,
@@ -2071,8 +2216,14 @@ function validateJsonInput() {
       analysis.analysis_lens === "biopolitical" &&
       provenance.total > 0 &&
       provenance.humanReview < 100;
+    // Every AI answer leaves its evidence for the user to review; that alone
+    // is not a problem with the answer.
+    const problems = warnings.filter((warning) => !warning.review_only);
+    const draft = ["migrated_draft", "generated_draft"].includes(
+      state.importValidation?.state,
+    );
     $("jsonStatus").className =
-      warnings.length || parsed.recovered || needsIndependentReview || languageMismatch
+      problems.length || parsed.recovered || (needsIndependentReview && draft) || languageMismatch || otherLens
         ? "status warn"
         : "status good";
     $("repairPromptBtn").textContent = languageMismatch
@@ -2091,9 +2242,6 @@ function validateJsonInput() {
           `Cette réponse est rédigée en ${languageName(languageMismatch.writtenIn)}, mais votre langue d’analyse est : ${languageName(languageMismatch.requested)}. Vous pouvez l’importer quand même, ou demander à l’IA de répondre en ${languageName(languageMismatch.requested)}.`,
         )
       : "";
-    const draft = ["migrated_draft", "generated_draft"].includes(
-      state.importValidation?.state,
-    );
     const strategicGaps = state.importValidation?.diagnostics?.length || 0;
     const validationMessage = state.importValidation?.state === "strategic_draft"
       ? labelText(
@@ -2119,11 +2267,17 @@ function validateJsonInput() {
             "المادة القديمة صالحة كمسودة مُرحّلة، ويظل النشر محظورًا حتى استكمال العقد النظامي.",
             "Le contenu historique est valide comme brouillon migré ; la publication reste bloquée jusqu’à sa mise en conformité canonique.",
           )
+      : needsIndependentReview && !problems.length
+        ? labelText(
+            `Valid analysis, ready to import. Before publishing, review its ${provenance.total - provenance.approved} evidence record${provenance.total - provenance.approved === 1 ? "" : "s"}: an AI cannot verify its own sources.`,
+            `تحليل صالح وجاهز للاستيراد. قبل النشر، راجع سجلات الأدلة فيه (${provenance.total - provenance.approved})؛ فالذكاء الاصطناعي لا يستطيع التحقق من مصادره بنفسه.`,
+            `Analyse valide, prête à importer. Avant de publier, vérifiez ses ${provenance.total - provenance.approved} preuve${provenance.total - provenance.approved === 1 ? "" : "s"} : une IA ne peut pas vérifier ses propres sources.`,
+          )
       : needsIndependentReview
         ? labelText(
-            `Reviewable draft. Publication blockers: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${warnings.length} contract or integrity warning${warnings.length === 1 ? "" : "s"}. Draft import is allowed; publication is blocked.`,
-            `مسودة قابلة للمراجعة. عوائق النشر: ${provenance.total - provenance.approved} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. المراجعة: ${warnings.length} ${warnings.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. استيراد المسودة مسموح والنشر محظور.`,
-            `Brouillon révisable. Blocages de publication : ${provenance.total - provenance.approved} preuves sur ${provenance.total} sans approbation indépendante. Révision : ${warnings.length} avertissement${warnings.length === 1 ? "" : "s"} de contrat ou d’intégrité. L’import du brouillon est permis ; la publication est bloquée.`,
+            `Reviewable draft. Publication blockers: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${problems.length} contract or integrity warning${problems.length === 1 ? "" : "s"}. Draft import is allowed; publication is blocked.`,
+            `مسودة قابلة للمراجعة. عوائق النشر: ${provenance.total - provenance.approved} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. المراجعة: ${problems.length} ${problems.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. استيراد المسودة مسموح والنشر محظور.`,
+            `Brouillon révisable. Blocages de publication : ${provenance.total - provenance.approved} preuves sur ${provenance.total} sans approbation indépendante. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de contrat ou d’intégrité. L’import du brouillon est permis ; la publication est bloquée.`,
           )
         : warnings.length
           ? labelText(
@@ -2134,7 +2288,16 @@ function validateJsonInput() {
         : parsed.recovered
         ? t("jsonAutoRecovered")
         : t("jsonValid");
-    $("jsonStatus").textContent = [languageNotice, validationMessage, citationNotice]
+    const added = completionNotice?.text === text ? completionNotice.applied : null;
+    const completionMessage =
+      added === null
+        ? ""
+        : labelText(
+            `Added ${added} missing part${added === 1 ? "" : "s"} to your analysis.`,
+            `أُضيف ${added} من الأجزاء الناقصة إلى تحليلك.`,
+            `${added} partie${added === 1 ? " manquante a été ajoutée" : "s manquantes ont été ajoutées"} à votre analyse.`,
+          );
+    $("jsonStatus").textContent = [completionMessage, lensNotice, languageNotice, validationMessage, citationNotice]
       .filter(Boolean)
       .join(" ");
     $("pasteCard").classList.add("ready");
@@ -2159,8 +2322,10 @@ function validateJsonInput() {
     });
     state.jsonValid = false;
     $("importBtn").disabled = true;
-    // A repair prompt built from the prompt itself would only confuse the AI.
-    $("repairPromptBtn").disabled = e?.code === "PROMPT_PASTED";
+    $("importBtn").textContent = t("importAnalysis");
+    // A repair prompt built from the prompt itself, or from a list of missing
+    // parts, would only confuse the AI.
+    $("repairPromptBtn").disabled = ["PROMPT_PASTED", "FILL_WITHOUT_BASE"].includes(e?.code);
     const truncated = e?.code === "TRUNCATED_JSON";
     $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
     $("continuationField").hidden = !truncated;
@@ -2389,10 +2554,10 @@ function buildStrategicPrompt({
             ? "Expert : ajoute des preuves, des hypothèses et des liens causaux."
             : "Expert: include evidence, assumptions, and causal links."
         : ar
-          ? "مركّز: ركّز على الطبقات الست، التناقضات، والسيناريوهات."
+          ? "مركّز: ركّز على الطبقات الست، التناقضات، والسيناريوهات. اجعل الإجابة موجزة لتناسب المساعدات ذات حدود الإخراج الصغيرة: عنصران أو ثلاثة في كل قسم، وجملة قصيرة واحدة لكل قيمة نصية، وقوائم قصيرة داخل كل عنصر."
           : fr
-            ? "Ciblé : priorise les six couches, les contradictions et les scénarios."
-            : "Focused: prioritize the six layers, contradictions, and scenarios.";
+            ? "Ciblé : priorise les six couches, les contradictions et les scénarios. Garde la réponse compacte pour les assistants à faible limite de sortie : deux ou trois éléments par section, une phrase courte par valeur textuelle et des listes courtes dans chaque élément."
+            : "Focused: prioritize the six layers, contradictions, and scenarios. Keep the answer compact for assistants with small output limits: two or three items per section, one short sentence per text value, and short lists inside each item.";
   const evidenceRule = ar
     ? evidenceAccess === "none"
       ? "الوصول إلى المصادر: غير متاح. لا ترفض المهمة لهذا السبب ولا تختلق مصدرًا. استخدم عنصرًا نائبًا صريحًا منخفض الثقة، ولا تقدمه كدليل."
@@ -2492,11 +2657,17 @@ function buildPrompt() {
   state.evidenceAccess = $("evidenceAccess").value;
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
+  // Supplied sources travel with the context, which both prompts already
+  // isolate as untrusted material.
+  const sources = state.evidenceAccess === "provided" ? $("sourcesInput").value.trim() : "";
+  const sourcesHeading = { ar: "المصادر المقدمة", fr: "Sources fournies" }[lang] || "Supplied sources";
   return activeLensAdapter().buildPrompt({
     lang,
     mode: state.promptMode,
     topic: state.topic,
-    context: state.context,
+    context: sources
+      ? [state.context, `${sourcesHeading}:\n${sources}`].filter(Boolean).join("\n\n")
+      : state.context,
     evidenceAccess: state.evidenceAccess,
   });
 }
@@ -7188,11 +7359,30 @@ function repairPrompt() {
     state.importAudit?.completionCandidate &&
     state.importAudit?.completionDiagnostics?.length
   ) {
-    return AI_INTERCHANGE.buildCompletionPrompt(
-      state.importAudit.completionCandidate,
-      state.importAudit.completionDiagnostics,
-      state.analysisLang,
-    );
+    const candidate = state.importAudit.completionCandidate;
+    const diagnostics = state.importAudit.completionDiagnostics;
+    try {
+      // The prompt template shows the AI the shape of each missing record.
+      const template =
+        candidate.analysis_lens === "biopolitical"
+          ? JSON.parse(BIO.buildSchemaTemplate(state.analysisLang, "research", "web"))
+          : JSON.parse(
+              buildSchema(state.analysisLang, "research", "strategic", "web").replace(/^[^\n]*\n/, ""),
+            );
+      const prompt = AI_INTERCHANGE.buildCompletionPrompt(
+        candidate,
+        diagnostics,
+        state.analysisLang,
+        template,
+      );
+      completionBase = {
+        value: candidate,
+        targets: AI_INTERCHANGE.completionTargets(diagnostics),
+      };
+      return prompt;
+    } catch {
+      // A gap that cannot be asked for on its own gets the full repair prompt.
+    }
   }
   const ar = state.analysisLang === "ar";
   const fr = state.analysisLang === "fr";
@@ -7201,16 +7391,16 @@ function repairPrompt() {
     // Re-sending the whole object would hit the same output limit; ask only for the rest.
     const ending = bad.slice(-300);
     if (ar)
-      return `انقطعت إجابتك السابقة قبل اكتمال كائن JSON. تابعها من حيث توقفت تمامًا. أعد فقط الجزء المتبقي بدءًا من الحرف التالي مباشرة بعد النص أدناه. لا تكرر ما كُتب، ولا تبدأ الكائن من جديد، ولا تضف Markdown أو أسوار كود أو شرحًا. إذا نفدت المساحة مرة أخرى فتوقف ببساطة وسأطلب المتابعة مجددًا.
+      return `انقطعت إجابتك السابقة قبل اكتمال كائن JSON. تابعها من حيث توقفت تمامًا. أعد فقط الجزء المتبقي بدءًا من الحرف التالي مباشرة بعد النص أدناه. لا تكرر ما كُتب، ولا تبدأ الكائن من جديد. ضع الجزء المتبقي داخل كتلة كود واحدة \`\`\`json دون أي شرح. إذا نفدت المساحة مرة أخرى فتوقف ببساطة وسأطلب المتابعة مجددًا.
 
 انتهت إجابتك بـ:
 ${ending}`;
     if (fr)
-      return `Votre réponse précédente a été coupée avant la fin de l’objet JSON. Continuez-la exactement là où elle s’est arrêtée. Renvoyez uniquement la suite, en commençant par le caractère qui suit immédiatement le texte ci-dessous. Ne répétez rien de ce qui est déjà écrit, ne recommencez pas l’objet et n’ajoutez ni Markdown, ni bloc de code, ni explication. Si l’espace manque à nouveau, arrêtez-vous simplement : je vous demanderai de continuer.
+      return `Votre réponse précédente a été coupée avant la fin de l’objet JSON. Continuez-la exactement là où elle s’est arrêtée. Renvoyez uniquement la suite, en commençant par le caractère qui suit immédiatement le texte ci-dessous. Ne répétez rien de ce qui est déjà écrit et ne recommencez pas l’objet. Placez la suite dans un unique bloc de code \`\`\`json, sans explication. Si l’espace manque à nouveau, arrêtez-vous simplement : je vous demanderai de continuer.
 
 Votre réponse se terminait par :
 ${ending}`;
-    return `Your previous answer was cut off before the JSON object was complete. Continue it exactly where it stopped. Return only the remainder, starting with the character that comes immediately after the text below. Do not repeat anything already written, do not restart the object, and do not add Markdown, code fences, or explanations. If you run out of space again, simply stop and I will ask you to continue.
+    return `Your previous answer was cut off before the JSON object was complete. Continue it exactly where it stopped. Return only the remainder, starting with the character that comes immediately after the text below. Do not repeat anything already written and do not restart the object. Put the remainder in a single \`\`\`json code block, with no explanation. If you run out of space again, simply stop and I will ask you to continue.
 
 Your answer ended with:
 ${ending}`;
@@ -7221,7 +7411,7 @@ ${ending}`;
     .join("\n");
   const diagnosticBlock = diagnostics || state.importAudit?.error || "JSON parsing failed.";
   if (ar)
-    return `هذه مهمة إصلاح تسلسل JSON وليست مهمة بحث أو إعادة كتابة. أعد كائن JSON واحدًا كاملًا ومضغوطًا فقط. لا تُعد Python أو JavaScript أو JSON Patch أو Markdown أو أسوار كود أو شرحًا أو علامات حذف. حافظ على كل المحتوى والمعرّفات، ولا تغيّر إلا علامات JSON أو أنواع الحقول المحددة في التشخيص. لا تختلق محتوى أو مصادر أو روابط أو محددات أو حالات تحقق. إذا كان الإدخال مبتورًا ومحتواه مفقودًا، فأعد فقط {"repair_status":"incomplete_input","reason":"truncated"} بدل اختلاق الباقي. لا تدرج علامات cite أو filecite أو turn. لا تستخدم verified دون verified_by وverification_date؛ وإلا استخدم unverified واتركهما فارغين.
+    return `هذه مهمة إصلاح تسلسل JSON وليست مهمة بحث أو إعادة كتابة. أعد كائن JSON واحدًا كاملًا ومضغوطًا فقط داخل كتلة كود واحدة \`\`\`json. لا تُعد Python أو JavaScript أو JSON Patch أو شرحًا أو علامات حذف. حافظ على كل المحتوى والمعرّفات، ولا تغيّر إلا علامات JSON أو أنواع الحقول المحددة في التشخيص. لا تختلق محتوى أو مصادر أو روابط أو محددات أو حالات تحقق. إذا كان الإدخال مبتورًا ومحتواه مفقودًا، فأعد فقط {"repair_status":"incomplete_input","reason":"truncated"} بدل اختلاق الباقي. لا تدرج علامات cite أو filecite أو turn. لا تستخدم verified دون verified_by وverification_date؛ وإلا استخدم unverified واتركهما فارغين.
 
 التشخيص:
 ${diagnosticBlock}
@@ -7229,14 +7419,14 @@ ${diagnosticBlock}
 النص:
 ${bad}`;
   if (fr)
-    return `Il s’agit d’une réparation de sérialisation JSON, pas d’une recherche ni d’une réécriture. Retournez exactement un objet JSON complet et minifié. Ne retournez ni Python, ni JavaScript, ni JSON Patch, ni Markdown, ni bloc de code, ni explication, ni ellipse. Préservez tout le contenu et tous les identifiants ; ne modifiez que la ponctuation JSON ou les types de champs indiqués par le diagnostic. N’inventez aucun contenu, source, URL, localisateur ou état de vérification. Si l’entrée est tronquée et qu’il manque du contenu, retournez uniquement {"repair_status":"incomplete_input","reason":"truncated"}. N’insérez aucun marqueur cite, filecite ou turn. N’utilisez verified qu’avec verified_by et verification_date ; sinon utilisez unverified et laissez-les vides.
+    return `Il s’agit d’une réparation de sérialisation JSON, pas d’une recherche ni d’une réécriture. Retournez exactement un objet JSON complet et minifié, dans un unique bloc de code \`\`\`json. Ne retournez ni Python, ni JavaScript, ni JSON Patch, ni explication, ni ellipse. Préservez tout le contenu et tous les identifiants ; ne modifiez que la ponctuation JSON ou les types de champs indiqués par le diagnostic. N’inventez aucun contenu, source, URL, localisateur ou état de vérification. Si l’entrée est tronquée et qu’il manque du contenu, retournez uniquement {"repair_status":"incomplete_input","reason":"truncated"}. N’insérez aucun marqueur cite, filecite ou turn. N’utilisez verified qu’avec verified_by et verification_date ; sinon utilisez unverified et laissez-les vides.
 
 Diagnostic :
 ${diagnosticBlock}
 
 Texte :
 ${bad}`;
-  return `This is a JSON serialization repair task, not research or rewriting. Return exactly one complete minified JSON object. Do not return Python, JavaScript, JSON Patch, Markdown, code fences, explanations, or ellipses. Preserve all content and IDs; change only JSON punctuation or the field types identified by the diagnostics. Never invent content, sources, URLs, locators, or verification states. If the input is truncated and content is missing, return only {"repair_status":"incomplete_input","reason":"truncated"} instead of inventing the remainder. Do not insert cite, filecite, or turn markers. Use verified only with both verified_by and verification_date; otherwise use unverified and leave them empty.
+  return `This is a JSON serialization repair task, not research or rewriting. Return exactly one complete minified JSON object, inside a single \`\`\`json code block. Do not return Python, JavaScript, JSON Patch, explanations, or ellipses. Preserve all content and IDs; change only JSON punctuation or the field types identified by the diagnostics. Never invent content, sources, URLs, locators, or verification states. If the input is truncated and content is missing, return only {"repair_status":"incomplete_input","reason":"truncated"} instead of inventing the remainder. Do not insert cite, filecite, or turn markers. Use verified only with both verified_by and verification_date; otherwise use unverified and leave them empty.
 
 Diagnostics:
 ${diagnosticBlock}
@@ -7274,6 +7464,7 @@ $("copyPromptBtn").onclick = async (event) => {
   state.lastPrompt = p;
   const ok = await copyText(p);
   state.stage = "import";
+  keepTrip();
   $("editTopicBtn").classList.remove("hide");
   $("topicStatus").className = ok ? "status good" : "status warn";
   $("topicStatus").textContent = `${ok ? t("promptCopied") : t("copyFailed")} ${promptBudgetText(p)}`;
@@ -7297,17 +7488,22 @@ $("editTopicBtn").onclick = () => {
   state.shellSection = "workflow";
   renderAll();
 };
-$("jsonInput").addEventListener("input", validateJsonInput);
+$("jsonInput").addEventListener("input", () => {
+  validateJsonInput();
+  keepTrip();
+});
 $("continuationInput").addEventListener("input", () => {
   const continuation = $("continuationInput").value;
   if (!continuation.trim()) return;
   $("jsonInput").value = JSON_TOOLS.joinContinuation($("jsonInput").value, continuation);
   $("continuationInput").value = "";
   validateJsonInput();
+  keepTrip();
 });
 $("clearJsonBtn").onclick = () => {
   $("jsonInput").value = "";
   validateJsonInput();
+  keepTrip();
 };
 $("importBtn").onclick = async () => {
   const a = validateJsonInput();
@@ -7333,7 +7529,7 @@ $("importBtn").onclick = async () => {
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"));
   renderAll();
-  await persistImportedAnalysis(a);
+  if (await persistImportedAnalysis(a)) discardTrip();
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
@@ -7344,6 +7540,7 @@ $("repairPromptBtn").onclick = async (event) => {
   const completion = !language && Boolean(state.importAudit?.completionCandidate);
   const truncated = state.importAudit?.code === "TRUNCATED_JSON";
   const p = repairPrompt();
+  keepTrip();
   const ok = await copyText(p);
   const copied = language
     ? labelText(
@@ -7449,6 +7646,7 @@ $("workspaceResetAll").onclick = async () => {
   try {
     await WORKSPACE_REPOSITORY.clear();
     await RECOVERY_JOURNAL.clear();
+    tripKept = false;
     SETTINGS.remove();
     state.activeWorkspaceId = null;
     state.analysis = null;
@@ -7548,6 +7746,7 @@ $("modalCopy").onclick = async () => {
     state.promptMode = $("promptMode").value;
     state.evidenceAccess = $("evidenceAccess").value;
     writeSettings({ evidenceAccess: state.evidenceAccess });
+    $("sourcesField").hidden = state.evidenceAccess !== "provided";
     state.context = $("timeframeInput").value;
     state.topic = $("topicInput").value;
   }),
@@ -7564,8 +7763,10 @@ PLATFORM.performance.measure(
     initializeTheme();
     APPLICATION_SHELL.setDensity(state.density, { persist: false });
     renderAll();
+    // Set once here: renders leave this line alone, so copy and import messages stay.
+    $("topicStatus").textContent = t("topicStatusStart");
     validateJsonInput();
   },
   { lens: state.analysisLens, language: state.lang },
 );
-restoreLastWorkspace();
+restoreLastWorkspace().then(restoreTrip);

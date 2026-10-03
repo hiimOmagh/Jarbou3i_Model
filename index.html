@@ -128,6 +128,10 @@
               <input id="timeframeInput" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: 2022–2026، أوروبا" />
             </div>
           </div>
+          <div class="field" id="sourcesField" hidden>
+            <label class="label" for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
+            <textarea id="sourcesInput" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات."></textarea>
+          </div>
           <div class="actions commandActions">
             <div class="commandPrimary"><button class="btn primary" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button></div>
             <div class="commandSecondary">
@@ -136,7 +140,7 @@
               <button class="btn ghost hide" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
             </div>
           </div>
-          <div class="status helper" id="topicStatus" role="status" aria-live="polite" data-i18n="topicStatusStart">أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.</div>
+          <div class="status helper" id="topicStatus" role="status" aria-live="polite">أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.</div>
           <div class="miniGuide" id="miniGuide"><h4 data-i18n="guideTitle">كيف تستخدم الأداة؟</h4><ol id="guideSteps"></ol></div>
         </div>
         <div class="card importCommand" id="pasteCard">
@@ -157,7 +161,7 @@
               <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
             </div>
           </div>
-          <div class="status" id="jsonStatus" role="status" aria-live="polite" data-i18n="jsonWaiting">الصق نتيجة JSON للتحقق.</div>
+          <div class="status" id="jsonStatus" role="status" aria-live="polite">الصق نتيجة JSON للتحقق.</div>
           <details class="importAudit" id="importAuditDetails" hidden>
             <summary id="importAuditSummary">Import review details</summary>
             <div class="importAuditBody" id="importAuditBody"></div>

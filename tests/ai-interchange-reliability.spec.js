@@ -1,12 +1,42 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { readIntakeDraft } from "./helpers/browser-persistence.js";
 
 async function fixture(name) {
   return JSON.parse(
     await fs.readFile(path.join(process.cwd(), "fixtures", name), "utf8"),
   );
 }
+
+// Records what the page copies, so a test can read the prompt it would paste.
+async function captureCopies(page) {
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator.clipboard, "writeText", {
+      configurable: true,
+      value: async (text) => {
+        window.__copied.push(text);
+      },
+    });
+  });
+}
+const lastCopy = (page) => page.evaluate(() => window.__copied.at(-1));
+const valueAt = (value, pointer) =>
+  pointer
+    .split("/")
+    .slice(1)
+    .reduce((node, key) => node?.[key.replaceAll("~1", "/").replaceAll("~0", "~")], value);
+// What an AI following the completion prompt sends back: each listed path
+// with its value, taken here from the complete original.
+const fillFrom = (prompt, original) =>
+  JSON.stringify({
+    fill: Object.fromEntries(
+      [...prompt.matchAll(/^(\/\S+) —/gm)].map(([, target]) => [target, valueAt(original, target)]),
+    ),
+  });
+
+const RESTORED = "Restored the analysis you were preparing";
 
 // Every coded field and number range a schema enforces, by field name.
 async function schemaRules(file) {
@@ -219,7 +249,7 @@ test.describe("AI interchange reliability", () => {
       );
     await expect(page.locator("#importBtn")).toBeDisabled();
     await expect(page.locator("#jsonStatus")).toContainText(
-      "Truncated JSON detected",
+      "The AI’s answer stops in the middle",
     );
   });
 
@@ -360,6 +390,198 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonInput")).not.toHaveValue("");
   });
 
+  for (const lens of ["strategic", "biopolitical"]) {
+    test(`asks a ${lens} draft only for its missing parts and merges the reply`, async ({
+      page,
+    }) => {
+      await page.goto("./");
+      await page.locator("#langEn").click();
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await captureCopies(page);
+      const data = await fixture(
+        lens === "strategic" ? "sample-analysis-en.json" : "sample-analysis-bio-en.json",
+      );
+      const draft = structuredClone(data);
+      if (lens === "strategic") {
+        for (const key of ["tools", "narrative", "results", "feedback", "scenarios"]) delete draft[key];
+      } else {
+        draft.evidence.items.forEach((item) => (item.counter_evidence = ""));
+        delete draft.power_map.actors[0].formal_mandate;
+      }
+      await page.locator("#jsonInput").fill(JSON.stringify(draft));
+      await expect(page.locator("#importBtn")).toBeEnabled();
+      await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+
+      await page.locator("#repairPromptBtn").click();
+      await expect(page.locator("#toast")).toContainText("Completion prompt copied");
+      const prompt = await lastCopy(page);
+      expect(prompt).toContain('{"fill":');
+      expect(prompt.length).toBeLessThan(6000);
+      expect(prompt).not.toContain(data.subject.title);
+      const reply = fillFrom(prompt, data);
+      expect(Object.keys(JSON.parse(reply).fill).length).toBeGreaterThan(1);
+
+      await page.locator("#jsonInput").fill(`Here are the missing parts:\n\`\`\`json\n${reply}\n\`\`\``);
+      await expect(page.locator("#jsonStatus")).toContainText(/Added \d+ missing parts/);
+      await expect(page.locator("#jsonStatus")).not.toContainText(/draft with \d+/);
+      await expect(page.locator("#importBtn")).toBeEnabled();
+      await page.locator("#importBtn").click();
+      const imported = await page.locator("#jsonInput").inputValue();
+      expect(imported).toContain(
+        lens === "strategic" ? data.tools[0].name : data.power_map.actors[0].formal_mandate,
+      );
+    });
+  }
+
+  test("keeps the analysis being prepared across a reload until it is imported", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await captureCopies(page);
+    await page.locator("#topicInput").fill("Digital health passes and conditional mobility");
+    await page.locator("#timeframeInput").fill("2020–2024, EU");
+    await page.locator("#promptMode").selectOption("research");
+    await page.locator("#copyPromptBtn").click();
+    await expect(page.locator("#topicStatus")).toContainText("Prompt copied");
+    const data = await fixture("sample-analysis-bio-en.json");
+    const text = JSON.stringify(data);
+    const cut = Math.floor(text.length * 0.6);
+    await page.locator("#jsonInput").fill(text.slice(0, cut));
+    await expect(page.locator("#continuationField")).toBeVisible();
+    await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(text.slice(0, cut));
+
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await expect(page.locator("#topicInput")).toHaveValue(
+      "Digital health passes and conditional mobility",
+    );
+    await expect(page.locator("#timeframeInput")).toHaveValue("2020–2024, EU");
+    await expect(page.locator("#promptMode")).toHaveValue("research");
+    await expect(page.locator("#editTopicBtn")).toBeVisible();
+    await expect(page.locator("#jsonInput")).toHaveValue(text.slice(0, cut));
+    await expect(page.locator("#continuationField")).toBeVisible();
+
+    await page.locator("#continuationInput").fill(text.slice(cut));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#reviewContent")).toContainText(data.subject.executive_finding);
+    await expect.poll(() => readIntakeDraft(page)).toBeNull();
+    await page.reload();
+    await expect(page.locator("#reviewContent")).toContainText(data.subject.executive_finding);
+    await expect(page.locator("#topicStatus")).not.toContainText(RESTORED);
+  });
+
+  test("keeps copy and import messages when the page redraws", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    await page.locator("#topicInput").fill("Digital health passes and conditional mobility");
+    await page.locator("#copyPromptBtn").click();
+    await page.locator("#jsonInput").fill("The AI answered in plain text.");
+    await expect(page.locator("#jsonStatus")).toContainText("No analysis was found");
+    await page.locator('[data-shell-nav="engine"]').click();
+    await page.locator('[data-shell-nav="workflow"]').click();
+    await expect(page.locator("#topicStatus")).toContainText("Prompt copied");
+    await expect(page.locator("#jsonStatus")).toContainText("No analysis was found");
+  });
+
+  test("merges the missing parts asked for before a reload", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="strategic"]').click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-en.json");
+    const draft = structuredClone(data);
+    for (const key of ["tools", "narrative", "results", "feedback", "scenarios"]) delete draft[key];
+    await page.locator("#jsonInput").fill(JSON.stringify(draft));
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("Completion prompt copied");
+    const prompt = await lastCopy(page);
+    await expect.poll(async () => (await readIntakeDraft(page))?.completion?.targets.length).toBeGreaterThan(0);
+
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await expect(page.locator("#jsonInput")).toHaveValue(JSON.stringify(draft));
+    await page.locator("#jsonInput").fill(fillFrom(prompt, data));
+    await expect(page.locator("#jsonStatus")).toContainText(/Added \d+ missing parts/);
+    await expect(page.locator("#importBtn")).toBeEnabled();
+  });
+
+  test("explains a list of missing parts pasted without its analysis", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#jsonInput").fill('{"fill":{"/tools":[]}}');
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#repairPromptBtn")).toBeDisabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      "This is a list of missing parts, but the analysis it completes is not open here",
+    );
+  });
+
+  for (const [selected, other, file, name] of [
+    ["strategic", "biopolitical", "sample-analysis-bio-en.json", "Biopolitical"],
+    ["biopolitical", "strategic", "sample-analysis-en.json", "Strategic"],
+  ]) {
+    test(`names a ${other} reply instead of switching lens silently`, async ({ page }) => {
+      await page.goto("./");
+      await page.locator("#langEn").click();
+      await page.locator(`[data-lens="${selected}"]`).click();
+      const data = await fixture(file);
+      for (const reply of [data, { ...data, analysis_lens: undefined }]) {
+        await page.locator("#jsonInput").fill(JSON.stringify(reply));
+        await expect(page.locator("#jsonStatus")).toContainText(
+          `This reply is a ${name} analysis`,
+        );
+        await expect(page.locator("#importBtn")).toHaveText(`Import as ${name} analysis`);
+      }
+      await page.locator("#importBtn").click();
+      await expect(page.locator(`[data-lens="${other}"]`)).toHaveAttribute("aria-checked", "true");
+      await page.locator("#jsonInput").fill(JSON.stringify(data));
+      await expect(page.locator("#importBtn")).toHaveText("Import analysis");
+    });
+  }
+
+  test("explains import problems in plain words and allows a code block in fix-up prompts", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    await page.locator("#jsonInput").fill("## Summary\nThe evidence is mixed.\n- States\n- Venues");
+    await expect(page.locator("#jsonStatus")).toContainText("No analysis was found in this text");
+    await page.locator("#repairPromptBtn").click();
+    expect(await lastCopy(page)).toContain("```json");
+    expect(await lastCopy(page)).not.toMatch(/code fences/i);
+
+    const data = await fixture("sample-analysis-en.json");
+    const text = JSON.stringify(data);
+    await page.locator("#jsonInput").fill(text.slice(0, Math.floor(text.length / 2)));
+    await expect(page.locator("#jsonStatus")).toContainText("The AI’s answer stops in the middle");
+    await page.locator("#repairPromptBtn").click();
+    expect(await lastCopy(page)).toContain("```json");
+    expect(await lastCopy(page)).not.toMatch(/code fences/i);
+
+    await page.locator("#jsonInput").fill(JSON.stringify({ ...data, schema_version: "9.0.0" }));
+    await expect(page.locator("#jsonStatus")).toContainText(
+      "This answer does not match the analysis format",
+    );
+  });
+
+  test("corrects a wrong language label to the language the reply is written in", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#analysisLang").selectOption("en");
+    const data = await fixture("sample-analysis-en.json");
+    await page.locator("#jsonInput").fill(JSON.stringify({ ...data, language: "fr" }));
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#jsonInput")).toHaveValue(/"language": "en"/);
+  });
+
   test("prompts show every allowed code and range, the language, and a closing checklist", async ({
     page,
   }) => {
@@ -398,40 +620,125 @@ test.describe("AI interchange reliability", () => {
     // Without source access the evidence record is a fixed placeholder; live
     // research shows the full record the AI fills in.
     await page.locator("#evidenceAccess").selectOption("web");
+    // Every depth's template is a subset of Research's, and the language and
+    // checklist do not depend on depth, so Research alone covers every field.
+    await page.locator("#promptMode").selectOption("research");
     for (const lens of ["strategic", "biopolitical"]) {
       await page.locator(`[data-lens="${lens}"]`).click();
       for (const language of ["en", "ar", "fr"]) {
-        for (const mode of ["simple", "expert", "research"]) {
-          await page.locator("#analysisLang").selectOption(language);
-          await page.locator("#promptMode").selectOption(mode);
-          await page.locator("#previewPromptBtn").click();
-          const prompt = await page.locator("#modalContent").textContent();
-          await page.keyboard.press("Escape");
-          const where = `${lens}/${language}/${mode}`;
-          const lines = prompt.split("\n");
+        await page.locator("#analysisLang").selectOption(language);
+        await page.locator("#previewPromptBtn").click();
+        const prompt = await page.locator("#modalContent").textContent();
+        await page.keyboard.press("Escape");
+        const where = `${lens}/${language}`;
+        const lines = prompt.split("\n");
 
-          for (const { field, key, values } of schemas[lens].codes) {
-            if (appChosen.has(field) || !askedAsCode(prompt, key)) continue;
-            const shown = listsAfter(prompt, key).some((list) =>
-              list.every((value) => values.includes(value)),
-            );
-            expect.soft(shown, `${where}: allowed values for ${field}`).toBe(true);
-          }
-          for (const { field, key, range } of schemas[lens].ranges) {
-            if (!askedAsNumber(prompt, key)) continue;
-            const stated = lines.some((line) => word(key).test(line) && line.includes(range));
-            expect.soft(stated, `${where}: range ${range} for ${field}`).toBe(true);
-          }
-          expect.soft(prompt, `${where}: language pre-filled`).toContain(`"language":"${language}"`);
-          expect.soft(prompt, where).not.toContain("ar|en|fr");
-          const checklist = lines.slice(-7).join("\n");
-          expect.soft(checklist, `${where}: closing checklist`).toContain("```json");
-          expect.soft(checklist, `${where}: closing checklist`).toContain(languageName[language]);
-          expect.soft(prompt, where).not.toMatch(
-            /no Markdown, code fence|sans Markdown, bloc de code|دون Markdown أو أسوار كود/,
+        for (const { field, key, values } of schemas[lens].codes) {
+          if (appChosen.has(field) || !askedAsCode(prompt, key)) continue;
+          const shown = listsAfter(prompt, key).some((list) =>
+            list.every((value) => values.includes(value)),
           );
+          expect.soft(shown, `${where}: allowed values for ${field}`).toBe(true);
         }
+        for (const { field, key, range } of schemas[lens].ranges) {
+          if (!askedAsNumber(prompt, key)) continue;
+          const stated = lines.some((line) => word(key).test(line) && line.includes(range));
+          expect.soft(stated, `${where}: range ${range} for ${field}`).toBe(true);
+        }
+        expect.soft(prompt, `${where}: language pre-filled`).toContain(`"language":"${language}"`);
+        expect.soft(prompt, where).not.toContain("ar|en|fr");
+        const checklist = lines.slice(-7).join("\n");
+        expect.soft(checklist, `${where}: closing checklist`).toContain("```json");
+        expect.soft(checklist, `${where}: closing checklist`).toContain(languageName[language]);
+        expect.soft(prompt, where).not.toMatch(
+          /no Markdown, code fence|sans Markdown, bloc de code|دون Markdown أو أسوار كود/,
+        );
       }
     }
+  });
+
+  test("the Focused Strategic prompt asks for a compact answer", async ({ page }) => {
+    const compact = {
+      en: "two or three items per section",
+      ar: "عنصران أو ثلاثة في كل قسم",
+      fr: "deux ou trois éléments par section",
+    };
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("Digital health passes and conditional mobility");
+    await page.locator('[data-lens="strategic"]').click();
+    for (const [mode, language] of [
+      ["simple", "en"],
+      ["simple", "ar"],
+      ["simple", "fr"],
+      ["research", "en"],
+    ]) {
+      await page.locator("#analysisLang").selectOption(language);
+      await page.locator("#promptMode").selectOption(mode);
+      await page.locator("#previewPromptBtn").click();
+      const prompt = await page.locator("#modalContent").textContent();
+      await page.keyboard.press("Escape");
+      if (mode === "simple") expect.soft(prompt, language).toContain(compact[language]);
+      else expect.soft(prompt, mode).not.toContain(compact[language]);
+    }
+  });
+
+  test("shows a clean Biopolitical answer as ready, with its evidence still to review", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const data = await fixture("sample-analysis-bio-en.json");
+    // A web-research answer: real, traceable sources the AI cannot verify itself.
+    data.evidence.items.forEach((item, index) => {
+      item.source_title = `Regulation (EU) 2021/953, recital ${index + 1}`;
+      item.source_url = "https://eur-lex.europa.eu/eli/reg/2021/953/oj";
+    });
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#jsonStatus")).toContainText("Valid analysis, ready to import");
+    await expect(page.locator("#jsonStatus")).toHaveClass(/status good/);
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText(/Publication blockers/i);
+
+    data.evidence.items[0].source_url = "not-a-url";
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#jsonStatus")).toContainText("Reviewable draft");
+    await expect(page.locator("#jsonStatus")).toHaveClass(/status warn/);
+  });
+
+  test("puts the supplied sources into the prompt as untrusted material", async ({ page }) => {
+    const source = "EU Regulation 2021/953, Article 3 — https://eur-lex.europa.eu/eli/reg/2021/953/oj";
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("Digital health passes and conditional mobility");
+    await page.locator("#evidenceAccess").selectOption("web");
+    await expect(page.locator("#sourcesInput")).toBeHidden();
+    await page.locator("#evidenceAccess").selectOption("provided");
+    await page.locator("#sourcesInput").fill(source);
+    for (const lens of ["strategic", "biopolitical"]) {
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#previewPromptBtn").click();
+      const prompt = await page.locator("#modalContent").textContent();
+      await page.keyboard.press("Escape");
+      const material =
+        lens === "strategic"
+          ? prompt.match(/UNTRUSTED_ANALYSIS_MATERIAL_JSON: (.*)/)[1]
+          : prompt.match(/<UNTRUSTED_CONTEXT_MATERIAL>([\s\S]*?)<\/UNTRUSTED_CONTEXT_MATERIAL>/)[1];
+      expect.soft(material, lens).toContain("Supplied sources");
+      expect.soft(material, lens).toContain(source);
+    }
+    await captureCopies(page);
+    await page.locator("#copyPromptBtn").click();
+    await expect.poll(async () => (await readIntakeDraft(page))?.sources).toBe(source);
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await expect(page.locator("#sourcesInput")).toHaveValue(source);
+
+    await page.locator("#evidenceAccess").selectOption("web");
+    await expect(page.locator("#sourcesInput")).toBeHidden();
+    await page.locator("#previewPromptBtn").click();
+    await expect(page.locator("#modalContent")).not.toContainText(source);
   });
 });

@@ -369,6 +369,8 @@
             path,
             "Evidence is placeholder, untraceable, or not fully verified.",
             "warning",
+            // Traceable, real evidence that only awaits the user's own review.
+            { review_only: !placeholder && traceable },
           ),
         );
       }

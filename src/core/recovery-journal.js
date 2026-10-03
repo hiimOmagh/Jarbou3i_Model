@@ -1,6 +1,7 @@
 import { canonicalStringify, sha256, WorkspaceContractError } from "./workspace-contract.js";
 import {
   RECOVERY_JOURNAL_STORE_NAME,
+  upgradeWorkspaceDatabase,
   WORKSPACE_DATABASE_NAME,
   WORKSPACE_DATABASE_VERSION,
 } from "./workspace-storage.js";
@@ -105,13 +106,7 @@ export function createIndexedDbRecoveryBackend({
     if (connection) return connection;
     if (!indexedDB?.open) throw failure("RECOVERY_STORAGE_UNAVAILABLE", "IndexedDB recovery storage is unavailable.");
     const request = indexedDB.open(databaseName, WORKSPACE_DATABASE_VERSION);
-    request.onupgradeneeded = () => {
-      const database = request.result;
-      if (!database.objectStoreNames.contains(RECOVERY_JOURNAL_STORE_NAME)) {
-        const store = database.createObjectStore(RECOVERY_JOURNAL_STORE_NAME, { keyPath: "workspace_id" });
-        store.createIndex("expires_at", "expires_at", { unique: false });
-      }
-    };
+    request.onupgradeneeded = () => upgradeWorkspaceDatabase(request.result);
     connection = await requestResult(request);
     connection.onversionchange = () => { connection.close(); connection = undefined; };
     return connection;

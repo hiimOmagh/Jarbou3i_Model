@@ -45,6 +45,19 @@ function mapStorageFailure(error) {
   return storageError("STORAGE_FAILURE", "Durable local storage failed.", error);
 }
 
+// Creates every store, whichever backend opens the database first.
+export function upgradeWorkspaceDatabase(database) {
+  if (!database.objectStoreNames.contains(WORKSPACE_STORE_NAME)) {
+    const store = database.createObjectStore(WORKSPACE_STORE_NAME, { keyPath: "workspace_id" });
+    store.createIndex("updated_at", "metadata.updated_at", { unique: false });
+    store.createIndex("archived_at", "metadata.archived_at", { unique: false });
+  }
+  if (!database.objectStoreNames.contains(RECOVERY_JOURNAL_STORE_NAME)) {
+    const recoveryStore = database.createObjectStore(RECOVERY_JOURNAL_STORE_NAME, { keyPath: "workspace_id" });
+    recoveryStore.createIndex("expires_at", "expires_at", { unique: false });
+  }
+}
+
 export function createIndexedDbWorkspaceBackend({
   indexedDB = globalThis.indexedDB,
   databaseName = WORKSPACE_DATABASE_NAME,
@@ -56,18 +69,7 @@ export function createIndexedDbWorkspaceBackend({
     if (!indexedDB?.open) throw storageError("STORAGE_UNAVAILABLE", "IndexedDB is unavailable.");
     try {
       const request = indexedDB.open(databaseName, WORKSPACE_DATABASE_VERSION);
-      request.onupgradeneeded = () => {
-        const database = request.result;
-        if (!database.objectStoreNames.contains(WORKSPACE_STORE_NAME)) {
-          const store = database.createObjectStore(WORKSPACE_STORE_NAME, { keyPath: "workspace_id" });
-          store.createIndex("updated_at", "metadata.updated_at", { unique: false });
-          store.createIndex("archived_at", "metadata.archived_at", { unique: false });
-        }
-        if (!database.objectStoreNames.contains(RECOVERY_JOURNAL_STORE_NAME)) {
-          const recoveryStore = database.createObjectStore(RECOVERY_JOURNAL_STORE_NAME, { keyPath: "workspace_id" });
-          recoveryStore.createIndex("expires_at", "expires_at", { unique: false });
-        }
-      };
+      request.onupgradeneeded = () => upgradeWorkspaceDatabase(request.result);
       connection = await requestResult(request);
       connection.onversionchange = () => {
         connection.close();

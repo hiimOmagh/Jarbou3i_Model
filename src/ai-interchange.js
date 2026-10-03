@@ -530,6 +530,7 @@
   const INTERCHANGE_ONLY_KEYS = ["power", "meaning", "intervention", "explanations", "conclusion"];
   const RESULT_MARKERS = ["contract", "lens", "analysis_lens", "analysis_contract", "schema_version"];
   const STRATEGIC_KEYS = ["interests", "actors", "tools", "narrative", "results", "feedback"];
+  const CANONICAL_ONLY_KEYS = ["human_functions", "power_map", "meaning_systems", "capture_levels", "intervention_assessment", "competing_explanations"];
   const looksLikeResult = (value) =>
     isObject(value) &&
     (RESULT_MARKERS.some((key) => key in value) ||
@@ -590,6 +591,23 @@
       if (token(fixed.contract) === CONTRACT) set("contract", CONTRACT);
       if (["strategic", LENS].includes(token(fixed.analysis_lens))) {
         set("analysis_lens", token(fixed.analysis_lens));
+      }
+      // A result with no lens label at all is recognized by its shape, not by
+      // the lens the page happens to show.
+      if (
+        fixed.analysis_lens == null &&
+        fixed.lens == null &&
+        !("contract" in fixed) &&
+        INTERCHANGE_ONLY_KEYS.filter((key) => key in fixed).length < 2
+      ) {
+        if (
+          token(fixed.analysis_contract) === CANONICAL_CONTRACT ||
+          CANONICAL_ONLY_KEYS.filter((key) => key in fixed).length >= 2
+        ) {
+          set("analysis_lens", LENS);
+        } else if (STRATEGIC_KEYS.filter((key) => Array.isArray(fixed[key])).length >= 3) {
+          set("analysis_lens", "strategic");
+        }
       }
       // A canonical-shaped Biopolitical header that is loosely written or
       // incomplete names the 2.1 contract; legacy v1 and other versions are
@@ -957,7 +975,127 @@
   // Reference defects are completed at their listed path like any other gap.
   const REFERENCE_CODES = new Set(["BROKEN_REFERENCE", "DUPLICATE_GLOBAL_ID"]);
 
-  function buildCompletionPrompt(candidate, diagnostics = [], lang = "en") {
+  // The value a gap asks for: a missing required property is named under its
+  // parent; every other gap is the value at its own path.
+  function gapTarget(item) {
+    const diagnostic = object(item);
+    const path = text(diagnostic.path || diagnostic.instancePath || "/").replace(/\/$/, "");
+    const missing = text(diagnostic.params?.missingProperty);
+    const required =
+      text(diagnostic.keyword).toLowerCase() === "required" ||
+      text(diagnostic.code).toUpperCase() === "SCHEMA_REQUIRED";
+    return required && missing
+      ? `${path}/${missing.replaceAll("~", "~0").replaceAll("/", "~1")}`
+      : path || "/";
+  }
+
+  function completionTargets(diagnostics = []) {
+    return [...new Set(array(diagnostics).map(gapTarget))];
+  }
+
+  const pointerKeys = (pointer) =>
+    text(pointer)
+      .split("/")
+      .slice(1)
+      .map((key) => key.replaceAll("~1", "/").replaceAll("~0", "~"));
+
+  const LABEL_KEYS = ["name", "title", "term", "claim", "rhetoric", "description"];
+  const COMPLETION_COPY = {
+    en: {
+      intro: `Some parts of your previous answer are missing. Do not resend the whole analysis. Reply with only the missing parts, as one JSON object inside a single \`\`\`json code block, using exactly the paths listed below as keys:
+{"fill":{"<path>":<value>}}
+Write each value in English, consistent with the rest of your analysis, and use only the codes and number ranges from the original instructions. Do not invent sources, URLs, locators, or verification states; if something cannot be known, say so in the text.
+
+Missing parts:`,
+      reference: "the ID of an existing record",
+      duplicate: "a new ID that no other record uses",
+      records: (shape) => `a list with at least one record shaped like ${shape}`,
+      texts: "a list of short texts",
+      record: (shape) => `a record shaped like ${shape}`,
+      oneOf: (codes) => `one of ${codes}`,
+      text: "text",
+      number: "a number",
+      value: "the missing value",
+      within: (label) => ` (in "${label}")`,
+    },
+    ar: {
+      intro: `بعض أجزاء إجابتك السابقة ناقصة. لا تُعد إرسال التحليل كاملًا. أجب بالأجزاء الناقصة فقط، في كائن JSON واحد داخل كتلة كود واحدة \`\`\`json، مستخدمًا المسارات المدرجة أدناه مفاتيحَ كما هي تمامًا:
+{"fill":{"<path>":<value>}}
+اكتب كل قيمة بالعربية، متسقة مع بقية تحليلك، واستخدم فقط الرموز ونطاقات الأرقام الواردة في التعليمات الأصلية. لا تختلق مصادر أو روابط أو محددات أو حالات تحقق؛ وإذا تعذّرت معرفة شيء فاذكر ذلك في النص.
+
+الأجزاء الناقصة:`,
+      reference: "معرّف سجل موجود",
+      duplicate: "معرّف جديد لا يستخدمه أي سجل آخر",
+      records: (shape) => `قائمة فيها سجل واحد على الأقل بالشكل ${shape}`,
+      texts: "قائمة نصوص قصيرة",
+      record: (shape) => `سجل بالشكل ${shape}`,
+      oneOf: (codes) => `واحدة من ${codes}`,
+      text: "نص",
+      number: "رقم",
+      value: "القيمة الناقصة",
+      within: (label) => ` (في "${label}")`,
+    },
+    fr: {
+      intro: `Certaines parties de votre réponse précédente manquent. Ne renvoyez pas toute l’analyse. Répondez uniquement avec les parties manquantes, en un seul objet JSON dans un unique bloc de code \`\`\`json, en utilisant exactement les chemins listés ci-dessous comme clés :
+{"fill":{"<path>":<value>}}
+Rédigez chaque valeur en français, en cohérence avec le reste de votre analyse, et n’utilisez que les codes et plages de nombres des instructions d’origine. N’inventez ni source, ni URL, ni localisateur, ni état de vérification ; si quelque chose ne peut pas être su, dites-le dans le texte.
+
+Parties manquantes :`,
+      reference: "l’identifiant d’un élément existant",
+      duplicate: "un nouvel identifiant qu’aucun autre élément n’utilise",
+      records: (shape) => `une liste d’au moins un élément de la forme ${shape}`,
+      texts: "une liste de textes courts",
+      record: (shape) => `un élément de la forme ${shape}`,
+      oneOf: (codes) => `l’une des valeurs ${codes}`,
+      text: "texte",
+      number: "un nombre",
+      value: "la valeur manquante",
+      within: (label) => ` (dans « ${label} »)`,
+    },
+  };
+
+  // One line per gap: its path, what kind of value it needs (read from the
+  // prompt template), and the record it belongs to.
+  function describeGap(item, candidate, template, copy) {
+    const target = gapTarget(item);
+    const code = text(object(item).code).toUpperCase();
+    const keys = pointerKeys(target);
+    let description;
+    if (code === "BROKEN_REFERENCE") description = copy.reference;
+    else if (code === "DUPLICATE_GLOBAL_ID") description = copy.duplicate;
+    else {
+      // The template holds one example entry per list, so any index reads entry 0.
+      const shape = keys.reduce((node, key) => (Array.isArray(node) ? node[0] : node?.[key]), template);
+      description = Array.isArray(shape)
+        ? isObject(shape[0])
+          ? copy.records(JSON.stringify(shape[0]))
+          : copy.texts
+        : isObject(shape)
+          ? copy.record(JSON.stringify(shape))
+          : typeof shape === "number"
+            ? copy.number
+            : typeof shape === "string" && shape.includes("|")
+              ? copy.oneOf(shape)
+              : typeof shape === "string"
+                ? copy.text
+                : copy.value;
+    }
+    let label = "";
+    keys.slice(0, -1).reduce((node, key) => {
+      const next = node?.[key];
+      const name = isObject(next)
+        ? LABEL_KEYS.map((field) => next[field]).find((value) => typeof value === "string" && value.trim())
+        : "";
+      if (name) label = name.trim();
+      return next;
+    }, candidate);
+    const shortLabel = label.length > 80 ? `${label.slice(0, 79)}…` : label;
+    return `${target} — ${description}${shortLabel ? copy.within(shortLabel) : ""}`;
+  }
+
+  // Asks only for the missing parts: resending the whole analysis would hit
+  // the same output limit that left the gaps in the first place.
+  function buildCompletionPrompt(candidate, diagnostics = [], lang = "en", template = {}) {
     const gaps = array(diagnostics).filter(
       (item) =>
         isReviewableCompletionGap(item) ||
@@ -970,41 +1108,41 @@
       error.code = "AI_COMPLETION_UNSAFE_DIAGNOSTICS";
       throw error;
     }
-    const diagnosticBlock = gaps
+    const copy = COMPLETION_COPY[lang] || COMPLETION_COPY.en;
+    const lines = gaps
       .slice(0, 50)
-      .map(
-        (item) =>
-          `${text(item.path || item.instancePath || "/")}: ${text(
-            item.message || item.code || "completion required",
-          )}`,
-      )
-      .join("\n");
-    const payload = JSON.stringify(candidate);
-    if (lang === "ar") {
-      return `هذه مهمة استكمال تحليلي موجّه وليست إعادة كتابة شاملة أو إصلاح تنسيق JSON. أعد كائن JSON نظاميًا واحدًا كاملًا ومضغوطًا فقط. حافظ على كل المحتوى والمعرّفات والقيم كما هي، وعدّل فقط المسارات المدرجة في التشخيص. املأ كل قيمة فارغة بمحتوى تحليلي محدد ومقتصد يستند إلى الأدلة الموجودة في السجل. إذا لم يحدد السجل دليلًا مضادًا، اذكر ذلك صراحة وحدد ما الذي يجب البحث عنه لاختبار الادعاء؛ لا تختلق مصدرًا أو رابطًا أو محددًا أو حالة تحقق. لا تحذف سجل دليل ولا تغيّر claim أو confidence أو verification_status. إذا أشار مسار إلى مرجع لا يُحل، فاربطه بمعرّف سجل موجود يناسبه أو احذف ذلك المرجع وحده؛ وإذا تكرر معرّف، فأعد تسمية التكرار اللاحق وحدّث ما يشير إليه. لا تُعد Markdown أو أسوار كود أو شرحًا أو JSON Patch أو علامات cite/filecite/turn.
+      .map((item) => describeGap(item, object(candidate), object(template), copy));
+    return `${copy.intro}\n${[...new Set(lines)].join("\n")}`;
+  }
 
-المسارات المطلوب استكمالها:
-${diagnosticBlock}
+  // A reply that holds only the missing parts: {"fill": {"/path": value}}.
+  function isCompletionReply(value) {
+    const fill = object(value).fill;
+    return (
+      isObject(fill) &&
+      Object.keys(fill).length > 0 &&
+      Object.keys(fill).every((key) => key.startsWith("/"))
+    );
+  }
 
-JSON النظامي الأساسي:
-${payload}`;
+  // Writes each value into a copy of the analysis. A path the completion
+  // prompt did not ask for is reported as ignored, never applied.
+  function applyCompletion(base, reply, targets = []) {
+    const value = clone(base);
+    const asked = new Set(targets);
+    const ignored = [];
+    let applied = 0;
+    for (const [target, next] of Object.entries(object(object(reply).fill))) {
+      const keys = pointerKeys(target);
+      const owner = keys.slice(0, -1).reduce((node, key) => node?.[key], value);
+      if (!asked.has(target) || !keys.length || !owner || typeof owner !== "object") {
+        ignored.push(target);
+        continue;
+      }
+      owner[keys.at(-1)] = clone(next);
+      applied += 1;
     }
-    if (lang === "fr") {
-      return `Il s’agit d’une complétion analytique ciblée, pas d’une réécriture générale ni d’une réparation de sérialisation JSON. Retournez exactement un objet JSON canonique complet et minifié. Préservez tout le contenu, les identifiants et les valeurs ; modifiez uniquement les chemins listés dans le diagnostic. Remplissez chaque valeur vide avec un contenu analytique précis et concis fondé sur les preuves déjà présentes. Si le dossier n’identifie aucune contre-preuve, dites-le explicitement et précisez ce qu’il faudrait rechercher pour tester l’affirmation ; n’inventez aucune source, URL, aucun localisateur ni état de vérification. Ne supprimez aucun élément de preuve et ne modifiez ni claim, ni confidence, ni verification_status. Si un chemin désigne une référence qui ne se résout pas, reliez-la à l’identifiant d’un élément existant qui convient ou supprimez seulement cette référence ; si un identifiant est dupliqué, renommez le doublon postérieur et mettez à jour ce qui le désigne. Ne retournez ni Markdown, ni bloc de code, ni explication, ni JSON Patch, ni marqueur cite/filecite/turn.
-
-Chemins à compléter :
-${diagnosticBlock}
-
-JSON canonique de base :
-${payload}`;
-    }
-    return `This is a targeted analytical completion task, not a general rewrite or JSON serialization repair. Return exactly one complete minified canonical JSON object. Preserve all existing content, IDs, and values; modify only the paths listed in the diagnostics. Fill each empty value with specific, concise analytical content grounded in evidence already present in the record. If the record identifies no counter-evidence, state that explicitly and specify what should be searched to test the claim; do not invent a source, URL, locator, or verification state. Do not delete any evidence record or change claim, confidence, or verification_status. If a path names a reference that does not resolve, point it to a fitting existing record ID or remove only that reference; if an ID is duplicated, rename the later duplicate and update what refers to it. Do not return Markdown, code fences, explanations, JSON Patch, or cite/filecite/turn markers.
-
-Paths to complete:
-${diagnosticBlock}
-
-Canonical base JSON:
-${payload}`;
+    return { value, applied, ignored };
   }
 
   // Every prompt wraps the topic in one of these markers (per lens and
@@ -1033,6 +1171,9 @@ ${payload}`;
     buildFieldGuide,
     buildChecklist,
     buildCompletionPrompt,
+    completionTargets,
+    isCompletionReply,
+    applyCompletion,
     isCopiedPrompt,
   });
 })(typeof window !== "undefined" ? window : globalThis);

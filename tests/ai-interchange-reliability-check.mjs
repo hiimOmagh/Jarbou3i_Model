@@ -295,34 +295,82 @@ if (
 ) {
   fail("canonical reuse gaps were not preserved losslessly as a draft");
 }
+// The completion prompt asks only for the missing parts; resending the whole
+// analysis would hit the same output limit that left the gaps.
+const bioTemplate = JSON.parse(
+  window.Jarbou3iBiopolitics.buildSchemaTemplate("en", "research", "web"),
+);
 const completionPrompt = compiler.buildCompletionPrompt(
   reusedCanonical,
   reusedValidation.errors,
   "en",
+  bioTemplate,
 );
 if (
   !completionPrompt.includes("/evidence/items/0/counter_evidence") ||
   !completionPrompt.includes("/evidence/items/7/counter_evidence") ||
-  !completionPrompt.includes("modify only the paths listed") ||
-  !completionPrompt.includes(JSON.stringify(reusedCanonical))
+  !completionPrompt.includes('{"fill":') ||
+  !completionPrompt.includes("```json") ||
+  completionPrompt.includes(JSON.stringify(reusedCanonical.evidence.items[0]))
 ) {
-  fail("targeted completion prompt lost the base payload or exact gap paths");
+  fail("completion prompt must list the exact gaps and ask only for them");
 }
-for (const [lang, marker] of [
-  ["ar", "المسارات المطلوب استكمالها"],
-  ["fr", "Chemins à compléter"],
-]) {
+if (completionPrompt.length > 4000) {
+  fail(`completion prompt for 8 gaps is ${completionPrompt.length} characters`);
+}
+const shapeGaps = structuredClone(fixture);
+delete shapeGaps.power_map.actors[0].formal_mandate;
+shapeGaps.meaning_systems.norms = [];
+const shapeValidation = window.Jarbou3iBiopoliticsIntegrity.validateImport(shapeGaps);
+const shapePrompt = compiler.buildCompletionPrompt(
+  shapeGaps,
+  shapeValidation.errors,
+  "en",
+  bioTemplate,
+);
+if (
+  !shapePrompt.includes("/power_map/actors/0/formal_mandate") ||
+  !shapePrompt.includes(fixture.power_map.actors[0].name) ||
+  !shapePrompt.includes("/meaning_systems/norms") ||
+  !shapePrompt.includes('"subject_position"')
+) {
+  fail("completion prompt must name the record and show the shape of a missing list");
+}
+const completionTargets = compiler.completionTargets(reusedValidation.errors);
+const fillReply = {
+  fill: Object.fromEntries(
+    completionTargets.map((target, index) => [target, `Counter-evidence ${index + 1}`]),
+  ),
+};
+fillReply.fill["/subject/title"] = "Not asked for";
+if (!compiler.isCompletionReply(fillReply) || compiler.isCompletionReply(fixture)) {
+  fail("a fill reply must be told apart from a full analysis");
+}
+const completed = compiler.applyCompletion(reusedCanonical, fillReply, completionTargets);
+if (
+  completed.applied !== 8 ||
+  completed.ignored.join() !== "/subject/title" ||
+  completed.value.subject.title !== reusedCanonical.subject.title ||
+  reusedCanonical.evidence.items[0].counter_evidence !== ""
+) {
+  fail("only the listed gaps may be filled, without touching the base");
+}
+if (!window.Jarbou3iBiopoliticsIntegrity.validateImport(completed.value).canonical) {
+  fail("an analysis with every gap filled must become canonical");
+}
+for (const lang of ["ar", "fr"]) {
   const localizedCompletion = compiler.buildCompletionPrompt(
     reusedCanonical,
     reusedValidation.errors,
     lang,
+    bioTemplate,
   );
   if (
-    !localizedCompletion.includes(marker) ||
+    !localizedCompletion.includes('{"fill":') ||
     !localizedCompletion.includes("/evidence/items/7/counter_evidence") ||
-    !localizedCompletion.includes(JSON.stringify(reusedCanonical))
+    localizedCompletion === completionPrompt
   ) {
-    fail(`${lang} targeted completion prompt lost its contract content`);
+    fail(`${lang} completion prompt lost its gaps or its language`);
   }
 }
 
@@ -572,6 +620,22 @@ for (const [name, expected] of [
 }
 if (REPAIR.detectLanguage({ subject: { title: "Short title" }, actors: ["high", "ev-1"] }) !== undefined) {
   fail("too little prose must not produce a language guess");
+}
+
+// A reply without its lens label is recognized by its shape, not by the lens
+// the page happens to show.
+const unlabelledBio = structuredClone(fixture);
+delete unlabelledBio.analysis_lens;
+if (compiler.recognize(unlabelledBio).value.analysis_lens !== "biopolitical") {
+  fail("an unlabelled Biopolitical analysis was not recognized");
+}
+const unlabelledStrategic = JSON.parse(fs.readFileSync("fixtures/sample-analysis-en.json", "utf8"));
+delete unlabelledStrategic.analysis_lens;
+if (compiler.recognize(unlabelledStrategic).value.analysis_lens !== "strategic") {
+  fail("an unlabelled Strategic analysis was not recognized");
+}
+if ("analysis_lens" in compiler.recognize(interchange).value) {
+  fail("an interchange answer must keep its own lens field");
 }
 
 console.log("AI interchange reliability checks passed.");

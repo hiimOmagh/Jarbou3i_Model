@@ -48,7 +48,7 @@ async function workspaceDatabaseOperation(page, operation) {
         const openRequest = indexedDB.open(databaseName);
         const emptyDatabaseResult = operationName === "count-workspaces"
           ? 0
-          : operationName === "first-workspace"
+          : ["first-workspace", "intake-draft"].includes(operationName)
             ? null
             : true;
 
@@ -75,7 +75,8 @@ async function workspaceDatabaseOperation(page, operation) {
           }
 
           const clearAll = operationName === "clear-all";
-          const stores = clearAll && database.objectStoreNames.contains(recoveryStore)
+          const stores = operationName === "intake-draft"
+            || (clearAll && database.objectStoreNames.contains(recoveryStore))
             ? [workspaceStore, recoveryStore]
             : [workspaceStore];
           const mode = operationName.startsWith("clear-") ? "readwrite" : "readonly";
@@ -106,6 +107,11 @@ async function workspaceDatabaseOperation(page, operation) {
           } else if (operationName === "count-workspaces") {
             const request = store.count();
             request.onsuccess = () => { result = request.result; };
+            request.onerror = () =>
+              fail(`IndexedDB ${operationName} request failed`, request.error);
+          } else if (operationName === "intake-draft") {
+            const request = transaction.objectStore(recoveryStore).get("intake-draft");
+            request.onsuccess = () => { result = request.result ?? null; };
             request.onerror = () =>
               fail(`IndexedDB ${operationName} request failed`, request.error);
           } else if (operationName === "first-workspace") {
@@ -139,6 +145,11 @@ export function clearWorkspaceRecords(page) {
 
 export function countWorkspaceRecords(page) {
   return workspaceDatabaseOperation(page, "count-workspaces");
+}
+
+// The analysis being prepared, as kept for a reload (null when there is none).
+export function readIntakeDraft(page) {
+  return workspaceDatabaseOperation(page, "intake-draft");
 }
 
 export function readFirstWorkspace(page) {
