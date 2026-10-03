@@ -105,6 +105,37 @@
     return Object.hasOwn(LANGUAGE_NAMES, word) ? LANGUAGE_NAMES[word] : undefined;
   }
 
+  const ENGLISH_WORDS = new Set(["the", "and", "of", "to", "in", "is", "that", "for", "with", "are", "was", "by", "as", "on", "from", "this", "which", "be", "not", "its", "their"]);
+  const FRENCH_WORDS = new Set(["le", "la", "les", "des", "du", "et", "est", "une", "un", "que", "qui", "dans", "pour", "par", "sur", "au", "aux", "pas", "ce", "ces", "sont", "leur", "leurs"]);
+
+  // The language an analysis is actually written in, read from its prose
+  // (values of three or more words) rather than from its "language" label.
+  // Returns undefined when there is too little prose to tell.
+  function detectLanguage(value) {
+    const prose = [];
+    (function collect(node) {
+      if (typeof node === "string") {
+        if (node.trim().split(/\s+/).length >= 3 && !/^https?:\/\//i.test(node.trim())) prose.push(node);
+      } else if (Array.isArray(node)) node.forEach(collect);
+      else if (node && typeof node === "object") Object.values(node).forEach(collect);
+    })(value);
+    const text = prose.join(" ");
+    const arabic = (text.match(/\p{Script=Arabic}/gu) || []).length;
+    const latin = (text.match(/[A-Za-zÀ-ÿ]/g) || []).length;
+    if (arabic + latin < 200) return undefined;
+    if (arabic > latin) return "ar";
+    let english = 0;
+    let french = 0;
+    for (const word of text.toLowerCase().split(/[^a-zà-ÿ]+/)) {
+      if (ENGLISH_WORDS.has(word)) english += 1;
+      else if (FRENCH_WORDS.has(word)) french += 1;
+    }
+    if (english + french < 10) return undefined;
+    if (english >= french * 2) return "en";
+    if (french >= english * 2) return "fr";
+    return undefined;
+  }
+
   // Pure format coercion; returns undefined when a judgment would be needed.
   function coerce(current, error) {
     if (error.keyword === "enum") {
@@ -400,6 +431,7 @@
 
   root.Jarbou3iContractRepair = Object.freeze({
     languageCode,
+    detectLanguage,
     repairBiopolitical,
     salvageBiopolitical,
     salvageSchemaErrors,

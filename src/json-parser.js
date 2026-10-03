@@ -255,8 +255,12 @@
     const raw = stripBom(source);
     if (!raw) throw new Error("empty");
     const attempts = [raw];
-    const fence = raw.match(/```(?:json|JSON)?\s*([\s\S]*?)```/);
-    if (fence) attempts.push(fence[1]);
+    // Every fenced block, largest first: a short format example before or
+    // after the answer must not be taken for the answer.
+    const fences = [...raw.matchAll(/```(?:json|JSON)?\s*([\s\S]*?)```/g)]
+      .map((match) => match[1])
+      .sort((a, b) => b.length - a.length);
+    attempts.push(...fences);
     const balanced = balancedJsonSlice(raw);
     if (balanced) attempts.push(balanced);
 

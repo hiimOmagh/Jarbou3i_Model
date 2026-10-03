@@ -257,4 +257,76 @@ test.describe("AI interchange reliability", () => {
       data.subject.executive_finding,
     );
   });
+
+  test("recognizes the prompt pasted back instead of the reply", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("Digital health passes and conditional mobility");
+    for (const lens of ["strategic", "biopolitical"]) {
+      await page.locator(`[data-lens="${lens}"]`).click();
+      for (const language of ["en", "ar", "fr"]) {
+        await page.locator("#analysisLang").selectOption(language);
+        await page.locator("#previewPromptBtn").click();
+        const prompt = await page.locator("#modalContent").textContent();
+        await page.keyboard.press("Escape");
+
+        await page.locator("#jsonInput").fill(prompt);
+        await expect(page.locator("#importBtn"), `${lens}/${language}`).toBeDisabled();
+        await expect(page.locator("#repairPromptBtn")).toBeDisabled();
+        await expect(page.locator("#jsonStatus")).toContainText(
+          "This is the prompt, not the AI’s reply",
+        );
+      }
+    }
+  });
+
+  test("flags a reply written in another language instead of switching silently", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await expect(page.locator("#analysisLang")).toHaveValue("en");
+    for (const name of ["sample-analysis-bio-fr.json", "sample-analysis-fr.json"]) {
+      const french = await fixture(name);
+      french.language = "en"; // labelled English, written in French
+      await page.locator("#jsonInput").fill(JSON.stringify(french));
+      await expect(page.locator("#jsonStatus"), name).toContainText(
+        "This reply is written in French, but your analysis language is English",
+      );
+      await expect(page.locator("#repairPromptBtn")).toHaveText(
+        "Ask for an answer in English",
+      );
+    }
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("Paste it into the same AI chat");
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#analysisLang")).toHaveValue("en");
+  });
+
+  test("keeps a result when the other lens is chosen and restores it on return", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const data = await fixture("sample-analysis-bio-en.json");
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await page.locator("#importBtn").click();
+    const finding = page
+      .locator("#reviewContent")
+      .getByText(data.subject.executive_finding)
+      .first();
+    await expect(finding).toBeVisible();
+
+    await page.locator('[data-lens="strategic"]').click();
+    await expect(page.locator("#toast")).toContainText("Your previous result is kept");
+    await expect(page.locator("#jsonInput")).toHaveValue("");
+
+    await page.locator('[data-lens="biopolitical"]').click();
+    await expect(finding).toBeVisible();
+    await expect(page.locator("#jsonInput")).not.toHaveValue("");
+  });
 });

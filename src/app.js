@@ -1366,6 +1366,8 @@ function renderLensToggle() {
         ? t("lensBiopoliticalHint")
         : t("lensStrategicHint");
 }
+// A result set aside by a lens switch, per lens, so switching back restores it.
+const keptResults = {};
 function setAnalysisLens(lens) {
   if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
   const contractChanged =
@@ -1373,6 +1375,17 @@ function setAnalysisLens(lens) {
   state.analysisLens = lens;
   writeSettings({ analysisLens: lens });
   if (contractChanged) {
+    keptResults[state.analysis.analysis_lens] = {
+      analysis: state.analysis,
+      json: $("jsonInput")?.value || "",
+    };
+    toast(
+      labelText(
+        "Your previous result is kept. Switch back to the other lens to see it again.",
+        "نتيجتك السابقة محفوظة. عُد إلى العدسة الأخرى لرؤيتها مجددًا.",
+        "Votre résultat précédent est conservé. Revenez à l’autre lentille pour le revoir.",
+      ),
+    );
     state.analysis = null;
     state.stage = "topic";
     state.activeReview = "overview";
@@ -1381,6 +1394,18 @@ function setAnalysisLens(lens) {
     state.shellSection = "workflow";
     const input = $("jsonInput");
     if (input) input.value = "";
+  }
+  const kept = !state.analysis && keptResults[lens];
+  if (kept) {
+    delete keptResults[lens];
+    state.analysis = kept.analysis;
+    state.stage = "review";
+    state.shellSection = "review";
+    state.activeReview = "overview";
+    state.activePillar = null;
+    state.jsonValid = true;
+    const input = $("jsonInput");
+    if (input) input.value = kept.json;
   }
   state.lastPrompt = "";
   renderAll();
@@ -1620,7 +1645,18 @@ function localizedImportIssueMessage(issue = {}) {
     ? "تتطلب هذه المسألة مراجعة قبل النشر."
     : "Ce point exige une révision avant publication.";
 }
+function languageName(code) {
+  const name = t({ ar: "optionArabic", en: "optionEnglish", fr: "optionFrench" }[code]);
+  return state.lang === "fr" ? name.toLocaleLowerCase("fr") : name;
+}
 function importErrorText(error) {
+  if (error?.code === "PROMPT_PASTED") {
+    return labelText(
+      "This is the prompt, not the AI’s reply. Paste it into your AI chat first, wait for the full answer, then copy the AI’s answer and paste it here.",
+      "هذا هو البرومبت، وليس رد الذكاء الاصطناعي. الصقه أولًا في محادثة الذكاء الاصطناعي، وانتظر حتى تكتمل الإجابة، ثم انسخ إجابته والصقها هنا.",
+      "Ceci est le prompt, pas la réponse de l’IA. Collez-le d’abord dans votre conversation avec l’IA, attendez la réponse complète, puis copiez la réponse de l’IA et collez-la ici.",
+    );
+  }
   if (error?.code === "TRUNCATED_JSON") {
     return labelText(
       "Truncated JSON detected. The missing content cannot be reconstructed safely; resume the response or request only the missing packet.",
@@ -1906,6 +1942,11 @@ function validateJsonInput() {
   let completionCandidate = null;
   try {
     state.importValidation = null;
+    if (AI_INTERCHANGE.isCopiedPrompt(text)) {
+      const error = new Error("prompt pasted back");
+      error.code = "PROMPT_PASTED";
+      throw error;
+    }
     parsed = extractJson(text);
     const recognized = AI_INTERCHANGE.recognize(parsed.value);
     let input = recognized.value;
@@ -1980,6 +2021,12 @@ function validateJsonInput() {
     state.jsonValid = true;
     $("importBtn").disabled = false;
     $("repairPromptBtn").disabled = false;
+    // The label can be wrong; the prose says which language the AI really used.
+    const writtenIn = CONTRACT_REPAIR.detectLanguage(analysis);
+    const languageMismatch =
+      writtenIn && writtenIn !== state.analysisLang
+        ? Object.freeze({ writtenIn, requested: state.analysisLang })
+        : null;
     const warnings = [
       ...completionDiagnostics,
       ...(state.importValidation?.warnings || []),
@@ -2010,6 +2057,7 @@ function validateJsonInput() {
         ? Object.freeze(completionCandidate)
         : null,
       provenance,
+      languageMismatch,
     });
     renderImportAuditDetails({
       warnings,
@@ -2024,12 +2072,25 @@ function validateJsonInput() {
       provenance.total > 0 &&
       provenance.humanReview < 100;
     $("jsonStatus").className =
-      warnings.length || parsed.recovered || needsIndependentReview
+      warnings.length || parsed.recovered || needsIndependentReview || languageMismatch
         ? "status warn"
         : "status good";
-    $("repairPromptBtn").textContent = completionCandidate
-      ? t("completionPrompt")
-      : t("repairPrompt");
+    $("repairPromptBtn").textContent = languageMismatch
+      ? labelText(
+          `Ask for an answer in ${languageName(languageMismatch.requested)}`,
+          `اطلب الإجابة باللغة ${languageName(languageMismatch.requested)}`,
+          `Demander une réponse en ${languageName(languageMismatch.requested)}`,
+        )
+      : completionCandidate
+        ? t("completionPrompt")
+        : t("repairPrompt");
+    const languageNotice = languageMismatch
+      ? labelText(
+          `This reply is written in ${languageName(languageMismatch.writtenIn)}, but your analysis language is ${languageName(languageMismatch.requested)}. You can still import it, or ask the AI to answer in ${languageName(languageMismatch.requested)}.`,
+          `هذا الرد مكتوب باللغة ${languageName(languageMismatch.writtenIn)}، لكن لغة التحليل لديك هي ${languageName(languageMismatch.requested)}. يمكنك استيراده رغم ذلك، أو أن تطلب من الذكاء الاصطناعي الإجابة باللغة ${languageName(languageMismatch.requested)}.`,
+          `Cette réponse est rédigée en ${languageName(languageMismatch.writtenIn)}, mais votre langue d’analyse est : ${languageName(languageMismatch.requested)}. Vous pouvez l’importer quand même, ou demander à l’IA de répondre en ${languageName(languageMismatch.requested)}.`,
+        )
+      : "";
     const draft = ["migrated_draft", "generated_draft"].includes(
       state.importValidation?.state,
     );
@@ -2073,7 +2134,7 @@ function validateJsonInput() {
         : parsed.recovered
         ? t("jsonAutoRecovered")
         : t("jsonValid");
-    $("jsonStatus").textContent = [validationMessage, citationNotice]
+    $("jsonStatus").textContent = [languageNotice, validationMessage, citationNotice]
       .filter(Boolean)
       .join(" ");
     $("pasteCard").classList.add("ready");
@@ -2098,7 +2159,8 @@ function validateJsonInput() {
     });
     state.jsonValid = false;
     $("importBtn").disabled = true;
-    $("repairPromptBtn").disabled = false;
+    // A repair prompt built from the prompt itself would only confuse the AI.
+    $("repairPromptBtn").disabled = e?.code === "PROMPT_PASTED";
     const truncated = e?.code === "TRUNCATED_JSON";
     $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
     $("continuationField").hidden = !truncated;
@@ -7099,6 +7161,14 @@ function trapModalFocus(e) {
   }
 }
 function repairPrompt() {
+  // Asked in the chosen language; the AI still has its answer in the same chat.
+  const mismatch = state.importAudit?.languageMismatch;
+  if (mismatch?.requested === "ar")
+    return `أعد كتابة إجابة JSON السابقة بالكامل باللغة العربية. حافظ تمامًا على بنية JSON نفسها والمفاتيح والمعرّفات ورموز القيم والأرقام والتواريخ والروابط والأدلة؛ ترجم النص المقروء فقط. اجعل قيمة "language" هي "ar". أعد كائن JSON فقط دون أي شرح.`;
+  if (mismatch?.requested === "fr")
+    return `Réécrivez entièrement votre réponse JSON précédente en français. Conservez exactement la même structure JSON, les clés, identifiants, codes de valeurs, nombres, dates, URL et preuves ; traduisez uniquement le texte lisible. Mettez "language" à "fr". Retournez uniquement l’objet JSON, sans explication.`;
+  if (mismatch)
+    return `Rewrite your previous JSON answer entirely in English. Keep exactly the same JSON structure, keys, IDs, value codes, numbers, dates, URLs and evidence; translate only the human-readable text. Set "language" to "en". Return only the JSON object, with no explanation.`;
   if (
     state.importAudit?.completionCandidate &&
     state.importAudit?.completionDiagnostics?.length
@@ -7227,8 +7297,9 @@ $("clearJsonBtn").onclick = () => {
 $("importBtn").onclick = async () => {
   const a = validateJsonInput();
   if (!a) return;
+  // The chosen analysis language stays as it is; a reply in another language
+  // was already flagged before import.
   state.analysis = a;
-  if (isSupportedLanguage(a.language)) setAnalysisLanguage(a.language);
   if (["strategic", "biopolitical"].includes(a.analysis_lens)) {
     state.analysisLens = a.analysis_lens;
     writeSettings({ analysisLens: state.analysisLens });
@@ -7254,13 +7325,25 @@ $("importBtn").onclick = async () => {
 };
 $("repairPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
-  const completion = Boolean(state.importAudit?.completionCandidate);
+  const language = Boolean(state.importAudit?.languageMismatch);
+  const completion = !language && Boolean(state.importAudit?.completionCandidate);
   const truncated = state.importAudit?.code === "TRUNCATED_JSON";
   const p = repairPrompt();
   const ok = await copyText(p);
-  toast(ok ? t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied") : t("copyFailed"));
+  const copied = language
+    ? labelText(
+        "Prompt copied. Paste it into the same AI chat.",
+        "نُسخ البرومبت. الصقه في محادثة الذكاء الاصطناعي نفسها.",
+        "Prompt copié. Collez-le dans la même conversation avec l’IA.",
+      )
+    : t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied");
+  toast(ok ? copied : t("copyFailed"));
   if (!ok)
-    showModal(t(completion ? "completionPrompt" : "repairPrompt"), p, invoker);
+    showModal(
+      language ? invoker.textContent : t(completion ? "completionPrompt" : "repairPrompt"),
+      p,
+      invoker,
+    );
 };
 $("loadSampleBtn").onclick = async (event) => {
   try {

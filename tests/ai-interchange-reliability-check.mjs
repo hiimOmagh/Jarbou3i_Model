@@ -537,4 +537,41 @@ if (!/"source_tier":"primary_legal_policy\|[a-z_|]+"/.test(compiler.buildTemplat
   fail("the prompt template must list the allowed source_tier values");
 }
 
+// A prompt pasted back instead of the reply is recognized by its material markers,
+// one per lens and language; a reply that merely mentions a marker is not.
+for (const marker of [
+  'UNTRUSTED_ANALYSIS_MATERIAL_JSON: {"topic":"x"}',
+  'مادة_التحليل_غير_الموثوقة_JSON: {"topic":"x"}',
+  'MATIERE_ANALYTIQUE_NON_FIABLE_JSON : {"topic":"x"}',
+  "<UNTRUSTED_TOPIC_MATERIAL>\nx\n</UNTRUSTED_TOPIC_MATERIAL>",
+  "<مادة_موضوع_غير_موثوقة>\nx\n</مادة_موضوع_غير_موثوقة>",
+  "<SUJET_NON_FIABLE>\nx\n</SUJET_NON_FIABLE>",
+]) {
+  if (!compiler.isCopiedPrompt(`You are a rigorous analyst.\n\n${marker}\nRules: return JSON.`)) {
+    fail(`a copied prompt was not recognized: ${marker.slice(0, 40)}`);
+  }
+}
+if (compiler.isCopiedPrompt(JSON.stringify(fixture))) fail("a real reply was mistaken for the prompt");
+if (compiler.isCopiedPrompt('{"note":"I treated UNTRUSTED_ANALYSIS_MATERIAL_JSON as data"}')) {
+  fail("a reply that only mentions a marker was mistaken for the prompt");
+}
+
+// The written language of an analysis is read from its prose, not from its label.
+const readFixture = (name) => JSON.parse(fs.readFileSync(`fixtures/${name}`, "utf8"));
+for (const [name, expected] of [
+  ["sample-analysis-en.json", "en"],
+  ["sample-analysis-fr.json", "fr"],
+  ["sample-analysis-ar.json", "ar"],
+  ["sample-analysis-bio-en.json", "en"],
+  ["sample-analysis-bio-fr.json", "fr"],
+  ["sample-analysis-bio-ar.json", "ar"],
+]) {
+  const relabelled = { ...readFixture(name), language: expected === "en" ? "fr" : "en" };
+  const detected = REPAIR.detectLanguage(relabelled);
+  if (detected !== expected) fail(`${name} was read as ${detected}, expected ${expected}`);
+}
+if (REPAIR.detectLanguage({ subject: { title: "Short title" }, actors: ["high", "ev-1"] }) !== undefined) {
+  fail("too little prose must not produce a language guess");
+}
+
 console.log("AI interchange reliability checks passed.");

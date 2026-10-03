@@ -959,6 +959,16 @@ Canonical base JSON:
 ${payload}`;
   }
 
+  // Every prompt wraps the topic in one of these markers (per lens and
+  // language), each at the start of a line. A pasted text that has one is the
+  // prompt itself, not the AI's reply.
+  const PROMPT_MARKER =
+    /^(?:(?:UNTRUSTED_ANALYSIS_MATERIAL_JSON|مادة_التحليل_غير_الموثوقة_JSON|MATIERE_ANALYTIQUE_NON_FIABLE_JSON)\s*:|<(?:UNTRUSTED_TOPIC_MATERIAL|مادة_موضوع_غير_موثوقة|SUJET_NON_FIABLE)>)/m;
+
+  function isCopiedPrompt(text) {
+    return PROMPT_MARKER.test(String(text || ""));
+  }
+
   root.Jarbou3iAiInterchange = Object.freeze({
     CONTRACT,
     LENS,
@@ -974,5 +984,6 @@ ${payload}`;
     buildTemplate,
     buildFieldGuide,
     buildCompletionPrompt,
+    isCopiedPrompt,
   });
 })(typeof window !== "undefined" ? window : globalThis);

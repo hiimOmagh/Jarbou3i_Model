@@ -117,4 +117,18 @@ for (const [head, tail, expected] of [
   }
 }
 
+// Assistants sometimes show a small format example before the real answer.
+const twoBlocks = parser.extractJson(
+  'Example format:\n```json\n{"example": true}\n```\nFinal answer:\n```json\n{"analysis_lens":"strategic","items":[1,2,3]}\n```',
+);
+if (twoBlocks.value.example || twoBlocks.value.analysis_lens !== "strategic") {
+  fail("a small example block was chosen over the larger answer block");
+}
+const exampleAfter = parser.extractJson(
+  '```json\n{"analysis_lens":"strategic","items":[1,2,3]}\n```\nYou could also return:\n```json\n{"x":1}\n```',
+);
+if (exampleAfter.value.analysis_lens !== "strategic") {
+  fail("a small block after the answer replaced the answer");
+}
+
 console.log("JSON parser checks passed.");
