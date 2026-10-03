@@ -903,6 +903,54 @@
       "resistance: {ref,actor_or_population,form,mechanism,effect_on_system,constraints[],confidence}",
       "alternatives: {ref,level,proposal,mechanism,feasibility,tradeoffs[],rights_safeguards[],evidence_needed[],lower_harm_rationale}",
       "links: {from,to,relation,mechanism,confidence}",
+      // The importer rejects any other code or number; the AI must see them all.
+      "Allowed codes (use exactly one listed value; never invent another):",
+      "power_modes.mode: sovereign_power|disciplinary_power|biopower|governmentality|pastoral_power|psychopolitics|necropolitics|datafication|algorithmic_governance|political_economy|coloniality|ecological_governmentality",
+      "interventions.modality: protection|assistance|treatment|regulation|persuasion|incentivization|manipulation|exploitation|coercion|capture|expropriation|mixed|undetermined",
+      "interventions.necessity: supported|partly_supported|unsupported|unknown",
+      "interventions.proportionality: proportionate|mixed|disproportionate|unknown",
+      "distribution.items.outcome_character: intended|tolerated|concealed|unforeseen|uncertain",
+      "inequality_dimensions.axis: class|race|gender|disability|age|citizenship|other",
+      "necropolitical_dimensions.causal_character: deliberate|reckless_indifference|structural_exposure|administrative_failure|unintended_harm|uncertain",
+      "assumptions.risk: low|medium|high",
+      "resistance.form: refusal|protest|evasion|mutual_aid|counterknowledge|litigation|unionization|artistic_intervention|technological_adaptation|alternative_institution|other",
+      "alternatives.level: individual|community|institutional|national|transnational",
+      "alternatives.feasibility: high|medium|low",
+      "links.relation: causes|enables|constrains|classifies|legitimizes|commodifies|distributes|exposes|resists|feeds_back|contradicts",
+      "care_control_tensions.severity: a number from 0 to 5 (0–5)",
+      "future_feedback_loops.probability: a percentage from 0 to 100 (0–100), not a fraction",
+    ].join("\n");
+  }
+
+  // The last thing the AI reads: the rules an importable answer depends on.
+  function buildChecklist(lang = "en") {
+    if (lang === "ar") {
+      return [
+        "قبل الإرسال، تحقّق من:",
+        "- كل قيمة نصية مكتوبة بالعربية؛ وتبقى المفاتيح والمعرّفات والرموز كما هي في المخطط.",
+        "- الحقول المرمّزة تستخدم القيم المدرجة فقط، والأرقام ضمن نطاقاتها المحددة.",
+        "- كائن JSON واحد داخل كتلة كود واحدة ```json، دون أي نص قبلها أو بعدها.",
+        "- لا \"...\" ولا كلمات القالب مثل \"string\" مكان المحتوى.",
+        "- إذا أوقفك حد الإخراج فتوقف عنده؛ سيُطلب منك المتابعة.",
+      ].join("\n");
+    }
+    if (lang === "fr") {
+      return [
+        "Avant d’envoyer, vérifiez :",
+        "- Chaque valeur textuelle est rédigée en français ; clés, identifiants et codes restent tels que dans le schéma.",
+        "- Les champs codés n’utilisent que les valeurs listées, et les nombres restent dans leurs plages indiquées.",
+        "- Un seul objet JSON, dans un unique bloc de code ```json, sans aucun texte avant ou après.",
+        "- Aucun « ... » ni mot du modèle comme \"string\" à la place du contenu.",
+        "- Si votre limite de sortie vous arrête, arrêtez-vous là ; la suite vous sera demandée.",
+      ].join("\n");
+    }
+    return [
+      "Before you send, check:",
+      "- Every text value is written in English; keys, IDs, and codes stay as the schema shows them.",
+      "- Coded fields use only the listed values, and numbers stay within their stated ranges.",
+      "- One JSON object, inside a single ```json code block, with no text before or after it.",
+      "- No \"...\" and no template words such as \"string\" left in place of content.",
+      "- If your output limit stops you, stop there; you will be asked to continue.",
     ].join("\n");
   }
 
@@ -983,6 +1031,7 @@ ${payload}`;
     asReviewableDraft,
     buildTemplate,
     buildFieldGuide,
+    buildChecklist,
     buildCompletionPrompt,
     isCopiedPrompt,
   });

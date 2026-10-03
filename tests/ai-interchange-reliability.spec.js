@@ -8,6 +8,36 @@ async function fixture(name) {
   );
 }
 
+// Every coded field and number range a schema enforces, by field name.
+async function schemaRules(file) {
+  const schema = JSON.parse(
+    await fs.readFile(path.join(process.cwd(), "schema", file), "utf8"),
+  );
+  const resolve = (node) =>
+    node?.$ref ? schema.$defs[node.$ref.split("/").pop()] : node;
+  const codes = [];
+  const ranges = [];
+  const visit = (node, owner) => {
+    for (const part of [node, ...(node.allOf || []), ...(node.anyOf || [])]) {
+      for (const [key, raw] of Object.entries(part.properties || {})) {
+        const field = resolve(raw);
+        const values = field.enum || resolve(field.items)?.enum;
+        if (values?.length > 1) codes.push({ field: `${owner}.${key}`, key, values });
+        if (typeof field.minimum === "number" && typeof field.maximum === "number") {
+          ranges.push({ field: `${owner}.${key}`, key, range: `${field.minimum}–${field.maximum}` });
+        }
+        if (!raw.$ref && field.properties) visit(field, `${owner}.${key}`);
+        if (!raw.$ref && field.items?.properties) visit(field.items, `${owner}.${key}`);
+      }
+    }
+  };
+  visit(schema, "root");
+  for (const [name, definition] of Object.entries(schema.$defs || {})) {
+    visit(definition, name);
+  }
+  return { codes, ranges };
+}
+
 test.describe("AI interchange reliability", () => {
   test("joins a cut-off answer with its continuation and imports it", async ({
     page,
@@ -328,5 +358,80 @@ test.describe("AI interchange reliability", () => {
     await page.locator('[data-lens="biopolitical"]').click();
     await expect(finding).toBeVisible();
     await expect(page.locator("#jsonInput")).not.toHaveValue("");
+  });
+
+  test("prompts show every allowed code and range, the language, and a closing checklist", async ({
+    page,
+  }) => {
+    const schemas = {
+      strategic: await schemaRules("strategic-analysis.schema.json"),
+      biopolitical: await schemaRules("biopolitical-analysis.schema.json"),
+    };
+    // Chosen by the app, not the AI: pre-filled in the template, or written as
+    // the template's own object keys.
+    const appChosen = new Set([
+      "root.language",
+      "root.model_mode",
+      "captureLevel.level",
+      "captureCriterion.criterion",
+      "explanation.type",
+      "evidence.verification_status",
+    ]);
+    const languageName = { en: "English", ar: "العربية", fr: "français" };
+    const word = (key) => new RegExp(`(?<!\\w)${key}(?!\\w)`);
+    // A field is asked for when the template or the record guide names it:
+    // "key":"…" or "key":1 in the template, {…,key,…} in the guide.
+    const askedAsCode = (prompt, key) =>
+      new RegExp(`"${key}":\\[?"|[{,]${key}(?:\\[\\])?[,}]`).test(prompt);
+    const askedAsNumber = (prompt, key) =>
+      new RegExp(`"${key}":\\d|[{,]${key}[,}]`).test(prompt);
+    const listsAfter = (prompt, key) =>
+      [
+        ...prompt.matchAll(
+          new RegExp(`(?<![\\w])${key}"?\\s*:\\s*\\[?"?([a-z_]+(?:\\|[a-z_]+)+)`, "g"),
+        ),
+      ].map((match) => match[1].split("|"));
+
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("Digital health passes and conditional mobility");
+    // Without source access the evidence record is a fixed placeholder; live
+    // research shows the full record the AI fills in.
+    await page.locator("#evidenceAccess").selectOption("web");
+    for (const lens of ["strategic", "biopolitical"]) {
+      await page.locator(`[data-lens="${lens}"]`).click();
+      for (const language of ["en", "ar", "fr"]) {
+        for (const mode of ["simple", "expert", "research"]) {
+          await page.locator("#analysisLang").selectOption(language);
+          await page.locator("#promptMode").selectOption(mode);
+          await page.locator("#previewPromptBtn").click();
+          const prompt = await page.locator("#modalContent").textContent();
+          await page.keyboard.press("Escape");
+          const where = `${lens}/${language}/${mode}`;
+          const lines = prompt.split("\n");
+
+          for (const { field, key, values } of schemas[lens].codes) {
+            if (appChosen.has(field) || !askedAsCode(prompt, key)) continue;
+            const shown = listsAfter(prompt, key).some((list) =>
+              list.every((value) => values.includes(value)),
+            );
+            expect.soft(shown, `${where}: allowed values for ${field}`).toBe(true);
+          }
+          for (const { field, key, range } of schemas[lens].ranges) {
+            if (!askedAsNumber(prompt, key)) continue;
+            const stated = lines.some((line) => word(key).test(line) && line.includes(range));
+            expect.soft(stated, `${where}: range ${range} for ${field}`).toBe(true);
+          }
+          expect.soft(prompt, `${where}: language pre-filled`).toContain(`"language":"${language}"`);
+          expect.soft(prompt, where).not.toContain("ar|en|fr");
+          const checklist = lines.slice(-7).join("\n");
+          expect.soft(checklist, `${where}: closing checklist`).toContain("```json");
+          expect.soft(checklist, `${where}: closing checklist`).toContain(languageName[language]);
+          expect.soft(prompt, where).not.toMatch(
+            /no Markdown, code fence|sans Markdown, bloc de code|دون Markdown أو أسوار كود/,
+          );
+        }
+      }
+    }
   });
 });

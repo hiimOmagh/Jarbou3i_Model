@@ -1839,7 +1839,7 @@
       ? interchange.buildTemplate(lang, mode)
       : buildSchemaTemplate(lang, mode, evidenceAccess);
     const interchangeGuide = interchange
-      ? `\n\n${interchange.buildFieldGuide()}`
+      ? `\n\n${interchange.buildFieldGuide()}\n\n${interchange.buildChecklist(lang)}`
       : "";
     const untrustedTopic = str(topic);
     const untrustedContext = str(context);
@@ -1885,7 +1885,7 @@ ${evidenceRule}
 12. لا تستنتج سمات فردية حساسة من بدائل ضعيفة، ولا تحوّل نتائج جماعية تلقائيًا إلى تنبؤ فردي.
 13. لا تصنع الخوف، ولا تجرد جماعة من إنسانيتها، ولا تسهّل التحرش أو العقاب الجماعي، وقدّم الادعاءات المتنازع عليها بوصفها ادعاءات لا حقائق.
 14. قدّم مقاومة وفاعلية وبدائل واقعية أقل ضررًا وخلاصة مُعايرة وشروطًا قد تغيّرها.
-15. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا دون Markdown أو أسوار كود أو شرح خارجي. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
+15. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
 
 العمق: ${mode}. ${depth}
 
@@ -1934,7 +1934,7 @@ ${evidenceRule}
 12. N’inférez pas de traits individuels sensibles à partir de proxys faibles et ne transformez pas automatiquement des résultats de groupe en prédictions individuelles.
 13. Ne fabriquez pas la peur, ne déshumanisez pas, ne facilitez ni harcèlement ni punition collective, et présentez les allégations contestées comme telles.
 14. Incluez résistance, agentivité, alternatives réalistes moins nocives, conclusion calibrée et éléments susceptibles de la modifier.
-15. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, sans Markdown, bloc de code ni explication externe. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
+15. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
 
 Profondeur : ${mode}. ${depth}
 
@@ -1982,7 +1982,7 @@ ${evidenceRule}
 12. Do not infer sensitive individual traits from weak proxies or automatically convert group-level research into individual prediction.
 13. Do not manufacture fear, dehumanize groups, facilitate harassment or collective punishment, or state contested allegations as established fact.
 14. Include agency, resistance, feasible lower-harm alternatives, a calibrated conclusion, and evidence that would change it.
-15. Complete the eighteen-point self-audit, then return one complete minified JSON object with no Markdown, code fence, or external prose. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
+15. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
 
 Depth: ${mode}. ${depth}
 
