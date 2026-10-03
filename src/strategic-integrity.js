@@ -113,4 +113,126 @@ export function validateStrategicAnalysis(raw) {
   };
 }
 
+const RECORD_COLLECTIONS = [
+  ["interests", "I"],
+  ["actors", "A"],
+  ["tools", "T"],
+  ["narrative", "N"],
+  ["results", "R"],
+  ["feedback", "F"],
+  ["contradictions.items", "C"],
+  ["scenarios.items", "S"],
+  ["evidence.items", "E"],
+  ["assumptions.items", "AS"],
+];
+const COMPLETION_KEYWORDS = new Set(["required", "minLength", "minItems"]);
+// Missing identity or subject cannot be represented as a draft gap.
+const IDENTITY_PATH = /^\/(schema_version|analysis_lens|subject)$|\/id$/;
+
+// Imports any Strategic result: canonical when format salvage satisfies the
+// contract, otherwise a reviewable draft whose remaining gaps are listed.
+const SECTIONS = ["contradictions", "scenarios", "evidence", "assumptions"];
+const isRecord = (value) => Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+// A section holds only `items`. Its records may arrive as a bare list, as a
+// list under another name ({"records": [...]}), or as an ID-keyed map; they
+// are moved into `items` before validation so no record is hidden from review.
+// Anything else in a section is preserved in the import audit, not left unseen.
+export function reshapeStrategicSections(value) {
+  const repairs = [];
+  const quarantine = [];
+  for (const key of SECTIONS) {
+    let section = value?.[key];
+    if (Array.isArray(section)) {
+      value[key] = { items: section };
+      repairs.push({ code: "SECTION_LIST_TO_ITEMS", path: `/${key}`, count: section.length });
+      continue;
+    }
+    if (!isRecord(section)) continue;
+    const others = Object.entries(section).filter(([name]) => name !== "items");
+    if (!others.length) continue;
+    section = value[key] = { ...section };
+    if (section.items === undefined || (Array.isArray(section.items) && !section.items.length)) {
+      const lists = others.filter(([, item]) => Array.isArray(item) && item.length && item.every(isRecord));
+      const records = others.filter(([, item]) => isRecord(item));
+      if (lists.length === 1 && !records.length) {
+        const [name, items] = lists[0];
+        section.items = items;
+        delete section[name];
+        repairs.push({ code: "SECTION_LIST_TO_ITEMS", path: `/${key}/${name}`, count: items.length });
+      } else if (records.length) {
+        section.items = records.map(([id, item]) => (clean(item.id) ? item : { ...item, id }));
+        records.forEach(([id]) => delete section[id]);
+        repairs.push({ code: "OBJECT_MAP_TO_ARRAY", path: `/${key}`, count: records.length });
+      }
+    }
+    for (const name of Object.keys(section).filter((name) => name !== "items")) {
+      const path = `/${key}/${name.replaceAll("~", "~0").replaceAll("/", "~1")}`;
+      quarantine.push({ code: "UNKNOWN_PROPERTY_QUARANTINED", path, value: section[name], action: "preserved_in_import_audit", severity: "information" });
+      repairs.push({ code: "UNKNOWN_PROPERTY_QUARANTINED", path, count: 1 });
+      delete section[name];
+    }
+  }
+  return { repairs, quarantine };
+}
+
+export function salvageStrategicAnalysis(raw) {
+  const value = structuredClone(raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {});
+  const { repairs, quarantine } = reshapeStrategicSections(value);
+  // Strategic has one contract; a 1.x version is that contract written loosely.
+  const version = ["string", "number"].includes(typeof value.schema_version) ? clean(value.schema_version) : "";
+  if (version !== "1.1.0" && /^v?1(\.\d+){0,2}$/i.test(version)) {
+    value.schema_version = "1.1.0";
+    repairs.push({ code: "SCHEMA_VERSION_NORMALIZED", path: "/schema_version", value: version, count: 1 });
+  }
+  const validator = globalThis.Jarbou3iStrategicSchemaValidators?.canonical;
+  globalThis.Jarbou3iContractRepair?.salvageSchemaErrors(value, validator, repairs, quarantine);
+  // A quarantined section keeps its empty shape, as normalization defaults it.
+  for (const key of SECTIONS) {
+    value[key] ??= { items: [] };
+    if (isRecord(value[key])) value[key].items ??= [];
+  }
+  // After salvage, so records that salvage reshaped also receive an ID.
+  for (const [path, prefix] of RECORD_COLLECTIONS) {
+    const records = asArray(path.split(".").reduce((node, key) => node?.[key], value));
+    const used = new Set(records.map((record) => clean(record?.id)).filter(Boolean));
+    let next = 1;
+    records.forEach((record, index) => {
+      if (!record || typeof record !== "object" || clean(record.id)) return;
+      while (used.has(`${prefix}${next}`)) next += 1;
+      record.id = `${prefix}${next}`;
+      used.add(record.id);
+      repairs.push({ code: "DETERMINISTIC_ID_GENERATED", path: `/${path.replace(".", "/")}/${index}/id`, value: record.id, count: 1 });
+    });
+  }
+  const result = validateStrategicAnalysis(value);
+  if (result.ok) return { ...result, repairs, quarantine, diagnostics: [] };
+  if (typeof validator !== "function") return { ...result, repairs, quarantine, diagnostics: [] };
+  validator(value);
+  const schemaErrors = schemaIssues(validator.errors).filter(
+    (error) => !["anyOf", "oneOf", "allOf", "if", "not"].includes(error.keyword),
+  );
+  const blocking = schemaErrors.filter(
+    (error) => !COMPLETION_KEYWORDS.has(error.keyword) || IDENTITY_PATH.test(
+      error.keyword === "required"
+        ? `${error.path.replace(/\/$/, "")}/${error.params?.missingProperty}`
+        : error.path,
+    ),
+  );
+  if (blocking.length) return { ...result, errors: blocking, repairs, quarantine, diagnostics: [] };
+  const semantic = semanticValidate(value);
+  const diagnostics = [...schemaErrors, ...semantic.errors];
+  return {
+    ok: true,
+    canonical: false,
+    state: "strategic_draft",
+    analysis: value,
+    errors: [],
+    warnings: [...diagnostics, ...semantic.warnings],
+    repairs,
+    quarantine,
+    diagnostics,
+  };
+}
+
 export { semanticValidate as validateStrategicSemantics };

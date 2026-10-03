@@ -43,7 +43,7 @@ import {
   prepareRevisionRestore,
   projectRevisionHistory,
 } from "./core/revision-history.js";
-import { validateStrategicAnalysis } from "./strategic-integrity.js";
+import { reshapeStrategicSections, salvageStrategicAnalysis, validateStrategicAnalysis } from "./strategic-integrity.js";
 import { inspectStorageHealth, requestStoragePersistence } from "./core/storage-health.js";
 
 "use strict";
@@ -132,6 +132,10 @@ const I18N = {
     analysisImported: "تم استيراد التحليل. انتقل الآن إلى مراجعة الطبقات.",
     repairCopied: "تم نسخ برومبت الإصلاح.",
     completionCopied: "تم نسخ برومبت الاستكمال.",
+    continuePrompt: "برومبت متابعة النتيجة المقطوعة",
+    continueCopied: "تم نسخ برومبت المتابعة. أرسله في المحادثة نفسها ثم الصق الرد في خانة المتابعة.",
+    continuationLabel: "تابع النتيجة المقطوعة",
+    continuationPlaceholder: "الصق هنا رد المساعد على برومبت المتابعة؛ سيُضم تلقائيًا إلى النتيجة أعلاه.",
     engineTitle: "خريطة محرك التحليل",
     engineSubtitle:
       "المسار السببي للنموذج: من الحوافز إلى التكيف. بعد الاستيراد تصبح كل طبقة قابلة للفحص.",
@@ -417,6 +421,10 @@ const I18N = {
       "Analysis imported. You can now review the engine layers.",
     repairCopied: "Repair prompt copied.",
     completionCopied: "Completion prompt copied.",
+    continuePrompt: "Continue cut-off result prompt",
+    continueCopied: "Continue prompt copied. Send it in the same chat, then paste the reply in the continuation box.",
+    continuationLabel: "Continue the cut-off result",
+    continuationPlaceholder: "Paste the assistant's reply to the continue prompt here; it is joined to the result above automatically.",
     engineTitle: "Analysis Engine Map",
     engineSubtitle:
       "The causal path of the model: from incentives to adaptation. After import, each layer becomes inspectable.",
@@ -713,6 +721,10 @@ const I18N = {
       "Analyse importée. Vous pouvez maintenant examiner les couches du moteur.",
     repairCopied: "Prompt de réparation copié.",
     completionCopied: "Prompt de complétion copié.",
+    continuePrompt: "Prompt pour continuer le résultat coupé",
+    continueCopied: "Prompt de continuation copié. Envoyez-le dans la même conversation, puis collez la réponse dans la zone de continuation.",
+    continuationLabel: "Continuer le résultat coupé",
+    continuationPlaceholder: "Collez ici la réponse de l’assistant au prompt de continuation ; elle est jointe automatiquement au résultat ci-dessus.",
     engineTitle: "Carte du moteur d’analyse",
     engineSubtitle:
       "Le chemin causal du modèle : des intérêts à l’adaptation. Après import, chaque couche devient inspectable.",
@@ -1459,6 +1471,10 @@ async function copyText(text) {
 function normalizeArray(x) {
   return Array.isArray(x) ? x : [];
 }
+function oneOf(value, allowed, fallback) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return allowed.includes(normalized) ? normalized : fallback;
+}
 function normalizeAnalysis(raw) {
   const source = raw && typeof raw === "object" ? raw : {};
   const lens = ["strategic", "biopolitical"].includes(
@@ -1479,26 +1495,44 @@ function normalizeAnalysis(raw) {
   const citationCount = BIO.countNonPortableCitationMarkers(source);
   const a = BIO.sanitizePortableValue(source);
   const out = {
-    schema_version: a.schema_version || a.schemaVersion || "1.0.0",
+    // Strategic has one contract version; a missing version is that version,
+    // and salvage reads a loosely written 1.x the same way (disclosed).
+    schema_version: a.schema_version || a.schemaVersion || "1.1.0",
     analysis_id: a.analysis_id || a.analysisId || "",
     generated_at: a.generated_at || a.generatedAt || "",
-    language: a.language || a.lang || "",
-    model_mode: a.model_mode || a.modelMode || "",
+    // Missing or unrecognized metadata falls back to what the prompt requested.
+    language: CONTRACT_REPAIR.languageCode(a.language || a.lang) || state.analysisLang,
+    model_mode: oneOf(a.model_mode || a.modelMode, ["simple", "expert", "research", "focused"], state.promptMode),
     analysis_lens: "strategic",
     subject: a.subject || {},
     contradictions: a.contradictions || {},
     scenarios: a.scenarios || {},
     evidence: a.evidence || {},
     assumptions: a.assumptions || {},
-    links: normalizeArray(a.links),
+    links: a.links ?? [],
     quality_gate: a.quality_gate || a.qualityGate || {},
   };
-  PILLARS.forEach((p) => (out[p] = normalizeArray(a[p])));
-  out.contradictions.items = normalizeArray(out.contradictions.items);
-  out.scenarios.items = normalizeArray(out.scenarios.items);
-  out.evidence.items = normalizeArray(out.evidence.items);
-  out.assumptions.items = normalizeArray(out.assumptions.items);
-  const validation = validateStrategicAnalysis(out);
+  // Lists in another shape (an ID-keyed map, a bare section list) are left for
+  // salvage, which converts or quarantines them visibly instead of emptying them.
+  PILLARS.forEach((p) => (out[p] = a[p] ?? []));
+  const shape = reshapeStrategicSections(out);
+  for (const key of ["contradictions", "scenarios", "evidence", "assumptions"]) {
+    if (out[key] && typeof out[key] === "object" && !Array.isArray(out[key]))
+      out[key].items = out[key].items ?? [];
+  }
+  // Top-level keys outside the contract are preserved in the audit, not dropped.
+  const consumed = new Set([...Object.keys(out), "schemaVersion", "analysisId", "generatedAt", "lang", "modelMode", "analysisLens", "qualityGate"]);
+  const extras = Object.keys(a)
+    .filter((key) => !consumed.has(key))
+    .map((key) => ({
+      code: "UNKNOWN_PROPERTY_QUARANTINED",
+      path: `/${key.replaceAll("~", "~0").replaceAll("/", "~1")}`,
+      value: a[key],
+      action: "preserved_in_import_audit",
+      severity: "information",
+    }));
+  let validation = validateStrategicAnalysis(out);
+  if (!validation.ok) validation = salvageStrategicAnalysis(out);
   if (!validation.ok) {
     const error = new Error(validation.errors[0]?.message || "invalid");
     error.validation = validation;
@@ -1520,7 +1554,17 @@ function normalizeAnalysis(raw) {
       validation.analysis.evidence.items[Number(invalidUrl[1])].source_url = "";
     }
   }
-  state.importValidation = { ...validation, state: "strategic", warnings };
+  state.importValidation = {
+    ...validation,
+    state: validation.state || "strategic",
+    warnings,
+    repairs: [
+      ...shape.repairs,
+      ...extras.map(({ code, path }) => ({ code, path, count: 1 })),
+      ...(validation.repairs || []),
+    ],
+    quarantine: [...shape.quarantine, ...extras, ...(validation.quarantine || [])],
+  };
   return validation.analysis;
 }
 function extractJson(text) {
@@ -1691,6 +1735,63 @@ function renderImportAuditDetails({
           `استُبعد ${repair.path} من الحمولة النظامية وحُفظ في تدقيق الاستيراد.`,
           `${repair.path} a été exclu de la charge canonique et conservé dans l’audit d’importation.`,
         );
+      if (repair.code === "INVALID_VALUE_QUARANTINED")
+        return labelText(
+          `${repair.path} held a value the contract does not allow; it was preserved in the import audit and the field is listed for completion.`,
+          `احتوى ${repair.path} على قيمة لا يسمح بها العقد؛ حُفظت في تدقيق الاستيراد وأُدرج الحقل للاستكمال.`,
+          `${repair.path} contenait une valeur non autorisée par le contrat ; elle est conservée dans l’audit et le champ est listé pour complétion.`,
+        );
+      if (repair.code === "NULL_TO_EMPTY")
+        return labelText(
+          `${repair.path} was null; it was left empty and listed for completion if the contract requires it.`,
+          `كانت قيمة ${repair.path} فارغة (null)؛ تُركت فارغة وأُدرجت للاستكمال إذا كان العقد يتطلبها.`,
+          `${repair.path} valait null ; le champ est laissé vide et listé pour complétion si le contrat l’exige.`,
+        );
+      if (repair.code === "SUBJECT_TEXT_TO_TITLE")
+        return labelText(
+          "The subject was given as text; it was kept as the subject title.",
+          "ورد الموضوع نصًا؛ فاحتُفظ به عنوانًا للموضوع.",
+          "Le sujet était fourni sous forme de texte ; il a été conservé comme titre du sujet.",
+        );
+      if (repair.code === "ENVELOPE_METADATA_FILLED")
+        return labelText(
+          `${repair.path} was missing or invalid and was set from the request (${repair.value}).`,
+          `كان ${repair.path} مفقودًا أو غير صالح فضُبط من الطلب (${repair.value}).`,
+          `${repair.path} manquait ou était invalide ; il a été fixé d’après la demande (${repair.value}).`,
+        );
+      if (repair.code === "SECTION_LIST_TO_ITEMS")
+        return labelText(
+          `${repair.path} held the section's records as a list; they were kept as the section's items (${count}).`,
+          `احتوى ${repair.path} على سجلات القسم في قائمة؛ فاحتُفظ بها عناصرَ للقسم (${count}).`,
+          `${repair.path} contenait les enregistrements de la section sous forme de liste ; ils ont été conservés comme éléments de la section (${count}).`,
+        );
+      if (repair.code === "DETERMINISTIC_ID_GENERATED")
+        return labelText(
+          `${repair.path} was generated deterministically as ${repair.value}.`,
+          `أُنشئ ${repair.path} حتميًا بالقيمة ${repair.value}.`,
+          `${repair.path} a été généré de façon déterministe avec la valeur ${repair.value}.`,
+        );
+      if (repair.code === "SCHEMA_VERSION_NORMALIZED")
+        return labelText(
+          `Schema version "${repair.value}" was read as the single Strategic contract 1.1.0.`,
+          `قُرئ إصدار المخطط "${repair.value}" على أنه عقد التحليل الاستراتيجي الوحيد 1.1.0.`,
+          `La version de schéma « ${repair.value} » a été lue comme l’unique contrat stratégique 1.1.0.`,
+        );
+      if (
+        [
+          "ENUM_FORMAT_NORMALIZED",
+          "LANGUAGE_NAME_NORMALIZED",
+          "SCALAR_TO_STRING",
+          "ARRAY_TO_STRING",
+          "STRING_TO_BOOLEAN",
+          "STRING_TO_NUMBER",
+        ].includes(repair.code)
+      )
+        return labelText(
+          `${repair.path} was reformatted to the contract type or spelling without changing its meaning.`,
+          `أُعيد تنسيق ${repair.path} وفق نوع العقد أو صيغته دون تغيير معناه.`,
+          `${repair.path} a été reformaté selon le type ou l’écriture du contrat sans en changer le sens.`,
+        );
       return labelText(
         `${repair.path || "/"} received a conservative structural repair.`,
         `خضع ${repair.path || "/"} لإصلاح بنيوي محافظ.`,
@@ -1718,9 +1819,39 @@ function renderImportAuditDetails({
         );
       if (repair.code === "REVIEWABLE_GAPS_RECLASSIFIED")
         return labelText(
-          `${repair.count || 1} empty analytical requirement${repair.count === 1 ? " was" : "s were"} preserved as targeted completion work; no analytical value was invented.`,
-          `حُفظت ${repair.count || 1} ${repair.count === 1 ? "فجوة تحليلية فارغة" : "فجوات تحليلية فارغة"} كعمل استكمال موجّه دون اختلاق أي قيمة تحليلية.`,
-          `${repair.count || 1} exigence${repair.count === 1 ? " analytique vide a été conservée" : "s analytiques vides ont été conservées"} comme travail de complétion ciblée ; aucune valeur analytique n’a été inventée.`,
+          `${repair.count || 1} contract gap${repair.count === 1 ? " was" : "s were"} preserved as targeted completion work; no analytical value was invented.`,
+          `حُفظت ${repair.count || 1} ${repair.count === 1 ? "فجوة في العقد" : "فجوات في العقد"} كعمل استكمال موجّه دون اختلاق أي قيمة تحليلية.`,
+          `${repair.count || 1} lacune${repair.count === 1 ? " du contrat a été conservée" : "s du contrat ont été conservées"} comme travail de complétion ciblée ; aucune valeur analytique n’a été inventée.`,
+        );
+      if (repair.code === "RESULT_WRAPPER_REMOVED")
+        return labelText(
+          `The result was unwrapped from ${repair.path}.`,
+          `استُخرجت النتيجة من الغلاف ${repair.path}.`,
+          `Le résultat a été extrait de l’enveloppe ${repair.path}.`,
+        );
+      if (repair.code === "AI_INTERCHANGE_CONTRACT_INFERRED")
+        return labelText(
+          "The AI Interchange contract was recognized from the result's structure.",
+          "تم التعرّف على عقد التبادل من بنية النتيجة.",
+          "Le contrat AI Interchange a été reconnu à partir de la structure du résultat.",
+        );
+      if (repair.code === "SUBJECT_TEXT_TO_TITLE")
+        return labelText(
+          "The subject was given as text; it was kept as the subject title.",
+          "ورد الموضوع نصًا؛ فاحتُفظ به عنوانًا للموضوع.",
+          "Le sujet était fourni sous forme de texte ; il a été conservé comme titre du sujet.",
+        );
+      if (repair.code === "ENVELOPE_IDENTITY_NORMALIZED")
+        return labelText(
+          `${repair.path} was normalized to "${repair.to}".`,
+          `طُبّع ${repair.path} إلى "${repair.to}".`,
+          `${repair.path} a été normalisé en « ${repair.to} ».`,
+        );
+      if (repair.code === "ARRAY_SET_TO_KEYED")
+        return labelText(
+          `${repair.path} was matched to its fixed set by entry name.`,
+          `طوبق ${repair.path} مع مجموعته الثابتة حسب اسم كل عنصر.`,
+          `${repair.path} a été associé à son ensemble fixe par nom d’entrée.`,
         );
       return labelText(
         `${repair.path || "/"} was compiled locally.`,
@@ -1737,7 +1868,7 @@ function renderImportAuditDetails({
       : "",
   ].filter(Boolean);
   const quarantineHtml = quarantined.length
-    ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h4><p>${escapeHtml(labelText("Unknown properties were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
+    ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h4><p>${escapeHtml(labelText("Unknown properties and invalid values were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues et les valeurs invalides n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
         .slice(0, 20)
         .map(
           (item) =>
@@ -1760,6 +1891,7 @@ function validateJsonInput() {
     $("importBtn").disabled = true;
     $("repairPromptBtn").disabled = true;
     $("repairPromptBtn").textContent = t("repairPrompt");
+    $("continuationField").hidden = true;
     $("jsonStatus").className = "status";
     $("jsonStatus").textContent = t("jsonWaiting");
     $("pasteCard").classList.remove("ready", "invalid");
@@ -1775,11 +1907,22 @@ function validateJsonInput() {
   try {
     state.importValidation = null;
     parsed = extractJson(text);
-    let input = parsed.value;
-    if (AI_INTERCHANGE.supports(input)) {
+    const recognized = AI_INTERCHANGE.recognize(parsed.value);
+    let input = recognized.value;
+    const fromInterchange = AI_INTERCHANGE.supports(input);
+    if (fromInterchange) {
       const compilation = AI_INTERCHANGE.compile(input);
       input = compilation.value;
       compilerAudit = compilation.audit;
+    }
+    if (recognized.transformations.length) {
+      compilerAudit = {
+        transformations: [
+          ...recognized.transformations,
+          ...(compilerAudit?.transformations || []),
+        ],
+        quarantine: [...(compilerAudit?.quarantine || [])],
+      };
     }
     const contractRepair = CONTRACT_REPAIR.repairBiopolitical(input);
     contractRepairs = contractRepair.repairs;
@@ -1790,32 +1933,38 @@ function validateJsonInput() {
       analysis = normalizeAnalysis(raw);
     } catch (error) {
       if (
-        !error?.validation ||
-        !AI_INTERCHANGE.canRecoverAsDraft(error.validation)
+        raw?.analysis_lens !== "biopolitical" ||
+        error?.validation?.state !== "canonical"
       ) {
         throw error;
       }
-      completionDiagnostics = [...error.validation.errors];
-      completionCandidate = raw;
-      const origin = compilerAudit ? "interchange" : "canonical";
-      const draft = AI_INTERCHANGE.asReviewableDraft(
-        raw,
-        error.validation.errors,
-        { origin },
-      );
-      compilerAudit = {
-        transformations: [
-          ...(compilerAudit?.transformations || []),
-          Object.freeze({
-            code: "REVIEWABLE_GAPS_RECLASSIFIED",
-            path: "/",
-            count: completionDiagnostics.length,
-            origin,
-          }),
-        ],
-        quarantine: [...(compilerAudit?.quarantine || [])],
-      };
-      analysis = normalizeAnalysis(draft);
+      // Salvage instead of rejecting: format slips are coerced, judgment
+      // calls are quarantined, and whatever remains becomes listed gaps.
+      const origin = fromInterchange ? "interchange" : "canonical";
+      const salvage = CONTRACT_REPAIR.salvageBiopolitical(raw, {
+        origin,
+        language: state.analysisLang,
+        mode: state.promptMode,
+      });
+      contractRepairs = [...contractRepairs, ...salvage.repairs];
+      contractQuarantine = [...contractQuarantine, ...salvage.quarantine];
+      if (salvage.diagnostics.length) {
+        completionDiagnostics = [...salvage.diagnostics];
+        completionCandidate = salvage.candidate;
+        compilerAudit = {
+          transformations: [
+            ...(compilerAudit?.transformations || []),
+            Object.freeze({
+              code: "REVIEWABLE_GAPS_RECLASSIFIED",
+              path: "/",
+              count: completionDiagnostics.length,
+              origin,
+            }),
+          ],
+          quarantine: [...(compilerAudit?.quarantine || [])],
+        };
+      }
+      analysis = normalizeAnalysis(salvage.value);
     }
     const has =
       analysis.analysis_lens === "biopolitical"
@@ -1824,6 +1973,10 @@ function validateJsonInput() {
           analysis.contradictions.items.length ||
           analysis.scenarios.items.length;
     if (!has) throw new Error("incomplete");
+    if (state.importValidation?.repairs) {
+      contractRepairs = [...contractRepairs, ...state.importValidation.repairs];
+      contractQuarantine = [...contractQuarantine, ...state.importValidation.quarantine];
+    }
     state.jsonValid = true;
     $("importBtn").disabled = false;
     $("repairPromptBtn").disabled = false;
@@ -1880,7 +2033,14 @@ function validateJsonInput() {
     const draft = ["migrated_draft", "generated_draft"].includes(
       state.importValidation?.state,
     );
-    const validationMessage = draft
+    const strategicGaps = state.importValidation?.diagnostics?.length || 0;
+    const validationMessage = state.importValidation?.state === "strategic_draft"
+      ? labelText(
+          `AI result imported as a reviewable draft with ${strategicGaps} gap${strategicGaps === 1 ? "" : "s"} listed below. Nothing was invented; complete the gaps before relying on the analysis.`,
+          `استُوردت نتيجة الذكاء الاصطناعي كمسودة قابلة للمراجعة مع ${strategicGaps} ${strategicGaps === 1 ? "فجوة مدرجة" : "فجوات مدرجة"} أدناه. لم يُختلق أي محتوى؛ استكمل الفجوات قبل الاعتماد على التحليل.`,
+          `Le résultat IA est importé comme brouillon révisable avec ${strategicGaps} lacune${strategicGaps === 1 ? "" : "s"} listée${strategicGaps === 1 ? "" : "s"} ci-dessous. Rien n’a été inventé ; complétez les lacunes avant de vous fier à l’analyse.`,
+        )
+      : draft
       ? state.importValidation?.state === "generated_draft"
         ? completionDiagnostics.length
           ? labelText(
@@ -1918,6 +2078,7 @@ function validateJsonInput() {
       .join(" ");
     $("pasteCard").classList.add("ready");
     $("pasteCard").classList.remove("invalid");
+    $("continuationField").hidden = true;
     return analysis;
   } catch (e) {
     const validationErrors = e?.validation?.errors || [];
@@ -1938,7 +2099,9 @@ function validateJsonInput() {
     state.jsonValid = false;
     $("importBtn").disabled = true;
     $("repairPromptBtn").disabled = false;
-    $("repairPromptBtn").textContent = t("repairPrompt");
+    const truncated = e?.code === "TRUNCATED_JSON";
+    $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
+    $("continuationField").hidden = !truncated;
     $("jsonStatus").className = "status bad";
     $("jsonStatus").textContent = importErrorText(e);
     $("pasteCard").classList.remove("ready");
@@ -3066,6 +3229,15 @@ function qualityGateHtml(a = state.analysis) {
 function schemaHealth(a = state.analysis) {
   if (!a) return { pct: 0, missing: [], next: t("healthMissingPillars") };
   const missing = [];
+  // A salvaged draft stays blocked until its contract gaps are completed.
+  if (!validateStrategicAnalysis(a).canonical)
+    missing.push(
+      labelText(
+        "Complete the contract gaps listed in the import audit; this is a reviewable draft.",
+        "أكمل فجوات العقد المدرجة في سجل الاستيراد؛ هذه مسودة قابلة للمراجعة.",
+        "Complétez les lacunes du contrat listées dans l’audit d’import ; ceci est un brouillon révisable.",
+      ),
+    );
   const pillarFilled = PILLARS.filter(
     (p) => normalizeArray(a[p]).length > 0,
   ).length;
@@ -5856,7 +6028,8 @@ function workspaceText(key, values = {}) {
     opened: ["Workspace reopened with integrity verified.", "أُعيد فتح مساحة العمل بعد التحقق من سلامتها.", "Espace rouvert après vérification d’intégrité."],
     imported: ["Portable workspace restored locally.", "تمت استعادة مساحة العمل محليًا.", "Espace portable restauré localement."],
     exported: ["Workspace bundle exported.", "تم تصدير حزمة مساحة العمل.", "Paquet d’espace exporté."],
-    duplicate: ["This workspace already exists. Nothing was overwritten.", "مساحة العمل هذه موجودة. لم تتم الكتابة فوق أي بيانات.", "Cet espace existe déjà. Aucune donnée n’a été écrasée."],
+    conflict: ["This workspace changed in another tab or window. Nothing was overwritten. Copy any unsaved edits, then reopen the workspace to load the latest version.", "تغيّرت مساحة العمل هذه في علامة تبويب أو نافذة أخرى. لم تتم الكتابة فوق أي بيانات. انسخ أي تعديلات غير محفوظة، ثم أعد فتح مساحة العمل لتحميل أحدث نسخة.", "Cet espace a été modifié dans un autre onglet ou une autre fenêtre. Aucune donnée n’a été écrasée. Copiez vos modifications non enregistrées, puis rouvrez l’espace pour charger la dernière version."],
+    duplicate: ["This workspace already exists. Nothing was overwritten.","مساحة العمل هذه موجودة. لم تتم الكتابة فوق أي بيانات.", "Cet espace existe déjà. Aucune donnée n’a été écrasée."],
     error: ["Workspace operation failed safely: {message}", "فشلت عملية مساحة العمل بأمان: {message}", "L’opération a échoué sans altérer les données : {message}"],
   }[key] || [key, key, key];
   const template = state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
@@ -5896,6 +6069,7 @@ function setWorkspaceStatus(kind, message) {
 
 function workspaceFailureMessage(error) {
   if (error?.code === "WORKSPACE_EXISTS") return workspaceText("duplicate");
+  if (error?.code === "WRITE_CONFLICT") return workspaceText("conflict");
   return workspaceText("error", { message: error?.message || error?.code || "unknown" });
 }
 
@@ -6126,10 +6300,15 @@ async function discardEditorRecovery() {
   $("editorRecoveryState").textContent = editorText("discarded");
 }
 
+let editorSavePending = false;
+
 async function saveEditorDraft() {
-  if (!applyEditorField()) return;
+  if (editorSavePending || !applyEditorField()) return;
   const snapshot = state.editorSession.inspect();
   if (!snapshot.validation.valid) return;
+  editorSavePending = true;
+  // A pending recovery capture would otherwise fire after the save and re-record saved content.
+  clearTimeout(editorRecoveryTimer);
   state.workspaceSaveState = "saving"; APPLICATION_SHELL.render();
   try {
     const expectedRevision = state.editorWorkspace.repository_revision;
@@ -6142,7 +6321,12 @@ async function saveEditorDraft() {
     applyWorkspaceAnalysis(saved);
     setWorkspaceStatus("good", editorText("saved"));
     renderCanonicalEditor();
-  } catch (error) { setWorkspaceStatus("bad", workspaceFailureMessage(error)); }
+  } catch (error) {
+    setWorkspaceStatus("bad", workspaceFailureMessage(error));
+    scheduleEditorRecovery();
+  } finally {
+    editorSavePending = false;
+  }
 }
 
 let revisionDialogInvoker = null;
@@ -6928,6 +7112,24 @@ function repairPrompt() {
   const ar = state.analysisLang === "ar";
   const fr = state.analysisLang === "fr";
   const bad = $("jsonInput").value.trim();
+  if (state.importAudit?.code === "TRUNCATED_JSON") {
+    // Re-sending the whole object would hit the same output limit; ask only for the rest.
+    const ending = bad.slice(-300);
+    if (ar)
+      return `انقطعت إجابتك السابقة قبل اكتمال كائن JSON. تابعها من حيث توقفت تمامًا. أعد فقط الجزء المتبقي بدءًا من الحرف التالي مباشرة بعد النص أدناه. لا تكرر ما كُتب، ولا تبدأ الكائن من جديد، ولا تضف Markdown أو أسوار كود أو شرحًا. إذا نفدت المساحة مرة أخرى فتوقف ببساطة وسأطلب المتابعة مجددًا.
+
+انتهت إجابتك بـ:
+${ending}`;
+    if (fr)
+      return `Votre réponse précédente a été coupée avant la fin de l’objet JSON. Continuez-la exactement là où elle s’est arrêtée. Renvoyez uniquement la suite, en commençant par le caractère qui suit immédiatement le texte ci-dessous. Ne répétez rien de ce qui est déjà écrit, ne recommencez pas l’objet et n’ajoutez ni Markdown, ni bloc de code, ni explication. Si l’espace manque à nouveau, arrêtez-vous simplement : je vous demanderai de continuer.
+
+Votre réponse se terminait par :
+${ending}`;
+    return `Your previous answer was cut off before the JSON object was complete. Continue it exactly where it stopped. Return only the remainder, starting with the character that comes immediately after the text below. Do not repeat anything already written, do not restart the object, and do not add Markdown, code fences, or explanations. If you run out of space again, simply stop and I will ask you to continue.
+
+Your answer ended with:
+${ending}`;
+  }
   const diagnostics = (state.importAudit?.errors || [])
     .slice(0, 20)
     .map((issue) => `${issue.path || "/"}: ${issue.message || issue.code}`)
@@ -7011,6 +7213,13 @@ $("editTopicBtn").onclick = () => {
   renderAll();
 };
 $("jsonInput").addEventListener("input", validateJsonInput);
+$("continuationInput").addEventListener("input", () => {
+  const continuation = $("continuationInput").value;
+  if (!continuation.trim()) return;
+  $("jsonInput").value = JSON_TOOLS.joinContinuation($("jsonInput").value, continuation);
+  $("continuationInput").value = "";
+  validateJsonInput();
+});
 $("clearJsonBtn").onclick = () => {
   $("jsonInput").value = "";
   validateJsonInput();
@@ -7046,9 +7255,10 @@ $("importBtn").onclick = async () => {
 $("repairPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
   const completion = Boolean(state.importAudit?.completionCandidate);
+  const truncated = state.importAudit?.code === "TRUNCATED_JSON";
   const p = repairPrompt();
   const ok = await copyText(p);
-  toast(ok ? t(completion ? "completionCopied" : "repairCopied") : t("copyFailed"));
+  toast(ok ? t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied") : t("copyFailed"));
   if (!ok)
     showModal(t(completion ? "completionPrompt" : "repairPrompt"), p, invoker);
 };

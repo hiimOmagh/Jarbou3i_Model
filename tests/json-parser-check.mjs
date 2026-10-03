@@ -46,6 +46,18 @@ if (cleanResult.recovered || cleanResult.value.text !== "Curly prose ‘stays’
   fail("valid JSON should parse without editorial mutation");
 }
 
+const cited = parser.extractJson(
+  'Based on sources [1] and [draft], here is the analysis:\n{"schema_version":"1.1.0","items":[1,2]}',
+);
+if (Array.isArray(cited.value) || cited.value.schema_version !== "1.1.0") {
+  fail("bracketed prose before unfenced JSON was parsed instead of the JSON object");
+}
+
+const arrayPayload = parser.extractJson('Result: [{"a":1},{"b":2},]');
+if (!Array.isArray(arrayPayload.value) || arrayPayload.value.length !== 2) {
+  fail("an array of objects must not be narrowed to its first element");
+}
+
 for (const invalid of ["", "plain prose", '{"open": [1, 2}']) {
   let rejected = false;
   try {
@@ -60,6 +72,7 @@ for (const truncated of [
   '{"open":[1,2',
   '{"text":"unterminated',
   'prefix ```json\n{"contract":"jarbou3i-ai-interchange/1"',
+  'See [1]. {"a": [1, 2',
 ]) {
   let detected = false;
   try {
@@ -68,6 +81,40 @@ for (const truncated of [
     detected = error.code === "TRUNCATED_JSON";
   }
   if (!detected) fail(`truncated input was not classified: ${truncated}`);
+}
+
+const cutOff = '{"subject":{"title":"Digital welfare scoring","context":"The agency scored applic';
+for (const [name, continuation] of [
+  ["plain remainder", 'ants by risk"},"items":[1,2]}'],
+  ["fenced remainder", '```json\nants by risk"},"items":[1,2]}\n```'],
+  ["repeated overlap", 'context":"The agency scored applicants by risk"},"items":[1,2]}'],
+]) {
+  const joined = parser.joinContinuation(cutOff, continuation);
+  let value;
+  try {
+    value = parser.extractJson(joined).value;
+  } catch {
+    fail(`continuation was not joined into valid JSON: ${name}`);
+  }
+  if (value.subject.context !== "The agency scored applicants by risk") {
+    fail(`continuation altered the joined content: ${name}`);
+  }
+}
+
+// Repetitive content at the seam is not a repeat and must not be trimmed, and
+// a leading space can be string content.
+for (const [head, tail, expected] of [
+  ['{"s":[0,0,0,0,0,', "0,0,0,0,0]}", '{"s":[0,0,0,0,0,0,0,0,0,0]}'],
+  ['{"t":"==========', '=========="}', `{"t":"${"=".repeat(20)}"}`],
+  ['{"t":"The quick', ' brown fox"}\n', '{"t":"The quick brown fox"}'],
+  ['{"t":"The quick', '\n```json\n brown fox"}\n```\n', '{"t":"The quick brown fox"}'],
+  ['{"t":"The quick', 'Here is the rest:\n```json\n brown fox"}\n```\nDone.', '{"t":"The quick brown fox"}'],
+  ['{"t":"The quick', '```json "}```', '{"t":"The quick"}'],
+]) {
+  const joined = parser.joinContinuation(head, tail);
+  if (joined !== expected) {
+    fail(`seam content was altered: ${joined}`);
+  }
 }
 
 console.log("JSON parser checks passed.");

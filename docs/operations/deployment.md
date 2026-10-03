@@ -38,6 +38,13 @@ Cloudflare Pages uses Git integration with automatic production deployments from
 3. A commit can enter `main` only through a pull request after `No-browser gates` and `Browser gates` pass on a branch that is current with `main`.
 4. The Cloudflare production deployment identifies the same accepted commit that entered `main`.
 
+Cloudflare must publish the same curated artifact as GitHub Pages, not the repository root:
+
+- Build command: `node scripts/build-pages-artifact.mjs`
+- Build output directory: `build/pages`
+
+The artifact includes `_headers`, so the response-header policy is preserved. Serving the repository root would publish `tests/`, `docs/`, `package.json`, and archived HTML pages on the production origin. Verify after each settings change that `https://jarbou3i-model.pages.dev/package.json` returns the application HTML fallback rather than the package manifest, and that the `content-security-policy` response header is still present.
+
 Under those controls, Cloudflare is downstream of the CI admission boundary: it deploys automatically only after a commit lawfully reaches protected `main`. If protection, required checks, the production branch, or bypass policy changes, automatic Cloudflare production deployment becomes untrusted and releases must stop until the control chain is restored.
 
 Repository configuration alone cannot prove Cloudflare deployment identity. Confirm the production branch, deployment status, and commit SHA in Cloudflare before tagging.

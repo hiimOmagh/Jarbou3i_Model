@@ -6,6 +6,17 @@ const root = process.cwd();
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT || 4173);
 const parentPid = process.ppid;
+// Serve the production `/*` response headers so local and CI browser runs enforce the deployed CSP.
+// COOP is omitted: under Playwright's Firefox driver it intermittently stalls page.reload() before "load".
+const productionHeaders = Object.fromEntries(
+  (await fs.readFile(path.join(root, "_headers"), "utf8"))
+    .split(/\r?\n/)
+    .filter((line) => /^\s+\S/.test(line) && !/^\s*Cross-Origin-Opener-Policy:/i.test(line))
+    .map((line) => {
+      const separator = line.indexOf(":");
+      return [line.slice(0, separator).trim(), line.slice(separator + 1).trim()];
+    }),
+);
 const types = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -28,6 +39,7 @@ const server = http.createServer(async (request, response) => {
     }
     const body = await fs.readFile(target);
     response.writeHead(200, {
+      ...productionHeaders,
       "content-type": types[path.extname(target).toLowerCase()] || "application/octet-stream",
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",

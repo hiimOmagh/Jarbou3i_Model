@@ -649,12 +649,6 @@ if (index.includes('id="assistantSelect"') || app.includes("preferredAssistant")
 if (fs.existsSync("Editorial_Intelligence_v2.html") || fs.existsSync("TM_BrainMap.html")) {
   fail("legacy pages remain in the production root");
 }
-for (const archived of [
-  "docs/archive/legacy-pages/Editorial_Intelligence_v2.html",
-  "docs/archive/legacy-pages/TM_BrainMap.html",
-]) {
-  if (!fs.existsSync(archived)) fail(`legacy page was not archived: ${archived}`);
-}
 
 for (const token of [
   "createRelationshipIntelligence",

@@ -158,8 +158,26 @@
     }));
   }
 
+  // Canonical-style arrays ([{level:"body",…}]) are keyed by the entry value that
+  // names a set member; entries that name none are quarantined, never dropped.
+  function keyedSet(value, expected, path, audit) {
+    if (!Array.isArray(value)) return object(value);
+    const keyed = {};
+    value.forEach((item, index) => {
+      const key = isObject(item)
+        ? Object.values(item).find((field) => expected.includes(field))
+        : undefined;
+      if (key && !(key in keyed)) keyed[key] = item;
+      else quarantine(`${path}/${index}`, item, audit);
+    });
+    audit.transformations.push(
+      Object.freeze({ code: "ARRAY_SET_TO_KEYED", path, count: Object.keys(keyed).length }),
+    );
+    return keyed;
+  }
+
   function fixedMap(value, expected, mapper, path, audit) {
-    const source = object(value);
+    const source = keyedSet(value, expected, path, audit);
     for (const [key, item] of Object.entries(source)) {
       if (!expected.includes(key)) quarantine(`${path}/${key}`, item, audit);
     }
@@ -211,7 +229,13 @@
     const captureCriteria = BIO?.CAPTURE_CRITERIA || [];
     const explanationTypes = BIO?.EXPLANATION_TYPES || [];
     const selfAuditKeys = BIO?.SELF_AUDIT_KEYS || [];
-    const subject = object(top.subject);
+    const subjectText = typeof top.subject === "string" && top.subject.trim();
+    if (subjectText) {
+      audit.transformations.push(
+        Object.freeze({ code: "SUBJECT_TEXT_TO_TITLE", path: "/subject", count: 1 }),
+      );
+    }
+    const subject = subjectText ? { title: top.subject } : object(top.subject);
     const power = object(top.power);
     const mechanisms = object(top.mechanisms);
     const meaning = object(top.meaning);
@@ -502,6 +526,112 @@
     return source.contract === CONTRACT && source.lens === LENS;
   }
 
+  // Sections that only the interchange shape uses (canonical names differ).
+  const INTERCHANGE_ONLY_KEYS = ["power", "meaning", "intervention", "explanations", "conclusion"];
+  const RESULT_MARKERS = ["contract", "lens", "analysis_lens", "analysis_contract", "schema_version"];
+  const STRATEGIC_KEYS = ["interests", "actors", "tools", "narrative", "results", "feedback"];
+  const looksLikeResult = (value) =>
+    isObject(value) &&
+    (RESULT_MARKERS.some((key) => key in value) ||
+      INTERCHANGE_ONLY_KEYS.filter((key) => key in value).length >= 2 ||
+      STRATEGIC_KEYS.filter((key) => key in value).length >= 2);
+
+  // Accepts provider envelope drift without touching analytical content: a
+  // single wrapper key around the result, and a missing or misspelled
+  // interchange contract on an object that has the interchange shape.
+  // The single result-shaped value inside up to three wrapper levels (a
+  // one-item list or an object); text beside it is commentary, like prose
+  // around the JSON. Several candidate results are ambiguous and left alone.
+  function findResult(node, path, depth) {
+    if (looksLikeResult(node)) return { value: node, path };
+    if (!depth) return undefined;
+    const children = Array.isArray(node)
+      ? node.length === 1 ? [["0", node[0]]] : []
+      : isObject(node) ? Object.entries(node) : [];
+    const found = children
+      .map(([key, child]) =>
+        findResult(child, `${path}/${key.replaceAll("~", "~0").replaceAll("/", "~1")}`, depth - 1),
+      )
+      .filter(Boolean);
+    return found.length === 1 ? found[0] : undefined;
+  }
+
+  // An explicit null header value counts as missing.
+  const token = (value) => (typeof value === "string" ? value.trim().toLowerCase() : value ?? undefined);
+
+  function recognize(value) {
+    const transformations = [];
+    let source = value;
+    if (!looksLikeResult(source)) {
+      const found = findResult(source, "", 3);
+      if (found) {
+        source = found.value;
+        transformations.push(
+          Object.freeze({ code: "RESULT_WRAPPER_REMOVED", path: found.path, count: 1 }),
+        );
+      }
+    }
+    if (isObject(source)) {
+      const fixed = { ...source };
+      const set = (key, to) => {
+        if (fixed[key] === to) return;
+        transformations.push(
+          Object.freeze({
+            code: "ENVELOPE_IDENTITY_NORMALIZED",
+            path: `/${key}`,
+            from: fixed[key] ?? null,
+            to,
+            count: 1,
+          }),
+        );
+        fixed[key] = to;
+      };
+      if (token(fixed.lens) === LENS) set("lens", LENS);
+      if (token(fixed.contract) === CONTRACT) set("contract", CONTRACT);
+      if (["strategic", LENS].includes(token(fixed.analysis_lens))) {
+        set("analysis_lens", token(fixed.analysis_lens));
+      }
+      // A canonical-shaped Biopolitical header that is loosely written or
+      // incomplete names the 2.1 contract; legacy v1 and other versions are
+      // left for the existing migration or unsupported-version paths.
+      const version = token(fixed.schema_version);
+      const legacyShape = ["interests", "actors", "tools"].some((key) => Array.isArray(fixed[key]));
+      if (
+        fixed.analysis_lens === LENS &&
+        !("contract" in fixed) &&
+        !legacyShape &&
+        [undefined, CANONICAL_CONTRACT].includes(token(fixed.analysis_contract)) &&
+        (version === undefined ||
+          (["string", "number"].includes(typeof version) && /^v?2\.1(\.0)?$/.test(String(version)))) &&
+        [undefined, "canonical"].includes(token(fixed.contract_status))
+      ) {
+        set("analysis_contract", CANONICAL_CONTRACT);
+        set("schema_version", CANONICAL_SCHEMA_VERSION);
+        set("contract_status", "canonical");
+      }
+      source = fixed;
+    }
+    if (
+      isObject(source) &&
+      !supports(source) &&
+      !("analysis_contract" in source) &&
+      (source.lens == null || source.lens === LENS) &&
+      INTERCHANGE_ONLY_KEYS.filter((key) => key in source).length >= 2
+    ) {
+      transformations.push(
+        Object.freeze({
+          code: "AI_INTERCHANGE_CONTRACT_INFERRED",
+          path: "/contract",
+          from: source.contract ?? null,
+          to: CONTRACT,
+          count: 1,
+        }),
+      );
+      source = { ...source, contract: CONTRACT, lens: LENS };
+    }
+    return Object.freeze({ value: source, transformations: Object.freeze(transformations) });
+  }
+
   function buildTemplate(lang = "en", mode = "focused") {
     const BIO = root.Jarbou3iBiopolitics;
     const keyed = (keys, value) =>
@@ -703,7 +833,7 @@
           claim: "string",
           epistemic_type:
             "verified_fact|quantitative_estimate|institutional_claim|scholarly_interpretation|political_narrative|legal_classification|ethical_judgment|plausible_inference|speculation|unsupported_allegation",
-          source_tier: "canonical source-tier enum",
+          source_tier: Object.keys(BIO.SOURCE_TIERS).join("|"),
           source_title: "string",
           source_url: "absolute HTTP(S) URL or empty string",
           source_locator: "page, section, DOI, dataset, or archive locator",
@@ -776,8 +906,15 @@
     ].join("\n");
   }
 
+  // Reference defects are completed at their listed path like any other gap.
+  const REFERENCE_CODES = new Set(["BROKEN_REFERENCE", "DUPLICATE_GLOBAL_ID"]);
+
   function buildCompletionPrompt(candidate, diagnostics = [], lang = "en") {
-    const gaps = array(diagnostics).filter(isReviewableCompletionGap);
+    const gaps = array(diagnostics).filter(
+      (item) =>
+        isReviewableCompletionGap(item) ||
+        REFERENCE_CODES.has(text(object(item).code).toUpperCase()),
+    );
     if (!gaps.length || gaps.length !== array(diagnostics).length) {
       const error = new Error(
         "A completion prompt can be built only for reviewable completion gaps.",
@@ -796,7 +933,7 @@
       .join("\n");
     const payload = JSON.stringify(candidate);
     if (lang === "ar") {
-      return `هذه مهمة استكمال تحليلي موجّه وليست إعادة كتابة شاملة أو إصلاح تنسيق JSON. أعد كائن JSON نظاميًا واحدًا كاملًا ومضغوطًا فقط. حافظ على كل المحتوى والمعرّفات والقيم كما هي، وعدّل فقط المسارات المدرجة في التشخيص. املأ كل قيمة فارغة بمحتوى تحليلي محدد ومقتصد يستند إلى الأدلة الموجودة في السجل. إذا لم يحدد السجل دليلًا مضادًا، اذكر ذلك صراحة وحدد ما الذي يجب البحث عنه لاختبار الادعاء؛ لا تختلق مصدرًا أو رابطًا أو محددًا أو حالة تحقق. لا تحذف سجل دليل ولا تغيّر claim أو confidence أو verification_status. لا تُعد Markdown أو أسوار كود أو شرحًا أو JSON Patch أو علامات cite/filecite/turn.
+      return `هذه مهمة استكمال تحليلي موجّه وليست إعادة كتابة شاملة أو إصلاح تنسيق JSON. أعد كائن JSON نظاميًا واحدًا كاملًا ومضغوطًا فقط. حافظ على كل المحتوى والمعرّفات والقيم كما هي، وعدّل فقط المسارات المدرجة في التشخيص. املأ كل قيمة فارغة بمحتوى تحليلي محدد ومقتصد يستند إلى الأدلة الموجودة في السجل. إذا لم يحدد السجل دليلًا مضادًا، اذكر ذلك صراحة وحدد ما الذي يجب البحث عنه لاختبار الادعاء؛ لا تختلق مصدرًا أو رابطًا أو محددًا أو حالة تحقق. لا تحذف سجل دليل ولا تغيّر claim أو confidence أو verification_status. إذا أشار مسار إلى مرجع لا يُحل، فاربطه بمعرّف سجل موجود يناسبه أو احذف ذلك المرجع وحده؛ وإذا تكرر معرّف، فأعد تسمية التكرار اللاحق وحدّث ما يشير إليه. لا تُعد Markdown أو أسوار كود أو شرحًا أو JSON Patch أو علامات cite/filecite/turn.
 
 المسارات المطلوب استكمالها:
 ${diagnosticBlock}
@@ -805,7 +942,7 @@ JSON النظامي الأساسي:
 ${payload}`;
     }
     if (lang === "fr") {
-      return `Il s’agit d’une complétion analytique ciblée, pas d’une réécriture générale ni d’une réparation de sérialisation JSON. Retournez exactement un objet JSON canonique complet et minifié. Préservez tout le contenu, les identifiants et les valeurs ; modifiez uniquement les chemins listés dans le diagnostic. Remplissez chaque valeur vide avec un contenu analytique précis et concis fondé sur les preuves déjà présentes. Si le dossier n’identifie aucune contre-preuve, dites-le explicitement et précisez ce qu’il faudrait rechercher pour tester l’affirmation ; n’inventez aucune source, URL, aucun localisateur ni état de vérification. Ne supprimez aucun élément de preuve et ne modifiez ni claim, ni confidence, ni verification_status. Ne retournez ni Markdown, ni bloc de code, ni explication, ni JSON Patch, ni marqueur cite/filecite/turn.
+      return `Il s’agit d’une complétion analytique ciblée, pas d’une réécriture générale ni d’une réparation de sérialisation JSON. Retournez exactement un objet JSON canonique complet et minifié. Préservez tout le contenu, les identifiants et les valeurs ; modifiez uniquement les chemins listés dans le diagnostic. Remplissez chaque valeur vide avec un contenu analytique précis et concis fondé sur les preuves déjà présentes. Si le dossier n’identifie aucune contre-preuve, dites-le explicitement et précisez ce qu’il faudrait rechercher pour tester l’affirmation ; n’inventez aucune source, URL, aucun localisateur ni état de vérification. Ne supprimez aucun élément de preuve et ne modifiez ni claim, ni confidence, ni verification_status. Si un chemin désigne une référence qui ne se résout pas, reliez-la à l’identifiant d’un élément existant qui convient ou supprimez seulement cette référence ; si un identifiant est dupliqué, renommez le doublon postérieur et mettez à jour ce qui le désigne. Ne retournez ni Markdown, ni bloc de code, ni explication, ni JSON Patch, ni marqueur cite/filecite/turn.
 
 Chemins à compléter :
 ${diagnosticBlock}
@@ -813,7 +950,7 @@ ${diagnosticBlock}
 JSON canonique de base :
 ${payload}`;
     }
-    return `This is a targeted analytical completion task, not a general rewrite or JSON serialization repair. Return exactly one complete minified canonical JSON object. Preserve all existing content, IDs, and values; modify only the paths listed in the diagnostics. Fill each empty value with specific, concise analytical content grounded in evidence already present in the record. If the record identifies no counter-evidence, state that explicitly and specify what should be searched to test the claim; do not invent a source, URL, locator, or verification state. Do not delete any evidence record or change claim, confidence, or verification_status. Do not return Markdown, code fences, explanations, JSON Patch, or cite/filecite/turn markers.
+    return `This is a targeted analytical completion task, not a general rewrite or JSON serialization repair. Return exactly one complete minified canonical JSON object. Preserve all existing content, IDs, and values; modify only the paths listed in the diagnostics. Fill each empty value with specific, concise analytical content grounded in evidence already present in the record. If the record identifies no counter-evidence, state that explicitly and specify what should be searched to test the claim; do not invent a source, URL, locator, or verification state. Do not delete any evidence record or change claim, confidence, or verification_status. If a path names a reference that does not resolve, point it to a fitting existing record ID or remove only that reference; if an ID is duplicated, rename the later duplicate and update what refers to it. Do not return Markdown, code fences, explanations, JSON Patch, or cite/filecite/turn markers.
 
 Paths to complete:
 ${diagnosticBlock}
@@ -828,7 +965,9 @@ ${payload}`;
     GENERATED_DRAFT_CONTRACT,
     GENERATED_DRAFT_SCHEMA_VERSION,
     supports,
+    recognize,
     compile,
+    generateMissingIds: addGeneratedIds,
     canRecoverAsDraft,
     isReviewableCompletionGap,
     asReviewableDraft,

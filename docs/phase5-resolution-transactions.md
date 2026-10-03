@@ -27,7 +27,7 @@ The commit is rejected when the draft has no changes; the full contract is inval
 
 Workspace format v3 adds `resolution_ledger` while preserving immutable revisions, the separate working draft, the operational review ledger, optimistic concurrency, checksummed portable bundles, and `canonical_transport: false`. The bounded v2→v3 migration creates an empty resolution ledger and never invents approval history.
 
-Every resolution record carries chain provenance, proposal and diff checksums, base and committed revision IDs, draft and payload checksums, validation and diagnostic snapshots, local approver identity, rationale, and explicit-confirmation mode. The chain is tamper-evident, not a signature or external notarization.
+Every resolution record carries chain provenance, proposal and diff checksums, base and committed revision IDs, draft and payload checksums, validation and diagnostic snapshots, local approver identity, rationale, and explicit-confirmation mode. The unkeyed hash chain detects corruption and naive edits, but anyone who recomputes the hashes can rewrite it; it is not a signature or external notarization.
 
 ## Review drift and interface
 

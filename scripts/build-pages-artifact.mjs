@@ -7,6 +7,7 @@ const files = [
   "index.html",
   "manifest.webmanifest",
   ".nojekyll",
+  "_headers",
   "assets/apple-touch-icon.png",
   "assets/favicon-32.png",
   "assets/jarbou3i-mascot-192.png",

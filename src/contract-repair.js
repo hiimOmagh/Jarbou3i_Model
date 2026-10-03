@@ -19,9 +19,12 @@
     );
   }
 
-  function quarantineUnknownProperties(value, repairs, quarantine) {
-    const validate =
-      root.Jarbou3iBiopoliticsSchemaValidators?.canonical;
+  function quarantineUnknownProperties(
+    value,
+    repairs,
+    quarantine,
+    validate = root.Jarbou3iBiopoliticsSchemaValidators?.canonical,
+  ) {
     if (typeof validate !== "function") return;
     for (let pass = 0; pass < 64; pass += 1) {
       validate(value);
@@ -63,6 +66,240 @@
       }
       if (!changed) return;
     }
+  }
+
+  // Keywords that describe missing content; the draft fallback lists them as
+  // completion gaps, so salvage leaves them alone.
+  const COMPLETION_KEYWORDS = new Set(["required", "minLength", "minItems"]);
+  // Composite keywords are always accompanied by a concrete child error.
+  const COMPOSITE_KEYWORDS = new Set(["anyOf", "oneOf", "allOf", "if", "not"]);
+  const PROTECTED_KEYS = new Set([
+    "schema_version",
+    "analysis_contract",
+    "contract_status",
+    "analysis_lens",
+    "analysis_id",
+    "language",
+    "subject",
+    "id",
+  ]);
+  const NUMERIC = /^-?\d+(\.\d+)?$/;
+  const LANGUAGE_NAMES = {
+    english: "en",
+    anglais: "en",
+    "الإنجليزية": "en",
+    "الانجليزية": "en",
+    french: "fr",
+    "français": "fr",
+    francais: "fr",
+    "الفرنسية": "fr",
+    arabic: "ar",
+    arabe: "ar",
+    "العربية": "ar",
+  };
+
+  // "en", "en-US", "English (US)", "français", "العربية" → a supported code.
+  function languageCode(value) {
+    const word = String(value ?? "").trim().toLowerCase().split(/[^\p{L}]+/u).find(Boolean) || "";
+    if (["ar", "en", "fr"].includes(word)) return word;
+    return Object.hasOwn(LANGUAGE_NAMES, word) ? LANGUAGE_NAMES[word] : undefined;
+  }
+
+  // Pure format coercion; returns undefined when a judgment would be needed.
+  function coerce(current, error) {
+    if (error.keyword === "enum") {
+      const allowed = error.params?.allowedValues || [];
+      const normalized = String(current ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, "_");
+      if (allowed.includes(normalized)) {
+        return { value: normalized, code: "ENUM_FORMAT_NORMALIZED" };
+      }
+      const language = allowed.includes("en") ? languageCode(current) : undefined;
+      return language && allowed.includes(language)
+        ? { value: language, code: "LANGUAGE_NAME_NORMALIZED" }
+        : undefined;
+    }
+    if (error.keyword !== "type") return undefined;
+    const types = [error.params?.type].flat();
+    if (current === null) {
+      // An explicit null is an empty answer; the empty field becomes a listed gap.
+      const empty = types.includes("string")
+        ? ""
+        : types.includes("array")
+          ? []
+          : types.includes("object")
+            ? {}
+            : undefined;
+      return empty === undefined ? undefined : { value: empty, code: "NULL_TO_EMPTY" };
+    }
+    if (error.instancePath === "/subject" && typeof current === "string" && current.trim()) {
+      return { value: { title: current }, code: "SUBJECT_TEXT_TO_TITLE" };
+    }
+    if (types.includes("array") && !Array.isArray(current)) {
+      const entries = isObject(current) ? Object.entries(current) : [];
+      if (entries.length && entries.every(([, item]) => isObject(item))) {
+        return {
+          value: entries.map(([key, item]) => (item.id ? item : { ...item, id: key })),
+          code: "OBJECT_MAP_TO_ARRAY",
+          count: entries.length,
+        };
+      }
+      return { value: [current], code: "SCALAR_TO_ARRAY" };
+    }
+    if (types.includes("string")) {
+      if (["number", "boolean"].includes(typeof current)) {
+        return { value: String(current), code: "SCALAR_TO_STRING" };
+      }
+      if (
+        Array.isArray(current) &&
+        current.length &&
+        current.every((item) => ["string", "number"].includes(typeof item))
+      ) {
+        return { value: current.join("; "), code: "ARRAY_TO_STRING" };
+      }
+    }
+    if (types.includes("boolean") && /^(true|false)$/i.test(String(current).trim())) {
+      return {
+        value: String(current).trim().toLowerCase() === "true",
+        code: "STRING_TO_BOOLEAN",
+      };
+    }
+    if (
+      (types.includes("integer") || types.includes("number")) &&
+      typeof current === "string" &&
+      NUMERIC.test(current.trim()) &&
+      (types.includes("number") || Number.isInteger(Number(current)))
+    ) {
+      return { value: Number(current), code: "STRING_TO_NUMBER" };
+    }
+    return undefined;
+  }
+
+  // Resolves every schema error that is not a completion gap: format slips are
+  // coerced, anything else is removed and preserved in the import audit so the
+  // draft fallback reports it as a gap instead of rejecting the whole answer.
+  function salvageSchemaErrors(value, validate, repairs, quarantine) {
+    if (typeof validate !== "function") return;
+    for (let pass = 0; pass < 64; pass += 1) {
+      validate(value);
+      const errors = (validate.errors || []).filter(
+        (error) =>
+          !COMPLETION_KEYWORDS.has(error.keyword) &&
+          !COMPOSITE_KEYWORDS.has(error.keyword) &&
+          error.keyword !== "additionalProperties" &&
+          error.instancePath,
+      );
+      // Deepest and highest-index paths first so removals never shift a pending path.
+      errors.sort((a, b) =>
+        b.instancePath.localeCompare(a.instancePath, undefined, { numeric: true }),
+      );
+      let changed = false;
+      const seen = new Set();
+      for (const error of errors) {
+        const path = error.instancePath;
+        if (seen.has(path)) continue;
+        seen.add(path);
+        const parts = pointerParts(path);
+        const key = parts.at(-1);
+        const owner = parts.slice(0, -1).reduce((current, part) => current?.[part], value);
+        if (!owner || typeof owner !== "object" || !(key in owner)) continue;
+        const current = owner[key];
+        const idKey = key === "id" || key === "analysis_id";
+        // A null list entry is no record; it is quarantined, not made empty.
+        // Several IDs in one list are not one ID; joining them would invent one.
+        const coerced =
+          (current === null && Array.isArray(owner)) ||
+          (idKey && Array.isArray(current) && current.length !== 1)
+            ? undefined
+            : coerce(current, error);
+        if (coerced) {
+          owner[key] = coerced.value;
+          repairs.push({ code: coerced.code, path, count: coerced.count || 1 });
+          changed = true;
+          continue;
+        }
+        // An ID of the wrong type identifies nothing; it is quarantined and
+        // regenerated. Other identity values are never removed.
+        const unusableId = error.keyword === "type" && idKey;
+        if (PROTECTED_KEYS.has(key) && !unusableId) continue;
+        quarantine.push(
+          Object.freeze({
+            code: "INVALID_VALUE_QUARANTINED",
+            path,
+            value: clone(current ?? null),
+            reason: `${error.keyword}: ${error.message || "invalid"}`,
+            action: "preserved_in_import_audit",
+            severity: "information",
+          }),
+        );
+        repairs.push({ code: "INVALID_VALUE_QUARANTINED", path, count: 1 });
+        if (Array.isArray(owner)) owner.splice(Number(key), 1);
+        else delete owner[key];
+        changed = true;
+      }
+      if (!changed) return;
+    }
+  }
+
+  const LANGUAGES = ["ar", "en", "fr"];
+  const MODES = ["simple", "focused", "expert", "research"];
+  const SUBJECT_KEYS = ["title", "context", "research_question", "executive_finding"];
+  const filled = (value) => typeof value === "string" && value.trim();
+
+  // Envelope metadata is not analysis; like the interchange compiler, it comes
+  // from the request so that missing metadata never blocks an import.
+  function fillEnvelope(value, options, repairs) {
+    const fill = (key, fallback) => {
+      value[key] = fallback;
+      repairs.push({ code: "ENVELOPE_METADATA_FILLED", path: `/${key}`, value: fallback, count: 1 });
+    };
+    if (!LANGUAGES.includes(value.language) && LANGUAGES.includes(options.language)) {
+      fill("language", options.language);
+    }
+    if (!MODES.includes(value.model_mode) && MODES.includes(options.mode)) fill("model_mode", options.mode);
+    if (!filled(value.generated_at)) fill("generated_at", new Date().toISOString());
+    if (!filled(value.analysis_id)) fill("analysis_id", `ai-analysis-${value.generated_at.slice(0, 10)}`);
+  }
+
+  // Imports any canonical-shaped Biopolitical candidate: canonical when salvage
+  // satisfies the contract, otherwise a reviewable draft whose remaining
+  // diagnostics are listed for completion. Publication gates are unchanged.
+  function salvageBiopolitical(candidate, options = {}) {
+    const validators = root.Jarbou3iBiopoliticsSchemaValidators;
+    const integrity = root.Jarbou3iBiopoliticsIntegrity;
+    const interchange = root.Jarbou3iAiInterchange;
+    const repairs = [];
+    const quarantine = [];
+    const value = clone(candidate);
+    salvageSchemaErrors(value, validators?.canonical, repairs, quarantine);
+    // After salvage, so records that salvage reshaped also receive an ID.
+    interchange?.generateMissingIds?.(value, { transformations: repairs });
+    // Map keys kept as IDs can be unknown properties of fixed-set entries.
+    quarantineUnknownProperties(value, repairs, quarantine);
+    fillEnvelope(value, options, repairs);
+    const canonical = integrity.validateImport(value);
+    if (canonical.ok || canonical.state !== "canonical") {
+      return { value, validation: canonical, candidate: value, diagnostics: [], repairs, quarantine };
+    }
+    const diagnostics = canonical.errors;
+    const draft = interchange.asReviewableDraft(value, diagnostics, options);
+    salvageSchemaErrors(draft, validators?.generatedDraft, repairs, quarantine);
+    // The draft keeps the subject shape; a missing part is an empty, listed gap.
+    if (draft.subject === undefined) draft.subject = {};
+    if (isObject(draft.subject)) {
+      for (const key of SUBJECT_KEYS) draft.subject[key] ??= "";
+    }
+    quarantineUnknownProperties(draft, repairs, quarantine, validators?.generatedDraft);
+    return {
+      value: draft,
+      validation: integrity.validateImport(draft),
+      candidate: value,
+      diagnostics,
+      repairs,
+      quarantine,
+    };
   }
 
   function mappedCollection(value, path, repairs) {
@@ -138,6 +375,7 @@
     const actors = value.power_map?.actors;
     (Array.isArray(actors) ? actors : []).forEach((actor, index) => {
       if (
+        !isObject(actor) ||
         actor.confidence !== undefined ||
         !Array.isArray(actor.accountability) ||
         !CONFIDENCE.has(actor.accountability.at(-1))
@@ -160,5 +398,10 @@
     };
   }
 
-  root.Jarbou3iContractRepair = Object.freeze({ repairBiopolitical });
+  root.Jarbou3iContractRepair = Object.freeze({
+    languageCode,
+    repairBiopolitical,
+    salvageBiopolitical,
+    salvageSchemaErrors,
+  });
 })(typeof window !== "undefined" ? window : globalThis);

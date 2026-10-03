@@ -35,17 +35,18 @@ Phase 5 Slice 1 introduces `jarbou3i-local-workspace@1`. Importing a validated a
 
 Phase 5 Slice 2 adds a structured editor above the working draft. Field changes are type-preserving, whole-draft validated, undoable, redoable, and saved through optimistic repository revisions; imported and committed revisions remain immutable. See [`docs/phase5-structured-canonical-editor.md`](docs/phase5-structured-canonical-editor.md).
 
-Phase 5 Slice 3 adds the `jarbou3i-operational-review-ledger@1` inside workspace format v2. Pending work can be started, annotated, completed with rationale, waived with explicit scope and accepted risk, and reopened. Every event is append-only, SHA-256 hash-chained, bound to its local reviewer snapshot and exact draft checksum, and saved through optimistic concurrency. The audit export is derived and non-canonical; local identity is not account-verified and the chain is tamper-evident rather than externally notarized. See [`docs/phase5-operational-review-ledger.md`](docs/phase5-operational-review-ledger.md).
+Phase 5 Slice 3 adds the `jarbou3i-operational-review-ledger@1` inside workspace format v2. Pending work can be started, annotated, completed with rationale, waived with explicit scope and accepted risk, and reopened. Every event is append-only, SHA-256 hash-chained, bound to its local reviewer snapshot and exact draft checksum, and saved through optimistic concurrency. The audit export is derived and non-canonical; local identity is not account-verified, and the unkeyed hash chain detects corruption and naive edits but can be rewritten by anyone who recomputes the hashes; it is not a signature or external notarization. See [`docs/phase5-operational-review-ledger.md`](docs/phase5-operational-review-ledger.md).
 
 Phase 5 Slice 4 advances the workspace to v3 and adds exact canonical proposals, whole-draft validation, explicit approval, immutable `committed_resolution` revisions, and a hash-chained resolution ledger. Review decisions whose draft checksum no longer matches are visibly stale. Strategic prompt material is isolated as untrusted JSON data, workspace listings verify integrity before showing analytical metadata, and CI evidence embeds the exact source commit. See [`docs/phase5-resolution-transactions.md`](docs/phase5-resolution-transactions.md) and the [`Alpha.40 blind-spot register`](docs/product-audit-alpha40.md).
 
 Alpha.37 is an interchange reliability interlock before the operational review ledger. The source-access selector distinguishes unsourced conceptual drafting, user-supplied sources, and live research. The parser and contract-repair layer can recover only auditable syntax and type-shape mistakes; it never rewrites analytical claims, confidence, or evidence. See [`docs/phase5-ai-interchange-reliability.md`](docs/phase5-ai-interchange-reliability.md).
 
 AI Interchange v1 provides a compact Biopolitical generation boundary and a
-lossless reviewable-draft fallback. Canonical-shaped AI results whose only
-defects are empty analytical requirements remain importable for review and
-receive an exact-path completion prompt; malformed types, identities, IDs, and
-references remain blocked. See
+lossless reviewable-draft fallback. AI results with structural slips are
+salvaged rather than rejected: unambiguous format slips are normalized, invalid
+values are quarantined in the import audit, and the remaining gaps receive an
+exact-path completion prompt. Cut-off answers are completed with a continue
+prompt. Nothing is invented, and drafts stay blocked from publication. See
 [`docs/ai-interchange-contract-v1.md`](docs/ai-interchange-contract-v1.md).
 
 Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).

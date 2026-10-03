@@ -126,6 +126,27 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#topicInput")).toHaveValue("Crash recovery proof");
   });
 
+  test("does not offer recovery for edits saved before the recovery capture fires", async ({ page }) => {
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    const subject = JSON.parse(await field.inputValue());
+    subject.title = "Saved before capture";
+    await field.fill(JSON.stringify(subject, null, 2));
+    await field.press("Control+Enter");
+    await page.locator("#editorSave").click();
+    await expect(page.locator("#editorDirty")).toContainText("No unsaved");
+    await page.waitForTimeout(700);
+    await page.locator("#editorClose").click();
+
+    await page.reload();
+    await page.locator("#workspaceBtn").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await expect(page.locator("#editorDialog")).toBeVisible();
+    await expect(page.locator("#editorRecovery")).toBeHidden();
+  });
+
   test("preserves incomplete field JSON without mutating canonical history", async ({ page }) => {
     await page.locator("#workspaceBtn").click();
     await page.getByRole("button", { name: "Edit draft" }).click();

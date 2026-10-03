@@ -40,7 +40,8 @@ export function canonicalStringify(value) {
       seen.delete(item);
       return result;
     }
-    const result = {};
+    // Null prototype so an own "__proto__" key is kept as data, not dropped.
+    const result = Object.create(null);
     for (const key of Object.keys(item).sort()) {
       const child = item[key];
       if (child !== undefined) result[key] = normalize(child);

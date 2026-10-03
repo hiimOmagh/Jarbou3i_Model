@@ -10,3 +10,5 @@ build/
 *.log
 /Local.zip
 /gate0-benchmark-local/
+/GATE-0-RUN-Easy-Launcher/
+/GATE-0-RUN-Easy-Launcher.zip

@@ -9,6 +9,102 @@ async function fixture(name) {
 }
 
 test.describe("AI interchange reliability", () => {
+  test("joins a cut-off answer with its continuation and imports it", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const data = await fixture("sample-analysis-bio-en.json");
+    const text = JSON.stringify(data);
+    const cut = Math.floor(text.length * 0.6);
+
+    await page.locator("#jsonInput").fill(text.slice(0, cut));
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#continuationField")).toBeVisible();
+    await expect(page.locator("#repairPromptBtn")).toHaveText(
+      "Continue cut-off result prompt",
+    );
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("Continue prompt copied");
+
+    // Assistants often fence the remainder and repeat the last few characters.
+    await page
+      .locator("#continuationInput")
+      .fill(`\`\`\`json\n${text.slice(cut - 24)}\n\`\`\``);
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#continuationField")).toBeHidden();
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#reviewContent")).toContainText(
+      data.subject.executive_finding,
+    );
+  });
+
+  test("imports a Strategic answer with free-tier drift as a reviewable draft", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="strategic"]').click();
+    const data = await fixture("sample-analysis-en.json");
+    data.actors[0].confidence = "High";
+    data.actors[0].financial = 7;
+    delete data.schema_version;
+    delete data.language;
+    delete data.model_mode;
+    data.actors = Object.fromEntries(data.actors.map((actor) => [actor.id, actor]));
+    data.evidence = data.evidence.items;
+    data.contradictions = "None found";
+    data.notes = "Model commentary outside the contract";
+
+    await page.locator("#jsonInput").fill(JSON.stringify({ result: data }));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      /reviewable draft with 2 gaps/i,
+    );
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText("/actors/0/financial");
+    await expect(audit).toContainText(
+      "/actors was converted from an ID-keyed object map to an array",
+    );
+    await expect(audit).toContainText("/evidence held the section's records as a list");
+    await expect(audit).toContainText("None found");
+    await expect(audit).toContainText("Model commentary outside the contract");
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#reviewContent")).toContainText(
+      data.actors[Object.keys(data.actors)[0]].name,
+    );
+    const gate = page.locator("#reviewContent .qualityGate");
+    await expect(gate).toContainText(
+      "Complete the contract gaps listed in the import audit",
+    );
+    await expect(gate).not.toContainText("Publish-ready");
+  });
+
+  test("imports a Biopolitical answer with a loose header inside a list wrapper", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const data = await fixture("sample-analysis-bio-en.json");
+    delete data.contract_status;
+    data.schema_version = "2.1";
+    data.analysis_lens = "Biopolitical";
+
+    await page.locator("#jsonInput").fill(JSON.stringify([data]));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText("The result was unwrapped from /0.");
+    await expect(audit).toContainText('/schema_version was normalized to "2.1.0".');
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#reviewContent")).toContainText(
+      data.subject.executive_finding,
+    );
+  });
+
   test("repairs observed serialization and contract-shape drift without rewriting content", async ({
     page,
   }) => {
@@ -148,9 +244,9 @@ test.describe("AI interchange reliability", () => {
 
     data.evidence.items[0].counter_evidence = 42;
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#importBtn")).toBeDisabled();
-    await expect(page.locator("#repairPromptBtn")).toHaveText(
-      "JSON repair prompt",
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(audit).toContainText(
+      "/evidence/items/0/counter_evidence was reformatted to the contract type",
     );
 
     data.evidence.items[0].counter_evidence = "";

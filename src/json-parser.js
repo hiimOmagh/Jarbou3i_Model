@@ -154,11 +154,21 @@
     return { source: out, count };
   }
 
+  // A "[" opens JSON only when it opens an array of objects or arrays, so
+  // assistant citation markers such as [1] or [source] in prose are skipped.
+  function isJsonStart(text, index) {
+    if (text[index] === "{") return true;
+    if (text[index] !== "[") return false;
+    let next = index + 1;
+    while (next < text.length && /\s/.test(text[next])) next += 1;
+    return ["{", "["].includes(text[next]);
+  }
+
   function balancedJsonSlice(source) {
     const text = String(source || "");
     let start = -1;
     for (let index = 0; index < text.length; index += 1) {
-      if (["{", "["].includes(text[index])) {
+      if (isJsonStart(text, index)) {
         start = index;
         break;
       }
@@ -205,7 +215,7 @@
     for (let index = 0; index < text.length; index += 1) {
       const char = text[index];
       if (!started) {
-        if (!["{", "["].includes(char)) continue;
+        if (!isJsonStart(text, index)) continue;
         started = true;
         stack.push(char);
         continue;
@@ -286,7 +296,38 @@
     throw error;
   }
 
+  // Appends a model's "continue" reply to a cut-off answer. Fences are removed,
+  // line breaks at the seam are dropped (JSON strings cannot contain them), and
+  // a repeated tail of the cut-off answer is not duplicated.
+  function joinContinuation(base, continuation) {
+    const head = String(base || "").replace(/[\r\n\t]+$/, "");
+    // A fenced reply ("Here is the rest:\n```json\n...\n```") contributes only
+    // the fenced block. A leading space can be string content ("quick| brown"),
+    // so only line breaks, fences, and the BOM are removed at the seam.
+    const reply = String(continuation || "").replace(/^﻿/, "");
+    const fenced = /```(?:[a-zA-Z]+(?=\s))?[ \t]*\r?\n?([\s\S]*?)(?:\r?\n?```|$)/.exec(reply);
+    const tail = (fenced ? fenced[1] : reply)
+      .replace(/^[\r\n\t]+/, "")
+      .replace(/\s+$/, "");
+    for (let size = Math.min(400, head.length, tail.length); size >= 8; size -= 1) {
+      const overlap = tail.slice(0, size);
+      if (!head.endsWith(overlap)) continue;
+      // Repetitive text ("0,0,0,0,") matches itself at any seam; trimming it
+      // could delete real content, so only a distinctive repeat is removed.
+      return isPeriodic(overlap) ? head + tail : head + tail.slice(size);
+    }
+    return head + tail;
+  }
+
+  function isPeriodic(text) {
+    for (let period = 1; period <= text.length / 2; period += 1) {
+      if (text.slice(period) === text.slice(0, text.length - period)) return true;
+    }
+    return false;
+  }
+
   root.Jarbou3iJson = Object.freeze({
+    joinContinuation,
     stripJsonComments,
     removeTrailingCommas,
     repairLabeledArrayEntries,

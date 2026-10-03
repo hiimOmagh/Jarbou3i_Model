@@ -28,28 +28,35 @@ test.describe("Runtime import validation", () => {
     );
   });
 
-  test("rejects malformed canonical field types before normalization", async ({
+  test("reformats field-type drift and discloses it instead of rejecting", async ({
     page,
   }) => {
     await openBiopoliticalImport(page);
     const data = await fixture("sample-analysis-bio-en.json");
     data.evidence.items[0].sample_size = 100;
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#importBtn")).toBeDisabled();
-    await expect(page.locator("#jsonStatus")).toContainText(
-      /evidence\/items\/0\/sample_size|must be string/i,
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText(
+      "/evidence/items/0/sample_size was reformatted to the contract type",
     );
   });
 
-  test("rejects semantic duplicate IDs after schema validation", async ({
+  test("keeps semantic duplicate IDs as a reviewable draft gap", async ({
     page,
   }) => {
     await openBiopoliticalImport(page);
     const data = await fixture("sample-analysis-bio-en.json");
     data.power_map.actors[0].id = data.evidence.items[0].id;
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#importBtn")).toBeDisabled();
-    await expect(page.locator("#jsonStatus")).toContainText(/already used|ID/i);
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      /reviewable generated draft[\s\S]*publication remains blocked/i,
+    );
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText("/power_map/actors/0/id");
   });
 
   test("accepts legacy content only as a disclosed migrated draft", async ({
@@ -125,10 +132,10 @@ test.describe("Runtime import validation", () => {
       await expect(audit.locator(".importAuditPath").first()).toHaveAttribute("dir", "ltr");
 
       const malformed = await fixture(current.fixture);
-      malformed.evidence.items[0].sample_size = 100;
+      malformed.evidence.items[0].source_tier = "academic";
       await page.locator("#jsonInput").fill(JSON.stringify(malformed));
-      await expect(page.locator("#importBtn")).toBeDisabled();
-      await expect(page.locator("#jsonStatus")).toContainText(current.schema);
+      await expect(page.locator("#importBtn")).toBeEnabled();
+      await expect(audit).toContainText(current.schema);
     }
   });
 

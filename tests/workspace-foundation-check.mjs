@@ -53,6 +53,10 @@ assert(workspace.revisions[0].kind === "imported_canonical", "imported revision 
 assert(workspace.working_draft.dirty === false, "initial working draft must be clean");
 assert(canonicalStringify(workspace.revisions[0].canonical_payload) === canonicalStringify(analysis), "canonical analysis changed during workspace creation");
 assert(workspace.revisions[0].canonical_payload !== workspace.working_draft.canonical_payload, "draft and revision must not share object identity");
+assert(
+  canonicalStringify(JSON.parse('{"x":1,"__proto__":{"hidden":true}}')) === '{"__proto__":{"hidden":true},"x":1}',
+  "an own __proto__ key must be covered by the canonical form",
+);
 await verifyWorkspace(workspace);
 
 const bundle = await createWorkspaceBundle(workspace, { clock });

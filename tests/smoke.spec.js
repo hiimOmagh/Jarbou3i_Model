@@ -1,5 +1,19 @@
 import { test, expect } from '@playwright/test';
 
+test('runs under the production content security policy without violations', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__cspViolations = [];
+    document.addEventListener('securitypolicyviolation', (event) => {
+      window.__cspViolations.push(`${event.violatedDirective} ${event.blockedURI}`);
+    });
+  });
+  const response = await page.goto('./');
+  expect(response?.headers()['content-security-policy']).toContain("script-src 'self'");
+  await page.locator('#loadSampleBtn').click();
+  await expect(page.locator('#copyPromptBtn')).toBeVisible();
+  expect(await page.evaluate(() => window.__cspViolations)).toEqual([]);
+});
+
 test('Jarbou3i Model core flow', async ({ page }) => {
   await page.goto('./');
   await expect(page.locator('#copyPromptBtn')).toBeVisible();

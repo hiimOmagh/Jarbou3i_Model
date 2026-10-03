@@ -371,4 +371,170 @@ if (
   );
 }
 
+// Free-tier drift corpus: realistic answer defects must import (canonical or
+// reviewable draft), never be rejected, and never receive invented values.
+// Mirrors the import sequence in src/app.js validateJsonInput.
+const REPAIR = window.Jarbou3iContractRepair;
+const INTEGRITY = window.Jarbou3iBiopoliticsIntegrity;
+function importResult(text) {
+  const recognized = compiler.recognize(window.Jarbou3iJson.extractJson(text).value);
+  let input = recognized.value;
+  const fromInterchange = compiler.supports(input);
+  if (fromInterchange) input = compiler.compile(input).value;
+  const raw = REPAIR.repairBiopolitical(input).value;
+  const direct = INTEGRITY.validateImport(raw);
+  if (direct.ok || direct.state !== "canonical") {
+    return { validation: direct, value: raw, quarantine: [], diagnostics: [] };
+  }
+  return REPAIR.salvageBiopolitical(raw, {
+    origin: fromInterchange ? "interchange" : "canonical",
+    language: "en",
+    mode: "focused",
+  });
+}
+const drift = (mutate) => {
+  const value = structuredClone(interchange);
+  return JSON.stringify(mutate(value) ?? value);
+};
+const driftCases = {
+  enumCasing: (d) => { d.power.actors[0].confidence = "Medium"; },
+  enumSynonym: (d) => { d.power.actors[0].confidence = "moderate"; },
+  guessedSourceTier: (d) => { d.evidence[0].source_tier = "academic"; },
+  scalarForArray: (d) => { d.power.actors[0].material_interests = "Budget savings"; },
+  nullForString: (d) => { d.power.actors[0].formal_mandate = null; },
+  booleanAsString: (d) => { d.power.affected_populations[0].missing_from_record = "false"; },
+  selfAuditYes: (d) => { d.self_audit.history_included = "yes"; },
+  danglingPopulation: (d) => { d.distribution.items[0].population_id = "POP99"; },
+  danglingLink: (d) => { d.links[0].to = "ZZZ9"; },
+  subjectText: (d) => { d.subject = d.subject.title; },
+  duplicateActor: (d) => { d.power.actors.push(structuredClone(d.power.actors[0])); },
+  captureLevelsArray: (d) => {
+    d.capture_levels = Object.entries(d.capture_levels).map(([level, item]) => ({ level, ...item }));
+  },
+  wrappedAndUnlabelled: (d) => {
+    delete d.contract;
+    return { analysis: d };
+  },
+  everythingAtOnce: (d) => {
+    for (const [name, mutate] of Object.entries(driftCases)) {
+      if (!["everythingAtOnce", "wrappedAndUnlabelled", "captureLevelsArray"].includes(name)) mutate(d);
+    }
+    return { result: d };
+  },
+};
+const driftResults = {};
+for (const [name, mutate] of Object.entries(driftCases)) {
+  driftResults[name] = importResult(drift(mutate));
+  if (!driftResults[name].validation.ok) {
+    fail(`free-tier drift case was rejected instead of salvaged: ${name} ${JSON.stringify(driftResults[name].validation.errors.slice(0, 2))}`);
+  }
+}
+if (!driftResults.enumCasing.validation.canonical || driftResults.enumCasing.value.power_map.actors[0].confidence !== "medium") {
+  fail("enum casing should normalize to the canonical spelling and stay canonical");
+}
+const tierQuarantine = driftResults.guessedSourceTier.quarantine.find((item) => item.path === "/evidence/items/0/source_tier");
+if (driftResults.guessedSourceTier.validation.canonical || tierQuarantine?.value !== "academic") {
+  fail("an out-of-contract enum must be preserved in the audit and leave a reviewable draft");
+}
+if ("source_tier" in driftResults.guessedSourceTier.value.evidence.items[0]) {
+  fail("salvage must not invent a replacement for a quarantined value");
+}
+if (
+  !driftResults.captureLevelsArray.validation.canonical ||
+  driftResults.captureLevelsArray.value.capture_levels[0].finding !== fixture.capture_levels[0].finding
+) {
+  fail("capture levels supplied as an array must keep their findings");
+}
+if (!driftResults.wrappedAndUnlabelled.validation.canonical) {
+  fail("a wrapped result without a contract label should be recognized and compiled");
+}
+if (driftResults.subjectText.value.subject.title !== fixture.subject.title) {
+  fail("a subject given as text must be kept as the subject title");
+}
+if (
+  compiler.recognize({ result: { interests: [], actors: [], tools: [] } })
+    .transformations[0]?.code !== "RESULT_WRAPPER_REMOVED"
+) {
+  fail("a wrapped Strategic result without markers should be unwrapped");
+}
+
+// Canonical-shaped answers get the same salvage, including envelope slips.
+const canonicalDrift = (mutate) => {
+  const value = structuredClone(fixture);
+  mutate(value);
+  return importResult(JSON.stringify(value));
+};
+const canonicalSubjectText = canonicalDrift((d) => { d.subject = d.subject.title; });
+if (
+  !canonicalSubjectText.validation.ok ||
+  canonicalSubjectText.value.subject.title !== fixture.subject.title
+) {
+  fail("a canonical-shaped answer with a text subject must import with its title");
+}
+for (const [name, wrap] of Object.entries({
+  topLevelList: (d) => [d],
+  twoLevels: (d) => ({ response: { analysis: d } }),
+  besideANote: (d) => ({ analysis: d, note: "Here is your analysis." }),
+})) {
+  if (!importResult(drift((d) => wrap(d))).validation.canonical) {
+    fail(`a wrapped result should be unwrapped: ${name}`);
+  }
+}
+if (!importResult(drift((d) => { d.lens = "Biopolitical"; })).validation.canonical) {
+  fail("a loosely written interchange lens should be recognized");
+}
+
+// Identity that cannot be read as the 2.1 contract is refused, not relabelled.
+for (const [name, mutate] of Object.entries({
+  versionAsList: (d) => { d.schema_version = ["2.1"]; },
+  legacyShapeClaiming21: (d) => { d.schema_version = "2.1"; d.interests = []; },
+})) {
+  if (canonicalDrift(mutate).validation.ok) fail(`unreadable identity was relabelled: ${name}`);
+}
+
+const canonicalSlips = {
+  headerStatusMissing: (d) => { delete d.contract_status; },
+  headerStatusNull: (d) => { d.contract_status = null; },
+  recordIdAsList: (d) => { d.power_map.actors[0].id = [d.power_map.actors[0].id]; },
+  headerVersionShort: (d) => { d.schema_version = "2.1"; },
+  headerVersionNumber: (d) => { d.schema_version = 2.1; },
+  headerLensCase: (d) => { d.analysis_lens = "Biopolitical"; },
+  nullListEntry: (d) => { d.power_map.actors.push(null); },
+  languageName: (d) => { d.language = "English"; },
+  languageLabel: (d) => { d.language = "English (US)"; },
+  languageMissing: (d) => { delete d.language; },
+  nullRecordId: (d) => { d.power_map.actors[0].id = null; },
+  idKeyedMap: (d) => {
+    d.power_map.actors = Object.fromEntries(d.power_map.actors.map((actor) => [actor.id, actor]));
+  },
+  nullArray: (d) => { d.power_map.actors[0].material_interests = null; },
+};
+for (const [name, mutate] of Object.entries(canonicalSlips)) {
+  const result = canonicalDrift(mutate);
+  if (!result.validation.canonical) {
+    fail(`canonical-shaped slip should stay canonical: ${name} ${JSON.stringify(result.validation.errors?.slice(0, 2))}`);
+  }
+  if (name === "languageMissing" && result.value.language !== "en") {
+    fail("a missing language must come from the request");
+  }
+  if (
+    name === "idKeyedMap" &&
+    result.value.power_map.actors.map((actor) => actor.id).join() !==
+      fixture.power_map.actors.map((actor) => actor.id).join()
+  ) {
+    fail("an ID-keyed map must keep its records and IDs");
+  }
+}
+for (const name of ["danglingPopulation", "everythingAtOnce"]) {
+  const result = driftResults[name];
+  try {
+    compiler.buildCompletionPrompt(result.candidate, result.diagnostics, "en");
+  } catch (error) {
+    fail(`completion prompt cannot be built for salvaged draft ${name}: ${error.code}`);
+  }
+}
+if (!/"source_tier":"primary_legal_policy\|[a-z_|]+"/.test(compiler.buildTemplate("en", "research"))) {
+  fail("the prompt template must list the allowed source_tier values");
+}
+
 console.log("AI interchange reliability checks passed.");
