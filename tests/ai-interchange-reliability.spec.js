@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { readIntakeDraft } from "./helpers/browser-persistence.js";
+import {
+  readIntakeDraft,
+  slowStorageOpens,
+  storageTransactionsDone,
+} from "./helpers/browser-persistence.js";
 
 async function fixture(name) {
   return JSON.parse(
@@ -432,6 +436,26 @@ test.describe("AI interchange reliability", () => {
       );
     });
   }
+
+  test("a topic typed while the analysis being prepared is restored is kept", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    await page.locator("#topicInput").fill("The analysis prepared before the reload");
+    await page.locator("#copyPromptBtn").click();
+    await expect.poll(async () => (await readIntakeDraft(page))?.topic).toBe(
+      "The analysis prepared before the reload",
+    );
+    await slowStorageOpens(page, 1_500);
+    await page.reload();
+
+    await page.locator("#topicInput").fill("A different topic typed during the restore");
+    // The startup read of the analysis being prepared is done.
+    await expect.poll(() => storageTransactionsDone(page)).toBeGreaterThanOrEqual(1);
+
+    await expect(page.locator("#topicInput")).toHaveValue("A different topic typed during the restore");
+    await expect(page.locator("#topicStatus")).not.toContainText(RESTORED);
+  });
 
   test("keeps the analysis being prepared across a reload until it is imported", async ({
     page,

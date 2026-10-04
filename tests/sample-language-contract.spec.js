@@ -82,8 +82,12 @@ test("an explicit analysis-language override persists and can be relinked", asyn
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   expect((await readLoadedSample(page)).language).toBe("en");
+  // The sample is saved, and reopened after the reload, in the background. Wait
+  // for both, so its language cannot land after the choices below.
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
 
   await page.reload();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("#analysisLang")).toHaveValue("en");
 

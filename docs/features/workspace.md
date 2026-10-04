@@ -106,6 +106,12 @@ answer mode, generated prompt, pasted answer, and stage) under the
 `jarbou3i-intake-draft@1` contract, so a reload restores unfinished work on the
 Set up screen.
 
+A reload also reopens the last open workspace. Both restores read storage after
+the page is usable, which can take a while on a slow device. Anything the user
+changes first (topic, context, sources, answer mode, lens, an analysis language
+chosen on its own, the pasted answer, or another analysis) is kept: the restore
+that would overwrite it is skipped, and the last workspace stays in Workspaces.
+
 ## Review ledger
 
 The evidence review queue (see [Results and Evidence](results-and-evidence.md))
@@ -185,3 +191,4 @@ multi-user identity are not provided.
 | Resolution transactions | `npm run test:resolution` | `tests/resolution-transaction.spec.js` |
 | Revision history and restore | `npm run test:revision-history` | `tests/revision-history.spec.js` |
 | Intake restore after reload | | `tests/ai-interchange-reliability.spec.js` |
+| Restores yield to changes made during load | | `tests/workspace-foundation.spec.js`, `tests/ai-interchange-reliability.spec.js` |

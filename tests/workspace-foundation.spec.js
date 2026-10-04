@@ -3,6 +3,8 @@ import fs from "node:fs/promises";
 import {
   clearWorkspaceRecords,
   countWorkspaceRecords,
+  slowStorageOpens,
+  storageTransactionsDone,
 } from "./helpers/browser-persistence.js";
 
 async function useEnglish(page) {
@@ -22,6 +24,36 @@ async function createSavedWorkspace(page, lens) {
   await expect(page.locator("#workspaceSaveState"))
     .toHaveAttribute("data-state", "saved");
 }
+
+// On a slow device the last analysis reopens well after the page is usable.
+test("a new topic and analysis language chosen while the last analysis reopens are kept", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await slowStorageOpens(page, 1_500);
+  await page.reload();
+
+  await page.locator("#topicInput").fill("A new topic typed during the reopen");
+  await page.locator("#analysisLang").selectOption("fr");
+  // Both startup reads (the last analysis, then the unfinished intake) are done.
+  await expect.poll(() => storageTransactionsDone(page)).toBeGreaterThanOrEqual(2);
+
+  await expect(page.locator("#topicInput")).toHaveValue("A new topic typed during the reopen");
+  await expect(page.locator("#analysisLang")).toHaveValue("fr");
+  await expect(page.locator("#reviewPanel")).toBeHidden();
+  expect(await countWorkspaceRecords(page)).toBe(1);
+});
+
+test("switching the interface language while the last analysis reopens still reopens it", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await slowStorageOpens(page, 1_500);
+  await page.reload();
+
+  await page.locator("#langFr").click();
+
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+});
 
 for (const lens of ["strategic", "biopolitical"]) {
 test(`${lens} IndexedDB workspace survives reload and reopens a verified draft`, async ({ page }) => {

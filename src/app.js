@@ -1284,10 +1284,11 @@ function discardTrip() {
   tripKept = false;
   tripWrites = tripWrites.then(() => RECOVERY_BACKEND.delete(TRIP_KEY)).catch(() => {});
 }
-async function restoreTrip() {
+async function restoreTrip(untouched) {
   const record = await tripWrites.then(() => RECOVERY_BACKEND.get(TRIP_KEY)).catch(() => null);
-  // Nothing kept, or the user already copied a prompt or pasted an answer since the page loaded.
-  if (record?.recovery_contract !== TRIP_CONTRACT || tripKept) return;
+  // Nothing kept, or the user already copied a prompt, pasted an answer, or
+  // changed the intake since the page loaded.
+  if (record?.recovery_contract !== TRIP_CONTRACT || tripKept || !untouched()) return;
   // Another analysis was opened after this one was set aside.
   if (state.activeWorkspaceId && state.activeWorkspaceId !== record.active_workspace_id) {
     discardTrip();
@@ -7135,10 +7136,11 @@ function applyWorkspaceAnalysis(workspace) {
   renderAll();
 }
 
-async function openStoredWorkspace(id, { announce = true } = {}) {
+async function openStoredWorkspace(id, { announce = true, canApply = () => true } = {}) {
   try {
     const workspace = await WORKSPACE_REPOSITORY.get(id);
     if (!workspace) throw new Error("Workspace was not found on this device.");
+    if (!canApply()) return null;
     applyWorkspaceAnalysis(workspace);
     if (announce) setWorkspaceStatus("good", workspaceText("opened"));
     return workspace;
@@ -7303,10 +7305,35 @@ async function importWorkspaceFile(file) {
   }
 }
 
-async function restoreLastWorkspace() {
+// What the user can change while the startup restore is still reading storage.
+// An analysis language that only follows the interface language is not a
+// choice of its own, so switching the interface language does not count.
+function restorableInputs() {
+  return [
+    state.analysis,
+    state.activeWorkspaceId,
+    state.analysisLens,
+    state.analysisLangFollowsUi ? "follows interface" : state.analysisLang,
+    state.promptMode,
+    state.stage,
+    $("topicInput").value,
+    $("timeframeInput").value,
+    $("sourcesInput").value,
+    $("jsonInput").value,
+  ];
+}
+// The last analysis and the analysis being prepared are read from storage after
+// the page is usable, which can take a while on a slow device. Whatever the
+// user changes first wins: a restore that would overwrite it is skipped, and
+// the last analysis stays in Workspaces.
+async function restoreAfterLoad() {
+  let expected = restorableInputs();
+  const untouched = () => restorableInputs().every((value, index) => value === expected[index]);
   const id = readSettings().activeWorkspaceId;
-  if (!id) return;
-  await openStoredWorkspace(id, { announce: false });
+  if (id && (await openStoredWorkspace(id, { announce: false, canApply: untouched }))) {
+    expected = restorableInputs();
+  }
+  await restoreTrip(untouched);
 }
 
 function renderAll() {
@@ -7774,4 +7801,4 @@ PLATFORM.performance.measure(
   },
   { lens: state.analysisLens, language: state.lang },
 );
-restoreLastWorkspace().then(restoreTrip);
+restoreAfterLoad();

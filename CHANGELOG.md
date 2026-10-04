@@ -37,6 +37,9 @@
 - Shows an answer that is exactly the requested JSON code block as clean,
   also when it was completed through the continue prompt. Removing that fence
   was reported as a repair, with a warning status.
+- Keeps what the user changes while the last analysis, or the analysis being
+  prepared, is still being restored after a reload. On a slow device the late
+  restore overwrote the topic, language, or pasted answer.
 
 ### Tests and tooling
 
@@ -46,6 +49,8 @@
 - Adds `.gitattributes` for consistent line endings.
 - Checks that an answer doing exactly what a prompt asks matches the schema,
   for both lenses and every language, depth, and source-access mode.
+- Tests the startup restore against slow storage, and waits for the reopened
+  analysis in the analysis-language test that was flaky on WebKit CI.
 
 ### Repository cleanup
 

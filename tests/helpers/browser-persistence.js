@@ -156,6 +156,39 @@ export function readFirstWorkspace(page) {
   return workspaceDatabaseOperation(page, "first-workspace");
 }
 
+// From the next page load on, storage opens report success late, as on a slow
+// phone, so a test can act while the startup restore is still reading. Finished
+// storage transactions are counted, so the test can then wait until it is done.
+export function slowStorageOpens(page, delayMs) {
+  return page.addInitScript((delay) => {
+    window.__storageTransactionsDone = 0;
+    const open = IDBFactory.prototype.open;
+    IDBFactory.prototype.open = function (...args) {
+      const request = open.apply(this, args);
+      const listen = request.addEventListener.bind(request);
+      const late = (handler) => (event) => setTimeout(() => handler.call(request, event), delay);
+      Object.defineProperty(request, "onsuccess", {
+        set: (handler) => listen("success", late(handler)),
+      });
+      request.addEventListener = (type, handler, options) =>
+        listen(type, type === "success" ? late(handler) : handler, options);
+      return request;
+    };
+    const transaction = IDBDatabase.prototype.transaction;
+    IDBDatabase.prototype.transaction = function (...args) {
+      const created = transaction.apply(this, args);
+      created.addEventListener("complete", () => {
+        window.__storageTransactionsDone += 1;
+      });
+      return created;
+    };
+  }, delayMs);
+}
+
+export function storageTransactionsDone(page) {
+  return page.evaluate(() => window.__storageTransactionsDone);
+}
+
 export function beginLongPersistenceWorkflow(testInfo, workflowName) {
   const policy = LONG_WORKFLOW_BUDGETS[workflowName];
   if (!policy) {
