@@ -20,7 +20,7 @@ Switching lenses hides an imported analysis from the other contract, so its fiel
 8. Run it in the AI assistant of your choice.
 9. Copy the returned JSON.
 
-Research mode asks for the strongest evidence metadata and causal links. Focused mode remains concise but does not omit intervention classification, rival explanations, calibrated judgment, or the self-audit. For Strategic, Focused asks for a compact answer (two or three items per section, short text values) so assistants with small output limits can finish.
+Research mode asks for the strongest evidence metadata and causal links. Focused mode remains concise but does not omit intervention classification, rival explanations, calibrated judgment, or the self-audit. For Strategic, Focused asks for a compact answer (two or three items per section, one or two evidence items, short text values) so assistants with small output limits can finish.
 
 ## Import JSON
 

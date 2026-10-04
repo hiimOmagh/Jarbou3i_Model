@@ -741,12 +741,7 @@ test.describe("AI interchange reliability", () => {
               (path) => path.textContent,
             ),
           }));
-          // Known gap until decided: a Focused prompt asks for no evidence, but the
-          // schema needs at least one evidence item.
-          expected[variant] =
-            mode === "simple"
-              ? { status: "status warn", gaps: ["/evidence/items"] }
-              : { status: "status good", gaps: [] };
+          expected[variant] = { status: "status good", gaps: [] };
         }
       }
     }

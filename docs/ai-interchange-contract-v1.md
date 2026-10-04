@@ -229,8 +229,7 @@ every language and depth, and validates the compiled result.
 `tests/ai-interchange-reliability.spec.js` fills the JSON skeleton of each of
 the 27 Strategic prompts (language × depth × source access) and pastes it into
 the app. A required field, code, or range the prompt leaves out fails these
-tests. A Focused Strategic answer still imports with one gap, `/evidence/items`:
-the Focused prompt asks for no evidence, and the schema needs at least one item.
+tests.
 
 ## Safety and publication invariants
 

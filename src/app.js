@@ -2475,25 +2475,43 @@ function buildSchema(
       next_improvement: "string",
     },
   };
+  schema.evidence = {
+    items: [
+      {
+        id: "E1",
+        claim: "string",
+        basis: "observation|inference|estimate|source_based",
+        source_title: "string",
+        source_url: "string",
+        source_date: "YYYY-MM-DD",
+        source_type: "string",
+        source_note: "string",
+        evidence_strength: 1,
+        uncertainty: "string",
+        counter_evidence: "string",
+        confidence: "high|medium|low",
+      },
+    ],
+  };
+  if (evidenceAccess === "none") {
+    schema.evidence.items = [
+      {
+        id: "E1",
+        claim: "Unsourced conceptual inference; not evidence",
+        basis: "inference",
+        source_title: "UNSOURCED MODEL SYNTHESIS — PLACEHOLDER",
+        source_url: "",
+        source_date: "",
+        source_type: "none",
+        source_note: "No external source access; publication-blocking placeholder",
+        evidence_strength: 1,
+        uncertainty: "High: no external source was available to test this inference.",
+        counter_evidence: "Not assessed without source access",
+        confidence: "low",
+      },
+    ];
+  }
   if (mode === "expert" || mode === "research") {
-    schema.evidence = {
-      items: [
-        {
-          id: "E1",
-          claim: "string",
-          basis: "observation|inference|estimate|source_based",
-          source_title: "string",
-          source_url: "string",
-          source_date: "YYYY-MM-DD",
-          source_type: "string",
-          source_note: "string",
-          evidence_strength: 1,
-          uncertainty: "string",
-          counter_evidence: "string",
-          confidence: "high|medium|low",
-        },
-      ],
-    };
     schema.assumptions = {
       items: [
         {
@@ -2514,24 +2532,6 @@ function buildSchema(
         confidence: "high|medium|low",
       },
     ];
-    if (evidenceAccess === "none") {
-      schema.evidence.items = [
-        {
-          id: "E1",
-          claim: "Unsourced conceptual inference; not evidence",
-          basis: "inference",
-          source_title: "UNSOURCED MODEL SYNTHESIS — PLACEHOLDER",
-          source_url: "",
-          source_date: "",
-          source_type: "none",
-          source_note: "No external source access; publication-blocking placeholder",
-          evidence_strength: 1,
-          uncertainty: "High: no external source was available to test this inference.",
-          counter_evidence: "Not assessed without source access",
-          confidence: "low",
-        },
-      ];
-    }
   }
   return `${label}\n${JSON.stringify(schema)}`;
 }
@@ -2559,10 +2559,10 @@ function buildStrategicPrompt({
             ? "Expert : ajoute des preuves, des hypothèses et des liens causaux."
             : "Expert: include evidence, assumptions, and causal links."
         : ar
-          ? "مركّز: ركّز على الطبقات الست، التناقضات، والسيناريوهات. اجعل الإجابة موجزة لتناسب المساعدات ذات حدود الإخراج الصغيرة: عنصران أو ثلاثة في كل قسم، وجملة قصيرة واحدة لكل قيمة نصية، وقوائم قصيرة داخل كل عنصر."
+          ? "مركّز: ركّز على الطبقات الست، التناقضات، والسيناريوهات، وأضف دليلًا أو دليلين. اجعل الإجابة موجزة لتناسب المساعدات ذات حدود الإخراج الصغيرة: عنصران أو ثلاثة في كل قسم، وجملة قصيرة واحدة لكل قيمة نصية، وقوائم قصيرة داخل كل عنصر."
           : fr
-            ? "Ciblé : priorise les six couches, les contradictions et les scénarios. Garde la réponse compacte pour les assistants à faible limite de sortie : deux ou trois éléments par section, une phrase courte par valeur textuelle et des listes courtes dans chaque élément."
-            : "Focused: prioritize the six layers, contradictions, and scenarios. Keep the answer compact for assistants with small output limits: two or three items per section, one short sentence per text value, and short lists inside each item.";
+            ? "Ciblé : priorise les six couches, les contradictions et les scénarios, et ajoute une ou deux preuves. Garde la réponse compacte pour les assistants à faible limite de sortie : deux ou trois éléments par section, une phrase courte par valeur textuelle et des listes courtes dans chaque élément."
+            : "Focused: prioritize the six layers, contradictions, and scenarios, and add one or two evidence items. Keep the answer compact for assistants with small output limits: two or three items per section, one short sentence per text value, and short lists inside each item.";
   const evidenceRule = ar
     ? evidenceAccess === "none"
       ? "الوصول إلى المصادر: غير متاح. لا ترفض المهمة لهذا السبب ولا تختلق مصدرًا. استخدم عنصرًا نائبًا صريحًا منخفض الثقة، ولا تقدمه كدليل."

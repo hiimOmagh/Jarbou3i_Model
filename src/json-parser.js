@@ -255,9 +255,20 @@
     const raw = stripBom(source);
     if (!raw) throw new Error("empty");
     const attempts = [raw];
+    const fenceMatches = [...raw.matchAll(/```(?:json|JSON)?\s*([\s\S]*?)```/g)];
+    // One fenced block and nothing else is the form the prompts ask for, so
+    // removing its fence is not a repair. An answer completed through the
+    // continue prompt keeps only the opening fence of its cut-off first part.
+    const opening = /^```(?:json|JSON)?\s*/;
+    const askedForm =
+      fenceMatches.length === 1 && fenceMatches[0][0] === raw
+        ? stripBom(fenceMatches[0][1])
+        : fenceMatches.length === 0 && opening.test(raw)
+          ? stripBom(raw.replace(opening, ""))
+          : null;
     // Every fenced block, largest first: a short format example before or
     // after the answer must not be taken for the answer.
-    const fences = [...raw.matchAll(/```(?:json|JSON)?\s*([\s\S]*?)```/g)]
+    const fences = fenceMatches
       .map((match) => match[1])
       .sort((a, b) => b.length - a.length);
     attempts.push(...fences);
@@ -270,7 +281,11 @@
       if (!clean || seen.has(clean)) continue;
       seen.add(clean);
       try {
-        return { value: JSON.parse(clean), recovered: clean !== raw, source: clean };
+        return {
+          value: JSON.parse(clean),
+          recovered: clean !== raw && clean !== askedForm,
+          source: clean,
+        };
       } catch {}
       const recovered = recoverCandidate(clean);
       if (!recovered || seen.has(recovered)) continue;

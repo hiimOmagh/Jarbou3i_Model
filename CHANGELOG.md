@@ -31,6 +31,12 @@
   was set aside and replaced with generated IDs.
 - Tells the assistant that `evidence_of_benefit` holds evidence IDs, not
   descriptions.
+- Asks Focused Strategic answers for one or two evidence items (or the
+  no-source placeholder). The schema requires evidence, so every Focused
+  answer used to import as a draft with one gap.
+- Shows an answer that is exactly the requested JSON code block as clean,
+  also when it was completed through the continue prompt. Removing that fence
+  was reported as a repair, with a warning status.
 
 ### Tests and tooling
 

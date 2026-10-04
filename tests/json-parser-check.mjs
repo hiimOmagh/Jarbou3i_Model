@@ -131,4 +131,23 @@ if (exampleAfter.value.analysis_lens !== "strategic") {
   fail("a small block after the answer replaced the answer");
 }
 
+// The prompts ask for one ```json block and nothing else; that is not a repair.
+// Prose around the block still is.
+if (parser.extractJson('\n```json\n{"items":[1]}\n```\n').recovered) {
+  fail("an answer in the requested single ```json block was marked recovered");
+}
+if (!parser.extractJson('Here it is:\n```json\n{"items":[1]}\n```').recovered) {
+  fail("prose around a fenced answer was not marked recovered");
+}
+if (!twoBlocks.recovered) {
+  fail("an answer chosen from two fenced blocks was not marked recovered");
+}
+const continuedAnswer = parser.joinContinuation('```json\n{"items":[1,', '```json\n2]}\n```');
+if (parser.extractJson(continuedAnswer).recovered) {
+  fail("an answer completed through the continue prompt was marked recovered");
+}
+if (!parser.extractJson('```json\n{"items":[1]}\nThanks!').recovered) {
+  fail("text after an unclosed fenced answer was not marked recovered");
+}
+
 console.log("JSON parser checks passed.");
