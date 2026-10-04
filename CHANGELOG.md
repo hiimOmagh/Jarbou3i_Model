@@ -38,6 +38,8 @@
   workflows scoped WebKit budgets.
 - Adds the Gate 0 human benchmark kit.
 - Adds `.gitattributes` for consistent line endings.
+- Checks that an answer doing exactly what a prompt asks matches the schema,
+  for both lenses and every language, depth, and source-access mode.
 
 ### Repository cleanup
 

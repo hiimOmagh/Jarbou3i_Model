@@ -220,6 +220,18 @@ Focused depth asks for a compact answer (a few items per section, short text
 values) so assistants with small output limits can finish. When an answer is
 still cut off, the continue prompt above completes it.
 
+## Prompt conformance
+
+An answer that does exactly what the prompt asks must match the schema.
+`tests/ai-interchange-reliability-check.mjs` fills the Biopolitical template
+and record guide (the first listed code, both ends of each number range) for
+every language and depth, and validates the compiled result.
+`tests/ai-interchange-reliability.spec.js` fills the JSON skeleton of each of
+the 27 Strategic prompts (language × depth × source access) and pastes it into
+the app. A required field, code, or range the prompt leaves out fails these
+tests. A Focused Strategic answer still imports with one gap, `/evidence/items`:
+the Focused prompt asks for no evidence, and the schema needs at least one item.
+
 ## Safety and publication invariants
 
 - The original pasted text remains available in the current import audit until

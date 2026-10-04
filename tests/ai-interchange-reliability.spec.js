@@ -683,42 +683,74 @@ test.describe("AI interchange reliability", () => {
     }
   });
 
-  test("the Strategic prompt asks for every evidence and link field the schema requires", async ({
-    page,
-  }) => {
-    const schema = JSON.parse(
-      await fs.readFile(path.join(process.cwd(), "schema", "strategic-analysis.schema.json"), "utf8"),
-    );
-    const missing = (record, definition) =>
-      schema.$defs[definition].required.filter((key) => !(key in (record || {})));
+  test("an answer that follows any Strategic prompt imports without gaps", async ({ page }) => {
+    test.slow();
+    // Fill the prompt's JSON skeleton the way an assistant would: the first listed
+    // code, a real date and URL, an ID defined above for each end of a link. Any
+    // field, code or range the prompt leaves out but the schema requires becomes a gap.
+    const fill = (value, key = "") => {
+      if (typeof value === "string") {
+        if (/^[a-z_]+(\|[a-z_]+)+$/.test(value)) return value.split("|")[0];
+        if (/^YYYY-MM-DDTHH/.test(value)) return "2026-01-01T00:00:00Z";
+        if (value === "YYYY-MM-DD") return "2026-01-01";
+        if (value === "id") return key === "from" ? "I1" : "A1";
+        if (value === "string") return key.endsWith("_url") ? "https://example.org/source" : "Example";
+        return value;
+      }
+      if (Array.isArray(value)) return value.map((item) => fill(item, key));
+      if (value && typeof value === "object") {
+        return Object.fromEntries(Object.entries(value).map(([name, item]) => [name, fill(item, name)]));
+      }
+      return value;
+    };
     await page.goto("./");
     await page.locator("#langEn").click();
     await page.locator("#topicInput").fill("EU Carbon Border Adjustment Mechanism");
     await page.locator('[data-lens="strategic"]').click();
-    for (const [mode, access] of [
-      ["expert", "provided"],
-      ["research", "web"],
-      ["research", "none"],
-    ]) {
-      await page.locator("#promptMode").selectOption(mode);
-      await page.locator("#evidenceAccess").selectOption(access);
-      await page.locator("#previewPromptBtn").click();
-      const prompt = await page.locator("#modalContent").textContent();
-      await page.keyboard.press("Escape");
-      const skeleton = prompt
-        .split("\n")
-        .filter((line) => line.startsWith("{"))
-        .map((line) => {
-          try {
-            return JSON.parse(line);
-          } catch {
-            return null;
-          }
-        })
-        .find((value) => value?.scenarios);
-      expect.soft(missing(skeleton?.evidence?.items?.[0], "evidence"), `${mode}/${access} evidence`).toEqual([]);
-      expect.soft(missing(skeleton?.links?.[0], "link"), `${mode}/${access} links`).toEqual([]);
+    const results = {};
+    const expected = {};
+    for (const lang of ["ar", "en", "fr"]) {
+      for (const mode of ["simple", "expert", "research"]) {
+        for (const access of ["none", "provided", "web"]) {
+          await page.locator("#analysisLang").selectOption(lang);
+          await page.locator("#promptMode").selectOption(mode);
+          await page.locator("#evidenceAccess").selectOption(access);
+          await page.locator("#previewPromptBtn").click();
+          const prompt = await page.locator("#modalContent").textContent();
+          await page.keyboard.press("Escape");
+          const skeleton = prompt
+            .split("\n")
+            .filter((line) => line.startsWith("{"))
+            .map((line) => {
+              try {
+                return JSON.parse(line);
+              } catch {
+                return null;
+              }
+            })
+            .find((value) => value?.scenarios);
+          const variant = `${lang}/${mode}/${access}`;
+          expect(skeleton, `${variant} prompt has no JSON skeleton`).toBeTruthy();
+          await page.locator("#jsonInput").fill("");
+          await expect(page.locator("#jsonStatus")).toHaveClass("status");
+          await page.locator("#jsonInput").fill(JSON.stringify(fill(skeleton)));
+          await expect(page.locator("#jsonStatus")).toHaveClass(/status (good|warn|bad)/);
+          results[variant] = await page.evaluate(() => ({
+            status: document.getElementById("jsonStatus").className,
+            gaps: [...document.querySelectorAll("#importAuditDetails .importAuditPath")].map(
+              (path) => path.textContent,
+            ),
+          }));
+          // Known gap until decided: a Focused prompt asks for no evidence, but the
+          // schema needs at least one evidence item.
+          expected[variant] =
+            mode === "simple"
+              ? { status: "status warn", gaps: ["/evidence/items"] }
+              : { status: "status good", gaps: [] };
+        }
+      }
     }
+    expect(results).toEqual(expected);
   });
 
   test("shows a clean Biopolitical answer as ready, with its evidence still to review", async ({

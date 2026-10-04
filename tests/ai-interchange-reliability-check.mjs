@@ -653,4 +653,92 @@ if (!/evidence_of_benefit: evidence IDs/.test(compiler.buildFieldGuide())) {
   fail("the record guide does not say evidence_of_benefit holds evidence IDs");
 }
 
+// An answer that follows the prompt exactly (the template, one record per guide
+// entry, the first allowed code, each end of every number range) must pass the
+// canonical schema in every language and depth. A required field, code or range
+// the prompt does not ask for fails here. References are placeholders, so only
+// the schema is checked, not reference integrity.
+const guideLines = compiler.buildFieldGuide().split("\n");
+const guideRecords = guideLines
+  .map((line) => line.match(/^([a-z_.]+): \{(.+)\}$/))
+  .filter(Boolean);
+const guideCodes = new Map();
+const guideNumbers = new Map();
+const allowedLines = guideLines.slice(
+  guideLines.findIndex((line) => line.startsWith("Allowed codes")) + 1,
+);
+for (const line of allowedLines) {
+  const code = line.match(/^([a-z_.]+): ([a-z_]+(?:\|[a-z_]+)+)$/);
+  const number = line.match(/^([a-z_.]+): a (?:number|percentage) from (\d+) to (\d+)/);
+  if (code) guideCodes.set(code[1], code[2].split("|")[0]);
+  else if (number) guideNumbers.set(number[1], [Number(number[2]), Number(number[3])]);
+  else fail(`the conformance check cannot read this guide line: ${line}`);
+}
+if (guideRecords.length !== guideLines.filter((line) => line.includes(": {")).length) {
+  fail("the conformance check cannot read every record guide entry");
+}
+const firstOption = (value) => {
+  if (typeof value === "string") {
+    return /^[a-z_]+(\|[a-z_]+)+$/.test(value) ? value.split("|")[0] : value || "Example";
+  }
+  if (Array.isArray(value)) return value.map(firstOption);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, firstOption(item)]),
+    );
+  }
+  return value;
+};
+// The shallowest array whose path ends with the guide entry's name.
+const findGuideArray = (rootNode, name) => {
+  const queue = [[rootNode, ""]];
+  while (queue.length) {
+    const [node, trail] = queue.shift();
+    if (!node || typeof node !== "object" || Array.isArray(node)) continue;
+    for (const [key, value] of Object.entries(node)) {
+      const path = trail ? `${trail}.${key}` : key;
+      if (Array.isArray(value) && (path === name || path.endsWith(`.${name}`))) {
+        return value;
+      }
+      queue.push([value, path]);
+    }
+  }
+  return null;
+};
+const validateSchema = window.Jarbou3iBiopoliticsSchemaValidators.canonical;
+const promptVariants = ["ar", "en", "fr"].flatMap((lang) =>
+  ["simple", "expert", "research"].flatMap((mode) => [
+    [lang, mode, 0],
+    [lang, mode, 1],
+  ]),
+);
+for (const [lang, mode, end] of promptVariants) {
+  const answer = firstOption(JSON.parse(compiler.buildTemplate(lang, mode)));
+  let refCount = 0;
+  for (const [, name, keys] of guideRecords) {
+    const target = findGuideArray(answer, name);
+    if (!target) fail(`${lang}/${mode}: the template has no array for guide entry ${name}`);
+    if (target.length) continue;
+    const record = {};
+    for (const raw of keys.split(",")) {
+      const key = raw.replace("[]", "");
+      const path = `${name}.${key}`;
+      if (key === "ref") record.ref = `G${++refCount}`;
+      else if (guideCodes.has(path)) record[key] = guideCodes.get(path);
+      else if (guideNumbers.has(path)) record[key] = guideNumbers.get(path)[end];
+      else if (key === "confidence") record[key] = "medium";
+      else record[key] = raw.endsWith("[]") ? ["Example"] : "Example";
+    }
+    target.push(record);
+  }
+  const conformance = compiler.compile(answer, { generatedAt: fixture.generated_at });
+  if (conformance.value.contract_status !== "canonical" || !validateSchema(conformance.value)) {
+    fail(
+      `${lang}/${mode}: an answer that follows the prompt does not match the schema: ${JSON.stringify(
+        (validateSchema.errors || []).slice(0, 5).map((error) => `${error.instancePath} ${error.message}`),
+      )}`,
+    );
+  }
+}
+
 console.log("AI interchange reliability checks passed.");
