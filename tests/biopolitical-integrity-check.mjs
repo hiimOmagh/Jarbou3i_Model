@@ -266,4 +266,40 @@ for (const phrase of [
   }
 }
 
+// The no-source prompt asks for a placeholder evidence record that nothing
+// cites. It is still not publication-ready, but it is not an uncited source,
+// and it scores the same in every language.
+const placeholderScores = new Set();
+for (const lang of ["en", "ar", "fr"]) {
+  const [placeholderItem] = JSON.parse(bio.buildSchemaTemplate(lang, "research", "none")).evidence.items;
+  const data = clone(fixture);
+  const uncited = {
+    ...clone(data.evidence.items[0]),
+    id: "E98",
+    source_title: "Regulation (EU) 2021/953",
+    source_url: "https://eur-lex.europa.eu/eli/reg/2021/953/oj",
+  };
+  data.evidence.items.push({ ...placeholderItem, id: "E99" }, uncited);
+  const result = integrity.validateImport(data);
+  const at = (code, id) =>
+    result.warnings.some(
+      (warning) =>
+        warning.code === code &&
+        warning.path.startsWith(`/evidence/items/${data.evidence.items.findIndex((item) => item.id === id)}`),
+    );
+  if (at("UNREFERENCED_EVIDENCE", "E99")) {
+    fail(`${lang} placeholder evidence was reported as not cited`);
+  }
+  if (!at("EVIDENCE_NOT_PUBLICATION_READY", "E99")) {
+    fail(`${lang} placeholder evidence was not reported as not publication-ready`);
+  }
+  if (!at("UNREFERENCED_EVIDENCE", "E98")) {
+    fail(`${lang}: an uncited real source was not reported`);
+  }
+  placeholderScores.add(bio.scores(data).evidence);
+}
+if (placeholderScores.size !== 1) {
+  fail(`placeholder evidence scores differ by language: ${[...placeholderScores]}`);
+}
+
 console.log("Biopolitical integrity checks passed.");

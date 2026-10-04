@@ -1257,6 +1257,74 @@
     );
   }
 
+  // A no-source answer carries this evidence record instead of a source. It
+  // marks the analysis as unsourced model synthesis, and nothing cites it.
+  function unsourcedPlaceholder(lang = "en") {
+    const copy = {
+      en: {
+        claim: "No external evidence was available. This record marks an unsourced model synthesis and is not proof.",
+        title: "UNSOURCED MODEL SYNTHESIS — PUBLICATION-BLOCKING PLACEHOLDER",
+        na: "Not assessed without external evidence",
+        uncertainty: "High: no external source was available to test these analytical claims.",
+        limitations: "Conceptual model synthesis only; no source, measurement, quotation, or factual verification is claimed.",
+        counter: "Counter-evidence was not assessed because no external source access was available.",
+        noStrong: "No substantive claim is classified as strongly supported because no external evidence was available.",
+      },
+      ar: {
+        claim: "لا يتوفر دليل خارجي. يسجل هذا العنصر تركيبًا مفاهيميًا غير مسند من النموذج ولا يُعد إثباتًا.",
+        title: "تركيب نموذجي بلا مصدر — عنصر نائب يحظر النشر",
+        na: "لم يُقيّم دون دليل خارجي",
+        uncertainty: "مرتفعة: لم يتوفر مصدر خارجي لاختبار الادعاءات التحليلية.",
+        limitations: "تركيب مفاهيمي فقط؛ لا يدعي مصدرًا أو قياسًا أو اقتباسًا أو تحققًا واقعيًا.",
+        counter: "لم تُقيّم الأدلة المضادة لعدم توفر وصول إلى مصادر خارجية.",
+        noStrong: "لا يُصنف أي ادعاء موضوعي على أنه مدعوم بقوة لعدم توفر دليل خارجي.",
+      },
+      fr: {
+        claim: "Aucune preuve externe n’était disponible. Cette entrée signale une synthèse non sourcée du modèle et ne constitue pas une preuve.",
+        title: "SYNTHÈSE NON SOURCÉE DU MODÈLE — SUBSTITUT BLOQUANT LA PUBLICATION",
+        na: "Non évalué sans preuve externe",
+        uncertainty: "Élevée : aucune source externe n’était disponible pour tester les affirmations analytiques.",
+        limitations: "Synthèse conceptuelle uniquement ; aucune source, mesure, citation ou vérification factuelle n’est revendiquée.",
+        counter: "Les contre-preuves n’ont pas été évaluées faute d’accès à des sources externes.",
+        noStrong: "Aucune affirmation substantielle n’est classée comme fortement étayée faute de preuve externe.",
+      },
+    }[lang] || null;
+    return {
+      copy,
+      evidence: {
+        id: "E1",
+        claim: copy.claim,
+        epistemic_type: "speculation",
+        source_tier: "expert_commentary",
+        source_title: copy.title,
+        source_url: "",
+        source_locator: "",
+        source_date: "",
+        geography: copy.na,
+        population: copy.na,
+        measurement_method: copy.na,
+        denominator: copy.na,
+        sample_size: copy.na,
+        measurement_validity: copy.na,
+        causal_identification: copy.na,
+        replication_status: "unknown",
+        conflicts_of_interest: copy.na,
+        missing_data: copy.na,
+        selection_effects: copy.na,
+        relevant_comparison: copy.na,
+        cross_context_applicability: copy.na,
+        claim_source_fit: "unknown",
+        verification_status: "unverified",
+        verified_by: "",
+        verification_date: "",
+        uncertainty: copy.uncertainty,
+        limitations: copy.limitations,
+        counter_evidence: copy.counter,
+        confidence: "low",
+      },
+    };
+  }
+
   function buildSchemaTemplate(
     lang = "en",
     mode = "research",
@@ -1740,35 +1808,7 @@
       migration: null,
     };
     if (evidenceAccess === "none") {
-      const copy = {
-        en: {
-          claim: "No external evidence was available. This record marks an unsourced model synthesis and is not proof.",
-          title: "UNSOURCED MODEL SYNTHESIS — PUBLICATION-BLOCKING PLACEHOLDER",
-          na: "Not assessed without external evidence",
-          uncertainty: "High: no external source was available to test these analytical claims.",
-          limitations: "Conceptual model synthesis only; no source, measurement, quotation, or factual verification is claimed.",
-          counter: "Counter-evidence was not assessed because no external source access was available.",
-          noStrong: "No substantive claim is classified as strongly supported because no external evidence was available.",
-        },
-        ar: {
-          claim: "لا يتوفر دليل خارجي. يسجل هذا العنصر تركيبًا مفاهيميًا غير مسند من النموذج ولا يُعد إثباتًا.",
-          title: "تركيب نموذجي بلا مصدر — عنصر نائب يحظر النشر",
-          na: "لم يُقيّم دون دليل خارجي",
-          uncertainty: "مرتفعة: لم يتوفر مصدر خارجي لاختبار الادعاءات التحليلية.",
-          limitations: "تركيب مفاهيمي فقط؛ لا يدعي مصدرًا أو قياسًا أو اقتباسًا أو تحققًا واقعيًا.",
-          counter: "لم تُقيّم الأدلة المضادة لعدم توفر وصول إلى مصادر خارجية.",
-          noStrong: "لا يُصنف أي ادعاء موضوعي على أنه مدعوم بقوة لعدم توفر دليل خارجي.",
-        },
-        fr: {
-          claim: "Aucune preuve externe n’était disponible. Cette entrée signale une synthèse non sourcée du modèle et ne constitue pas une preuve.",
-          title: "SYNTHÈSE NON SOURCÉE DU MODÈLE — SUBSTITUT BLOQUANT LA PUBLICATION",
-          na: "Non évalué sans preuve externe",
-          uncertainty: "Élevée : aucune source externe n’était disponible pour tester les affirmations analytiques.",
-          limitations: "Synthèse conceptuelle uniquement ; aucune source, mesure, citation ou vérification factuelle n’est revendiquée.",
-          counter: "Les contre-preuves n’ont pas été évaluées faute d’accès à des sources externes.",
-          noStrong: "Aucune affirmation substantielle n’est classée comme fortement étayée faute de preuve externe.",
-        },
-      }[lang] || null;
+      const { copy, evidence } = unsourcedPlaceholder(lang);
       const clearEvidenceReferences = (value) => {
         if (!value || typeof value !== "object") return;
         for (const [key, child] of Object.entries(value)) {
@@ -1787,39 +1827,7 @@
         }
       };
       clearEvidenceReferences(skeleton);
-      skeleton.evidence.items = [
-        {
-          id: "E1",
-          claim: copy.claim,
-          epistemic_type: "speculation",
-          source_tier: "expert_commentary",
-          source_title: copy.title,
-          source_url: "",
-          source_locator: "",
-          source_date: "",
-          geography: copy.na,
-          population: copy.na,
-          measurement_method: copy.na,
-          denominator: copy.na,
-          sample_size: copy.na,
-          measurement_validity: copy.na,
-          causal_identification: copy.na,
-          replication_status: "unknown",
-          conflicts_of_interest: copy.na,
-          missing_data: copy.na,
-          selection_effects: copy.na,
-          relevant_comparison: copy.na,
-          cross_context_applicability: copy.na,
-          claim_source_fit: "unknown",
-          verification_status: "unverified",
-          verified_by: "",
-          verification_date: "",
-          uncertainty: copy.uncertainty,
-          limitations: copy.limitations,
-          counter_evidence: copy.counter,
-          confidence: "low",
-        },
-      ];
+      skeleton.evidence.items = [evidence];
       skeleton.calibrated_conclusion.strongly_supported = [copy.noStrong];
       skeleton.calibrated_conclusion.overall_confidence = "low";
       skeleton.self_audit.statistics_quotations_verified = "concern";
@@ -1836,17 +1844,17 @@
   }) {
     const interchange = root.Jarbou3iAiInterchange;
     const schema = interchange
-      ? interchange.buildTemplate(lang, mode)
+      ? interchange.buildTemplate(lang, mode, evidenceAccess)
       : buildSchemaTemplate(lang, mode, evidenceAccess);
     const interchangeGuide = interchange
-      ? `\n\n${interchange.buildFieldGuide()}\n\n${interchange.buildChecklist(lang)}`
+      ? `\n\n${interchange.buildFieldGuide(evidenceAccess)}\n\n${interchange.buildChecklist(lang)}`
       : "";
     const untrustedTopic = str(topic);
     const untrustedContext = str(context);
     if (lang === "ar") {
       const evidenceRule =
         evidenceAccess === "none"
-          ? "وضع الوصول إلى الأدلة: لا وصول خارجي. لا ترفض المهمة لهذا السبب ولا تختلق مصادر. أنشئ مسودة مفاهيمية قابلة للمراجعة باستخدام عنصر الدليل النائب الصريح في المخطط، واترك جميع مصفوفات evidence_ids فارغة، واجعل الثقة الكلية منخفضة، ولا تضع في strongly_supported إلا بيان القيد الإجرائي الموجود في المخطط."
+          ? "وضع الوصول إلى الأدلة: لا وصول خارجي. لا ترفض المهمة لهذا السبب ولا تختلق مصادر. أنشئ مسودة مفاهيمية قابلة للمراجعة: أبقِ عنصر الدليل النائب في المخطط كما هو بوصفه الدليل الوحيد، واترك جميع قوائم مراجع الأدلة فارغة، واجعل الثقة الكلية منخفضة، ولا تُبقِ في strongly_supported إلا بيان القيد الموجود في المخطط."
           : evidenceAccess === "provided"
             ? "وضع الوصول إلى الأدلة: استخدم فقط المصادر المحددة فعليًا في مادة السياق. لا تستكمل عنوانًا أو رابطًا أو محددًا مفقودًا بالتخمين؛ إذا لم تكفِ المصادر فاخفض الادعاءات غير المسندة إلى استنتاجات منخفضة الثقة."
             : "وضع الوصول إلى الأدلة: بحث مباشر. سجّل فقط المصادر التي فتحتها أو تحققت من وجودها فعليًا مع رابط ومحدد قابلين للتتبع. إذا تعذر التصفح فلا تدّعِ البحث؛ استخدم قواعد المسودة المفاهيمية غير المسندة.";
@@ -1895,7 +1903,7 @@ ${schema}${interchangeGuide}`;
     if (lang === "fr") {
       const evidenceRule =
         evidenceAccess === "none"
-          ? "Mode d’accès aux preuves : aucun accès externe. Ne refusez pas la tâche pour cette seule raison et n’inventez aucune source. Produisez un brouillon conceptuel révisable avec l’entrée substitutive explicite du schéma, laissez tous les tableaux evidence_ids vides, fixez la confiance globale à low et ne placez dans strongly_supported que l’énoncé de limite procédurale fourni par le schéma."
+          ? "Mode d’accès aux preuves : aucun accès externe. Ne refusez pas la tâche pour cette seule raison et n’inventez aucune source. Produisez un brouillon conceptuel révisable : gardez telle quelle l’entrée de preuve substitutive du schéma comme seule preuve, laissez vides toutes les listes de références de preuves, fixez la confiance globale à low et ne gardez dans strongly_supported que l’énoncé de limite fourni par le schéma."
           : evidenceAccess === "provided"
             ? "Mode d’accès aux preuves : utilisez uniquement les sources effectivement identifiées dans le contexte. Ne complétez jamais un titre, une URL ou un localisateur manquant par supposition ; rétrogradez toute affirmation non étayée en inférence de faible confiance."
             : "Mode d’accès aux preuves : recherche en direct. N’enregistrez que les sources effectivement ouvertes ou dont l’existence a été vérifiée, avec URL et localisateur traçables. Si la navigation échoue, ne prétendez pas avoir recherché ; appliquez les règles du brouillon conceptuel non sourcé.";
@@ -1943,7 +1951,7 @@ ${schema}${interchangeGuide}`;
     }
     const evidenceRule =
       evidenceAccess === "none"
-        ? "Evidence-access mode: no external access. Do not refuse solely for that reason and do not invent sources. Produce a reviewable conceptual draft using the explicit placeholder evidence record in the schema, leave every evidence_ids array empty, set overall confidence to low, and put only the schema's procedural limitation statement in strongly_supported."
+        ? "Evidence-access mode: no external access. Do not refuse solely for that reason and do not invent sources. Produce a reviewable conceptual draft: keep the schema's placeholder evidence record unchanged as the only evidence, leave every list of evidence references empty, set overall confidence to low, and keep only the schema's limitation statement in strongly_supported."
         : evidenceAccess === "provided"
           ? "Evidence-access mode: use only sources actually identified in the supplied context. Never guess a missing title, URL, or locator; downgrade unsupported claims to low-confidence inference."
           : "Evidence-access mode: live research. Record only sources you actually opened or verified to exist, with traceable URLs and locators. If browsing is unavailable, do not claim research; follow the unsourced conceptual-draft rules.";
@@ -4379,7 +4387,7 @@ ${schema}${interchangeGuide}`;
         traceable: 0,
       };
     const placeholderPattern =
-      /replace\s+with|placeholder|example\s+source|sample\s+source|à\s+remplacer|استبدل|مصدر\s+مثال/i;
+      /replace\s+with|placeholder|example\s+source|sample\s+source|à\s+remplacer|substitut\s+bloquant|استبدل|مصدر\s+مثال|عنصر\s+نائب/i;
     const verificationWeights = {
       verified: 1,
       partially_verified: 0.6,
@@ -4853,6 +4861,7 @@ ${schema}${interchangeGuide}`;
     migrateLegacy,
     hasSubstance,
     buildSchemaTemplate,
+    unsourcedPlaceholder,
     buildPrompt,
     sample: makeSample,
     recordsFor,

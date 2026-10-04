@@ -9,7 +9,7 @@
     value === null || value === undefined ? "" : String(value);
   const filled = (value) => str(value).trim().length > 0;
   const placeholderPattern =
-    /replace\s+with|placeholder|example\s+source|sample\s+source|à\s+remplacer|source\s+d['’]exemple|استبدل|مصدر\s+مثال/i;
+    /replace\s+with|placeholder|example\s+source|sample\s+source|à\s+remplacer|source\s+d['’]exemple|substitut\s+bloquant|استبدل|مصدر\s+مثال|عنصر\s+نائب/i;
 
   function issue(code, path, message, severity = "error", details = {}) {
     return { code, path, message, severity, ...details };
@@ -374,7 +374,8 @@
           ),
         );
       }
-      if (!usedEvidence.has(item.id)) {
+      // The no-source prompt asks for a placeholder record that nothing cites.
+      if (!placeholder && !usedEvidence.has(item.id)) {
         warnings.push(
           issue(
             "UNREFERENCED_EVIDENCE",

@@ -150,4 +150,37 @@ if (!parser.extractJson('```json\n{"items":[1]}\nThanks!').recovered) {
   fail("text after an unclosed fenced answer was not marked recovered");
 }
 
+// An extra closing brace can end the root object before the answer does. The
+// members after it must be kept, not silently dropped.
+for (const [label, text] of [
+  ["bare", '{"a":{"b":[1]}},"c":{"d":2},"e":3}'],
+  ["fenced, with prose", 'Here:\n```json\n{"a":{"b":[1]}},"c":{"d":2},"e":3}\n```\nDone.'],
+  ["two extra braces", '{"a":{"b":1}},"c":{"d":2}},"e":3}'],
+]) {
+  const early = parser.extractJson(text);
+  if (early.value.c === undefined || early.value.e !== 3) {
+    fail(`members after an early close were dropped (${label}): ${JSON.stringify(early.value)}`);
+  }
+  if (!early.recovered || !early.repairs?.some((repair) => repair.code === "EARLY_CLOSE_REJOINED")) {
+    fail(`an early close was not reported as a repair (${label})`);
+  }
+}
+if (parser.extractJson('{"a":1}\n\n{"b":2}').value.b !== undefined) {
+  fail("a second object after the answer was merged into it");
+}
+// Cut off after an early close: it must be completed, not imported as the part
+// before the brace.
+const cutAfterEarlyClose = '{"a":{"b":1}},"c":{"d":';
+try {
+  const lossy = parser.extractJson(cutAfterEarlyClose);
+  fail(`a cut-off answer with an early close imported only its first part: ${JSON.stringify(lossy.value)}`);
+} catch (error) {
+  if (error.code !== "TRUNCATED_JSON") {
+    fail(`a cut-off answer with an early close was not reported as cut off: ${error.code}`);
+  }
+}
+if (parser.extractJson(parser.joinContinuation(cutAfterEarlyClose, '2},"e":3}')).value.c?.d !== 2) {
+  fail("a completed answer with an early close lost the part after it");
+}
+
 console.log("JSON parser checks passed.");

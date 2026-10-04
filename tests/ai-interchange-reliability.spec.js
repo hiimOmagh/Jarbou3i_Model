@@ -6,6 +6,7 @@ import {
   slowStorageOpens,
   storageTransactionsDone,
 } from "./helpers/browser-persistence.js";
+import { interchangeFrom } from "./helpers/bio-interchange.mjs";
 
 async function fixture(name) {
   return JSON.parse(
@@ -795,6 +796,20 @@ test.describe("AI interchange reliability", () => {
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#jsonStatus")).toContainText("Reviewable draft");
     await expect(page.locator("#jsonStatus")).toHaveClass(/status warn/);
+  });
+
+  test("a Biopolitical answer in the requested form is not reported as repaired", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const answer = interchangeFrom(await fixture("sample-analysis-bio-en.json"));
+    await page.locator("#jsonInput").fill(JSON.stringify(answer));
+    const audit = page.locator("#importAuditDetails");
+    await expect(audit.locator("summary")).toContainText("· 0 repaired");
+    await audit.locator("summary").click();
+    await expect(audit).toContainText("No automatic structural repair was required.");
   });
 
   test("puts the supplied sources into the prompt as untrusted material", async ({ page }) => {

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import vm from "node:vm";
+import { interchangeFrom } from "./helpers/bio-interchange.mjs";
 
 const fail = (message) => {
   console.error(`AI interchange reliability check failed: ${message}`);
@@ -92,52 +93,6 @@ if (untouched.value !== strategic || untouched.repairs.length) {
 const fixture = JSON.parse(
   fs.readFileSync("fixtures/sample-analysis-bio-en.json", "utf8"),
 );
-const interchangeFrom = (sourceFixture) => ({
-  contract: "jarbou3i-ai-interchange/1",
-  lens: "biopolitical",
-  language: sourceFixture.language,
-  mode: sourceFixture.model_mode,
-  analysis_id: sourceFixture.analysis_id,
-  subject: sourceFixture.subject,
-  framing: sourceFixture.framing,
-  legal_framework: sourceFixture.legal_framework,
-  international_comparison: sourceFixture.international_comparison,
-  capture_levels: Object.fromEntries(
-    sourceFixture.capture_levels.map(({ level, ...item }) => [level, item]),
-  ),
-  theoretical_comparison: sourceFixture.theoretical_comparison,
-  human_functions: sourceFixture.human_functions,
-  power: sourceFixture.power_map,
-  mechanisms: sourceFixture.mechanisms,
-  meaning: sourceFixture.meaning_systems,
-  intervention: {
-    interventions: sourceFixture.intervention_assessment.interventions,
-    capture: {
-      ...sourceFixture.intervention_assessment.capture_assessment,
-      criteria: Object.fromEntries(
-        sourceFixture.intervention_assessment.capture_assessment.criteria.map(
-          ({ criterion, ...item }) => [criterion, item],
-        ),
-      ),
-    },
-    care_control_tensions:
-      sourceFixture.intervention_assessment.care_control_tensions,
-  },
-  scale_time: sourceFixture.scale_time,
-  distribution: sourceFixture.distribution,
-  consent_exit: sourceFixture.consent_exit,
-  explanations: Object.fromEntries(
-    sourceFixture.competing_explanations.map(({ type, ...item }) => [type, item]),
-  ),
-  evidence: sourceFixture.evidence.items,
-  assumptions: sourceFixture.assumptions.items,
-  resistance: sourceFixture.resistance_agency.items,
-  alternatives: sourceFixture.alternatives.items,
-  conclusion: sourceFixture.calibrated_conclusion,
-  self_audit: sourceFixture.self_audit,
-  self_audit_notes: sourceFixture.self_audit_notes,
-  links: sourceFixture.links,
-});
 const interchange = interchangeFrom(fixture);
 
 const compiler = window.Jarbou3iAiInterchange;
@@ -198,6 +153,34 @@ if (!extension || extension.value !== "preserve me") {
 }
 if ("provider_note" in unknownCompilation.value) {
   fail("unknown interchange property leaked into the canonical payload");
+}
+
+// An extra closing brace can leave a section member at the top level. It is put
+// back in its section; a member the section already has stays quarantined.
+const misplaced = structuredClone(interchange);
+misplaced.care_control_tensions = misplaced.intervention.care_control_tensions;
+delete misplaced.intervention.care_control_tensions;
+if (!misplaced.care_control_tensions?.length) fail("fixture has no care_control_tensions to misplace");
+const misplacedCompilation = compiler.compile(misplaced, { generatedAt: fixture.generated_at });
+if (JSON.stringify(misplacedCompilation.value) !== JSON.stringify(compiled.value)) {
+  fail("a section member found at the top level was not put back in its section");
+}
+if (
+  misplacedCompilation.audit.quarantine.length ||
+  !misplacedCompilation.audit.transformations.some(
+    (item) => item.code === "MISPLACED_MEMBER_RESTORED" && item.path === "/intervention/care_control_tensions",
+  )
+) {
+  fail("putting back a misplaced section member was not reported");
+}
+const duplicate = structuredClone(interchange);
+duplicate.care_control_tensions = [];
+const duplicateCompilation = compiler.compile(duplicate, { generatedAt: fixture.generated_at });
+if (
+  JSON.stringify(duplicateCompilation.value) !== JSON.stringify(compiled.value) ||
+  !duplicateCompilation.audit.quarantine.some((item) => item.path === "/care_control_tensions")
+) {
+  fail("a top-level copy of a member its section already has was not quarantined");
 }
 
 const extraCanonical = structuredClone(fixture);
@@ -652,6 +635,13 @@ if (refLoopIds.join() !== refLoops.scale_time.future_feedback_loops.map((loop) =
 if (!/evidence_of_benefit: evidence IDs/.test(compiler.buildFieldGuide())) {
   fail("the record guide does not say evidence_of_benefit holds evidence IDs");
 }
+// Free-tier assistants wrote names here, which no record resolves.
+if (
+  !/power_asymmetries\.between: refs of .*never names/.test(compiler.buildFieldGuide()) ||
+  !/links\.from, links\.to: refs of .*never names/.test(compiler.buildFieldGuide())
+) {
+  fail("the record guide does not say asymmetry and link ends hold refs, not names");
+}
 
 // An answer that follows the prompt exactly (the template, one record per guide
 // entry, the first allowed code, each end of every number range) must pass the
@@ -707,13 +697,15 @@ const findGuideArray = (rootNode, name) => {
 };
 const validateSchema = window.Jarbou3iBiopoliticsSchemaValidators.canonical;
 const promptVariants = ["ar", "en", "fr"].flatMap((lang) =>
-  ["simple", "expert", "research"].flatMap((mode) => [
-    [lang, mode, 0],
-    [lang, mode, 1],
-  ]),
+  ["simple", "expert", "research"].flatMap((mode) =>
+    ["web", "none"].flatMap((access) => [
+      [lang, mode, 0, access],
+      [lang, mode, 1, access],
+    ]),
+  ),
 );
-for (const [lang, mode, end] of promptVariants) {
-  const answer = firstOption(JSON.parse(compiler.buildTemplate(lang, mode)));
+for (const [lang, mode, end, access] of promptVariants) {
+  const answer = firstOption(JSON.parse(compiler.buildTemplate(lang, mode, access)));
   let refCount = 0;
   for (const [, name, keys] of guideRecords) {
     const target = findGuideArray(answer, name);
@@ -734,10 +726,64 @@ for (const [lang, mode, end] of promptVariants) {
   const conformance = compiler.compile(answer, { generatedAt: fixture.generated_at });
   if (conformance.value.contract_status !== "canonical" || !validateSchema(conformance.value)) {
     fail(
-      `${lang}/${mode}: an answer that follows the prompt does not match the schema: ${JSON.stringify(
+      `${lang}/${mode}/${access}: an answer that follows the prompt does not match the schema: ${JSON.stringify(
         (validateSchema.errors || []).slice(0, 5).map((error) => `${error.instancePath} ${error.message}`),
       )}`,
     );
+  }
+}
+
+// With no source access, the prompt's rule names a placeholder evidence record,
+// empty evidence reference lists, and a limitation statement. The template the
+// prompt carries must contain them.
+const evidenceRefLists = (node, found = []) => {
+  if (!node || typeof node !== "object") return found;
+  for (const [key, value] of Object.entries(node)) {
+    if (key.endsWith("evidence_refs")) found.push(value);
+    else evidenceRefLists(value, found);
+  }
+  return found;
+};
+for (const lang of ["ar", "en", "fr"]) {
+  const prompt = window.Jarbou3iBiopolitics.buildPrompt({
+    topic: "Conceptual inquiry",
+    lang,
+    mode: "research",
+    evidenceAccess: "none",
+  });
+  const start = prompt.indexOf('{"contract":"jarbou3i-ai-interchange/1"');
+  const sent = JSON.parse(prompt.slice(start, prompt.indexOf("\n", start)));
+  const [placeholder, ...others] = sent.evidence;
+  if (
+    others.length ||
+    !window.Jarbou3iBiopoliticsIntegrity.placeholderPattern.test(placeholder?.source_title) ||
+    Object.values(placeholder).some((value) => value === "string") ||
+    placeholder.verification_status !== "unverified" ||
+    placeholder.confidence !== "low"
+  ) {
+    fail(`${lang}: the no-source prompt has no complete placeholder evidence record`);
+  }
+  const refLists = evidenceRefLists(sent);
+  if (!refLists.length || refLists.some((list) => list.length)) {
+    fail(`${lang}: the no-source prompt still cites evidence in its template`);
+  }
+  if (
+    sent.conclusion.strongly_supported.length !== 1 ||
+    sent.conclusion.strongly_supported[0] === "string" ||
+    sent.conclusion.overall_confidence !== "low" ||
+    sent.self_audit.statistics_quotations_verified !== "concern"
+  ) {
+    fail(`${lang}: the no-source prompt has no limitation statement or low confidence`);
+  }
+  if (!/placeholder|النائب|substitutive/i.test(prompt.slice(0, start)) || /evidence_ids/.test(prompt.slice(0, start))) {
+    fail(`${lang}: the no-source rule does not match the template it is sent with`);
+  }
+  if (/^Populate these[^\n]*evidence\.$/m.test(prompt)) {
+    fail(`${lang}: the no-source record guide asks for evidence beyond the placeholder`);
+  }
+  const web = JSON.parse(compiler.buildTemplate(lang, "research", "web"));
+  if (!evidenceRefLists(web).some((list) => list.length) || web.conclusion.overall_confidence === "low") {
+    fail(`${lang}: the no-source changes leaked into the template for other access modes`);
   }
 }
 

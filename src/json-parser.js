@@ -200,6 +200,25 @@
     return "";
   }
 
+  // An extra closing brace can end the root object before the answer does:
+  // '{"a":{"b":1}},"c":2}'. Parsing only the part before it would silently
+  // drop the rest, so each early close followed by another member is removed.
+  // An answer that is also cut off comes back unclosed, to be completed.
+  function rejoinEarlyCloses(source) {
+    let text = String(source || "");
+    let count = 0;
+    for (;;) {
+      const slice = balancedJsonSlice(text);
+      if (!slice.startsWith("{")) return count ? { source: text, count } : null;
+      const rest = text.slice(text.indexOf(slice) + slice.length);
+      if (!/^\s*,\s*"(?:[^"\\]|\\.)*"\s*:/.test(rest)) {
+        return count ? { source: slice, count } : null;
+      }
+      text = slice.slice(0, -1) + rest;
+      count += 1;
+    }
+  }
+
   function recoverCandidate(source) {
     const conservative = removeTrailingCommas(stripJsonComments(stripBom(source)));
     return repairLabeledArrayEntries(conservative).source;
@@ -273,7 +292,9 @@
       .sort((a, b) => b.length - a.length);
     attempts.push(...fences);
     const balanced = balancedJsonSlice(raw);
-    if (balanced) attempts.push(balanced);
+    // After an early close, that slice is only the first part of the answer.
+    const earlyClose = rejoinEarlyCloses(raw);
+    if (balanced && !earlyClose) attempts.push(balanced);
 
     const seen = new Set();
     for (const candidate of attempts) {
@@ -288,25 +309,35 @@
         };
       } catch {}
       const recovered = recoverCandidate(clean);
-      if (!recovered || seen.has(recovered)) continue;
-      seen.add(recovered);
-      try {
-        const labeledEntries = repairLabeledArrayEntries(
-          removeTrailingCommas(stripJsonComments(clean)),
-        ).count;
-        return {
-          value: JSON.parse(recovered),
-          recovered: true,
-          source: recovered,
-          repairs: Object.freeze([
-            ...(labeledEntries
-              ? [{ code: "LABELED_ARRAY_ENTRIES", count: labeledEntries }]
-              : []),
-          ]),
-        };
-      } catch {}
+      if (!recovered) continue;
+      const labeledEntries = repairLabeledArrayEntries(
+        removeTrailingCommas(stripJsonComments(clean)),
+      ).count;
+      const rejoined = rejoinEarlyCloses(recovered);
+      for (const [text, earlyCloses] of [
+        [recovered, 0],
+        [rejoined?.source, rejoined?.count],
+      ]) {
+        if (!text || seen.has(text)) continue;
+        seen.add(text);
+        try {
+          return {
+            value: JSON.parse(text),
+            recovered: true,
+            source: text,
+            repairs: Object.freeze([
+              ...(labeledEntries
+                ? [{ code: "LABELED_ARRAY_ENTRIES", count: labeledEntries }]
+                : []),
+              ...(earlyCloses
+                ? [{ code: "EARLY_CLOSE_REJOINED", count: earlyCloses }]
+                : []),
+            ]),
+          };
+        } catch {}
+      }
     }
-    const structure = structuralState(raw);
+    const structure = structuralState(earlyClose ? earlyClose.source : raw);
     const error = new Error(structure.incomplete ? "truncated" : "invalid");
     error.code = structure.incomplete
       ? "TRUNCATED_JSON"

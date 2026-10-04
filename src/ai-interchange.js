@@ -114,6 +114,53 @@
     );
   }
 
+  // An extra closing brace can leave a section member at the top level
+  // ("care_control_tensions" outside "intervention"). A top-level key that names
+  // a member of exactly one template section is put back when that section does
+  // not already have it; anything else is quarantined as before.
+  let memberSections;
+  function sectionOf(key) {
+    if (!memberSections) {
+      memberSections = new Map();
+      let template = {};
+      try {
+        template = JSON.parse(buildTemplate("en", "research"));
+      } catch {}
+      for (const [section, value] of Object.entries(template)) {
+        if (!isObject(value)) continue;
+        for (const member of Object.keys(value)) {
+          memberSections.set(member, memberSections.has(member) ? null : section);
+        }
+      }
+    }
+    return memberSections.get(key) || null;
+  }
+
+  function restoreMisplacedMembers(source, audit) {
+    const out = { ...source };
+    for (const [key, value] of Object.entries(source)) {
+      const section = TOP_LEVEL_KEYS.has(key) ? null : sectionOf(key);
+      if (
+        !section ||
+        (out[section] !== undefined && !isObject(out[section])) ||
+        out[section]?.[key] !== undefined
+      ) {
+        continue;
+      }
+      out[section] = { ...object(out[section]), [key]: value };
+      delete out[key];
+      audit.transformations.push(
+        Object.freeze({
+          code: "MISPLACED_MEMBER_RESTORED",
+          path: `/${section}/${key}`,
+          from: `/${key}`,
+          count: 1,
+        }),
+      );
+    }
+    return out;
+  }
+
   function knownObject(source, keys, path, audit) {
     const input = object(source);
     const out = {};
@@ -215,8 +262,8 @@
       error.code = "AI_INTERCHANGE_UNSUPPORTED";
       throw error;
     }
-    const source = object(raw);
     const audit = { transformations: [], quarantine: [] };
+    const source = restoreMisplacedMembers(object(raw), audit);
     const top = knownObject(source, TOP_LEVEL_KEYS, "", audit);
     const BIO = root.Jarbou3iBiopolitics;
     const captureLevels = BIO?.CAPTURE_LEVELS || [
@@ -657,7 +704,7 @@
     return Object.freeze({ value: source, transformations: Object.freeze(transformations) });
   }
 
-  function buildTemplate(lang = "en", mode = "focused") {
+  function buildTemplate(lang = "en", mode = "focused", evidenceAccess = "web") {
     const BIO = root.Jarbou3iBiopolitics;
     const keyed = (keys, value) =>
       Object.fromEntries(keys.map((key) => [key, clone(value)]));
@@ -902,13 +949,32 @@
       self_audit_notes: [],
       links: [],
     };
+    // Without source access the placeholder record is the only evidence, nothing
+    // cites it, and the conclusion states the limitation.
+    if (evidenceAccess === "none") {
+      const { copy, evidence } = BIO.unsourcedPlaceholder(lang);
+      const clearEvidenceRefs = (value) => {
+        if (!value || typeof value !== "object") return;
+        for (const [key, child] of Object.entries(value)) {
+          if (key.endsWith("evidence_refs")) value[key] = [];
+          else clearEvidenceRefs(child);
+        }
+      };
+      clearEvidenceRefs(template);
+      const { id, ...record } = evidence;
+      template.evidence = [{ ref: id, ...record }];
+      template.conclusion.strongly_supported = [copy.noStrong];
+      template.conclusion.overall_confidence = "low";
+      template.self_audit.statistics_quotations_verified = "concern";
+    }
     return JSON.stringify(template);
   }
 
-  function buildFieldGuide() {
+  function buildFieldGuide(evidenceAccess = "web") {
     return [
       "Interchange record guide (keys are canonical; ref becomes id locally):",
-      "Populate these even though their template arrays are empty: power.actors, power.affected_populations, mechanisms.instruments, mechanisms.power_modes, at least one of mechanisms.infrastructures or mechanisms.political_economy, meaning.norms, meaning.regimes_of_truth, meaning.classifications, intervention.interventions, distribution.items, resistance, alternatives, and evidence.",
+      // Without source access the template's placeholder is the only evidence.
+      `Populate these even though their template arrays are empty: power.actors, power.affected_populations, mechanisms.instruments, mechanisms.power_modes, at least one of mechanisms.infrastructures or mechanisms.political_economy, meaning.norms, meaning.regimes_of_truth, meaning.classifications, intervention.interventions, distribution.items, resistance, ${evidenceAccess === "none" ? "and alternatives" : "alternatives, and evidence"}.`,
       "institutions: {ref,name,mandate,role,accountability[],confidence}",
       "power_asymmetries: {ref,between[],resource,effect,confidence}",
       "infrastructures: {ref,name,owner,dependency_created,actions_enabled_or_blocked[],access_conditions[],confidence}",
@@ -929,6 +995,8 @@
       "alternatives: {ref,level,proposal,mechanism,feasibility,tradeoffs[],rights_safeguards[],evidence_needed[],lower_harm_rationale}",
       "links: {from,to,relation,mechanism,confidence}",
       "interventions.evidence_of_benefit: evidence IDs (E1, E2…), never descriptions; state the benefit itself in stated_benefit",
+      "power_asymmetries.between: refs of actors, affected_populations, or institutions in this answer, never names",
+      "links.from, links.to: refs of records in this answer (an actor, intervention, evidence item…), never names or descriptions",
       // The importer rejects any other code or number; the AI must see them all.
       "Allowed codes (use exactly one listed value; never invent another):",
       "power_modes.mode: sovereign_power|disciplinary_power|biopower|governmentality|pastoral_power|psychopolitics|necropolitics|datafication|algorithmic_governance|political_economy|coloniality|ecological_governmentality",

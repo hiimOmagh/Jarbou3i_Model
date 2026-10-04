@@ -43,7 +43,12 @@ under **Source access**:
 
 The canonical Biopolitical contract requires an evidence record, so in `none`
 mode the template carries one conspicuous placeholder titled as a
-publication-blocking unsourced synthesis. It is never cited as proof.
+publication-blocking unsourced synthesis. It is never cited as proof: every
+evidence reference list in the template is empty, and `strongly_supported`
+holds only a limitation statement. The compact interchange template the prompt
+sends and the canonical skeleton carry the same localized placeholder
+(`unsourcedPlaceholder` in `src/biopolitics.js`). The import does not report it
+as uncited evidence.
 
 ## Import states
 
@@ -79,7 +84,11 @@ from the validator's own diagnostics (`src/contract-repair.js`):
    `["CMP1": {...}]` as an object with `id: "CMP1"`, only outside strings,
    directly inside an array, and for bounded canonical-style IDs. A confidence
    value appended to an actor's `accountability` list is moved back to the
-   actor's `confidence` field.
+   actor's `confidence` field. An extra closing brace that ends the root object
+   before the answer does (`{"a":{…}},"b":{…}}`) is removed, so the members
+   after it are kept instead of silently dropped. If such an answer is also
+   cut off, it is reported as cut off and completed through the continue
+   prompt.
 2. **Everything else is quarantined**: an out-of-contract value (for example a
    guessed `source_tier`) is removed from the payload, preserved with its JSON
    Pointer in the import audit, and the empty field becomes a completion gap.
@@ -155,8 +164,15 @@ The compiler performs only disclosed structural work:
 4. generates predictable record IDs only where no ID was supplied;
 5. maps interchange wrappers such as `power`, `meaning`, and `conclusion` to
    canonical application sections;
-6. retains source verification as model-untrusted until independent review;
-7. records every transformation in the import audit.
+6. puts a section member found at the top level back in its section (for
+   example `care_control_tensions` outside `intervention`), when the name
+   belongs to exactly one template section and that section does not already
+   have it; anything else at the top level is quarantined;
+7. retains source verification as model-untrusted until independent review;
+8. records every transformation in the import audit.
+
+Compiling the requested form (the contract and the keyed sets) is not a
+repair of the answer, so the audit's repair count leaves it out.
 
 ## Repair prompt
 
@@ -225,7 +241,9 @@ still cut off, the continue prompt above completes it.
 An answer that does exactly what the prompt asks must match the schema.
 `tests/ai-interchange-reliability-check.mjs` fills the Biopolitical template
 and record guide (the first listed code, both ends of each number range) for
-every language and depth, and validates the compiled result.
+every language, depth, and source access, and validates the compiled result.
+It also checks that the no-source prompt carries the placeholder, empty
+reference lists, and limitation statement its rule names.
 `tests/ai-interchange-reliability.spec.js` fills the JSON skeleton of each of
 the 27 Strategic prompts (language × depth × source access) and pastes it into
 the app. A required field, code, or range the prompt leaves out fails these

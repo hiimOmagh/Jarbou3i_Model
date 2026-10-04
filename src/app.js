@@ -1799,10 +1799,16 @@ function renderImportAuditDetails({
     (total, item) => total + (item.count || 1),
     0,
   );
+  // Compiling the requested interchange form into the application structure
+  // is not a repair of the answer.
+  const compilerRepairs = (compilerAudit?.transformations || []).filter(
+    (item) =>
+      !["AI_INTERCHANGE_COMPILED", "KEYED_SET_TO_CANONICAL_ARRAY"].includes(item.code),
+  );
   const repairCount =
     (parsed?.recovered ? Math.max(1, parserRepairCount) : 0) +
     contractRepairs.reduce((total, item) => total + (item.count || 1), 0) +
-    (compilerAudit?.transformations || []).reduce(
+    compilerRepairs.reduce(
       (total, item) =>
         total +
         (item.code === "REVIEWABLE_GAPS_RECLASSIFIED"
@@ -1835,6 +1841,13 @@ function renderImportAuditDetails({
           "JSON wrappers, comments, or trailing punctuation were conservatively repaired.",
           "تم إصلاح أغلفة JSON أو التعليقات أو علامات الترقيم اللاحقة بصورة محافظة.",
           "Les enveloppes JSON, commentaires ou ponctuations finales ont été réparés de façon conservative.",
+        )
+      : "",
+    parsed?.repairs?.some((repair) => repair.code === "EARLY_CLOSE_REJOINED")
+      ? labelText(
+          "An extra closing brace ended the JSON before the answer did; it was removed so the parts after it were kept.",
+          "أنهى قوسُ إغلاقٍ زائدٌ بنيةَ JSON قبل نهاية الإجابة؛ فأُزيل وحُفظت الأجزاء التي تليه.",
+          "Une accolade fermante en trop terminait le JSON avant la fin de la réponse ; elle a été retirée pour conserver la suite.",
         )
       : "",
     ...contractRepairs.map((repair) => {
@@ -1926,18 +1939,12 @@ function renderImportAuditDetails({
         `${repair.path || "/"} a reçu une réparation structurelle conservative.`,
       );
     }),
-    ...(compilerAudit?.transformations || []).map((repair) => {
-      if (repair.code === "AI_INTERCHANGE_COMPILED")
+    ...compilerRepairs.map((repair) => {
+      if (repair.code === "MISPLACED_MEMBER_RESTORED")
         return labelText(
-          "AI Interchange v1 was compiled locally into the Biopolitical v2.1 application structure.",
-          "جرت ترجمة عقد التبادل 1 محليًا إلى بنية التطبيق الحيوسياسية 2.1.",
-          "AI Interchange v1 a été compilé localement vers la structure applicative biopolitique v2.1.",
-        );
-      if (repair.code === "KEYED_SET_TO_CANONICAL_ARRAY")
-        return labelText(
-          `${repair.path} was expanded into its fixed canonical set.`,
-          `وُسّع ${repair.path} إلى مجموعته النظامية الثابتة.`,
-          `${repair.path} a été développé en son ensemble canonique fixe.`,
+          `${repair.from} was outside its section; it was put back at ${repair.path}.`,
+          `كان ${repair.from} خارج قسمه؛ فأُعيد إلى ${repair.path}.`,
+          `${repair.from} était hors de sa section ; il a été replacé en ${repair.path}.`,
         );
       if (repair.code === "DETERMINISTIC_ID_GENERATED")
         return labelText(

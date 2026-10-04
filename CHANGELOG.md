@@ -40,6 +40,21 @@
 - Keeps what the user changes while the last analysis, or the analysis being
   prepared, is still being restored after a reload. On a slow device the late
   restore overwrote the topic, language, or pasted answer.
+- Keeps everything after an extra closing brace in an answer. Only the part
+  before it was kept: a free-tier answer lost its last 42,000 characters and
+  imported with 23 gaps instead of 1. A section the brace pushed to the top
+  level is put back in place. If such an answer is also cut off, the continue
+  prompt is offered instead of importing the part before the brace.
+- Gives the no-source Biopolitical prompt the placeholder evidence record,
+  empty evidence reference lists, and limitation statement its rule refers
+  to. The template it sends had none of them, so assistants improvised and
+  their answers imported with gaps.
+- Recognizes the French and Arabic no-source placeholders: they are no longer
+  reported as uncited evidence, and they score like the English one.
+- Tells the assistant that `power_asymmetries.between` and link ends hold
+  record refs, not names.
+- Stops counting the compilation of a Biopolitical answer as repairs. Every
+  answer in the requested form showed about 28 repairs.
 
 ### Tests and tooling
 
@@ -51,6 +66,8 @@
   for both lenses and every language, depth, and source-access mode.
 - Tests the startup restore against slow storage, and waits for the reopened
   analysis in the analysis-language test that was flaky on WebKit CI.
+- Checks the no-source Biopolitical prompt against the template it sends, in
+  every language.
 
 ### Repository cleanup
 
