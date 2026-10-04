@@ -160,10 +160,7 @@ for (const file of [
   "tests/application-shell.spec.js",
   "tests/revision-history-check.mjs",
   "tests/revision-history.spec.js",
-  "docs/final-audit-matrix.md",
-  "docs/manual-release-audit.md",
-  "scripts/migrate-release-layout.mjs",
-  "tests/release-layout-migration-check.mjs",
+  "docs/operations/manual-release-review.md",
 ]) {
   if (!fs.existsSync(file)) fail(`missing audit regression file: ${file}`);
 }
@@ -772,8 +769,6 @@ for (const token of [
   "test:provenance",
   "test:bio:graph",
   "test:parser",
-  "upgrade:layout",
-  "test:layout:migration",
   "test:i18n:bio",
   "test:version-authority",
   "test:ci:no-browser",

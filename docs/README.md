@@ -1,37 +1,42 @@
 # Documentation
 
-This index distinguishes current operating authority from historical implementation evidence.
+## Using the product
 
-## Current authority
-
-- [Architecture](platform-architecture-v2.1.md)
 - [Usage guide](usage-guide.md)
+
+## Product and features
+
+- [Architecture](architecture.md)
+- [Results and evidence](features/results-and-evidence.md)
+- [Workspace](features/workspace.md)
+
+## Contracts
+
+- [AI interchange contract](ai-interchange-contract-v1.md)
+- [Biopolitical v2 contract](biopolitical-v2-contract.md)
+- [Export contract](export-contract.md)
+- JSON Schemas: [`schema/`](../schema)
+
+## Operations
+
+- [Continuous integration](operations/ci.md)
 - [Deployment and release operations](operations/deployment.md)
-- [Long-workflow WebKit budget policy](ci-long-workflow-policy.md)
+- [Manual release review](operations/manual-release-review.md)
+
+## Governance and planning
+
 - [Versioning policy](VERSIONING.md)
 - [Capability authority map](capability-authority-map.md)
-- [REL-AUTH-1 product authority baseline](rel-auth-1-product-authority.md)
 - [Product and UI execution plan](product-ui-execution-plan.md)
 - [Architecture decision records](decisions/README.md)
 - [Gate 0 human benchmark kit](benchmarks/gate-0/README.md)
-- [Security policy](../SECURITY.md)
+
+## Project
+
 - [Contributing](../CONTRIBUTING.md)
+- [Security policy](../SECURITY.md)
 - [Changelog](../CHANGELOG.md)
 
-## Product contracts
-
-- [Biopolitical v2 contract](biopolitical-v2-contract.md)
-- [AI interchange and recoverable completion](ai-interchange-contract-v1.md)
-- [Export contract](export-contract.md)
-- [Workspace storage and portability](phase5-workspace-storage-portability.md)
-- [Structured canonical editor](phase5-structured-canonical-editor.md)
-- [Operational review ledger](phase5-operational-review-ledger.md)
-- [Resolution transactions](phase5-resolution-transactions.md)
-- [Crash-safe editor recovery](alpha45-crash-safe-editor-recovery.md)
-- [Revision history and safe restore](alpha55-revision-history-safe-restore.md)
-
-## Historical records
-
-Alpha, beta, release-candidate, phase implementation, audit, correction, and handoff documents record the state at a specific boundary. They are evidence, not current operating instructions, unless this index explicitly lists them under current authority.
-
-Historical files will be moved into versioned archive directories in a separate documentation-only migration. That migration must preserve links and Git history; filenames must not be deleted merely because they contain old versions.
+Release history lives in the changelog and in Git. Documents here describe the
+current product; when behavior changes, update the relevant document in the same
+change.

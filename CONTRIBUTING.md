@@ -59,7 +59,7 @@ Use npm and the committed `package-lock.json` consistently. Do not add a second 
 
 Biopolitical contract changes must update the canonical schema, generated validator, prompt template, fixtures, integrity checks, import/export tests, and documentation together. A migrated draft must never be promoted by silently filling missing fields.
 
-Also complete `docs/visual-qa.md` manually for major UI changes.
+For major UI changes, also complete the [manual release review](docs/operations/manual-release-review.md).
 
 ## Release boundary
 

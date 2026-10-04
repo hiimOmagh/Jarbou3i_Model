@@ -1,71 +1,61 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.55` is a governed analytical workbench for producing,
-challenging, revising, recovering, and publishing evidence-traceable Strategic
-and Biopolitical analysis. It combines canonical schemas, evidence and
-relationship inspection, operational review, exact resolution transactions,
-immutable local revisions, safe append-only restoration, synchronized exports,
-and commit-identical deployment evidence.
+Version `2.1.0-alpha.55` is a local-first browser workbench for producing,
+challenging, revising, and publishing evidence-traceable analysis with an
+external AI assistant. It generates the prompt, imports the assistant's JSON
+answer, recovers what it safely can, shows what is missing, and keeps
+publication blocked until the evidence supports it.
 
-Start with the [documentation index](docs/README.md). The
-[capability authority map](docs/capability-authority-map.md) distinguishes
-complete, partial, experimental, planned, and retired capabilities. Current
-release operations are in [deployment and release operations](docs/operations/deployment.md),
-and product, initiative, and compatibility identities are separated in the
-[versioning policy](docs/VERSIONING.md).
+- **Strategic v1.1**: Interests → Actors → Tools → Narrative → Results → Feedback.
+- **Biopolitical Training Map v2.1**: an evidence-calibrated protocol for tracing
+  how human functions, institutions, infrastructures, classifications, and
+  meanings become governed.
 
-- Strategic v1.1: Interests → Actors → Tools → Narrative → Results → Feedback.
-- Biopolitical Training Map v2.1: an evidence-calibrated protocol for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.
+The interface is available in Arabic, English, and French, in light and dark
+themes, on desktop, tablet, and phone.
 
-Alpha.15 adds the shared Set up → Model → Review application frame, live lens context, truthful local-processing status, and persisted comfortable/compact density. These are presentation-only changes: schemas, prompts, imports, scoring, evidence, relationships, and exports remain unchanged. See [`docs/phase2-premium-application-shell.md`](docs/phase2-premium-application-shell.md).
+## What it does
 
-The Strategic engine is preserved. Biopolitical analysis has its own schema, prompt, validator, semantic-integrity gate, diagnostics, review interface, export contract, and explicitly non-canonical legacy adapter.
+- **Prompt and import.** Builds a lens-specific prompt for any assistant, with an
+  explicit source-access mode (no sources, supplied sources, or live web
+  research). Imported answers are salvaged rather than rejected: format slips are
+  normalized, invalid values are quarantined in the import audit, cut-off answers
+  are completed with a continue prompt, and remaining gaps get an exact-path
+  completion prompt. Nothing is invented. See the
+  [AI interchange contract](docs/ai-interchange-contract-v1.md).
+- **Results and evidence.** Results are presented as orientation, explanation,
+  and full record inspection, with relationship and evidence intelligence, a
+  Connections explorer, and a deterministic evidence review queue. See
+  [Results and evidence](docs/features/results-and-evidence.md).
+- **Local workspace.** Analyses are saved in the browser with immutable
+  revisions, a structured editor, crash recovery, a review ledger, approved
+  resolution transactions, revision history, and portable backup bundles. See
+  [Workspace](docs/features/workspace.md).
+- **Exports.** A human-readable HTML report and lossless canonical JSON. See the
+  [export contract](docs/export-contract.md).
 
-Phase 3 now presents results progressively: orientation answers what matters first; explanation shows how the conclusion is built; inspection reveals the canonical identity, provenance, evidence balance, relationships, audit facts, and every indexed occurrence; lens-specific detail views retain the complete records. All three layers are read-only and never alter canonical analysis, scoring, or export data. See [`docs/phase3-results-inspection.md`](docs/phase3-results-inspection.md).
+Start with the [usage guide](docs/usage-guide.md) or the
+[documentation index](docs/README.md).
 
-Phase 4 builds relationship intelligence on that inspection foundation. Supporting and counter-evidence references now resolve in both directions, every canonical record can expose a stable lens-scoped fragment target, and missing endpoints or traceability remain explicit diagnostics rather than manufactured records or inferred conclusions. See [`docs/phase4-evidence-relationship-intelligence.md`](docs/phase4-evidence-relationship-intelligence.md).
+## Workflow
 
-Slice 2 adds deterministic source clusters and localized gap intelligence. Exact authored URLs, title-plus-locator pairs, or titles define clusters; records with missing identity remain separate. The workspace exposes uncited evidence, missing counter-evidence or dates, untraceable sources, and exact-source concentration as review signals rather than truth judgments. See [`docs/phase4-source-cluster-gap-intelligence.md`](docs/phase4-source-cluster-gap-intelligence.md).
+1. Choose the interface language and, separately, the analysis language.
+2. Choose Strategic or Biopolitical, a prompt depth, and the source-access mode.
+3. Enter a topic and optional context (and your sources, if you supply them).
+4. Copy the generated prompt to an AI assistant.
+5. Paste the answer. If it was cut off, use the continue prompt; if parts are
+   missing, use the completion prompt.
+6. Import, then resolve every disclosed semantic and evidence warning before
+   publication.
+7. Review the full analytical record.
+8. Export the HTML report and canonical JSON.
+9. Use **Local workspaces** to reopen the analysis, browse its history, or back
+   it up as an integrity-checked bundle.
 
-Slice 3 adds a complete claim–evidence matrix and authored evidence-to-record routes. Its optional `jarbou3i-evidence-intelligence-v1` download is explicitly derived, contains no raw analysis, and cannot replace canonical JSON. See [`docs/phase4-claim-evidence-traceability.md`](docs/phase4-claim-evidence-traceability.md).
-
-Slice 4 operationalizes those diagnostics as a stable, navigable review queue and adds a separate `jarbou3i-evidence-review-plan-v1` artifact. It preserves authored-data boundaries and states explicitly that completing the queue does not validate a conclusion. See [`docs/phase4-evidence-review-queue.md`](docs/phase4-evidence-review-queue.md).
-
-Phase 5 Slice 1 introduces `jarbou3i-local-workspace@1`. Importing a validated analysis creates an immutable imported revision and a separate clean working draft, each protected by SHA-256. Workspaces live in IndexedDB behind a storage abstraction and use optimistic repository revisions to reject stale writes. The local manager lists and reopens analyses, survives reload, and exports/restores a checksummed `jarbou3i-workspace-bundle@1`. The bundle contains canonical revisions but declares `canonical_transport: false`; canonical JSON remains the authoritative analysis transport. See [`docs/phase5-workspace-storage-portability.md`](docs/phase5-workspace-storage-portability.md).
-
-Phase 5 Slice 2 adds a structured editor above the working draft. Field changes are type-preserving, whole-draft validated, undoable, redoable, and saved through optimistic repository revisions; imported and committed revisions remain immutable. See [`docs/phase5-structured-canonical-editor.md`](docs/phase5-structured-canonical-editor.md).
-
-Phase 5 Slice 3 adds the `jarbou3i-operational-review-ledger@1` inside workspace format v2. Pending work can be started, annotated, completed with rationale, waived with explicit scope and accepted risk, and reopened. Every event is append-only, SHA-256 hash-chained, bound to its local reviewer snapshot and exact draft checksum, and saved through optimistic concurrency. The audit export is derived and non-canonical; local identity is not account-verified, and the unkeyed hash chain detects corruption and naive edits but can be rewritten by anyone who recomputes the hashes; it is not a signature or external notarization. See [`docs/phase5-operational-review-ledger.md`](docs/phase5-operational-review-ledger.md).
-
-Phase 5 Slice 4 advances the workspace to v3 and adds exact canonical proposals, whole-draft validation, explicit approval, immutable `committed_resolution` revisions, and a hash-chained resolution ledger. Review decisions whose draft checksum no longer matches are visibly stale. Strategic prompt material is isolated as untrusted JSON data, workspace listings verify integrity before showing analytical metadata, and CI evidence embeds the exact source commit. See [`docs/phase5-resolution-transactions.md`](docs/phase5-resolution-transactions.md) and the [`Alpha.40 blind-spot register`](docs/product-audit-alpha40.md).
-
-Alpha.37 is an interchange reliability interlock before the operational review ledger. The source-access selector distinguishes unsourced conceptual drafting, user-supplied sources, and live research. The parser and contract-repair layer can recover only auditable syntax and type-shape mistakes; it never rewrites analytical claims, confidence, or evidence. See [`docs/phase5-ai-interchange-reliability.md`](docs/phase5-ai-interchange-reliability.md).
-
-AI Interchange v1 provides a compact Biopolitical generation boundary and a
-lossless reviewable-draft fallback. AI results with structural slips are
-salvaged rather than rejected: unambiguous format slips are normalized, invalid
-values are quarantined in the import audit, and the remaining gaps receive an
-exact-path completion prompt. Cut-off answers are completed with a continue
-prompt. Nothing is invented, and drafts stay blocked from publication. See
-[`docs/ai-interchange-contract-v1.md`](docs/ai-interchange-contract-v1.md).
-
-Alpha.10 retains the Phase 1 platform boundary introduced in Alpha.9 and closes its browser-boot settings regression. A single composition root now owns shared state, persistence, localization, render regions, bounded diagnostics, caching, and scheduling. Each lens publishes an immutable manifest and keeps its own contract-specific services. This is an architectural and performance foundation: it does not merge the lenses or alter their analytical outputs. See [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md).
-
-Biopolitical result references are resolved through a read-only relationship index. Review cards show the referenced record’s name alongside its stable canonical ID; selecting a reference opens its type, analytical pillar, confidence, and indexed incoming/outgoing relationships. Standalone HTML reports expand the same names and include a reference directory, while canonical JSON remains unchanged for re-import and verification. RC 12 removes assistant-interface citation artifacts during import, links valid public sources directly, and separates analytical readiness from the independent publication gate in the report hero. RC 13 preserves authored French punctuation; RC 14 completes content-safe Relationship Explorer containment at the 320px/400%-equivalent boundary.
-
-The Connections review tab uses three purpose-built deterministic views: Story presents numbered causal paths, Evidence Trail groups supporting and counter-evidence around the claim or analytical record, and Network exposes the complete nine-pillar topology. Guided mode prioritizes names and plain-language “Why connected?” explanations; Analyst mode reveals canonical IDs, confidence, provenance, source paths, filters, and layer controls. An equivalent accessible connections list remains available. Every visualization is session-only and never mutates canonical analysis data.
-
-Phase 2 adds an escapable Focus workspace, deterministic guided walkthroughs for every relationship mode, and a persistent inspection dock. A selected record or connection keeps its context when users move between Story, Evidence Trail, Network, Map, and List; when filters hide it, the interface states that explicitly and can reveal it in the complete Network view. These interactions remain read-only projections of the validated graph.
-
-Phase 3 adds canonical time and international-comparison overlays, plus analysis-scoped saved views for presentation state. The temporal overlay groups only authored historical continuities, dated evidence, immediate effects, medium-term adaptations and dependencies, and future or intergenerational signals; it never invents chronology. Saved views remain in the local browser and contain filters, mode, overlay, selection, and zoom only—never canonical analysis content. Standalone HTML reports now include a named relationship atlas, temporal projection, and comparison limits while their embedded canonical JSON remains byte-for-data equivalent to the imported analysis.
-
-The earlier Relationship Explorer Phase 4 added an optional Spatial view for capable desktop browsers. It projects the same filtered records and explicit, evidentiary, and structural connections into deterministic 3D geometry with labeled pillar clusters, orbit and zoom controls, pointer dragging, keyboard equivalents, reduced-motion support, saved orientation, and a localized non-overlapping record picker for cards occluded by depth. Spatial is a progressive enhancement: unsupported or narrow displays keep it disabled with an explanation and default to the complete accessible Connections list. No WebGL, external dependency, force simulation, inferred relationship, or canonical mutation is introduced.
-
-The final hardening phase adds an explicit 24-cell language/theme/runtime intersection gate, plus cross-engine keyboard-focus and Chromium forced-colors checks. Every cell exercises localized rejection of an unsupported future schema, valid sample recovery, relationship presentation, serious/critical accessibility findings, duplicate IDs, horizontal overflow, reduced motion, responsive Spatial fallback, and a theme-neutral print palette. Dark-theme printing and forced-colors state visibility are hardened in the production stylesheet; the canonical analysis contracts remain unchanged.
-
-RC 1 adds a 48-case 200%/400% equivalent reflow matrix at 640px and 320px across every language, theme, and browser profile. It also captures 36 deterministic visual-review screenshots—shell and Connections views across three languages, two themes, and desktop/tablet/phone viewports—and validates 18 machine-readable measurement records through a 55-artifact evidence manifest. Native screen-reader, human linguistic, physical touch, browser-zoom, print-preview, and epistemic sign-off remain intentionally human review tasks.
-
-Alpha 4 expanded visual acceptance evidence to 96 deterministic screenshots, and Alpha 6 raised it to 120 screenshots and 139 artifacts. Alpha.40 added the resolution transaction to every language/theme/viewport intersection, bringing the current contract to **156 screenshots and 175 artifacts** while retaining the five standalone-report surfaces. Alpha.41 requires that authority to be regenerated after its shared light-theme token correction. `npm run test:browser:hosted` remains a local public-surface gate when no URL is supplied; a release deployment must additionally pass `PLAYWRIGHT_BASE_URL=https://… npm run test:browser:deployed` so local evidence cannot be mistaken for deployed validation.
+Unfinished intake work (topic, context, sources, prompt, and pasted answer) is
+restored after a reload. The analysis language stored in imported JSON controls
+report language and direction; changing the interface language does not relabel
+an imported analysis.
 
 ## Biopolitical protocol
 
@@ -81,7 +71,10 @@ Alpha 4 expanded visual acceptance evidence to 96 deterministic screenshots, and
 | Evidence & explanations | Distinguish epistemic types, record study-design and verification metadata, and assess all nine explanation families exactly once. |
 | Agency & alternatives | Include resistance, counter-conduct, institutional adaptation, lower-harm alternatives, and calibrated judgment. |
 
-An 18-point self-audit covers intent attribution, institutional claims, mechanism quality, history, political economy, inequality, agency, source verification, uncertainty, benefits and costs, alternatives, stigmatization risk, and falsifiers.
+An 18-point self-audit covers intent attribution, institutional claims, mechanism
+quality, history, political economy, inequality, agency, source verification,
+uncertainty, benefits and costs, alternatives, stigmatization risk, and
+falsifiers.
 
 ## Contract identities
 
@@ -90,17 +83,32 @@ An 18-point self-audit covers intent attribution, institutional claims, mechanis
 | Canonical analysis | `2.1.0` | `biopolitical-training-map-v2` | Eligible only after semantic and evidence-verification gates pass |
 | Migrated legacy draft | `1.0.0` | `biopolitical-migrated-draft-v1` | Always blocked until completed as a canonical analysis |
 | Reviewable generated draft | `1.0.0` | `biopolitical-generated-draft-v1` | Always blocked until canonical completion and review |
-| Strategic analysis | `1.1.0` | Strategic schema | Preserved behavior |
+| Strategic analysis | `1.1.0` | Strategic schema | Blocked while contract gaps remain |
 
-Imported `analysis_lens`, contract, schema version, and status are authoritative. Unknown or future Biopolitical versions are rejected. Canonical input is validated against the generated browser validator before normalization, then checked for global ID uniqueness, typed references, exact 13/9/5 coverage, evidence traceability, placeholder misuse, and self-audit contradictions. Structurally canonical analyses with unresolved evidence or audit concerns may be imported for review with visible warnings, but those warnings keep publication blocked. Non-verified malformed source URLs are safely cleared and contradictory verification self-audits are corrected to `concern`; verified evidence with malformed provenance remains a hard error.
+Imported `analysis_lens`, contract, schema version, and status are
+authoritative. Unknown or future versions are rejected. Canonical Biopolitical
+input is validated against the generated browser validator, then checked for
+global ID uniqueness, typed references, exact 13/9/5 coverage, evidence
+traceability, placeholder misuse, and self-audit contradictions. Analyses with
+unresolved evidence or audit concerns can be imported for review with visible
+warnings, and those warnings keep publication blocked. Non-verified malformed
+source URLs are cleared and contradictory verification self-audits are
+corrected to `concern`; verified evidence with malformed provenance remains a
+hard error.
 
-Legacy six-array Biopolitical JSON is retained as a disclosed migrated draft. The adapter preserves recoverable records, does not invent governing actors or intervention modalities, and never stamps partial data as canonical v2.1.
+Legacy six-array Biopolitical JSON is kept as a disclosed migrated draft. The
+adapter preserves recoverable records, does not invent governing actors or
+intervention modalities, and never stamps partial data as canonical v2.1.
 
 ## Evidence and publication discipline
 
-Evidence records separate structural completeness from verification. A source must carry a title, locator or URL, date, population, measurement and design limitations, claim/source fit, conflicts, missing-data and selection effects, uncertainty, counter-evidence, and verification state as applicable.
+Evidence records separate structural completeness from verification. A source
+carries a title, locator or URL, date, population, measurement and design
+limitations, claim/source fit, conflicts, missing-data and selection effects,
+uncertainty, counter-evidence, and verification state as applicable.
 
-The readiness score is diagnostic. It cannot make a report publishable. Publication additionally requires:
+The readiness score is diagnostic and cannot make a report publishable.
+Publication also requires:
 
 - the canonical `2.1.0` contract;
 - successful schema and semantic-integrity validation;
@@ -108,58 +116,21 @@ The readiness score is diagnostic. It cannot make a report publishable. Publicat
 - every relevant explanation assessed;
 - no unresolved self-audit concern.
 
-The bundled fixtures are structural examples with deliberately unverified source placeholders, so they correctly display “not publication-ready.”
+The bundled samples use deliberately unverified placeholder sources, so they
+correctly show "not publication-ready".
 
 ## Safety boundary
 
-Generated prompts treat the topic and context as untrusted analytical material. They prohibit fabricated sources and operational guidance for repression, mass manipulation, discriminatory profiling, eugenics, forced medical intervention, vulnerable-group targeting, covert behavioral control, population punishment, and coercive surveillance. They also prohibit weak-proxy inference of sensitive traits, group-to-individual prediction, dehumanization, harassment, and collective punishment.
+Generated prompts treat the topic and context as untrusted analytical material.
+They prohibit fabricated sources and operational guidance for repression, mass
+manipulation, discriminatory profiling, eugenics, forced medical intervention,
+vulnerable-group targeting, covert behavioral control, population punishment,
+and coercive surveillance. They also prohibit weak-proxy inference of sensitive
+traits, group-to-individual prediction, dehumanization, harassment, and
+collective punishment.
 
-## Workflow
-
-1. Choose the interface language and, separately, the desired analysis language.
-2. Choose Strategic or Biopolitical and a prompt depth.
-3. Enter a topic and optional time/geographic context.
-4. Copy the generated prompt to an AI assistant.
-5. Paste the returned JSON into the workbench.
-6. Import structurally canonical work, then resolve every disclosed semantic and evidence warning before publication.
-7. Review the full analytical record.
-8. Export a human-readable HTML report and lossless canonical JSON.
-9. Use Local workspaces to reopen the analysis or export an integrity-checked workspace bundle for backup and restore.
-
-The analysis language stored in imported JSON controls report language and direction. Changing the interface language does not relabel an imported analysis.
-
-## Source layout
-
-```text
-index.html
-src/app.js
-src/features/application-shell.js
-src/core/platform-runtime.js
-src/core/lens-registry.js
-src/core/platform-state.js
-src/core/performance.js
-src/core/render-regions.js
-src/core/results-inspection.js
-src/core/workspace-contract.js
-src/core/workspace-storage.js
-src/lenses/strategic/adapter.js
-src/lenses/biopolitical/adapter.js
-src/biopolitics.js
-src/biopolitics-integrity.js
-src/biopolitical-report.js
-src/biopolitics-schema-validator.js
-src/biopolitics-sample-i18n.js
-src/json-parser.js
-schema/biopolitical-analysis.schema.json
-schema/biopolitical-migrated-draft.schema.json
-schema/workspace.schema.json
-schema/workspace-bundle.schema.json
-fixtures/
-tests/
-docs/
-```
-
-The old standalone prototype pages are retained only under `docs/archive/legacy-pages/`; they are not production entry points.
+The tool structures analysis; it does not establish truth. Verify sources, law,
+statistics, causal claims, and ethical judgments independently.
 
 ## Local use and testing
 
@@ -170,41 +141,40 @@ npm run dev
 
 Open `http://127.0.0.1:4173`.
 
-For the Alpha.10 architecture and verification scope, see [`docs/phase1-platform-foundation.md`](docs/phase1-platform-foundation.md). The Alpha.5 verification sequence remains in [`docs/alpha5-acceptance-hotfix.md`](docs/alpha5-acceptance-hotfix.md), and the full Alpha.4 visual-acceptance scope and separate deployed-site gate remain documented in [`docs/alpha4-visual-acceptance.md`](docs/alpha4-visual-acceptance.md).
-
-When applying this release over an older working directory, run the safe layout
-migration once before testing:
-
-```bash
-npm run upgrade:layout
-```
-
-It moves a legacy root page when no archive exists, removes it only when the
-archived copy is byte-identical, and refuses to overwrite divergent content.
-
 ```bash
 npm run test:ci:no-browser
 npx playwright install --with-deps
 npm run test:browser
 ```
 
-`npm test` runs the complete CI contract. Browser coverage includes Chromium, Firefox, WebKit, mobile Chrome, accessibility scanning, both lenses, EN/AR/FR exports, RTL/mobile layout, strict imports, legacy-draft disclosure, and lossless HTML/JSON export.
+`npm test` runs the complete CI contract. Browser coverage spans Chromium,
+Firefox, WebKit, and mobile Chrome, with accessibility scanning, both lenses,
+Arabic/English/French exports, RTL and mobile layout, strict imports, and
+lossless HTML/JSON export. The local matrix uses four Playwright workers; on a
+constrained machine set `PLAYWRIGHT_WORKERS=2`. See
+[Continuous integration](docs/operations/ci.md) for the CI topology and test
+budgets.
 
-The local browser matrix uses four workers and a 60-second test budget by
-default. GitHub Actions uses two workers to keep WebKit rendering, report
-downloads, and accessibility scans within that budget. On a resource-constrained
-Windows host, set `$env:PLAYWRIGHT_WORKERS=2` before running
-`npm run test:browser`.
+## Repository layout
 
-Two measured compound persistence workflows retain the global 60-second budget
-outside WebKit and use a scoped 90-second WebKit ceiling with an enforced
-80-second completed-duration limit. IndexedDB operations in browser tests fail
-with a bounded diagnostic after 10 seconds. The global retry and
-`failOnFlakyTests` policy remains strict. See
-[`docs/ci-long-workflow-policy.md`](docs/ci-long-workflow-policy.md).
+```text
+index.html, manifest.webmanifest, _headers   Static entry point and hosting headers
+src/                  Application modules (see docs/architecture.md)
+schema/               JSON Schemas for analyses, drafts, workspaces, interchange
+fixtures/             Sample analyses in Arabic, English, and French
+assets/               Icons and images
+tests/                Node checks (*.mjs) and Playwright specs (*.spec.js)
+scripts/              Dev server, Playwright runner, Pages build, generators, Gate 0 tools
+docs/                 Product, contract, and operations documentation
+```
 
 ## Deployment and privacy
 
-The project is static and GitHub Pages compatible. Publish the release root and do not deploy duplicate `preview/` or `biopreview/` tracks. The app has no backend storage, tracking, or account system; saved explorer views use analysis-scoped browser-local presentation state. Material sent to an external AI assistant is governed by that provider’s terms; do not submit sensitive material without authorization.
+The app is static: no backend, account, or tracking. Analyses and workspaces stay
+in the browser (IndexedDB) and are not encrypted. Material you send to an
+external AI assistant is governed by that provider's terms; do not submit
+sensitive material without authorization. Release and hosting requirements are
+in [Deployment and release operations](docs/operations/deployment.md).
 
-The tool structures analysis but does not establish truth. Verify sources, law, statistics, causal claims, and ethical judgments independently.
+Contributions: see [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: see
+[SECURITY.md](SECURITY.md). Release history: see [CHANGELOG.md](CHANGELOG.md).

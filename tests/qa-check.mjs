@@ -202,7 +202,7 @@ if (!css.includes(".canonicalInspector") || !css.includes(".bioAuditGrid")) {
   fail("review/export styles are missing");
 }
 if (fs.existsSync("Editorial_Intelligence_v2.html") || fs.existsSync("TM_BrainMap.html")) {
-  fail("legacy external-dependency pages remain in the release root; run npm run upgrade:layout once, then rerun QA");
+  fail("legacy external-dependency pages must not exist in the release root");
 }
 
 for (const script of [
@@ -219,8 +219,6 @@ for (const script of [
   "test:ci:no-browser",
   "test:ci:browser",
   "test:ci",
-  "upgrade:layout",
-  "test:layout:migration",
 ]) {
   if (!pkg.scripts?.[script]) fail(`package script missing: ${script}`);
 }

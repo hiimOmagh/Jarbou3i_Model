@@ -17,6 +17,34 @@ canonical and semantic gates locally.
 The compiler never researches, invents missing prose, manufactures evidence,
 or promotes model-declared verification.
 
+External assistants differ in output limits, browsing, citation interfaces, and
+structured-output reliability, so no single prompt can guarantee a complete,
+sourced, schema-perfect answer. The workbench therefore owns recovery,
+provenance boundaries, and publication gating. Four kinds of failure are kept
+apart instead of being reported as one generic "invalid JSON" problem:
+
+- **capability mismatch**: the assistant cannot do the research requested;
+- **serialization defects**: malformed JSON, such as a labeled array entry;
+- **shape drift**: valid JSON in the wrong contract shape;
+- **evidence weakness**: an importable analysis whose evidence cannot support
+  its claims. This blocks publication, not import, and the interface labels it
+  a publication blocker.
+
+## Source access
+
+Every prompt, in both lenses, declares one of three source conditions chosen
+under **Source access**:
+
+| Mode | Instruction to the assistant |
+|---|---|
+| `none` | Do not refuse and do not invent a source; produce a low-confidence conceptual draft with evidence references left empty |
+| `provided` | Use only sources actually identified in the supplied context and never guess a missing title, URL, or locator. A **Sources** box appears, and its text is added to the prompt context |
+| `web` | Record only sources actually opened or verified to exist; if browsing is unavailable, follow the conceptual-draft rules instead of claiming research |
+
+The canonical Biopolitical contract requires an evidence record, so in `none`
+mode the template carries one conspicuous placeholder titled as a
+publication-blocking unsourced synthesis. It is never cited as proof.
+
 ## Import states
 
 | State | Meaning | Import | Publication |
@@ -47,6 +75,11 @@ from the validator's own diagnostics (`src/contract-repair.js`):
    Missing record IDs are generated deterministically, and missing envelope
    metadata (language, mode, timestamp, analysis ID) is set from the request,
    as the interchange compiler does. Each change is listed in the import audit.
+   Before validation, the parser also recovers an AI-labeled array entry such as
+   `["CMP1": {...}]` as an object with `id: "CMP1"`, only outside strings,
+   directly inside an array, and for bounded canonical-style IDs. A confidence
+   value appended to an actor's `accountability` list is moved back to the
+   actor's `confidence` field.
 2. **Everything else is quarantined**: an out-of-contract value (for example a
    guessed `source_tier`) is removed from the payload, preserved with its JSON
    Pointer in the import audit, and the empty field becomes a completion gap.
@@ -125,6 +158,15 @@ The compiler performs only disclosed structural work:
 6. retains source verification as model-untrusted until independent review;
 7. records every transformation in the import audit.
 
+## Repair prompt
+
+When a candidate cannot be salvaged locally, the fallback repair prompt sends the
+validation diagnostics and the original text without repeating the schema. It
+asks for exactly one complete minified JSON object in a single `json` code
+block, forbids Python, JavaScript, JSON Patch, explanations, ellipses, and
+invented content, and requires `{"repair_status":"incomplete_input"}` instead
+of a reconstructed ending when the input was truncated.
+
 ## Unknown properties
 
 Unknown properties are never silently discarded. A property forbidden by the
@@ -166,19 +208,17 @@ and key names alone are large.
 
 ## Prompt effect
 
-The English research template decreases from approximately 17,406 characters
-for the canonical output skeleton to 11,095 characters for AI Interchange v1.
-The complete English research prompt decreases from approximately 21,500 to
-17,956 characters after adding a compact record guide for fields intentionally
-omitted from the JSON skeleton. This is a smaller reduction than the template
-alone, but it preserves the analytical protocol, evidence rules, five capture
-levels, thirteen capture tests, nine competing explanations, eighteen
-self-audit checks, and the record shapes needed for accurate compilation.
+The English research output template is 11,306 characters for AI Interchange v1
+against 17,406 for the canonical skeleton (`buildTemplate` versus
+`buildSchemaTemplate`). `tests/ai-interchange-reliability-check.mjs` fails if
+the interchange template reaches 80% of the canonical one. The smaller template
+keeps the analytical protocol, evidence rules, five capture levels, thirteen
+capture tests, nine competing explanations, eighteen self-audit checks, and the
+record shapes needed for accurate compilation.
 
-This is a first generation-interface reduction, not a claim that every free
-provider can complete every full investigation in one response. Adaptive
-packet completion remains the next layer for providers with small output
-budgets.
+Focused depth asks for a compact answer (a few items per section, short text
+values) so assistants with small output limits can finish. When an answer is
+still cut off, the continue prompt above completes it.
 
 ## Safety and publication invariants
 
@@ -193,6 +233,9 @@ budgets.
 - Truncated output is never promoted to a reviewable analysis; it is completed
   through the continue prompt first.
 - AI output cannot self-approve evidence or publication.
+- A repair never changes analytical content, accepts ambiguous malformed
+  syntax, lets a no-source placeholder support a claim, or presents
+  model-declared verification as independent approval.
 - EN, FR, and AR use the same contract keys, enums, and compiler behavior.
 
 ## Ownership

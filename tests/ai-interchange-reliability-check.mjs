@@ -638,4 +638,19 @@ if ("analysis_lens" in compiler.recognize(interchange).value) {
   fail("an interchange answer must keep its own lens field");
 }
 
+// The record guide names every record with ref, future feedback loops included.
+const refLoops = structuredClone(interchange);
+refLoops.scale_time.future_feedback_loops = refLoops.scale_time.future_feedback_loops.map(
+  ({ id, ...loop }, index) => ({ ref: `FF${index + 1}`, ...loop }),
+);
+const refLoopIds = compiler
+  .compile(refLoops, { generatedAt: fixture.generated_at })
+  .value.scale_time.future_feedback_loops.map((loop) => loop.id);
+if (refLoopIds.join() !== refLoops.scale_time.future_feedback_loops.map((loop) => loop.ref).join()) {
+  fail(`a future feedback loop's ref did not become its id: ${refLoopIds.join()}`);
+}
+if (!/evidence_of_benefit: evidence IDs/.test(compiler.buildFieldGuide())) {
+  fail("the record guide does not say evidence_of_benefit holds evidence IDs");
+}
+
 console.log("AI interchange reliability checks passed.");

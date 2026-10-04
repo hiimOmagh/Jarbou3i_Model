@@ -347,7 +347,14 @@
           intervention.care_control_tensions ?? intervention.tensions,
         ),
       },
-      scale_time: clone(object(top.scale_time)),
+      scale_time: {
+        ...clone(object(top.scale_time)),
+        ...(object(top.scale_time).future_feedback_loops !== undefined && {
+          future_feedback_loops: normalizeCollection(
+            top.scale_time.future_feedback_loops,
+          ),
+        }),
+      },
       distribution: {
         items: normalizeCollection(distribution.items),
         inequality_dimensions: normalizeCollection(
@@ -921,6 +928,7 @@
       "resistance: {ref,actor_or_population,form,mechanism,effect_on_system,constraints[],confidence}",
       "alternatives: {ref,level,proposal,mechanism,feasibility,tradeoffs[],rights_safeguards[],evidence_needed[],lower_harm_rationale}",
       "links: {from,to,relation,mechanism,confidence}",
+      "interventions.evidence_of_benefit: evidence IDs (E1, E2…), never descriptions; state the benefit itself in stated_benefit",
       // The importer rejects any other code or number; the AI must see them all.
       "Allowed codes (use exactly one listed value; never invent another):",
       "power_modes.mode: sovereign_power|disciplinary_power|biopower|governmentality|pastoral_power|psychopolitics|necropolitics|datafication|algorithmic_governance|political_economy|coloniality|ecological_governmentality",

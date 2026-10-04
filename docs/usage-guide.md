@@ -6,7 +6,7 @@ Use Strategic for interests, actors, instruments, narratives, results, feedback,
 
 Use Biopolitical v2 when the question concerns how human capacities, bodies, populations, relations, environments, or systems of meaning become governed, measured, optimized, protected, commercialized, disciplined, excluded, or resisted.
 
-Switching lenses clears an imported analysis from the other contract so its fields cannot be reviewed or exported under the wrong method.
+Switching lenses hides an imported analysis from the other contract, so its fields cannot be reviewed or exported under the wrong method. The result is kept for the session: switch back to the original lens to see it again.
 
 ## Generate the analysis
 
@@ -15,15 +15,25 @@ Switching lenses clears an imported analysis from the other contract so its fiel
 3. Enter a specific topic.
 4. Add a time and geographic context where possible.
 5. Choose Focused, Expert, or Research.
-6. Preview or copy the prompt.
-7. Run it in the AI assistant of your choice.
-8. Copy the returned JSON.
+6. Choose the source access: no access (a conceptual draft), sources supplied in context, or live web research. With supplied sources, paste them into the **Supplied sources** box; they are added to the prompt.
+7. Preview or copy the prompt.
+8. Run it in the AI assistant of your choice.
+9. Copy the returned JSON.
 
-Research mode asks for the strongest evidence metadata and causal links. Focused mode remains concise but does not omit intervention classification, rival explanations, calibrated judgment, or the self-audit.
+Research mode asks for the strongest evidence metadata and causal links. Focused mode remains concise but does not omit intervention classification, rival explanations, calibrated judgment, or the self-audit. For Strategic, Focused asks for a compact answer (two or three items per section, short text values) so assistants with small output limits can finish.
 
 ## Import JSON
 
-Paste the JSON into the import field. The app accepts plain JSON and commonly encountered code-fence or surrounding-text wrappers.
+Paste the JSON into the import field. The app accepts plain JSON and commonly encountered code-fence or surrounding-text wrappers. Structural slips are repaired or quarantined and listed in the import audit; nothing is invented. A clean answer shows "Valid analysis, ready to import". The exact rules are in the [AI interchange contract](ai-interchange-contract-v1.md).
+
+When the answer needs help, the prompt button under the import field changes to match the problem:
+
+- **Cut off.** Copy the **Continue cut-off result prompt**, send it in the same chat, and paste the reply into the **Continue the cut-off result** box. It is joined to the first part automatically; repeat if the answer is still cut off.
+- **Missing parts.** If the analysis has listed gaps, copy the **Targeted completion prompt** and send it in the same chat. Paste the reply into the import field: the missing parts are merged into the open analysis. The prompt only allows changes at the listed paths.
+- **Broken JSON.** Copy the **JSON repair prompt**. It sends the diagnostics and asks for one complete JSON object without new content.
+- **Wrong language.** If the reply is written in a language other than your analysis language, you can still import it, or ask the assistant to answer in the requested language.
+
+Your topic, context, sources, prompt, and pasted answer are kept in this browser and restored if the page reloads before you finish.
 
 The imported `analysis_lens` controls the final lens:
 

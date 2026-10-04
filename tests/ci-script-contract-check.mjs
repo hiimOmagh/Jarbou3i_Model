@@ -37,7 +37,6 @@ for (const gate of [
   "test:fixtures",
   "test:parser",
   "test:ai-interchange",
-  "test:layout:migration",
   "test:i18n:bio",
   "test:a11y:static",
   "test:ci:persistence-policy",
@@ -47,9 +46,6 @@ for (const gate of [
   if (!noBrowser.includes(`npm run ${gate}`)) {
     fail(`test:ci:no-browser is missing ${gate}`);
   }
-}
-if (pkg.scripts?.["upgrade:layout"] !== "node scripts/migrate-release-layout.mjs") {
-  fail("upgrade:layout must execute the guarded release-layout migration");
 }
 if (pkg.scripts?.["build:pages"] !== "node scripts/build-pages-artifact.mjs") {
   fail("build:pages must execute the explicit deployment-artifact builder");

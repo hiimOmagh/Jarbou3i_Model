@@ -683,6 +683,44 @@ test.describe("AI interchange reliability", () => {
     }
   });
 
+  test("the Strategic prompt asks for every evidence and link field the schema requires", async ({
+    page,
+  }) => {
+    const schema = JSON.parse(
+      await fs.readFile(path.join(process.cwd(), "schema", "strategic-analysis.schema.json"), "utf8"),
+    );
+    const missing = (record, definition) =>
+      schema.$defs[definition].required.filter((key) => !(key in (record || {})));
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("EU Carbon Border Adjustment Mechanism");
+    await page.locator('[data-lens="strategic"]').click();
+    for (const [mode, access] of [
+      ["expert", "provided"],
+      ["research", "web"],
+      ["research", "none"],
+    ]) {
+      await page.locator("#promptMode").selectOption(mode);
+      await page.locator("#evidenceAccess").selectOption(access);
+      await page.locator("#previewPromptBtn").click();
+      const prompt = await page.locator("#modalContent").textContent();
+      await page.keyboard.press("Escape");
+      const skeleton = prompt
+        .split("\n")
+        .filter((line) => line.startsWith("{"))
+        .map((line) => {
+          try {
+            return JSON.parse(line);
+          } catch {
+            return null;
+          }
+        })
+        .find((value) => value?.scenarios);
+      expect.soft(missing(skeleton?.evidence?.items?.[0], "evidence"), `${mode}/${access} evidence`).toEqual([]);
+      expect.soft(missing(skeleton?.links?.[0], "link"), `${mode}/${access} links`).toEqual([]);
+    }
+  });
+
   test("shows a clean Biopolitical answer as ready, with its evidence still to review", async ({
     page,
   }) => {

@@ -1,5 +1,54 @@
 # Changelog
 
+## Unreleased
+
+### AI answer import
+
+- Adds AI Interchange v1, a compact Biopolitical generation contract with a
+  deterministic compiler and a reviewable generated-draft fallback.
+- Salvages AI answers instead of rejecting them, in both lenses: unambiguous
+  format slips are normalized, invalid values are quarantined in the import
+  audit, and the remaining gaps become exact-path completion work.
+- Completes cut-off answers with a continue prompt whose reply is joined to the
+  first part automatically.
+- Merges the reply to a targeted completion prompt (the missing parts) into the
+  open analysis.
+- Recognizes a pasted prompt instead of an answer, and a reply written in a
+  language other than the analysis language.
+- Restores unfinished intake work (topic, context, sources, prompt, and pasted
+  answer) after a page reload.
+- Asks for a compact answer at Strategic Focused depth so assistants with small
+  output limits can finish.
+- Shows a clean Biopolitical import as ready; evidence that only needs
+  independent review no longer counts as an import problem.
+- Adds a **Supplied sources** box for the "sources supplied in context" mode;
+  its text is added to the prompt.
+- Asks Strategic answers for the evidence `source_type` and `uncertainty` and
+  the link `strength` that the Strategic schema requires. Before, every
+  Expert or Research answer that followed the prompt imported as a draft with
+  gaps.
+- Keeps the authored IDs of Biopolitical future feedback loops; their `ref`
+  was set aside and replaced with generated IDs.
+- Tells the assistant that `evidence_of_benefit` holds evidence IDs, not
+  descriptions.
+
+### Tests and tooling
+
+- Bounds every browser-test IndexedDB operation and gives two long persistence
+  workflows scoped WebKit budgets.
+- Adds the Gate 0 human benchmark kit.
+- Adds `.gitattributes` for consistent line endings.
+
+### Repository cleanup
+
+- Consolidates phase, alpha, and audit documents into current documentation:
+  `docs/architecture.md`, `docs/features/results-and-evidence.md`,
+  `docs/features/workspace.md`, `docs/operations/ci.md`, and
+  `docs/operations/manual-release-review.md`. Earlier versions remain in Git
+  history.
+- Removes the one-time release-layout migration (`upgrade:layout`,
+  `test:layout:migration`) and the unused full-size mascot image.
+
 ## 2.1.0-alpha.55 — Revision History and Safe Restore
 
 - Normalizes package, application, export, evidence, documentation, and test

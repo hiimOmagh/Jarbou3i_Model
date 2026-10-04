@@ -1,14 +1,14 @@
-# Export Contract — 1.4.0-bio-alpha.4
+# Export Contract
 
 ## Shared guarantees
 
-Every HTML report carries app and lens metadata, and every analysis can also be downloaded as lossless JSON. The imported analysis language—not the current interface language—sets the report root language and direction.
+Every HTML report carries app and lens metadata, and every analysis can also be downloaded as lossless JSON. `app-version` is the product version from `package.json` (for example `2.1.0-alpha.55`). The imported analysis language—not the current interface language—sets the report root language and direction.
 
 ```html
-<meta name="app-version" content="1.4.0-bio-alpha.4">
+<meta name="app-version" content="{product version}">
 <meta name="analysis-lens" content="strategic|biopolitical">
 <main data-analysis-lens="strategic|biopolitical"
-      data-app-version="1.4.0-bio-alpha.4">
+      data-app-version="{product version}">
 <section data-export-contract-lens="strategic|biopolitical">
 <script type="application/json" id="canonical-analysis">…</script>
 ```
