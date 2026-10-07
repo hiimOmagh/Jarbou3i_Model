@@ -182,5 +182,126 @@ try {
 if (parser.extractJson(parser.joinContinuation(cutAfterEarlyClose, '2},"e":3}')).value.c?.d !== 2) {
   fail("a completed answer with an early close lost the part after it");
 }
+// Cut off mid-string after a wrong closing bracket earlier on: the answer still
+// needs its remainder, so it must be offered the continue prompt, not a repair.
+for (const cutAfterWrongCloser of [
+  '{"actors":[{"channels":["court"],"confidence":"high"}},"note":"cut off mid-sent',
+  '{"economy":{"items":["a"]],"next":{"stated_purpose',
+  // A missing opener makes the answer seem to end early, and the rest follows a comma.
+  '{"m":{"list":[{"a":1},"b":2}],"modes":[]},"meaning":{"n":[]},"note":"cut off mid-sent',
+]) {
+  try {
+    parser.extractJson(cutAfterWrongCloser);
+    fail(`a cut-off answer with a wrong closing bracket was accepted: ${cutAfterWrongCloser}`);
+  } catch (error) {
+    if (error.code !== "TRUNCATED_JSON") {
+      fail(`a cut-off answer with a wrong closing bracket was not reported as cut off: ${cutAfterWrongCloser}`);
+    }
+  }
+}
+// The same missing opener in a complete answer is broken, not cut off.
+try {
+  parser.extractJson('{"m":{"list":[{"a":1},"b":2}],"modes":[]},"meaning":{"n":[]},"note":"done"}');
+  fail("a complete answer with a missing opener was accepted");
+} catch (error) {
+  if (error.code !== "INVALID_JSON") fail(`a complete answer with a missing opener gave ${error.code}`);
+}
+// A complete answer with one stray single quote ends "inside a string", so it
+// looks cut off. The AI's reply to the continue prompt adds no quote or
+// bracket to it, so it does not carry the answer on.
+const strayQuote = '{"theories":[{"ref":"T1",\'limits":["x"],"note":"y"}],"links":[]}';
+try {
+  parser.extractJson(strayQuote);
+  fail("an answer with a stray single quote was accepted");
+} catch (error) {
+  if (error.code !== "TRUNCATED_JSON") fail(`an answer with a stray single quote gave ${error.code}`);
+}
+for (const reply of [
+  "The JSON object was already complete; it ends with `]}` after the links array. Nothing remains.",
+  "```json\n}\n```",
+]) {
+  if (parser.continuesAnswer(strayQuote, reply)) {
+    fail(`a reply that adds nothing was taken for a continuation: ${reply}`);
+  }
+}
+// A real continuation carries the answer on wherever it was cut, including
+// after an early close.
+const whole = JSON.stringify({ a: { b: ["one", "two"] }, c: "three, four", d: [{ e: 1.5 }, null] });
+for (let cut = 1; cut < whole.length; cut += 1) {
+  if (!parser.continuesAnswer(whole.slice(0, cut), whole.slice(cut))) {
+    fail(`a real continuation was refused after ${JSON.stringify(whole.slice(0, cut))}`);
+  }
+}
+if (!parser.continuesAnswer(cutAfterEarlyClose, '2},"e":3}')) {
+  fail("the continuation of a cut-off answer with an early close was refused");
+}
+
+// When the AI closed its code block and the answer ends on a closing bracket,
+// it is finished: a stray quote, not a cut, leaves it seeming to end inside a
+// string, so it is offered a repair rather than a continue prompt.
+for (const finished of [
+  '```json\n{"a":"a 5\" screen","b":[1,2]}\n```',
+  '```json\n{"a":"a 5\" screen","b":[1,2]}\n```\nHope this helps!',
+]) {
+  try {
+    parser.extractJson(finished);
+    fail(`a finished answer with a stray quote was accepted: ${finished}`);
+  } catch (error) {
+    if (error.code !== "INVALID_JSON") fail(`a finished answer with a stray quote gave ${error.code}: ${finished}`);
+  }
+}
+// Cut off inside a string and then fenced (as some apps copy it): still cut off.
+try {
+  parser.extractJson('```json\n{"a":"a 5 screen","b":"cut off mid\n```');
+  fail("a cut-off answer with a closing fence was accepted");
+} catch (error) {
+  if (error.code !== "TRUNCATED_JSON") fail(`a cut-off answer with a closing fence gave ${error.code}`);
+}
+
+// A copy that misses the first character leaves the answer without its
+// opening brace. Every member must be kept: the first nested object is not the
+// whole answer.
+for (const missingOpener of [
+  '"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}',
+  '```json\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}\n```',
+  '\r\n  "contract": "c",\r\n  "lens": "l",\r\n  "subject": {"title": "t"},\r\n  "framing": {"x": 1}\r\n}',
+]) {
+  const parsed = parser.extractJson(missingOpener);
+  if (
+    parsed.value.contract !== "c" ||
+    parsed.value.subject?.title !== "t" ||
+    "title" in parsed.value ||
+    !parsed.repairs?.some((repair) => repair.code === "ROOT_OPENER_RESTORED")
+  ) {
+    fail(`an answer missing its opening brace lost members: ${JSON.stringify(parsed.value)}`);
+  }
+}
+try {
+  parser.extractJson('"contract":"c","subject":{"title":"t"},"framing":{"x":"cut off mi');
+  fail("a cut-off answer missing its opening brace was accepted");
+} catch (error) {
+  if (error.code !== "TRUNCATED_JSON") fail(`a cut-off answer missing its opening brace gave ${error.code}`);
+}
+
+// Joins keep every character of the answer: a continuation cut off right
+// after a space keeps it, a lead-in line of prose is not pasted into the JSON,
+// and a cut-off part copied with its closing fence still joins.
+const twiceCut = parser.joinContinuation(
+  parser.joinContinuation('{"claims":["Claim number 4","Claim ', '```json\nnumber 5","Claim \n```'),
+  'number 6"]}',
+);
+if (parser.extractJson(twiceCut).value.claims?.[2] !== "Claim number 6") {
+  fail(`a continuation cut off after a space lost it: ${twiceCut}`);
+}
+for (const leadIn of ["Here is the rest:", "Voici la suite :", "إليك بقية الإجابة:"]) {
+  const joined = parser.joinContinuation('{"a":"x","b":[1,', `${leadIn}\n2,3]}`);
+  if (parser.extractJson(joined).value.b?.join() !== "1,2,3") {
+    fail(`a lead-in line was pasted into the answer: ${joined}`);
+  }
+}
+const fencedCut = parser.joinContinuation('```json\n{"a":"x","b":[1,\n```', '```json\n2,3]}\n```');
+if (parser.extractJson(fencedCut).value.b?.join() !== "1,2,3") {
+  fail(`a cut-off part copied with its closing fence did not join: ${fencedCut}`);
+}
 
 console.log("JSON parser checks passed.");

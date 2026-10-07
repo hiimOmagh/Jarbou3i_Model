@@ -10,5 +10,9 @@ build/
 *.log
 /Local.zip
 /gate0-benchmark-local/
+/ai-corpus/
 /GATE-0-RUN-Easy-Launcher/
 /GATE-0-RUN-Easy-Launcher.zip
+/.claude/skills/
+/tests/evals/
+skills-lock.json

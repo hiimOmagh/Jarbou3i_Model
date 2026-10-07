@@ -231,49 +231,71 @@
     let inString = false;
     let escaped = false;
     let mismatched = false;
+    // Quotes and brackets read, which shows whether added text changed anything.
+    let marks = 0;
+    // A closing fence met inside a string: the AI ended its answer there.
+    let fenceEnd = -1;
     for (let index = 0; index < text.length; index += 1) {
       const char = text[index];
       if (!started) {
         if (!isJsonStart(text, index)) continue;
         started = true;
         stack.push(char);
+        marks += 1;
         continue;
       }
       if (inString) {
+        if (char === "\n" && text.startsWith("```", index + 1)) {
+          fenceEnd = index;
+          break;
+        }
         if (escaped) escaped = false;
         else if (char === "\\") escaped = true;
-        else if (char === '"') inString = false;
+        else if (char === '"') {
+          inString = false;
+          marks += 1;
+        }
         continue;
       }
       if (char === '"') {
         inString = true;
+        marks += 1;
         continue;
       }
+      if (["{", "[", "}", "]"].includes(char)) marks += 1;
       if (["{", "["].includes(char)) stack.push(char);
       if (["}", "]"].includes(char)) {
         const expected = char === "}" ? "{" : "[";
-        if (stack.at(-1) !== expected) {
-          mismatched = true;
-          break;
-        }
+        // A wrong closer is read as the one that was meant, so the scan can
+        // still tell whether the answer ends cut off.
+        if (stack.at(-1) !== expected) mismatched = true;
         stack.pop();
-        if (!stack.length) break;
+        // A comma after the seeming end shows a missing opener: the answer
+        // goes on, so it is read to the end to tell whether it is cut off.
+        if (!stack.length && !/^\s*,/.test(text.slice(index + 1))) break;
       }
     }
+    // A finished answer that ends on a closing bracket, but whose code block
+    // closes inside a string, has a stray quote: it is broken, not cut off.
+    const strayQuote = fenceEnd >= 0 && /[}\]]\s*$/.test(text.slice(0, fenceEnd));
     return Object.freeze({
       started,
+      // After a wrong closer the depth is a guess; only an answer that ends
+      // inside a string is surely cut off.
       incomplete:
-        started && !mismatched && (stack.length > 0 || inString || escaped),
+        started &&
+        !strayQuote &&
+        (mismatched ? inString || escaped : stack.length > 0 || inString || escaped),
       openDepth: stack.length,
       unterminatedString: inString,
       mismatched,
+      marks,
     });
   }
 
   function extractJson(source) {
     const raw = stripBom(source);
     if (!raw) throw new Error("empty");
-    const attempts = [raw];
     const fenceMatches = [...raw.matchAll(/```(?:json|JSON)?\s*([\s\S]*?)```/g)];
     // One fenced block and nothing else is the form the prompts ask for, so
     // removing its fence is not a repair. An answer completed through the
@@ -285,15 +307,24 @@
         : fenceMatches.length === 0 && opening.test(raw)
           ? stripBom(raw.replace(opening, ""))
           : null;
+    // A copy that misses the first character leaves the answer without its
+    // opening brace: '"contract":"…","subject":{…}}'. It is put back, or the
+    // first nested object would be taken for the whole answer.
+    const body = askedForm ?? raw;
+    const restored = /^"(?:[^"\\]|\\.)*"\s*:/.test(body) ? `{${body}` : null;
+    const whole = restored ?? raw;
+    const openerRepair = (text) =>
+      text === restored ? [{ code: "ROOT_OPENER_RESTORED", count: 1 }] : [];
+    const attempts = restored ? [restored, raw] : [raw];
     // Every fenced block, largest first: a short format example before or
     // after the answer must not be taken for the answer.
     const fences = fenceMatches
       .map((match) => match[1])
       .sort((a, b) => b.length - a.length);
     attempts.push(...fences);
-    const balanced = balancedJsonSlice(raw);
+    const balanced = balancedJsonSlice(whole);
     // After an early close, that slice is only the first part of the answer.
-    const earlyClose = rejoinEarlyCloses(raw);
+    const earlyClose = rejoinEarlyCloses(whole);
     if (balanced && !earlyClose) attempts.push(balanced);
 
     const seen = new Set();
@@ -306,6 +337,7 @@
           value: JSON.parse(clean),
           recovered: clean !== raw && clean !== askedForm,
           source: clean,
+          ...(clean === restored ? { repairs: Object.freeze(openerRepair(clean)) } : {}),
         };
       } catch {}
       const recovered = recoverCandidate(clean);
@@ -326,6 +358,7 @@
             recovered: true,
             source: text,
             repairs: Object.freeze([
+              ...openerRepair(clean),
               ...(labeledEntries
                 ? [{ code: "LABELED_ARRAY_ENTRIES", count: labeledEntries }]
                 : []),
@@ -337,7 +370,7 @@
         } catch {}
       }
     }
-    const structure = structuralState(earlyClose ? earlyClose.source : raw);
+    const structure = structuralState(earlyClose ? earlyClose.source : whole);
     const error = new Error(structure.incomplete ? "truncated" : "invalid");
     error.code = structure.incomplete
       ? "TRUNCATED_JSON"
@@ -350,15 +383,24 @@
   // line breaks at the seam are dropped (JSON strings cannot contain them), and
   // a repeated tail of the cut-off answer is not duplicated.
   function joinContinuation(base, continuation) {
-    const head = String(base || "").replace(/[\r\n\t]+$/, "");
+    // A cut-off part copied with its code block's closing fence ends before it.
+    const head = String(base || "")
+      .replace(/[\r\n\t]+$/, "")
+      .replace(/\n```$/, "")
+      .replace(/[\r\n\t]+$/, "");
     // A fenced reply ("Here is the rest:\n```json\n...\n```") contributes only
     // the fenced block. A leading space can be string content ("quick| brown"),
-    // so only line breaks, fences, and the BOM are removed at the seam.
+    // so only line breaks, fences, and the BOM are removed at the seam. A
+    // trailing space can be too, when the reply is itself cut off.
     const reply = String(continuation || "").replace(/^﻿/, "");
     const fenced = /```(?:[a-zA-Z]+(?=\s))?[ \t]*\r?\n?([\s\S]*?)(?:\r?\n?```|$)/.exec(reply);
-    const tail = (fenced ? fenced[1] : reply)
+    // An unfenced reply may open with a line of prose ("Here is the rest:"). A
+    // fragment of the answer never has a first line ending in a colon with no
+    // quote or bracket on it.
+    const unfenced = reply.replace(/^[^"{}\[\]\r\n]*\p{L}[^"{}\[\]\r\n]*:[ \t]*\r?\n/u, "");
+    const tail = (fenced ? fenced[1] : unfenced)
       .replace(/^[\r\n\t]+/, "")
-      .replace(/\s+$/, "");
+      .replace(/[\r\n\t]+$/, "");
     for (let size = Math.min(400, head.length, tail.length); size >= 8; size -= 1) {
       const overlap = tail.slice(0, size);
       if (!head.endsWith(overlap)) continue;
@@ -367,6 +409,23 @@
       return isPeriodic(overlap) ? head + tail : head + tail.slice(size);
     }
     return head + tail;
+  }
+
+  // Whether a reply to the continue prompt carries a cut-off answer on. One
+  // that adds no quote or bracket to it, such as "the answer was already
+  // complete" or a brace that lands inside an unclosed string, does not.
+  function continuesAnswer(base, continuation) {
+    const marksIn = (text) => {
+      try {
+        extractJson(text);
+        return null;
+      } catch (error) {
+        return error.structure?.marks ?? null;
+      }
+    };
+    const before = marksIn(base);
+    const after = marksIn(joinContinuation(base, continuation));
+    return before === null || after === null || after > before;
   }
 
   function isPeriodic(text) {
@@ -378,6 +437,7 @@
 
   root.Jarbou3iJson = Object.freeze({
     joinContinuation,
+    continuesAnswer,
     stripJsonComments,
     removeTrailingCommas,
     repairLabeledArrayEntries,

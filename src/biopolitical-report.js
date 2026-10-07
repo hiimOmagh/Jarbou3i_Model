@@ -240,8 +240,9 @@
         : "";
     };
     const renderRecord = (record, index, pillarKey) => {
+      // Explanation records come first, then one record per evidence item in order.
       const evidenceItem = pillarKey === "evidence_explanations"
-        ? evidence.find((item) => item.claim === record.title)
+        ? evidence[index - arr(a.competing_explanations).length] || null
         : null;
       const recordId = evidenceItem?.id || "";
       return `<article class="recordCard${evidenceItem ? " evidenceCard" : ""}"${recordId ? ` id="evidence-${safeId(recordId)}" data-evidence-id="${escapeHtml(recordId)}"` : ""}>

@@ -136,6 +136,33 @@
     return undefined;
   }
 
+  const OTHER_SCRIPT = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Cyrillic}]/u;
+  const LATIN_PHRASE = /[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’-]*(?:[\s,()]+[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’-]*)+/g;
+  const LOWERCASE_WORD = /(?:^|[\s,()])[a-zà-ÿ][a-zà-ÿ'’-]{2,}/;
+
+  // Paths of text that slips into another language: Chinese, Japanese,
+  // Korean, or Cyrillic letters in any answer, and in an Arabic one a phrase of
+  // Latin words with a lowercase word in it. Names ("EU DSC Gateway") and
+  // one-word glosses ("biopower") pass. Source metadata may quote other
+  // languages, and the placeholder record's text comes from the app.
+  function foreignTextPaths(value, lang) {
+    const found = [];
+    (function visit(node, path) {
+      if (typeof node === "string") {
+        if (/^https?:\/\//i.test(node.trim())) return;
+        const latinPhrase =
+          lang === "ar" && (node.match(LATIN_PHRASE) || []).some((phrase) => LOWERCASE_WORD.test(phrase));
+        if (OTHER_SCRIPT.test(node) || latinPhrase) found.push(path);
+      } else if (Array.isArray(node)) node.forEach((item, index) => visit(item, `${path}/${index}`));
+      else if (node && typeof node === "object" && !/placeholder/i.test(String(node.source_title || ""))) {
+        for (const [key, item] of Object.entries(node)) {
+          if (!key.startsWith("source_")) visit(item, `${path}/${key}`);
+        }
+      }
+    })(value, "");
+    return found;
+  }
+
   // Pure format coercion; returns undefined when a judgment would be needed.
   function coerce(current, error) {
     if (error.keyword === "enum") {
@@ -432,6 +459,7 @@
   root.Jarbou3iContractRepair = Object.freeze({
     languageCode,
     detectLanguage,
+    foreignTextPaths,
     repairBiopolitical,
     salvageBiopolitical,
     salvageSchemaErrors,

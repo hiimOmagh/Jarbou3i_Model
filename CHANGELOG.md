@@ -55,6 +55,87 @@
   record refs, not names.
 - Stops counting the compilation of a Biopolitical answer as repairs. Every
   answer in the requested form showed about 28 repairs.
+- Offers no repair prompt for a valid answer with nothing to fix. The button
+  stayed active, and its prompt told the AI that JSON parsing had failed.
+- Offers the continue prompt for an answer cut off after a wrong closing
+  bracket earlier on. It got the JSON repair prompt, which cannot finish an
+  answer.
+- Offers the repair prompt when a reply to the continue prompt adds nothing,
+  such as "the answer was already complete". A complete answer with one stray
+  quote looks cut off; the continue prompt was offered again and again, and
+  each such reply was joined to the answer.
+- Puts the answer back, to be continued, when the AI replies to the repair
+  prompt that it is cut off (`{"repair_status":"incomplete_input"}`). That
+  reply replaced the answer in the box and was rejected as a wrong format.
+- Merges a list of missing parts whose paths leave out the leading `/`
+  (`"feedback/1/speed"`). Two free models wrote them this way, and the list
+  replaced the analysis instead.
+- Merges a completion reply that puts the missing parts under their parent
+  key; they were dropped, and the status said "Added 0 missing parts". The
+  status now also says how many parts matched nothing that was asked for.
+- Restores an answer whose first `{` is missing. Its opening keys were read
+  as the subject, and the contract, lens, and language were lost.
+- Offers the repair prompt, not the continue prompt, for a complete fenced
+  answer with one stray quote.
+- Gives generated IDs numbers the answer has not already used; an answer
+  could end up with two `E12` records.
+- Keeps a Biopolitical answer's `evidence: {items: [...]}` shape and the
+  keys written beside a wrapped answer when compiling it.
+- Keeps the space where a continuation joins the first part
+  ("Claim number"), and drops a code fence or lead-in sentence at the start
+  of the continuation.
+
+### Workspaces
+
+- Asks for a second click before **Load sample**, **Open**, or a workspace
+  file replaces an answer that is pasted but not imported.
+- Imports an answer once when **Import** is clicked twice.
+- Returns to the right workspace when the other lens is chosen and then
+  chosen again; exports and resets acted on the other lens's workspace.
+- Keeps a pasted answer when an edit is saved or a resolution is committed.
+- Resets no longer bring back results set aside for the other lens.
+
+### Prompts
+
+- Tells the assistant to copy the no-source placeholder and limitation
+  statement word for word, and recognizes a renamed placeholder by its shape
+  (the only evidence, no URL, cited nowhere) so it is not scored as evidence.
+- Blocks copying the prompt in "sources supplied in context" mode until
+  sources are pasted, and forbids figures and quotations the sources do not
+  contain.
+- Asks Research and Expert Biopolitical answers to fill assumptions and
+  causal links, whose template arrays are empty.
+- Warns when a relevant Biopolitical explanation states no claim.
+- Keeps source titles and quotations exact in the language-fix prompt and
+  translates evidence claims; the repair prompt no longer lets the assistant
+  mark evidence verified.
+- Stops telling the assistant that the tool fills the keyed sets it must
+  write, and stops asking for traceable or source-grounded evidence at
+  Research depth when no source access is chosen.
+
+### Reports and interface
+
+- States the Strategic report's headline score as decision readiness, with
+  analytical coverage, the quality gate, and the cap that applies; it was
+  called "Overall index".
+- Writes the Strategic report's title and model chain in Arabic and French.
+  The cross-locale export test now expects them in each language.
+- Keeps source links left-to-right in the Arabic Strategic report.
+- Shows no raw stakes code (`existential`) for an interest without a
+  rationale.
+- Gives each Biopolitical evidence record its own ID and source link when two
+  records share a claim or an explanation states the same claim; they shared
+  the first record's ID and link.
+- Names the relationship atlas's structural and evidence relations
+  (`supported_by`, `countered_by`, ...) in Arabic and French.
+- Names a Biopolitical export without a title `analysis-...` instead of
+  `strategic-analysis-...`, keeps `œ` and `æ` in file names as `oe` and
+  `ae`, and adds the analysis name to the evidence intelligence and review
+  plan exports.
+- Shows the inspection directory's layer, confidence, and evidence balance in
+  the interface language.
+- Shows the source type codes `internal_sample` and `none` as words.
+- Adds French for five Strategic labels that showed English.
 
 ### Tests and tooling
 
@@ -68,6 +149,19 @@
   analysis in the analysis-language test that was flaky on WebKit CI.
 - Checks the no-source Biopolitical prompt against the template it sends, in
   every language.
+- Splits the workspace reset test in two. Under load on WebKit it reached the
+  60-second test timeout.
+- Adds `npm run corpus`, which asks models on OpenRouter for analyses and runs
+  each reply through the app as a user would: continue a cut-off answer, send
+  the follow-up prompt the app offers, import. `npm run corpus:replay`
+  re-imports saved replies with the current code and fails when a case gets
+  worse than its baseline.
+- Adds `npm run corpus:score`, which has a judge model score the content of
+  corpus replies with DeepEval: evidence honesty, analytical substance, topic
+  fidelity, and instruction following. The eval suite is in `tests/evals/`.
+  Only replies the app imported are scored. With a free judge, it first asks
+  OpenRouter how many free-model requests are left today and stops when none
+  are.
 
 ### Repository cleanup
 

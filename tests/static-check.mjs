@@ -783,4 +783,16 @@ for (const token of [
   if (!pkg.scripts?.[token]) fail(`package script missing: ${token}`);
 }
 
+// labelText(en, ar) without a French argument falls back to its French map,
+// then to English; every such label needs a French form.
+{
+  const start = app.indexOf("function labelText(en, ar, fr) {");
+  const frMap = app.slice(start, app.indexOf("  };", start));
+  for (const match of app.replace(/\r?\n\s*/g, " ").matchAll(/labelText\(\s*"([^"]+)",\s*"[^"]*"\s*\)/g)) {
+    if (!frMap.includes(`"${match[1]}":`) && !frMap.includes(` ${match[1]}:`)) {
+      fail(`labelText "${match[1]}" has no French form`);
+    }
+  }
+}
+
 console.log("Static checks passed.");

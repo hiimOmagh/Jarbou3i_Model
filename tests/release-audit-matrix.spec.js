@@ -97,6 +97,8 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
         await expect(page.locator("#jsonStatus")).toContainText(locale.validationPrefix);
         await expect(page.locator("#jsonStatus")).toHaveClass(/bad/);
 
+        // The pasted reply is not imported, so it is replaced on a second click.
+        await page.locator("#loadSampleBtn").click();
         await page.locator("#loadSampleBtn").click();
         await expect(page.locator("#reviewPanel")).toBeVisible();
         const connectionsTab = page.locator('[data-bio-review="connections"]');

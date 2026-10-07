@@ -118,3 +118,103 @@ test.describe('HTML export lens contract', () => {
     ]);
   });
 });
+
+async function exportImportedStrategic(page, testInfo, data, name) {
+  await page.goto('./');
+  await expect(page.locator('#copyPromptBtn')).toBeVisible();
+  await page.locator('#langEn').click();
+  await page.locator('#jsonInput').fill(JSON.stringify(data));
+  await expect(page.locator('#importBtn')).toBeEnabled();
+  await page.locator('#importBtn').click();
+  const exportTab = page.locator('[data-review="exports"]');
+  await exportTab.click();
+  await expect(page.locator('#exportHtml')).toBeVisible();
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('#exportHtml').click()
+  ]);
+  const filePath = testInfo.outputPath(`${name}.html`);
+  await download.saveAs(filePath);
+  return fs.readFile(filePath, 'utf8');
+}
+
+const strategicFixture = async (name) =>
+  JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/${name}`, 'utf8'));
+
+test.describe('Strategic HTML report content', () => {
+  test('the hero states capped decision readiness, coverage and the quality gate', async ({ page }, testInfo) => {
+    const html = await exportSampleReport(page, testInfo, 'strategic');
+    const hero = html.match(/<section class="hero">[\s\S]*?<\/section>/)[0];
+
+    expect(hero).toContain('Decision readiness');
+    expect(hero).toContain('Analytical coverage');
+    expect(hero).toContain('Quality gate');
+    expect(hero).toMatch(/Approved|Blocked/);
+    expect(hero).toContain('Decision readiness is capped by source traceability and independent review.');
+    expect(hero).not.toContain('Overall index');
+  });
+
+  test('an Arabic report keeps source URLs left-to-right', async ({ page }, testInfo) => {
+    const data = await strategicFixture('sample-analysis-ar.json');
+    data.evidence.items[0].source_url = 'https://www.un.org/en/about-us/history-of-the-un';
+    const html = await exportImportedStrategic(page, testInfo, data, 'ar-source-url');
+    expect(html).toContain('dir="rtl"');
+
+    await page.setContent(html);
+    const link = page.locator('a.sourceUrl').first();
+    await expect(link).toBeVisible();
+    expect(await link.evaluate((el) => getComputedStyle(el).direction)).toBe('ltr');
+  });
+
+  test('report file names follow the lens and keep French ligatures', async ({ page }) => {
+    const exportedName = async (data, tab) => {
+      await page.goto('./');
+      await expect(page.locator('#copyPromptBtn')).toBeVisible();
+      await page.locator('#langEn').click();
+      await page.locator('#jsonInput').fill(JSON.stringify(data));
+      await expect(page.locator('#importBtn')).toBeEnabled();
+      await page.locator('#importBtn').click();
+      await page.locator(tab).click();
+      await expect(page.locator('#exportHtml')).toBeVisible();
+      const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.locator('#exportHtml').click()
+      ]);
+      return download.suggestedFilename();
+    };
+
+    const untitled = await strategicFixture('sample-analysis-bio-en.json');
+    untitled.subject.title = '';
+    expect(await exportedName(untitled, '[data-bio-review="exports"]')).toBe('analysis-biopolitical-v2-report.html');
+
+    const french = await strategicFixture('sample-analysis-fr.json');
+    french.subject.title = 'Main-d’œuvre et cœur de l’Europe';
+    expect(await exportedName(french, '[data-review="exports"]')).toBe('main-d-oeuvre-et-coeur-de-l-europe-report.html');
+  });
+
+  test('source type codes read as words in the evidence view and the report', async ({ page }, testInfo) => {
+    const data = await strategicFixture('sample-analysis-ar.json');
+    const [first] = data.evidence.items;
+    first.source_type = 'internal_sample';
+    data.evidence.items.push({ ...structuredClone(first), id: 'E2', source_type: 'none' });
+    const html = await exportImportedStrategic(page, testInfo, data, 'ar-source-type');
+    const body = html.replace(/<script type="application\/json" id="canonical-analysis">[\s\S]*?<\/script>/, '');
+    expect(body).not.toContain('internal_sample');
+    expect(body).not.toMatch(/ · none\b/);
+
+    await page.locator('[data-review="evidence"]').click();
+    const ledger = page.locator('.evidenceLedger');
+    await expect(ledger).toBeVisible();
+    await expect(ledger).not.toContainText('internal_sample');
+    await expect(ledger).not.toContainText(/ · none\b/);
+  });
+
+  test('an interest without a rationale does not print its raw stakes code', async ({ page }, testInfo) => {
+    const data = await strategicFixture('sample-analysis-ar.json');
+    delete data.interests[0].rationale;
+    const html = await exportImportedStrategic(page, testInfo, data, 'ar-no-rationale');
+
+    expect(html).toContain('dir="rtl"');
+    expect(html).not.toContain('<p>existential</p>');
+  });
+});

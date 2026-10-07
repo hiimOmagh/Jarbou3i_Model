@@ -92,4 +92,26 @@ const canonicalMatch = html.match(
 assert.ok(canonicalMatch, "machine-readable canonical payload missing");
 assert.deepEqual(JSON.parse(canonicalMatch[1]), fixture);
 
+// Every relation the relationship atlas prints reads in the report's language.
+const graphRelations = ["between", "supported_by", "responds_to_classification", "targets", "governed_by", "uses", "affects", "countered_by", "related_to"];
+for (const lang of ["ar", "fr"]) {
+  const sampleRelations = graphApi.build(bio.sample(lang), lang).edges.map((edge) => edge.relation);
+  for (const relation of new Set([...graphRelations, ...sampleRelations])) {
+    assert.notEqual(bio.displayToken(lang, relation), bio.displayToken("en", relation), `${lang} relation ${relation} is shown in English`);
+  }
+}
+
+// Each evidence record keeps its own ID and source, even when two evidence
+// items share a claim or an explanation states the same claim.
+{
+  const twin = structuredClone(fixture);
+  const [first] = twin.evidence.items;
+  twin.evidence.items.push({ ...structuredClone(first), id: "E99", source_url: "https://example.org/evidence/E99" });
+  twin.competing_explanations[0].claim = first.claim;
+  const twinHtml = reportApi.build({ analysis: twin, lang: "en", version: PRODUCT_VERSION, bio, graphApi });
+  assert.ok(twinHtml.includes('data-evidence-id="E99"'), "second evidence record lost its own ID");
+  const twinIds = [...twinHtml.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
+  assert.equal(new Set(twinIds).size, twinIds.length, "evidence records sharing a claim duplicate an ID");
+}
+
 console.log("Biopolitical standalone report checks passed.");

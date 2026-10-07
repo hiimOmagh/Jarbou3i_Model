@@ -172,6 +172,9 @@
   }
 
   function normalizeRecord(record) {
+    // A list entry written as plain text keeps it, for review, rather than
+    // becoming an empty record.
+    if (typeof record === "string") return { text: record };
     const item = clone(object(record));
     if (item.ref !== undefined && item.id === undefined) item.id = item.ref;
     delete item.ref;
@@ -197,6 +200,10 @@
   }
 
   function normalizeCollection(value) {
+    // The canonical {items: [...]} form, written where a list is asked for.
+    if (isObject(value) && Array.isArray(value.items) && Object.keys(value).length === 1) {
+      return normalizeCollection(value.items);
+    }
     if (Array.isArray(value)) return value.map(normalizeRecord);
     if (!isObject(value)) return [];
     return Object.entries(value).map(([id, item]) => ({
@@ -241,9 +248,14 @@
   function addGeneratedIds(candidate, audit) {
     for (const [path, prefix] of COLLECTIONS) {
       const records = array(atPath(candidate, path));
+      // A generated ID skips the ones the answer already uses.
+      const used = new Set(records.map((record) => text(object(record).id).trim()).filter(Boolean));
       records.forEach((record, index) => {
         if (!isObject(record) || text(record.id).trim()) return;
-        record.id = `${prefix}${index + 1}`;
+        let number = index + 1;
+        while (used.has(`${prefix}${number}`)) number += 1;
+        record.id = `${prefix}${number}`;
+        used.add(record.id);
         audit.transformations.push(
           Object.freeze({
             code: "DETERMINISTIC_ID_GENERATED",
@@ -621,6 +633,14 @@
       const found = findResult(source, "", 3);
       if (found) {
         source = found.value;
+        // Sections the AI put next to the wrapped result, not inside it,
+        // belong to it and are kept rather than dropped with the wrapper.
+        if (isObject(value) && isObject(source) && Object.values(value).includes(found.value)) {
+          const siblings = Object.entries(value).filter(
+            ([key, child]) => child !== found.value && !(key in source),
+          );
+          if (siblings.length) source = { ...source, ...Object.fromEntries(siblings) };
+        }
         transformations.push(
           Object.freeze({ code: "RESULT_WRAPPER_REMOVED", path: found.path, count: 1 }),
         );
@@ -970,11 +990,28 @@
     return JSON.stringify(template);
   }
 
-  function buildFieldGuide(evidenceAccess = "web") {
+  function buildFieldGuide(evidenceAccess = "web", mode = "focused") {
+    // Research and expert depth also ask for assumptions and causal links.
+    const populate = [
+      "power.actors",
+      "power.affected_populations",
+      "mechanisms.instruments",
+      "mechanisms.power_modes",
+      "at least one of mechanisms.infrastructures or mechanisms.political_economy",
+      "meaning.norms",
+      "meaning.regimes_of_truth",
+      "meaning.classifications",
+      "intervention.interventions",
+      "distribution.items",
+      "resistance",
+      "alternatives",
+      ...(evidenceAccess === "none" ? [] : ["evidence"]),
+      ...(["research", "expert"].includes(mode) ? ["assumptions", "links"] : []),
+    ];
     return [
       "Interchange record guide (keys are canonical; ref becomes id locally):",
       // Without source access the template's placeholder is the only evidence.
-      `Populate these even though their template arrays are empty: power.actors, power.affected_populations, mechanisms.instruments, mechanisms.power_modes, at least one of mechanisms.infrastructures or mechanisms.political_economy, meaning.norms, meaning.regimes_of_truth, meaning.classifications, intervention.interventions, distribution.items, resistance, ${evidenceAccess === "none" ? "and alternatives" : "alternatives, and evidence"}.`,
+      `Populate these even though their template arrays are empty: ${populate.slice(0, -1).join(", ")}, and ${populate.at(-1)}.`,
       "institutions: {ref,name,mandate,role,accountability[],confidence}",
       "power_asymmetries: {ref,between[],resource,effect,confidence}",
       "infrastructures: {ref,name,owner,dependency_created,actions_enabled_or_blocked[],access_conditions[],confidence}",
@@ -1192,12 +1229,15 @@ Parties manquantes :`,
   }
 
   // A reply that holds only the missing parts: {"fill": {"/path": value}}.
+  // Models often leave out the leading "/" ("feedback/1/speed"); the path
+  // means the same.
+  const fillTarget = (key) => (key.startsWith("/") ? key : `/${key}`);
   function isCompletionReply(value) {
     const fill = object(value).fill;
     return (
       isObject(fill) &&
       Object.keys(fill).length > 0 &&
-      Object.keys(fill).every((key) => key.startsWith("/"))
+      Object.keys(fill).every((key) => key.length > 0)
     );
   }
 
@@ -1208,15 +1248,26 @@ Parties manquantes :`,
     const asked = new Set(targets);
     const ignored = [];
     let applied = 0;
-    for (const [target, next] of Object.entries(object(object(reply).fill))) {
+    const put = (target, next) => {
       const keys = pointerKeys(target);
       const owner = keys.slice(0, -1).reduce((node, key) => node?.[key], value);
-      if (!asked.has(target) || !keys.length || !owner || typeof owner !== "object") {
-        ignored.push(target);
-        continue;
-      }
+      if (!keys.length || !owner || typeof owner !== "object") return false;
       owner[keys.at(-1)] = clone(next);
-      applied += 1;
+      return true;
+    };
+    for (const [key, next] of Object.entries(object(object(reply).fill))) {
+      const target = fillTarget(key);
+      // Models also answer one level up, keyed by the record or list that
+      // holds the missing parts; only the parts asked for are read from it.
+      const parts = asked.has(target)
+        ? [[target, next]]
+        : [...asked]
+            .filter((path) => path.startsWith(`${target}/`))
+            .map((path) => [path, pointerKeys(path.slice(target.length)).reduce((node, part) => node?.[part], next)])
+            .filter(([, part]) => part !== undefined);
+      const written = parts.filter(([path, part]) => put(path, part)).length;
+      if (!written) ignored.push(target);
+      applied += written;
     }
     return { value, applied, ignored };
   }

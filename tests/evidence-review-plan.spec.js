@@ -31,6 +31,7 @@ test("biopolitical review plan downloads as a separate derived artifact", async 
     page.waitForEvent("download"),
     queue.locator("#exportReviewPlan").click(),
   ]);
+  expect(download.suggestedFilename()).toMatch(/^.+-biopolitical-evidence-review-plan\.json$/);
   const manifest = JSON.parse(await fs.readFile(await download.path(), "utf8"));
   expect(manifest.format).toBe("jarbou3i-evidence-review-plan-v1");
   expect(manifest.app_version).toBe(PRODUCT_VERSION);

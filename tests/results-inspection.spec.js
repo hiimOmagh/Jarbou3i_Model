@@ -5,6 +5,23 @@ async function loadStrategicSample(page) {
   await page.locator("#loadSampleBtn").click();
 }
 
+for (const lens of ["strategic", "biopolitical"]) {
+  test(`Arabic ${lens} inspection shows layer, confidence and evidence balance in Arabic`, async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langAr").click();
+    await page.locator("#analysisLang").selectOption("ar");
+    await page.locator(`[data-lens="${lens}"]`).click();
+    await page.locator("#loadSampleBtn").click();
+    await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
+    const directory = page.locator("[data-results-inspection]");
+    await expect(directory.locator("[data-inspection-directory-item]").first()).toBeVisible();
+
+    const labels = await directory.locator(".inspectionDirectoryMeta > span, .traceabilityBalance").allTextContents();
+    expect(labels.length).toBeGreaterThan(0);
+    expect(labels.filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
+  });
+}
+
 test("strategic inspection exposes canonical provenance and navigable occurrences", async ({ page }) => {
   await loadStrategicSample(page);
   await page.locator('[data-review="inspection"]').click();

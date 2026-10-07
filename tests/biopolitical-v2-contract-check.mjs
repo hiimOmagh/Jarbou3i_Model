@@ -163,6 +163,61 @@ for (const lang of ["ar", "en", "fr"]) {
   }
 }
 
+// The no-source prompt has the AI copy two schema texts that rule 10 otherwise
+// forbids copying. It must say they are the exception, or models reword them
+// and the placeholder is no longer recognised by its title.
+const copiedAsWritten = {
+  ar: "النصان الوحيدان من المخطط",
+  en: "only schema texts to copy as written",
+  fr: "seuls textes du schéma à recopier",
+};
+for (const lang of ["ar", "en", "fr"]) {
+  const prompt = bio.buildPrompt({ topic: "Conceptual inquiry", lang, mode: "focused", evidenceAccess: "none" });
+  if (!prompt.includes(copiedAsWritten[lang])) {
+    fail(`${lang} no-source prompt does not exempt the placeholder from the no-copy rule`);
+  }
+}
+
+// With supplied sources, figures and quotations come only from them.
+const noInventedFigures = {
+  ar: "لا تذكر أرقامًا أو اقتباسات",
+  en: "Do not state figures or quotations",
+  fr: "N’avancez aucun chiffre ni citation",
+};
+for (const lang of ["ar", "en", "fr"]) {
+  const prompt = bio.buildPrompt({ topic: "Supplied-source inquiry", lang, mode: "focused", evidenceAccess: "provided" });
+  if (!prompt.includes(noInventedFigures[lang])) {
+    fail(`${lang} provided-source prompt allows figures the sources do not contain`);
+  }
+}
+
+// Research depth asks for traceable evidence only when sources can be reached,
+// and no prompt says the tool fills the sets or IDs the AI must write.
+const traceableEvidence = { ar: "أدلة قابلة للتتبع", en: "Use traceable evidence", fr: "preuves traçables" };
+const toolFillsSets = { ar: "المعرّفات الثابتة", en: "fixed sets locally", fr: "ensembles fixes" };
+for (const lang of ["ar", "en", "fr"]) {
+  const offline = bio.buildPrompt({ topic: "Conceptual inquiry", lang, mode: "research", evidenceAccess: "none" });
+  const online = bio.buildPrompt({ topic: "Conceptual inquiry", lang, mode: "research", evidenceAccess: "web" });
+  if (offline.includes(traceableEvidence[lang]) || !online.includes(traceableEvidence[lang])) {
+    fail(`${lang} research depth asks for traceable evidence without source access`);
+  }
+  if (online.includes(toolFillsSets[lang])) {
+    fail(`${lang} prompt says the tool fills the sets the AI must write`);
+  }
+}
+if (bio.buildPrompt({ topic: "Conceptual inquiry", lang: "ar", mode: "research", evidenceAccess: "web" }).includes("بيانات قياس كمية")) {
+  fail("Arabic research depth asks for quantitative data instead of design metadata");
+}
+
+// A research prompt sent to an assistant that cannot browse has no schema
+// placeholder to copy, so it must spell out the unsourced draft itself.
+for (const lang of ["ar", "en", "fr"]) {
+  const prompt = bio.buildPrompt({ topic: "Conceptual inquiry", lang, mode: "research", evidenceAccess: "web" });
+  if (!prompt.includes(bio.unsourcedPlaceholder(lang).copy.title)) {
+    fail(`${lang} research prompt does not say how to draft when browsing is unavailable`);
+  }
+}
+
 for (const lang of ["ar", "en", "fr"]) {
   const fixture = readJson(`fixtures/sample-analysis-bio-${lang}.json`);
   const normalized = bio.normalize(fixture);

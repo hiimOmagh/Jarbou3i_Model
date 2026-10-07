@@ -247,6 +247,16 @@
           ),
         );
       }
+      if (!draft && item.relevance === "relevant" && !filled(item.claim)) {
+        warnings.push(
+          issue(
+            "MISSING_EXPLANATION_CLAIM",
+            `/competing_explanations/${index}/claim`,
+            `Relevant explanation ${item.type} states no claim; say what it explains before publication.`,
+            "warning",
+          ),
+        );
+      }
     });
     arr(a.links).forEach((item, index) => {
       checkRef(item.from, `/links/${index}/from`);
@@ -319,7 +329,7 @@
     let hasUnverifiedEvidence = false;
     arr(a.evidence?.items).forEach((item, index) => {
       const path = `/evidence/items/${index}`;
-      const placeholder = placeholderPattern.test(str(item.source_title));
+      const placeholder = root.Jarbou3iBiopolitics.isPlaceholderEvidence(item, a);
       const traceable = filled(item.source_url) || filled(item.source_locator);
       const verified = item.verification_status === "verified";
       if (!verified) hasUnverifiedEvidence = true;

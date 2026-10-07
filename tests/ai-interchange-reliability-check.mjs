@@ -319,6 +319,13 @@ if (
 ) {
   fail("completion prompt must name the record and show the shape of a missing list");
 }
+// A generated ID skips the ones the answer already uses: an AI that drops a
+// record and forgets one ref must not end with two records sharing an ID.
+const idCandidate = { evidence: { items: [{ id: "E1" }, { id: "E3" }, { claim: "no ref" }] } };
+compiler.generateMissingIds(idCandidate, { transformations: [] });
+if (idCandidate.evidence.items.map((item) => item.id).join() !== "E1,E3,E4") {
+  fail(`a generated ID collided with one in use: ${idCandidate.evidence.items.map((item) => item.id)}`);
+}
 const completionTargets = compiler.completionTargets(reusedValidation.errors);
 const fillReply = {
   fill: Object.fromEntries(
@@ -340,6 +347,51 @@ if (
 }
 if (!window.Jarbou3iBiopoliticsIntegrity.validateImport(completed.value).canonical) {
   fail("an analysis with every gap filled must become canonical");
+}
+// Models often leave out the leading "/" of each path.
+const slashless = {
+  fill: Object.fromEntries(Object.entries(fillReply.fill).map(([key, value]) => [key.slice(1), value])),
+};
+const slashlessCompleted = compiler.applyCompletion(reusedCanonical, slashless, completionTargets);
+if (
+  !compiler.isCompletionReply(slashless) ||
+  slashlessCompleted.applied !== 8 ||
+  JSON.stringify(slashlessCompleted.value) !== JSON.stringify(completed.value)
+) {
+  fail("a fill reply whose paths lack the leading slash must be applied the same way");
+}
+// Models also answer one level up, keyed by the record or list that holds
+// the missing parts (DeepSeek did); those parts are read from it, and only
+// the parts asked for are written.
+const parentKeyed = {
+  fill: {
+    ...Object.fromEntries(
+      completionTargets.map((target, index) => {
+        const keys = target.split("/");
+        return [keys.slice(0, -1).join("/"), { [keys.at(-1)]: `Counter-evidence ${index + 1}`, title: "Not asked for" }];
+      }),
+    ),
+    "/subject": { title: "Not asked for" },
+  },
+};
+const parentCompleted = compiler.applyCompletion(reusedCanonical, parentKeyed, completionTargets);
+if (
+  parentCompleted.applied !== 8 ||
+  parentCompleted.ignored.join() !== "/subject" ||
+  JSON.stringify(parentCompleted.value) !== JSON.stringify(completed.value)
+) {
+  fail("a fill reply keyed by the record that holds each missing part must be applied, and nothing else");
+}
+const listBase = structuredClone(reusedCanonical);
+listBase.power_map.power_asymmetries[0].between = ["", ""];
+const listTargets = ["/power_map/power_asymmetries/0/between/0", "/power_map/power_asymmetries/0/between/1"];
+const listCompleted = compiler.applyCompletion(
+  listBase,
+  { fill: { "power_map/power_asymmetries/0/between": ["A1", "A2"] } },
+  listTargets,
+);
+if (listCompleted.applied !== 2 || listCompleted.value.power_map.power_asymmetries[0].between.join() !== "A1,A2") {
+  fail("a fill reply keyed by the list that holds the missing entries must be applied");
 }
 for (const lang of ["ar", "fr"]) {
   const localizedCompletion = compiler.buildCompletionPrompt(
@@ -605,8 +657,76 @@ if (REPAIR.detectLanguage({ subject: { title: "Short title" }, actors: ["high", 
   fail("too little prose must not produce a language guess");
 }
 
+// Text that slips into another language is found by path, as in real replies.
+// Names, one-word glosses, source metadata, and the template's own English
+// placeholder record are not flagged.
+const foreign = REPAIR.foreignTextPaths(
+  {
+    results: [
+      { name: "نقل الإنتاج", rationale: "انخفاض في relocation of carbon-intensive production." },
+      { name: "منظمة التجارة", rationale: "سعت دول إلى شكاوى presso WTO." },
+    ],
+    interests: [{ name: "بوابة EU DSC Gateway", rationale: "صناعات الصلب وال铝业 تواجه تكلفة مرتفعة" }],
+    theory: "مفهوم السلطة الحيوية (biopower) عند فوكو",
+    stakes: "مما يؤدي إلى воп",
+    evidence: {
+      items: [
+        { source_title: "UNSOURCED MODEL SYNTHESIS — PLACEHOLDER", claim: "Unsourced conceptual inference; not evidence" },
+        { source_title: "Regulation (EU) 2023/956 establishing a carbon border adjustment mechanism", claim: "ينص النظام على آلية" },
+      ],
+    },
+  },
+  "ar",
+);
+if (JSON.stringify(foreign) !== JSON.stringify(["/results/0/rationale", "/results/1/rationale", "/interests/0/rationale", "/stakes"])) {
+  fail(`text in another language was not found by path: ${JSON.stringify(foreign)}`);
+}
+if (JSON.stringify(REPAIR.foreignTextPaths({ conclusion: { gap: "The evidence base 缺乏 depth" } }, "en")) !== '["/conclusion/gap"]') {
+  fail("Chinese text in an English answer was not found");
+}
+for (const [name, lang] of [
+  ["sample-analysis-en.json", "en"],
+  ["sample-analysis-fr.json", "fr"],
+  ["sample-analysis-bio-en.json", "en"],
+  ["sample-analysis-bio-fr.json", "fr"],
+  ["sample-analysis-bio-ar.json", "ar"],
+]) {
+  const flagged = REPAIR.foreignTextPaths(readFixture(name), lang);
+  if (flagged.length) fail(`${name} was flagged as another language at ${flagged.join(", ")}`);
+}
+
 // A reply without its lens label is recognized by its shape, not by the lens
 // the page happens to show.
+// Sections written in another shape keep their content: the canonical
+// {items: [...]} form, plain-text list entries, and text keyed by its ID.
+const shapeDrift = JSON.parse(compiler.buildTemplate("en", "research"));
+shapeDrift.evidence = { items: [{ ref: "E1", claim: "Real claim one" }, { ref: "E2", claim: "Real claim two" }] };
+shapeDrift.assumptions = ["Assumes the registry is accurate"];
+shapeDrift.resistance = { RES1: "Doctors refused to comply" };
+const shapeDriftCompiled = compiler.compile(shapeDrift, { generatedAt: "2026-10-06T00:00:00Z" }).value;
+if (
+  shapeDriftCompiled.evidence.items.map((item) => item.claim).join() !== "Real claim one,Real claim two" ||
+  !JSON.stringify(shapeDriftCompiled.assumptions.items).includes("Assumes the registry is accurate") ||
+  !JSON.stringify(shapeDriftCompiled.resistance_agency.items).includes("Doctors refused to comply")
+) {
+  fail("a section written in another shape lost its content");
+}
+// Sections placed next to a wrapped result, not inside it, are kept.
+const { contradictions: wrappedContradictions, scenarios: wrappedScenarios, ...wrappedRest } = JSON.parse(
+  fs.readFileSync("fixtures/sample-analysis-en.json", "utf8"),
+);
+const unwrapped = compiler.recognize({
+  analysis: wrappedRest,
+  contradictions: wrappedContradictions,
+  scenarios: wrappedScenarios,
+}).value;
+if (
+  JSON.stringify(unwrapped.contradictions) !== JSON.stringify(wrappedContradictions) ||
+  JSON.stringify(unwrapped.scenarios) !== JSON.stringify(wrappedScenarios)
+) {
+  fail("sections next to a wrapped result were dropped with the wrapper");
+}
+
 const unlabelledBio = structuredClone(fixture);
 delete unlabelledBio.analysis_lens;
 if (compiler.recognize(unlabelledBio).value.analysis_lens !== "biopolitical") {
@@ -648,6 +768,18 @@ if (
 // canonical schema in every language and depth. A required field, code or range
 // the prompt does not ask for fails here. References are placeholders, so only
 // the schema is checked, not reference integrity.
+// Research and expert depth ask for assumptions and causal links, whose
+// template arrays are empty, so the guide must say to fill them there.
+const populateLine = (mode) =>
+  compiler.buildFieldGuide("web", mode).split("\n").find((line) => line.startsWith("Populate these"));
+for (const mode of ["research", "expert"]) {
+  if (!/\bassumptions\b/.test(populateLine(mode)) || !/\blinks\b/.test(populateLine(mode))) {
+    fail(`${mode} field guide does not ask to fill assumptions and links`);
+  }
+}
+if (/\blinks\b/.test(populateLine("focused"))) {
+  fail("focused field guide asks for links it does not need");
+}
 const guideLines = compiler.buildFieldGuide().split("\n");
 const guideRecords = guideLines
   .map((line) => line.match(/^([a-z_.]+): \{(.+)\}$/))

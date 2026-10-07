@@ -640,6 +640,15 @@
     resists: ["يقاوم", "Résiste"],
     feeds_back: ["يرتد", "Rétroagit"],
     contradicts: ["يناقض", "Contredit"],
+    between: ["بين", "Entre"],
+    supported_by: ["مدعوم بـ", "Étayé par"],
+    countered_by: ["معارَض بـ", "Contredit par"],
+    responds_to_classification: ["يستجيب للتصنيف", "Répond à la classification"],
+    targets: ["يستهدف", "Cible"],
+    governed_by: ["يحكمه", "Gouverné par"],
+    uses: ["يستخدم", "Utilise"],
+    affects: ["يؤثر في", "Affecte"],
+    related_to: ["مرتبط بـ", "Lié à"],
   };
 
   const AUDIT_LABELS = {
@@ -1847,20 +1856,22 @@
       ? interchange.buildTemplate(lang, mode, evidenceAccess)
       : buildSchemaTemplate(lang, mode, evidenceAccess);
     const interchangeGuide = interchange
-      ? `\n\n${interchange.buildFieldGuide(evidenceAccess)}\n\n${interchange.buildChecklist(lang)}`
+      ? `\n\n${interchange.buildFieldGuide(evidenceAccess, mode)}\n\n${interchange.buildChecklist(lang)}`
       : "";
     const untrustedTopic = str(topic);
     const untrustedContext = str(context);
     if (lang === "ar") {
       const evidenceRule =
         evidenceAccess === "none"
-          ? "وضع الوصول إلى الأدلة: لا وصول خارجي. لا ترفض المهمة لهذا السبب ولا تختلق مصادر. أنشئ مسودة مفاهيمية قابلة للمراجعة: أبقِ عنصر الدليل النائب في المخطط كما هو بوصفه الدليل الوحيد، واترك جميع قوائم مراجع الأدلة فارغة، واجعل الثقة الكلية منخفضة، ولا تُبقِ في strongly_supported إلا بيان القيد الموجود في المخطط."
+          ? "وضع الوصول إلى الأدلة: لا وصول خارجي. لا ترفض المهمة لهذا السبب ولا تختلق مصادر. أنشئ مسودة مفاهيمية قابلة للمراجعة: انسخ عنصر الدليل النائب في المخطط حرفيًا، بما في ذلك عنوانه، بوصفه الدليل الوحيد، واترك جميع قوائم مراجع الأدلة فارغة، واجعل الثقة الكلية منخفضة، وانسخ بيان القيد الموجود في المخطط حرفيًا بوصفه العنصر الوحيد في strongly_supported. هذان هما النصان الوحيدان من المخطط اللذان يُنسخان كما هما."
           : evidenceAccess === "provided"
-            ? "وضع الوصول إلى الأدلة: استخدم فقط المصادر المحددة فعليًا في مادة السياق. لا تستكمل عنوانًا أو رابطًا أو محددًا مفقودًا بالتخمين؛ إذا لم تكفِ المصادر فاخفض الادعاءات غير المسندة إلى استنتاجات منخفضة الثقة."
-            : "وضع الوصول إلى الأدلة: بحث مباشر. سجّل فقط المصادر التي فتحتها أو تحققت من وجودها فعليًا مع رابط ومحدد قابلين للتتبع. إذا تعذر التصفح فلا تدّعِ البحث؛ استخدم قواعد المسودة المفاهيمية غير المسندة.";
+            ? "وضع الوصول إلى الأدلة: استخدم فقط المصادر المحددة فعليًا في مادة السياق. لا تستكمل عنوانًا أو رابطًا أو محددًا مفقودًا بالتخمين. لا تذكر أرقامًا أو اقتباسات لا تتضمنها تلك المصادر؛ إذا لم تكفِ المصادر فاخفض الادعاءات غير المسندة إلى استنتاجات منخفضة الثقة."
+            : `وضع الوصول إلى الأدلة: بحث مباشر. سجّل فقط المصادر التي فتحتها أو تحققت من وجودها فعليًا مع رابط ومحدد قابلين للتتبع. إذا تعذر التصفح فلا تدّعِ البحث ولا تختلق مصدرًا: استخدم عنصر دليل واحدًا عنوانه "${unsourcedPlaceholder("ar").copy.title}" مع source_url وsource_locator فارغين، ولا تستشهد به في أي موضع (اترك جميع قوائم مراجع الأدلة فارغة)، واجعل الثقة الكلية منخفضة، ولا تُبقِ في strongly_supported إلا بيانًا بهذا القيد.`;
       const depth =
         mode === "research"
-          ? "استخدم أدلة قابلة للتتبع، وأدلة مضادة، وبيانات قياس كمية، وعدم يقين، وروابط سببية معرّفة."
+          ? evidenceAccess === "none"
+            ? "استخدم الأدلة المضادة وعدم اليقين والروابط السببية المعرّفة؛ واتبع في الأدلة قاعدة الوصول إلى الأدلة."
+            : "استخدم أدلة قابلة للتتبع، وأدلة مضادة، وبيانات وصفية لتصميم القياس الكمي، وعدم يقين، وروابط سببية معرّفة."
           : mode === "expert"
             ? "استخدم أدلة وافتراضات وتفسيرات منافسة وشروط إبطال وروابط سببية صريحة."
             : "عمق مركّز للمساعدات ذات حدود الإخراج الصغيرة: سجل واحد لكل مجموعة مطلوبة ما لم يكن سجل ثانٍ ضروريًا، وجملة واحدة قصيرة لكل قيمة نصية، وعنصر دليل واحد لكل مصدر متميز. أكمل مع ذلك كل الاختبارات والمجموعات الثابتة الإلزامية. إذا بلغت حد الإخراج فتوقف ببساطة دون اختصار أو علامات حذف؛ ستطلب منصة العمل المتابعة.";
@@ -1897,19 +1908,21 @@ ${evidenceRule}
 
 العمق: ${mode}. ${depth}
 
-أعد فقط عقد التبادل المضغوط التالي. ستتولى الأداة محليًا إنشاء البيانات الوصفية والمعرّفات الثابتة وتحويله إلى العقد النظامي:
+أعد فقط عقد التبادل المضغوط التالي. ستضيف الأداة البيانات الوصفية محليًا ثم تحوّله إلى العقد النظامي؛ املأ كل مجموعة ذات مفاتيح يعرضها:
 ${schema}${interchangeGuide}`;
     }
     if (lang === "fr") {
       const evidenceRule =
         evidenceAccess === "none"
-          ? "Mode d’accès aux preuves : aucun accès externe. Ne refusez pas la tâche pour cette seule raison et n’inventez aucune source. Produisez un brouillon conceptuel révisable : gardez telle quelle l’entrée de preuve substitutive du schéma comme seule preuve, laissez vides toutes les listes de références de preuves, fixez la confiance globale à low et ne gardez dans strongly_supported que l’énoncé de limite fourni par le schéma."
+          ? "Mode d’accès aux preuves : aucun accès externe. Ne refusez pas la tâche pour cette seule raison et n’inventez aucune source. Produisez un brouillon conceptuel révisable : recopiez mot pour mot l’entrée de preuve substitutive du schéma, titre compris, comme seule preuve, laissez vides toutes les listes de références de preuves, fixez la confiance globale à low et recopiez mot pour mot l’énoncé de limite du schéma comme seule entrée de strongly_supported. Ce sont les deux seuls textes du schéma à recopier tels quels."
           : evidenceAccess === "provided"
-            ? "Mode d’accès aux preuves : utilisez uniquement les sources effectivement identifiées dans le contexte. Ne complétez jamais un titre, une URL ou un localisateur manquant par supposition ; rétrogradez toute affirmation non étayée en inférence de faible confiance."
-            : "Mode d’accès aux preuves : recherche en direct. N’enregistrez que les sources effectivement ouvertes ou dont l’existence a été vérifiée, avec URL et localisateur traçables. Si la navigation échoue, ne prétendez pas avoir recherché ; appliquez les règles du brouillon conceptuel non sourcé.";
+            ? "Mode d’accès aux preuves : utilisez uniquement les sources effectivement identifiées dans le contexte. Ne complétez jamais un titre, une URL ou un localisateur manquant par supposition. N’avancez aucun chiffre ni citation absent de ces sources ; rétrogradez toute affirmation non étayée en inférence de faible confiance."
+            : `Mode d’accès aux preuves : recherche en direct. N’enregistrez que les sources effectivement ouvertes ou dont l’existence a été vérifiée, avec URL et localisateur traçables. Si la navigation échoue, ne prétendez pas avoir recherché et n’inventez aucune source : utilisez une seule entrée de preuve intitulée « ${unsourcedPlaceholder("fr").copy.title} », avec source_url et source_locator vides, ne la citez nulle part (laissez vides toutes les listes de références de preuves), fixez la confiance globale à low et ne gardez dans strongly_supported qu’un énoncé de cette limite.`;
       const depth =
         mode === "research"
-          ? "Utilisez des preuves traçables, des contre-preuves, des métadonnées quantitatives, l’incertitude et des liens causaux identifiés."
+          ? evidenceAccess === "none"
+            ? "Utilisez des contre-preuves, l’incertitude et des liens causaux identifiés ; pour les preuves, suivez la règle d’accès aux preuves."
+            : "Utilisez des preuves traçables, des contre-preuves, des métadonnées quantitatives, l’incertitude et des liens causaux identifiés."
           : mode === "expert"
             ? "Utilisez preuves, hypothèses, explications rivales, falsificateurs et liens causaux explicites."
             : "Profondeur ciblée pour les assistants à faible limite de sortie : un seul élément par collection requise sauf si un second est indispensable, une phrase courte par valeur textuelle et un élément de preuve par source distincte. Complétez néanmoins chaque test et ensemble fixe obligatoire. Si vous atteignez votre limite de sortie, arrêtez-vous simplement, sans abréger ni utiliser de points de suspension : l’atelier demandera la suite.";
@@ -1946,18 +1959,20 @@ ${evidenceRule}
 
 Profondeur : ${mode}. ${depth}
 
-Retournez uniquement le contrat d’échange compact suivant. L’outil générera localement les métadonnées et ensembles fixes, puis le compilera vers le contrat canonique :
+Retournez uniquement le contrat d’échange compact suivant. L’outil ajoutera localement les métadonnées, puis le compilera vers le contrat canonique ; remplissez chaque ensemble à clés qu’il présente :
 ${schema}${interchangeGuide}`;
     }
     const evidenceRule =
       evidenceAccess === "none"
-        ? "Evidence-access mode: no external access. Do not refuse solely for that reason and do not invent sources. Produce a reviewable conceptual draft: keep the schema's placeholder evidence record unchanged as the only evidence, leave every list of evidence references empty, set overall confidence to low, and keep only the schema's limitation statement in strongly_supported."
+        ? "Evidence-access mode: no external access. Do not refuse solely for that reason and do not invent sources. Produce a reviewable conceptual draft: copy the schema's placeholder evidence record word for word, title included, as the only evidence, leave every list of evidence references empty, set overall confidence to low, and copy the schema's limitation statement word for word as the only entry in strongly_supported. These two are the only schema texts to copy as written."
         : evidenceAccess === "provided"
-          ? "Evidence-access mode: use only sources actually identified in the supplied context. Never guess a missing title, URL, or locator; downgrade unsupported claims to low-confidence inference."
-          : "Evidence-access mode: live research. Record only sources you actually opened or verified to exist, with traceable URLs and locators. If browsing is unavailable, do not claim research; follow the unsourced conceptual-draft rules.";
+          ? "Evidence-access mode: use only sources actually identified in the supplied context. Never guess a missing title, URL, or locator. Do not state figures or quotations those sources do not contain; downgrade unsupported claims to low-confidence inference."
+          : `Evidence-access mode: live research. Record only sources you actually opened or verified to exist, with traceable URLs and locators. If browsing is unavailable, do not claim research or invent a source: use a single evidence record titled "${unsourcedPlaceholder("en").copy.title}" with empty source_url and source_locator, cite it nowhere (leave every list of evidence references empty), set overall confidence to low, and keep only a statement of this limitation in strongly_supported.`;
     const depth =
       mode === "research"
-        ? "Use traceable evidence, counter-evidence, quantitative design metadata, uncertainty, and ID-based causal links."
+        ? evidenceAccess === "none"
+          ? "Use counter-evidence, uncertainty, and ID-based causal links; for evidence, follow the evidence-access rule."
+          : "Use traceable evidence, counter-evidence, quantitative design metadata, uncertainty, and ID-based causal links."
         : mode === "expert"
           ? "Use explicit evidence, assumptions, rival explanations, falsifiers, and causal links."
           : "Focused depth for assistants with small output limits: one record per required collection unless a second is essential, one short sentence per text value, and one evidence record per distinct source. Still complete every mandatory assessment and fixed set. If you reach your output limit, simply stop without abbreviating or using ellipses; the workbench will ask you to continue.";
@@ -1994,7 +2009,7 @@ ${evidenceRule}
 
 Depth: ${mode}. ${depth}
 
-Return only the compact interchange contract below. The workbench generates metadata and fixed sets locally, then compiles it into the canonical contract:
+Return only the compact interchange contract below. The workbench adds the metadata locally, then compiles it into the canonical contract; fill every keyed set it shows:
 ${schema}${interchangeGuide}`;
   }
 
@@ -4374,6 +4389,18 @@ ${schema}${interchangeGuide}`;
     ).length;
   }
 
+  const placeholderTitle =
+    /replace\s+with|placeholder|example\s+source|sample\s+source|à\s+remplacer|source\s+d['’]exemple|substitut\s+bloquant|استبدل|مصدر\s+مثال|عنصر\s+نائب/i;
+  // The no-source prompts ask for one placeholder record that nothing cites.
+  // Models reword its title, so it is also known by that shape: the only
+  // evidence, with no source URL, cited by nothing.
+  function isPlaceholderEvidence(item, analysis) {
+    if (placeholderTitle.test(str(item.source_title))) return true;
+    if (arr(analysis?.evidence?.items).length !== 1 || filled(item.source_url)) return false;
+    const { evidence, ...rest } = analysis;
+    return !JSON.stringify(rest).includes(JSON.stringify(item.id));
+  }
+
   function evidenceAssessment(a) {
     const items = a.evidence.items;
     if (!items.length)
@@ -4386,8 +4413,6 @@ ${schema}${interchangeGuide}`;
         placeholders: 0,
         traceable: 0,
       };
-    const placeholderPattern =
-      /replace\s+with|placeholder|example\s+source|sample\s+source|à\s+remplacer|substitut\s+bloquant|استبدل|مصدر\s+مثال|عنصر\s+نائب/i;
     const verificationWeights = {
       verified: 1,
       partially_verified: 0.6,
@@ -4408,7 +4433,7 @@ ${schema}${interchangeGuide}`;
     const verificationScores = [];
     const integrityScores = [];
     items.forEach((item) => {
-      const placeholder = placeholderPattern.test(str(item.source_title));
+      const placeholder = isPlaceholderEvidence(item, a);
       const hasLocator = filled(item.source_url) || filled(item.source_locator);
       if (placeholder) placeholders += 1;
       if (hasLocator) traceable += 1;
@@ -4862,6 +4887,7 @@ ${schema}${interchangeGuide}`;
     hasSubstance,
     buildSchemaTemplate,
     unsourcedPlaceholder,
+    isPlaceholderEvidence,
     buildPrompt,
     sample: makeSample,
     recordsFor,

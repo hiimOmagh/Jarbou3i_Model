@@ -371,6 +371,40 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#analysisLang")).toHaveValue("en");
   });
 
+  test("the language and repair prompts keep the original prompt's rules", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    const french = await fixture("sample-analysis-bio-fr.json");
+    french.language = "en";
+    await page.locator("#jsonInput").fill(JSON.stringify(french));
+    await page.locator("#repairPromptBtn").click();
+    await expect.poll(() => lastCopy(page)).toContain("Rewrite your previous JSON answer");
+    const rewrite = await lastCopy(page);
+    expect(rewrite).toContain("Do not shorten");
+    expect(rewrite).not.toContain("URLs and evidence");
+
+    await page.locator("#jsonInput").fill('{"subject":{"title":"t"} "interests":[]}');
+    await expect(page.locator("#repairPromptBtn")).toBeEnabled();
+    await page.locator("#repairPromptBtn").click();
+    await expect.poll(() => lastCopy(page)).toContain("JSON serialization repair");
+    const repair = await lastCopy(page);
+    expect(repair).not.toContain("Use verified only");
+    expect(repair).toContain("Never mark evidence verified");
+  });
+
+  test("a Strategic research prompt without source access asks for no sourced evidence", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    await page.locator("#topicInput").fill("A topic analysed without sources");
+    await page.locator("#promptMode").selectOption("research");
+    await page.locator("#evidenceAccess").selectOption("none");
+    await page.locator("#copyPromptBtn").click();
+    await expect.poll(() => lastCopy(page)).toContain("Source access: unavailable");
+    expect(await lastCopy(page)).not.toContain("source-grounded evidence");
+  });
+
   test("keeps a result when the other lens is chosen and restores it on return", async ({
     page,
   }) => {
@@ -437,6 +471,40 @@ test.describe("AI interchange reliability", () => {
       );
     });
   }
+
+  test("says how many parts of a fill reply could not be placed", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-en.json");
+    const draft = structuredClone(data);
+    for (const key of ["tools", "narrative", "results", "feedback", "scenarios"]) delete draft[key];
+    await page.locator("#jsonInput").fill(JSON.stringify(draft));
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("Completion prompt copied");
+    const reply = JSON.parse(fillFrom(await lastCopy(page), data));
+    reply.fill["/not/asked/for"] = "An answer the app did not ask for";
+
+    await page.locator("#jsonInput").fill(JSON.stringify(reply));
+    await expect(page.locator("#jsonStatus")).toContainText(/Added \d+ missing parts/);
+    await expect(page.locator("#jsonStatus")).toContainText("1 part of the reply did not match");
+  });
+
+  test("asks for the sources before copying a prompt that must use only them", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    await page.locator("#topicInput").fill("A topic to analyse from supplied sources");
+    await page.locator("#evidenceAccess").selectOption("provided");
+
+    await page.locator("#copyPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("Paste the sources");
+    expect(await lastCopy(page)).toBeFalsy();
+
+    await page.locator("#sourcesInput").fill("Regulation (EU) 2021/953, Article 3");
+    await page.locator("#copyPromptBtn").click();
+    await expect.poll(() => lastCopy(page)).toContain("Regulation (EU) 2021/953");
+  });
 
   test("a topic typed while the analysis being prepared is restored is kept", async ({ page }) => {
     await page.goto("./");
@@ -543,6 +611,90 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#repairPromptBtn")).toBeDisabled();
     await expect(page.locator("#jsonStatus")).toContainText(
       "This is a list of missing parts, but the analysis it completes is not open here",
+    );
+  });
+
+  // A complete answer with one stray single quote looks cut off. A continue
+  // reply saying it was already complete is not added; the repair prompt is
+  // offered instead, also after a reload.
+  test("offers the repair prompt when a continue reply adds nothing", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-bio-en.json");
+    const text = JSON.stringify(data);
+    const at = text.indexOf(',"', Math.floor(text.length / 2)) + 1;
+    const stray = `${text.slice(0, at)}'${text.slice(at + 1)}`;
+    await page.locator("#jsonInput").fill(stray);
+    await expect(page.locator("#continuationField")).toBeVisible();
+
+    await page
+      .locator("#continuationInput")
+      .fill("The JSON object was already complete; it ends with `]}`. Nothing remains.");
+    await expect(page.locator("#continuationField")).toBeHidden();
+    await expect(page.locator("#jsonInput")).toHaveValue(stray);
+    await expect(page.locator("#jsonStatus")).toContainText("That reply does not continue the answer");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect.poll(async () => (await readIntakeDraft(page))?.verdict?.cutOff).toBe(false);
+
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await expect(page.locator("#continuationField")).toBeHidden();
+    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await captureCopies(page);
+    await page.locator("#repairPromptBtn").click();
+    expect(await lastCopy(page)).toContain(stray);
+    await page.locator("#jsonInput").fill(text);
+    await expect(page.locator("#importBtn")).toBeEnabled();
+  });
+
+  // An answer cut off after a wrong closing bracket gets the repair prompt.
+  // When the AI replies that it is cut off, the answer comes back to be
+  // continued, also after a reload.
+  test("puts the answer back to be continued when the AI says it is cut off", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-bio-en.json");
+    const text = JSON.stringify(data);
+    const wrong = text.indexOf('"],"');
+    const broken = `${text.slice(0, wrong)}"},"${text.slice(wrong + 4)}`;
+    const cut = broken.indexOf('","', Math.floor(broken.length * 0.6)) + 2;
+    await page.locator("#jsonInput").fill(broken.slice(0, cut));
+    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await page.locator("#repairPromptBtn").click();
+    await expect.poll(async () => (await readIntakeDraft(page))?.repair).toBe(broken.slice(0, cut));
+
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await page
+      .locator("#jsonInput")
+      .fill('```json\n{"repair_status":"incomplete_input","reason":"truncated"}\n```');
+    await expect(page.locator("#jsonInput")).toHaveValue(broken.slice(0, cut));
+    await expect(page.locator("#continuationField")).toBeVisible();
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Continue cut-off result prompt");
+    await expect(page.locator("#jsonStatus")).toContainText("The AI says this answer is cut off");
+
+    await page.locator("#continuationInput").fill(broken.slice(cut));
+    await expect(page.locator("#jsonInput")).toHaveValue(broken);
+    await expect(page.locator("#continuationField")).toBeHidden();
+    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+  });
+
+  test("explains a cut-off reply pasted without the answer it is about", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page
+      .locator("#jsonInput")
+      .fill('{"repair_status":"incomplete_input","reason":"truncated"}');
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#repairPromptBtn")).toBeDisabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      "The AI says the answer it was asked to repair is cut off",
     );
   });
 
@@ -743,6 +895,13 @@ test.describe("AI interchange reliability", () => {
           await page.locator("#previewPromptBtn").click();
           const prompt = await page.locator("#modalContent").textContent();
           await page.keyboard.press("Escape");
+          // Without browsing, a research prompt must name what to write instead
+          // of a source: the placeholder the no-access prompt uses.
+          if (access === "web") {
+            expect(prompt, `${lang}/${mode}/web prompt has no no-browsing fallback`).toContain(
+              "UNSOURCED MODEL SYNTHESIS — PLACEHOLDER",
+            );
+          }
           const skeleton = prompt
             .split("\n")
             .filter((line) => line.startsWith("{"))
@@ -798,6 +957,25 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonStatus")).toHaveClass(/status warn/);
   });
 
+  test("flags answer text that slips into another language", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#analysisLang").selectOption("ar");
+    const data = await fixture("sample-analysis-bio-ar.json");
+    const audit = page.locator("#importAuditDetails");
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#jsonStatus")).toHaveClass(/status (good|warn)/);
+    await expect(audit).not.toContainText("another language");
+
+    data.subject.executive_finding += " relocation of carbon-intensive production";
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#jsonStatus")).toHaveClass(/status warn/);
+    await audit.locator("summary").click();
+    await expect(audit).toContainText("/subject/executive_finding");
+    await expect(audit).toContainText("another language");
+  });
+
   test("a Biopolitical answer in the requested form is not reported as repaired", async ({
     page,
   }) => {
@@ -810,6 +988,27 @@ test.describe("AI interchange reliability", () => {
     await expect(audit.locator("summary")).toContainText("· 0 repaired");
     await audit.locator("summary").click();
     await expect(audit).toContainText("No automatic structural repair was required.");
+  });
+
+  test("offers no repair prompt for an answer with nothing to fix", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="strategic"]').click();
+    await page.locator("#jsonInput").fill(JSON.stringify(await fixture("sample-analysis-en.json")));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#repairPromptBtn")).toBeDisabled();
+
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#jsonInput").fill("");
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    const answer = JSON.stringify(interchangeFrom(await fixture("sample-analysis-bio-en.json")));
+    await page.locator("#jsonInput").fill(answer);
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#repairPromptBtn")).toBeDisabled();
+
+    // Something to ask the AI for turns it back on.
+    await page.locator("#jsonInput").fill(answer.slice(0, Math.floor(answer.length / 2)));
+    await expect(page.locator("#repairPromptBtn")).toBeEnabled();
   });
 
   test("puts the supplied sources into the prompt as untrusted material", async ({ page }) => {

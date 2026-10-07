@@ -11,8 +11,16 @@ const LOCALES = [
 const LENSES = [
   {
     id: 'strategic',
-    title: 'Strategic Analysis Report',
-    chain: 'Interests → Actors → Tools → Narrative → Results → Feedback',
+    title: {
+      ar: 'تقرير تحليل استراتيجي',
+      en: 'Strategic Analysis Report',
+      fr: 'Rapport d’analyse stratégique'
+    },
+    chain: {
+      ar: 'المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة',
+      en: 'Interests → Actors → Tools → Narrative → Results → Feedback',
+      fr: 'Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction'
+    },
     forbidden: 'Biopolitical Analysis Report'
   },
   {
@@ -83,6 +91,8 @@ test.describe('Cross-locale HTML export contract', () => {
           expect(html).toContain('name="schema-version" content="2.1.0"');
         }
         expect(html).not.toContain(lens.forbidden);
+        // A report in another language does not carry the English report title.
+        if (locale.id !== 'en') expect(html).not.toContain(lens.title.en);
       });
     }
   }

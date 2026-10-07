@@ -147,7 +147,8 @@ paths, and offers a targeted completion prompt. The prompt includes the
 preserved canonical candidate and permits changes only at those paths. It
 requires specific content grounded in the existing record or an explicit
 statement of what evidence remains unlocated; it forbids invented sources,
-verification states, and unrelated rewrites.
+verification states, and unrelated rewrites. A path in the reply without its
+leading `/` (`feedback/1/speed`) is read as the same path.
 
 This is an adaptive single-pass completion layer. A future multi-packet merge
 protocol would require its own base-revision binding, conflict rules, and
@@ -181,7 +182,10 @@ validation diagnostics and the original text without repeating the schema. It
 asks for exactly one complete minified JSON object in a single `json` code
 block, forbids Python, JavaScript, JSON Patch, explanations, ellipses, and
 invented content, and requires `{"repair_status":"incomplete_input"}` instead
-of a reconstructed ending when the input was truncated.
+of a reconstructed ending when the input was truncated. The workbench keeps the
+text the repair prompt was built from; when that reply comes back, the text is
+put back in the answer box and the continue prompt is offered, whatever the
+parser made of it.
 
 ## Unknown properties
 
@@ -217,7 +221,11 @@ distinctive repeated tail is not duplicated. Repetitive text
 at the seam (`0,0,0,`) is never trimmed, because it cannot be told apart from
 real content; the prompt asks the assistant not to repeat anything, so this
 only matters when it disobeys. If the joined answer is still
-cut off, the cycle repeats. This is what lets assistants with small output
+cut off, the cycle repeats. A reply that adds no quote or bracket to the answer
+(`continuesAnswer`), such as "the answer was already complete" or a brace that
+lands inside an unclosed string, is not joined. The answer then counts as
+complete with a JSON error, such as one stray quote that leaves it "inside a
+string", and the repair prompt is offered instead. This is what lets assistants with small output
 limits complete a full analysis: a complete Biopolitical answer is roughly
 20,000 or more characters of JSON even at focused depth, because the fixed sets
 and key names alone are large.

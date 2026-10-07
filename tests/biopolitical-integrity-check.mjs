@@ -180,6 +180,16 @@ for (const [label, mutator, code] of [
     "MISSING_EXPLANATION_FALSIFIER",
   ],
   [
+    "missing explanation claim",
+    (data) => {
+      const explanation = data.competing_explanations.find(
+        (item) => item.relevance === "relevant",
+      );
+      explanation.claim = "";
+    },
+    "MISSING_EXPLANATION_CLAIM",
+  ],
+  [
     "incomplete quantitative design metadata",
     (data) => {
       data.evidence.items[0].epistemic_type = "quantitative_estimate";
@@ -300,6 +310,85 @@ for (const lang of ["en", "ar", "fr"]) {
 }
 if (placeholderScores.size !== 1) {
   fail(`placeholder evidence scores differ by language: ${[...placeholderScores]}`);
+}
+
+// Scoring and import validation must agree on which titles mark a placeholder.
+const scoreWithTitle = (title) => {
+  const data = clone(fixture);
+  data.evidence.items[0].source_title = title;
+  return bio.scores(data).evidence;
+};
+const placeholderScore = scoreWithTitle("Placeholder source");
+for (const title of [
+  "Replace with a real source",
+  "Example source",
+  "Sample source",
+  "Source à remplacer",
+  "Source d’exemple",
+  "Substitut bloquant la publication",
+  "استبدل بمصدر حقيقي",
+  "مصدر مثال",
+  "عنصر نائب",
+]) {
+  if (!integrity.placeholderPattern.test(title)) {
+    fail(`import validation does not treat "${title}" as a placeholder`);
+  }
+  if (scoreWithTitle(title) !== placeholderScore) {
+    fail(`evidence scoring does not treat "${title}" as a placeholder`);
+  }
+}
+
+// Models reword the placeholder's title (ChatGPT did in French and Arabic), so
+// the record is also known by its shape: the only evidence, with no source
+// URL, cited by nothing.
+const rewordedPlaceholderTitles = {
+  en: "Procedural stand-in entry required by the no-access mode",
+  ar: "عنصر دليل نائب صريح لغياب الوصول الخارجي",
+  fr: "Entrée substitutive procédurale imposée par le mode sans accès externe",
+};
+const clearEvidenceReferences = (value) => {
+  if (!value || typeof value !== "object") return;
+  for (const [key, child] of Object.entries(value)) {
+    if (["evidence_ids", "supporting_evidence_ids", "counter_evidence_ids", "evidence_of_benefit"].includes(key)) {
+      value[key] = [];
+    } else {
+      clearEvidenceReferences(child);
+    }
+  }
+};
+for (const lang of ["en", "ar", "fr"]) {
+  const [placeholderItem] = JSON.parse(bio.buildSchemaTemplate(lang, "research", "none")).evidence.items;
+  const onlyEvidence = (changes) => {
+    const data = clone(fixture);
+    clearEvidenceReferences(data);
+    data.evidence.items = [{
+      ...placeholderItem,
+      epistemic_type: "verified_fact",
+      source_locator: "Procedural instruction",
+      confidence: "high",
+      ...changes,
+    }];
+    return data;
+  };
+  const reworded = onlyEvidence({ source_title: rewordedPlaceholderTitles[lang] });
+  const { warnings } = integrity.validateImport(reworded);
+  if (warnings.some((warning) => warning.code === "UNREFERENCED_EVIDENCE")) {
+    fail(`${lang} reworded placeholder was reported as an uncited source`);
+  }
+  if (!warnings.some((warning) => warning.code === "EVIDENCE_NOT_PUBLICATION_READY" && warning.review_only === false)) {
+    fail(`${lang} reworded placeholder was taken for real evidence awaiting review`);
+  }
+  if (bio.scores(reworded).evidence !== bio.scores(onlyEvidence({})).evidence) {
+    fail(`${lang} reworded placeholder scored as real evidence`);
+  }
+  // A single uncited record with a source URL is a source, not the placeholder.
+  const sourced = onlyEvidence({
+    source_title: rewordedPlaceholderTitles[lang],
+    source_url: "https://eur-lex.europa.eu/eli/reg/2021/953/oj",
+  });
+  if (!integrity.validateImport(sourced).warnings.some((warning) => warning.code === "UNREFERENCED_EVIDENCE")) {
+    fail(`${lang}: a single uncited source with a URL was taken for the placeholder`);
+  }
 }
 
 console.log("Biopolitical integrity checks passed.");

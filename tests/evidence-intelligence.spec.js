@@ -19,6 +19,8 @@ async function downloadManifest(page, intelligence) {
     page.waitForEvent("download"),
     intelligence.locator("#exportIntelligence").click(),
   ]);
+  // The file name says which analysis it audits, not only the lens.
+  expect(download.suggestedFilename()).toMatch(/^.+-(strategic|biopolitical)-evidence-intelligence\.json$/);
   const path = await download.path();
   return JSON.parse(await fs.readFile(path, "utf8"));
 }

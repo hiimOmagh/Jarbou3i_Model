@@ -243,7 +243,6 @@ const I18N = {
     scoreSystem: "نظام التقييم",
     scoreGuide:
       "الدرجة المركّبة توازن بين الاكتمال، التماسك، التناقضات، قابلية اختبار السيناريوهات، والارتكاز على الأدلة.",
-    overallScore: "المؤشر الكلي",
     scoreCompleteness: "اكتمال الطبقات",
     scoreCompletenessHint: "مدى امتلاء الطبقات الست والبنية الأساسية.",
     scoreCoherence: "التماسك السببي",
@@ -536,7 +535,6 @@ const I18N = {
     scoreSystem: "Scoring system",
     scoreGuide:
       "The composite score balances completeness, coherence, contradiction quality, scenario testability, and evidence grounding.",
-    overallScore: "Overall index",
     scoreCompleteness: "Layer completeness",
     scoreCompletenessHint:
       "How much of the six-layer model and core structure is populated.",
@@ -847,7 +845,6 @@ const I18N = {
     scoreSystem: "Système de score",
     scoreGuide:
       "Le score composite équilibre la complétude, la cohérence, la qualité des contradictions, la testabilité des scénarios et l’ancrage probatoire.",
-    overallScore: "Indice global",
     scoreCompleteness: "Complétude des couches",
     scoreCompletenessHint:
       "Degré de remplissage des six couches et de la structure centrale.",
@@ -1276,6 +1273,8 @@ function keepTrip() {
     reply: $("jsonInput").value,
     stage: state.stage,
     completion: completionBase,
+    repair: repairBase,
+    verdict: cutOffVerdict,
   });
   tripKept = true;
   tripWrites = tripWrites.then(() => RECOVERY_BACKEND.put(record)).catch(() => {});
@@ -1283,6 +1282,36 @@ function keepTrip() {
 function discardTrip() {
   tripKept = false;
   tripWrites = tripWrites.then(() => RECOVERY_BACKEND.delete(TRIP_KEY)).catch(() => {});
+}
+// A reply pasted but not imported yet is replaced only on a second click of
+// the same control within a few seconds.
+let replaceArmedFor = null;
+let replaceArmedUntil = 0;
+function hasPendingReply() {
+  const reply = $("jsonInput").value;
+  return tripKept && Boolean(reply.trim()) && reply !== savedReply;
+}
+function confirmReplacingReply(target) {
+  if (!hasPendingReply()) return true;
+  const confirmed = replaceArmedFor === target && Date.now() <= replaceArmedUntil;
+  replaceArmedFor = confirmed ? null : target;
+  replaceArmedUntil = Date.now() + 8000;
+  return confirmed;
+}
+// A prompt that must use only the supplied sources is not sent without them.
+function sourcesNeededText() {
+  return labelText(
+    "Paste the sources the AI must use, or choose another source access.",
+    "الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي، أو اختر وصولًا آخر إلى المصادر.",
+    "Collez les sources que l’IA doit utiliser, ou choisissez un autre accès aux sources.",
+  );
+}
+function replaceReplyText() {
+  return labelText(
+    "Your pasted reply is not imported yet. Click again to replace it.",
+    "الرد الذي لصقته لم يُستورد بعد. انقر مرة أخرى لاستبداله.",
+    "Votre réponse collée n’est pas encore importée. Cliquez à nouveau pour la remplacer.",
+  );
 }
 async function restoreTrip(untouched) {
   const record = await tripWrites.then(() => RECOVERY_BACKEND.get(TRIP_KEY)).catch(() => null);
@@ -1309,7 +1338,13 @@ async function restoreTrip(untouched) {
   }
   if (typeof record.prompt === "string") state.lastPrompt = record.prompt;
   if (Array.isArray(record.completion?.targets)) completionBase = record.completion;
+  if (typeof record.repair === "string") repairBase = record.repair;
+  if (typeof record.verdict?.text === "string") {
+    cutOffVerdict = { text: record.verdict.text, cutOff: record.verdict.cutOff === true };
+  }
   if (typeof record.reply === "string") $("jsonInput").value = record.reply;
+  // Kept until it is imported, like a reply pasted now.
+  tripKept = true;
   if (record.stage === "import") {
     state.stage = "import";
     state.shellSection = "workflow";
@@ -1443,11 +1478,21 @@ function renderLensToggle() {
 }
 // A result set aside by a lens switch, per lens, so switching back restores it.
 const keptResults = {};
+// The reply box text of an analysis already saved, so it is not saved twice.
+let savedReply = null;
 // The analysis a completion prompt was copied for; the AI's reply holds only
 // the missing parts, which are merged into it.
 let completionBase = null;
 // The merged analysis and how many parts were added, shown while it is pasted.
 let completionNotice = null;
+// The answer a repair prompt was copied for. If the AI replies that it is cut
+// off, the answer is put back to be continued.
+let repairBase = null;
+// What the AI's own replies showed about one answer, which outranks the
+// parser's guess: {text, cutOff}. A continue reply that adds nothing means the
+// answer was complete; a repair reply of {"repair_status":"incomplete_input"}
+// means it was cut off.
+let cutOffVerdict = null;
 function setAnalysisLens(lens) {
   if (!LENS_REGISTRY.has(lens) || state.analysisLens === lens) return;
   const contractChanged =
@@ -1458,6 +1503,10 @@ function setAnalysisLens(lens) {
     keptResults[state.analysis.analysis_lens] = {
       analysis: state.analysis,
       json: $("jsonInput")?.value || "",
+      workspaceId: state.activeWorkspaceId,
+      saved: savedReply,
+      topic: state.topic,
+      context: state.context,
     };
     toast(
       labelText(
@@ -1475,7 +1524,8 @@ function setAnalysisLens(lens) {
     const input = $("jsonInput");
     if (input) input.value = "";
   }
-  const kept = !state.analysis && keptResults[lens];
+  // A reply pasted but not imported yet stays; the kept result waits.
+  const kept = !state.analysis && !hasPendingReply() && keptResults[lens];
   if (kept) {
     delete keptResults[lens];
     state.analysis = kept.analysis;
@@ -1484,8 +1534,15 @@ function setAnalysisLens(lens) {
     state.activeReview = "overview";
     state.activePillar = null;
     state.jsonValid = true;
+    state.activeWorkspaceId = kept.workspaceId;
+    if (kept.workspaceId) writeSettings({ activeWorkspaceId: kept.workspaceId });
+    state.topic = kept.topic;
+    state.context = kept.context;
+    $("topicInput").value = kept.topic;
+    $("timeframeInput").value = kept.context;
     const input = $("jsonInput");
     if (input) input.value = kept.json;
+    savedReply = kept.saved;
   }
   state.lastPrompt = "";
   renderAll();
@@ -1692,10 +1749,12 @@ function localizedImportIssueMessage(issue = {}) {
       MIGRATED_DRAFT_NOT_CANONICAL: "تحافظ هذه المسودة المُرحَّلة على المادة القديمة، لكنها ليست بيانات حيوية سياسية نظامية مكتملة.",
       GENERATED_DRAFT_NOT_CANONICAL: "حُفظت المادة التحليلية كمسودة مولّدة قابلة للمراجعة، لكنها ليست نظامية بعد.",
       MISSING_EXPLANATION_FALSIFIER: "يلزم معيار قابل للاختبار يمكنه دحض هذا التفسير قبل النشر.",
+      MISSING_EXPLANATION_CLAIM: "هذا التفسير ذو صلة لكنه لا يذكر ادعاءً؛ وضّح ما يفسّره قبل النشر.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "أزيلت علامات استشهاد خاصة بواجهة المساعد من النسخة المطبّعة.",
       DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف نظامي فريدًا في كامل التحليل.",
       UNSUPPORTED_CONTRACT: "إصدار عقد التحليل غير مدعوم في هذه النسخة من الأداة.",
       VALIDATOR_UNAVAILABLE: "مدقق عقد التحليل غير متاح.",
+      MIXED_LANGUAGE_TEXT: "جزء من هذا النص بلغة أخرى؛ أعد كتابته بلغة التحليل قبل النشر.",
     },
     fr: {
       INVALID_SOURCE_URL: "L’URL de la source n’est pas une URL HTTP(S) absolue ; l’import est autorisé pour révision, mais la publication reste bloquée.",
@@ -1709,10 +1768,12 @@ function localizedImportIssueMessage(issue = {}) {
       MIGRATED_DRAFT_NOT_CANONICAL: "Ce brouillon migré conserve le contenu historique, mais ne constitue pas encore des données biopolitiques canoniques complètes.",
       GENERATED_DRAFT_NOT_CANONICAL: "Le contenu analytique est conservé comme brouillon généré révisable, mais il n’est pas encore canonique.",
       MISSING_EXPLANATION_FALSIFIER: "Un critère testable susceptible de réfuter cette explication est requis avant publication.",
+      MISSING_EXPLANATION_CLAIM: "Cette explication pertinente n’énonce aucune affirmation ; précisez ce qu’elle explique avant publication.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "Les marqueurs de citation propres à l’interface de l’assistant ont été retirés de la copie normalisée.",
       DUPLICATE_GLOBAL_ID: "Chaque identifiant canonique doit être unique dans l’ensemble de l’analyse.",
       UNSUPPORTED_CONTRACT: "Cette version du contrat d’analyse n’est pas prise en charge par cette version de l’outil.",
       VALIDATOR_UNAVAILABLE: "Le validateur du contrat d’analyse n’est pas disponible.",
+      MIXED_LANGUAGE_TEXT: "Une partie de ce texte est dans une autre langue ; réécrivez-la dans la langue de l’analyse avant publication.",
     },
   };
   if (messages[state.lang]?.[code]) return messages[state.lang][code];
@@ -1742,6 +1803,27 @@ function importErrorText(error) {
       "This is a list of missing parts, but the analysis it completes is not open here. Paste the AI’s full analysis first, then ask for the missing parts again.",
       "هذه قائمة بالأجزاء الناقصة، لكن التحليل الذي تكمله غير مفتوح هنا. الصق تحليل الذكاء الاصطناعي الكامل أولًا، ثم اطلب الأجزاء الناقصة من جديد.",
       "Ceci est une liste de parties manquantes, mais l’analyse qu’elle complète n’est pas ouverte ici. Collez d’abord l’analyse complète de l’IA, puis redemandez les parties manquantes.",
+    );
+  }
+  if (error?.code === "CUT_OFF_WITHOUT_BASE") {
+    return labelText(
+      "The AI says the answer it was asked to repair is cut off, but that answer is not open here. Paste the AI’s full answer here again.",
+      "يقول الذكاء الاصطناعي إن الإجابة التي طُلب منه إصلاحها مقطوعة، لكن تلك الإجابة غير مفتوحة هنا. الصق إجابة الذكاء الاصطناعي الكاملة هنا من جديد.",
+      "L’IA indique que la réponse qu’on lui a demandé de réparer est coupée, mais cette réponse n’est pas ouverte ici. Collez de nouveau ici la réponse complète de l’IA.",
+    );
+  }
+  if (error?.code === "TRUNCATED_JSON" && error.fromReply) {
+    return labelText(
+      `The AI says this answer is cut off, so it could not repair it. The answer is back in the box: click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears below.`,
+      `يقول الذكاء الاصطناعي إن هذه الإجابة مقطوعة، لذا لم يستطع إصلاحها. أُعيدت الإجابة إلى المربع: انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أدناه.`,
+      `L’IA indique que cette réponse est coupée et qu’elle ne peut donc pas la réparer. La réponse a été remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessous.`,
+    );
+  }
+  if (error?.code === "INVALID_JSON" && error.fromReply) {
+    return labelText(
+      `That reply does not continue the answer, so it was not added. The AI’s answer seems complete but has a JSON error. Click “${t("repairPrompt")}” and paste it into the same AI chat.`,
+      `هذا الرد لا يكمل الإجابة، لذا لم يُضف إليها. تبدو إجابة الذكاء الاصطناعي مكتملة لكن فيها خطأ في JSON. انقر «${t("repairPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها.`,
+      `Ce message ne prolonge pas la réponse de l’IA ; il n’a donc pas été ajouté. La réponse semble complète mais contient une erreur JSON. Cliquez sur « ${t("repairPrompt")} » et collez-le dans la même conversation avec l’IA.`,
     );
   }
   if (error?.code === "TRUNCATED_JSON") {
@@ -1841,6 +1923,13 @@ function renderImportAuditDetails({
           "JSON wrappers, comments, or trailing punctuation were conservatively repaired.",
           "تم إصلاح أغلفة JSON أو التعليقات أو علامات الترقيم اللاحقة بصورة محافظة.",
           "Les enveloppes JSON, commentaires ou ponctuations finales ont été réparés de façon conservative.",
+        )
+      : "",
+    parsed?.repairs?.some((repair) => repair.code === "ROOT_OPENER_RESTORED")
+      ? labelText(
+          "The answer was missing its opening brace, as when a copy misses the first character; it was put back.",
+          "كان قوس الفتح الأول ناقصًا من الإجابة، كما يحدث عندما يفوت النسخَ الحرفُ الأول؛ فأُعيد.",
+          "Il manquait l’accolade ouvrante de la réponse, comme lorsqu’une copie omet le premier caractère ; elle a été rétablie.",
         )
       : "",
     parsed?.repairs?.some((repair) => repair.code === "EARLY_CLOSE_REJOINED")
@@ -2063,8 +2152,21 @@ function validateJsonInput() {
       );
       completionBase = null;
       const mergedText = JSON.stringify(merged.value);
-      completionNotice = { text: mergedText, applied: merged.applied };
+      completionNotice = { text: mergedText, applied: merged.applied, ignored: merged.ignored.length };
       $("jsonInput").value = mergedText;
+      return validateJsonInput();
+    }
+    if (parsed.value?.repair_status === "incomplete_input") {
+      if (!repairBase) {
+        const error = new Error("cut off, without the answer");
+        error.code = "CUT_OFF_WITHOUT_BASE";
+        throw error;
+      }
+      // The AI could not repair the answer because it is cut off, so the
+      // answer comes back to be continued.
+      cutOffVerdict = { text: repairBase, cutOff: true };
+      $("jsonInput").value = repairBase;
+      repairBase = null;
       return validateJsonInput();
     }
     const recognized = AI_INTERCHANGE.recognize(parsed.value);
@@ -2138,8 +2240,7 @@ function validateJsonInput() {
       contractQuarantine = [...contractQuarantine, ...state.importValidation.quarantine];
     }
     state.jsonValid = true;
-    $("importBtn").disabled = false;
-    $("repairPromptBtn").disabled = false;
+    $("importBtn").disabled = $("jsonInput").value === savedReply;
     // The label can be wrong; the prose says which language the AI really used.
     const writtenIn = CONTRACT_REPAIR.detectLanguage(analysis);
     const languageMismatch =
@@ -2180,7 +2281,16 @@ function validateJsonInput() {
           `Cette réponse est une analyse ${lensName(otherLens).toLocaleLowerCase("fr")}, mais la lentille ${lensName(state.analysisLens).toLocaleLowerCase("fr")} est sélectionnée. L’importer basculera vers la lentille ${lensName(otherLens).toLocaleLowerCase("fr")}.`,
         )
       : "";
+    // Text that slips into another language is listed first, where it is seen.
+    const foreignText = languageMismatch
+      ? []
+      : CONTRACT_REPAIR.foreignTextPaths(analysis, analysis.language || state.analysisLang).map((path) => ({
+          code: "MIXED_LANGUAGE_TEXT",
+          path,
+          message: "Part of this text is in another language; rewrite it in the analysis language before publishing.",
+        }));
     const warnings = [
+      ...foreignText,
       ...completionDiagnostics,
       ...(state.importValidation?.warnings || []),
     ];
@@ -2234,6 +2344,8 @@ function validateJsonInput() {
       problems.length || parsed.recovered || (needsIndependentReview && draft) || languageMismatch || otherLens
         ? "status warn"
         : "status good";
+    // A valid answer with nothing to ask the AI for gets no repair prompt.
+    $("repairPromptBtn").disabled = !languageMismatch && !completionCandidate;
     $("repairPromptBtn").textContent = languageMismatch
       ? labelText(
           `Ask for an answer in ${languageName(languageMismatch.requested)}`,
@@ -2297,6 +2409,7 @@ function validateJsonInput() {
         ? t("jsonAutoRecovered")
         : t("jsonValid");
     const added = completionNotice?.text === text ? completionNotice.applied : null;
+    const unplaced = added === null ? 0 : completionNotice.ignored;
     const completionMessage =
       added === null
         ? ""
@@ -2305,7 +2418,15 @@ function validateJsonInput() {
             `أُضيف ${added} من الأجزاء الناقصة إلى تحليلك.`,
             `${added} partie${added === 1 ? " manquante a été ajoutée" : "s manquantes ont été ajoutées"} à votre analyse.`,
           );
-    $("jsonStatus").textContent = [completionMessage, lensNotice, languageNotice, validationMessage, citationNotice]
+    // Parts of the reply that match nothing asked for are not added; say so.
+    const unplacedMessage = unplaced
+      ? labelText(
+          `${unplaced} part${unplaced === 1 ? "" : "s"} of the reply did not match the missing parts asked for and ${unplaced === 1 ? "was" : "were"} not added.`,
+          `لم يُضف ${unplaced} من أجزاء الرد لأنها لا تطابق الأجزاء الناقصة المطلوبة.`,
+          `${unplaced} élément${unplaced === 1 ? "" : "s"} de la réponse ne correspond${unplaced === 1 ? "" : "ent"} à aucune partie manquante demandée et n’${unplaced === 1 ? "a" : "ont"} pas été ajouté${unplaced === 1 ? "" : "s"}.`,
+        )
+      : "";
+    $("jsonStatus").textContent = [completionMessage, unplacedMessage, lensNotice, languageNotice, validationMessage, citationNotice]
       .filter(Boolean)
       .join(" ");
     $("pasteCard").classList.add("ready");
@@ -2313,6 +2434,10 @@ function validateJsonInput() {
     $("continuationField").hidden = true;
     return analysis;
   } catch (e) {
+    if (cutOffVerdict?.text === text && ["TRUNCATED_JSON", "INVALID_JSON"].includes(e?.code)) {
+      e.code = cutOffVerdict.cutOff ? "TRUNCATED_JSON" : "INVALID_JSON";
+      e.fromReply = true;
+    }
     const validationErrors = e?.validation?.errors || [];
     state.importAudit = Object.freeze({
       originalText: text,
@@ -2333,7 +2458,7 @@ function validateJsonInput() {
     $("importBtn").textContent = t("importAnalysis");
     // A repair prompt built from the prompt itself, or from a list of missing
     // parts, would only confuse the AI.
-    $("repairPromptBtn").disabled = ["PROMPT_PASTED", "FILL_WITHOUT_BASE"].includes(e?.code);
+    $("repairPromptBtn").disabled = ["PROMPT_PASTED", "FILL_WITHOUT_BASE", "CUT_OFF_WITHOUT_BASE"].includes(e?.code);
     const truncated = e?.code === "TRUNCATED_JSON";
     $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
     $("continuationField").hidden = !truncated;
@@ -2555,11 +2680,17 @@ function buildStrategicPrompt({
   const untrustedMaterial = JSON.stringify({ topic: String(topic || ""), context: String(context || "") });
   const modeText =
     mode === "research"
-      ? ar
-        ? "بحثي: أضف أدلة مصدرية، أدلة مضادة، عدم يقين، وروابط سببية مرقمة."
-        : fr
-          ? "Recherche : ajoute des preuves sourcées, des contre-preuves, de l’incertitude et des liens causaux identifiés."
-          : "Research: include source-grounded evidence, counter-evidence, uncertainty, and ID-based causal links."
+      ? evidenceAccess === "none"
+        ? ar
+          ? "بحثي: أضف أدلة مضادة، عدم يقين، وروابط سببية مرقمة؛ واتبع في الأدلة قاعدة الوصول إلى المصادر."
+          : fr
+            ? "Recherche : ajoute des contre-preuves, de l’incertitude et des liens causaux identifiés ; pour les preuves, suis la règle d’accès aux sources."
+            : "Research: include counter-evidence, uncertainty, and ID-based causal links; for evidence, follow the source-access rule."
+        : ar
+          ? "بحثي: أضف أدلة مصدرية، أدلة مضادة، عدم يقين، وروابط سببية مرقمة."
+          : fr
+            ? "Recherche : ajoute des preuves sourcées, des contre-preuves, de l’incertitude et des liens causaux identifiés."
+            : "Research: include source-grounded evidence, counter-evidence, uncertainty, and ID-based causal links."
       : mode === "expert"
         ? ar
           ? "خبير: أضف الأدلة، الافتراضات، والروابط السببية."
@@ -2575,19 +2706,19 @@ function buildStrategicPrompt({
     ? evidenceAccess === "none"
       ? "الوصول إلى المصادر: غير متاح. لا ترفض المهمة لهذا السبب ولا تختلق مصدرًا. استخدم عنصرًا نائبًا صريحًا منخفض الثقة، ولا تقدمه كدليل."
       : evidenceAccess === "provided"
-        ? "الوصول إلى المصادر: استخدم فقط المصادر المحددة فعليًا في السياق، ولا تخمّن البيانات المفقودة."
-        : "الوصول إلى المصادر: بحث مباشر. استخدم فقط مصادر فتحتها أو تحققت منها؛ وإن تعذر التصفح فصرّح بمسودة غير مسندة منخفضة الثقة."
+        ? "الوصول إلى المصادر: استخدم فقط المصادر المحددة فعليًا في السياق، ولا تخمّن البيانات المفقودة. لا تذكر أرقامًا أو أسعارًا أو اقتباسات لا تتضمنها تلك المصادر، وقدّم ما لا تدعمه بوصفه استنتاجًا منخفض الثقة."
+        : "الوصول إلى المصادر: بحث مباشر. استخدم فقط مصادر فتحتها أو تحققت منها. إذا تعذر التصفح فلا تدّعِ البحث ولا تختلق مصدرًا: استخدم عنصر دليل واحدًا عنوانه \"UNSOURCED MODEL SYNTHESIS — PLACEHOLDER\" مع source_url فارغ وbasis قيمته inference وconfidence قيمته low، ولا تقدّمه أبدًا بوصفه دليلًا."
     : fr
       ? evidenceAccess === "none"
         ? "Accès aux sources : indisponible. Ne refusez pas pour cette seule raison et n’inventez aucune source. Utilisez un substitut explicite de faible confiance sans le présenter comme preuve."
         : evidenceAccess === "provided"
-          ? "Accès aux sources : utilisez uniquement les sources effectivement identifiées dans le contexte, sans deviner les données manquantes."
-          : "Accès aux sources : recherche en direct. Utilisez uniquement des sources ouvertes ou vérifiées ; si la navigation échoue, produisez un brouillon non sourcé de faible confiance."
+          ? "Accès aux sources : utilisez uniquement les sources effectivement identifiées dans le contexte, sans deviner les données manquantes. N’avancez aucun chiffre, prix ou citation absent de ces sources, et présentez ce qu’elles n’étayent pas comme une inférence de faible confiance."
+          : "Accès aux sources : recherche en direct. Utilisez uniquement des sources ouvertes ou vérifiées. Si la navigation échoue, ne prétendez pas avoir recherché et n’inventez aucune source : utilisez une seule entrée de preuve intitulée « UNSOURCED MODEL SYNTHESIS — PLACEHOLDER », avec source_url vide, basis à inference et confidence à low, et ne la présentez jamais comme une preuve."
       : evidenceAccess === "none"
         ? "Source access: unavailable. Do not refuse solely for that reason and do not invent a source. Use an explicit low-confidence placeholder and never present it as evidence."
         : evidenceAccess === "provided"
-          ? "Source access: use only sources actually identified in the context; never guess missing metadata."
-          : "Source access: live research. Use only sources you opened or verified; if browsing fails, produce a clearly unsourced low-confidence draft.";
+          ? "Source access: use only sources actually identified in the context; never guess missing metadata. Do not state figures, prices, or quotations those sources do not contain, and present claims they do not support as low-confidence inference."
+          : "Source access: live research. Use only sources you opened or verified. If browsing fails, do not claim research or invent a source: use a single evidence item titled \"UNSOURCED MODEL SYNTHESIS — PLACEHOLDER\" with an empty source_url, basis inference, and confidence low, and never present it as evidence.";
   if (ar)
     return `أنت محلل استراتيجي صارم. حلّل الموضوع التالي باستخدام نموذج: مصالح → فاعلون → أدوات → سردية → نتائج → تغذية راجعة.
 
@@ -3403,7 +3534,7 @@ function modelMetricsFor(p, obj) {
       "API",
       v,
       20,
-      labelText("Actor Power Index", "مؤشر قوة الفاعل"),
+      labelText("Actor Power Index", "مؤشر قوة الفاعل", "Indice de puissance de l’acteur"),
       pctClass((v / 20) * 100),
     );
   }
@@ -3413,7 +3544,7 @@ function modelMetricsFor(p, obj) {
       "NSI",
       v,
       15,
-      labelText("Narrative Strength Index", "مؤشر قوة السردية"),
+      labelText("Narrative Strength Index", "مؤشر قوة السردية", "Indice de force du récit"),
       pctClass((v / 15) * 100),
     );
   }
@@ -3423,7 +3554,7 @@ function modelMetricsFor(p, obj) {
       "TPS",
       v,
       100,
-      labelText("Tool Pressure Score", "مؤشر ضغط الأداة"),
+      labelText("Tool Pressure Score", "مؤشر ضغط الأداة", "Score de pression de l’outil"),
       pctClass(v),
     );
   }
@@ -3433,7 +3564,7 @@ function modelMetricsFor(p, obj) {
       "IW",
       v,
       100,
-      labelText("Interest Weight", "وزن المصلحة"),
+      labelText("Interest Weight", "وزن المصلحة", "Poids de l’intérêt"),
       pctClass(v),
     );
   }
@@ -3554,15 +3685,17 @@ function schemaHealth(a = state.analysis) {
     next: missing[0] || t("healthGood"),
   };
 }
-function safeFileSlug(s) {
+function safeFileSlug(s, fallback = "strategic-analysis") {
   return (
-    String(s || "strategic-analysis")
+    String(s || fallback)
       .toLowerCase()
+      .replace(/œ/g, "oe")
+      .replace(/æ/g, "ae")
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9\u0600-\u06ff]+/gi, "-")
       .replace(/^-+|-+$/g, "")
-      .slice(0, 70) || "strategic-analysis"
+      .slice(0, 70) || fallback
   );
 }
 function renderGuide() {
@@ -3825,6 +3958,14 @@ function labelText(en, ar, fr) {
     : state.lang === "fr"
       ? fr || frMap[en] || en
       : en;
+}
+// Source types are free text; only the codes the samples and assistants use need words.
+function sourceTypeLabel(value) {
+  const labels = {
+    internal_sample: labelText("Built-in sample", "عينة مدمجة", "Exemple intégré"),
+    none: labelText("No source", "دون مصدر", "Aucune source"),
+  };
+  return labels[normalizeToken(value)] || value;
 }
 function normalizeToken(v) {
   return String(v ?? "")
@@ -4974,14 +5115,14 @@ function renderEvidence() {
     ev.length
       ? ev
           .map((e) => {
-            const source = [e.source_title, e.source_type, e.source_date]
+            const source = [e.source_title, sourceTypeLabel(e.source_type), e.source_date]
               .filter(Boolean)
               .join(" · ");
             const counter = e.counter_evidence || e.counterEvidence || "";
             const inspectionAnchor = e?.id
               ? ` data-inspection-id="${escapeHtml(e.id)}" tabindex="-1"`
               : "";
-            return `<div class="ledgerRow evidenceRow"${inspectionAnchor}><div class="evidenceClaim"><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<small class="muted"><br>${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</small>` : ""}</div><div>${pill(e.basis, "basis")}</div><div>${pill(e.confidence, "confidence")}${e.evidence_strength ? pill(`${escapeHtml(e.evidence_strength)}/5`) : ""}</div><div class="sourceNote">${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</div></div>`;
+            return `<div class="ledgerRow evidenceRow"${inspectionAnchor}><div class="evidenceClaim"><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<small class="muted"><br>${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}: ${escapeHtml(counter)}</small>` : ""}</div><div>${pill(e.basis, "basis")}</div><div>${pill(e.confidence, "confidence")}${e.evidence_strength ? pill(`${escapeHtml(e.evidence_strength)}/5`) : ""}</div><div class="sourceNote">${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</div></div>`;
           })
           .join("")
       : `<div class="empty"><strong>${t("noItems")}</strong></div>`
@@ -5013,6 +5154,11 @@ function htmlReport() {
     ? a.analysis_lens
     : state.analysisLens;
   const reportVersion = currentAppVersion();
+  const strategicChain = labelText(
+    "Interests → Actors → Tools → Narrative → Results → Feedback",
+    "المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة",
+    "Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction",
+  );
   const exportContract =
     reportLens === "biopolitical"
       ? {
@@ -5029,16 +5175,9 @@ function htmlReport() {
           ],
         }
       : {
-          title: "Strategic Analysis Report",
-          chain: "Interests → Actors → Tools → Narrative → Results → Feedback",
-          labels: [
-            "Interests",
-            "Actors",
-            "Tools",
-            "Narrative",
-            "Results",
-            "Feedback",
-          ],
+          title: tFor(state.lang, "generatedReport", "strategic"),
+          chain: strategicChain,
+          labels: strategicChain.split(/ [→←] /),
         };
   const exportContractHtml = `<section class="block exportContract" data-export-contract="lens" data-export-contract-lens="${escapeHtml(reportLens)}"><h2>${escapeHtml(exportContract.title)}</h2><p>${escapeHtml(exportContract.chain)}</p><div class="chips">${exportContract.labels.map((label) => `<em>${escapeHtml(label)}</em>`).join("")}</div></section>`;
   const metricKeys = [
@@ -5100,7 +5239,7 @@ function htmlReport() {
                 .map((v) => `<em>${escapeHtml(displayEnum(v))}</em>`)
                 .join(
                   "",
-                )}</div><p>${escapeHtml(x.rationale || x.stakes || "")}</p></article>`,
+                )}</div><p>${escapeHtml(x.rationale || "")}</p></article>`,
           )
           .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`
       }</section>`,
@@ -5144,13 +5283,13 @@ function htmlReport() {
     normalizeArray(a.evidence?.items)
       .map((e) => {
         const source =
-          [e.source_title, e.source_type, e.source_date]
+          [e.source_title, sourceTypeLabel(e.source_type), e.source_date]
             .filter(Boolean)
             .join(" · ") ||
           e.source_note ||
           "—";
         const counter = e.counter_evidence || e.counterEvidence || "";
-        return `<tr><td><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد"))}: ${escapeHtml(counter)}</span>` : ""}</td><td><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em></td><td>${escapeHtml(source)}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
+        return `<tr><td><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}: ${escapeHtml(counter)}</span>` : ""}</td><td><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em></td><td>${escapeHtml(source)}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
       })
       .join("") || `<tr><td colspan="4">${escapeHtml(t("noItems"))}</td></tr>`;
   const assumptions =
@@ -5160,7 +5299,7 @@ function htmlReport() {
           `<article class="assumption"><h3>${escapeHtml(x.assumption || x.name || "—")}</h3><div class="chips"><em>${escapeHtml(riskInfo(x.risk || x.risk_level).label)}</em>${x.confidence ? `<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>` : ""}</div><p><b>${escapeHtml(t("test"))}:</b> ${escapeHtml(x.disproving_test || x.test || "—")}</p><p><b>${escapeHtml(labelText("If wrong", "إذا كان خاطئًا"))}:</b> ${escapeHtml(x.implication_if_wrong || "—")}</p></article>`,
       )
       .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
-  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>:root{--bg:#f3f6fb;--text:#0f172a;--muted:#64748b;--line:#dbe6f5;--accent:#2563eb;--success:#16a34a;--warn:#d97706;--danger:#dc2626}*{box-sizing:border-box}html{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{margin:0;background:radial-gradient(circle at 10% 0%,#dbeafe,transparent 32%),var(--bg);color:var(--text);font-family:Inter,"Noto Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;line-height:1.62}.shell{max-width:1120px;margin:0 auto;padding:38px 22px 70px}.hero{background:linear-gradient(135deg,#08111f,#1d4ed8 58%,#0f766e);color:white;border-radius:32px;padding:34px;box-shadow:0 28px 70px rgba(15,23,42,.20)}.hero h1{margin:0;font-size:36px;letter-spacing:-.04em}.hero p{margin:10px 0 0;color:#dbeafe}.heroGrid{display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:center}.overall{display:grid;place-items:center;gap:8px}.rRing{--v:0;--tone:#2563eb;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tone) calc(var(--v)*1%),rgba(15,23,42,.12) 0)}.rRing:before{content:"";position:absolute;inset:9px;border-radius:50%;background:white}.hero .rRing:before{background:#0f172a}.rRing span,.rRing small{position:relative;z-index:1}.rRing span{font-size:28px;font-weight:1000}.rRing small{font-size:11px;color:var(--muted);font-weight:900}.hero .rRing small{color:#bfdbfe}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;padding:20px;margin-top:16px;box-shadow:0 16px 36px rgba(15,23,42,.07)}.metric{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:18px;align-items:center}.metric h3,.block h2,.conflict h3,.scenario h3,.assumption h3,.formula h2{margin:0}.metric p{margin:6px 0;color:var(--muted)}.metric b{font-size:13px}.formula p{margin:8px 0 0;color:var(--muted)}.weights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.weights span{border:1px solid var(--line);border-radius:16px;padding:10px;background:#f8fafc;color:#334155}.weights b{display:block;color:var(--text);font-size:18px}.chips{display:flex;gap:7px;flex-wrap:wrap}.chips em,td em,.block header span{font-style:normal;border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:#f8fafc;font-size:12px;font-weight:850}.block header,.conflict header,.scenario header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}.item{border-top:1px solid var(--line);padding:12px 0}.item:first-of-type{border-top:0}.item h3{font-size:16px;margin:0 0 6px}.item p{margin:8px 0 0;color:#334155}.signal{background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:12px;margin:12px 0}.signal b,.signal span,.signal small{display:block}.signal span{font-weight:900}.signal small{color:var(--muted)}ul{margin:8px 0 0;padding-inline-start:22px}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.cols div{background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:12px}.evidenceTable{overflow:auto}.evidenceTable table{width:100%;border-collapse:separate;border-spacing:0 10px}.evidenceTable th{text-align:start;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.evidenceTable td{background:#f8fafc;border-block:1px solid var(--line);padding:12px;vertical-align:top}.evidenceTable td:first-child{border-inline-start:1px solid var(--line);border-start-start-radius:16px;border-end-start-radius:16px}.evidenceTable td:last-child{border-inline-end:1px solid var(--line);border-start-end-radius:16px;border-end-end-radius:16px}.muted{color:var(--muted)}@media(max-width:820px){.heroGrid,.grid,.cols,.weights{grid-template-columns:1fr}.shell{padding:20px 12px}.hero h1{font-size:28px}}@media print{@page{margin:14mm}body{background:white}.shell{padding:0}.hero,.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{box-shadow:none;break-inside:avoid;page-break-inside:avoid}.hero{border-radius:18px}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}
+  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>:root{--bg:#f3f6fb;--text:#0f172a;--muted:#64748b;--line:#dbe6f5;--accent:#2563eb;--success:#16a34a;--warn:#d97706;--danger:#dc2626}*{box-sizing:border-box}html{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{margin:0;background:radial-gradient(circle at 10% 0%,#dbeafe,transparent 32%),var(--bg);color:var(--text);font-family:Inter,"Noto Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;line-height:1.62}.shell{max-width:1120px;margin:0 auto;padding:38px 22px 70px}.hero{background:linear-gradient(135deg,#08111f,#1d4ed8 58%,#0f766e);color:white;border-radius:32px;padding:34px;box-shadow:0 28px 70px rgba(15,23,42,.20)}.hero h1{margin:0;font-size:36px;letter-spacing:-.04em}.hero p{margin:10px 0 0;color:#dbeafe}.heroGrid{display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:center}.overall{display:grid;place-items:center;gap:8px}.rRing{--v:0;--tone:#2563eb;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--tone) calc(var(--v)*1%),rgba(15,23,42,.12) 0)}.rRing:before{content:"";position:absolute;inset:9px;border-radius:50%;background:white}.hero .rRing:before{background:#0f172a}.rRing span,.rRing small{position:relative;z-index:1}.rRing span{font-size:28px;font-weight:1000}.rRing small{font-size:11px;color:var(--muted);font-weight:900}.hero .rRing small{color:#bfdbfe}.overall>small{color:#dbeafe;font-size:12px;text-align:center}.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;padding:20px;margin-top:16px;box-shadow:0 16px 36px rgba(15,23,42,.07)}.metric{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:18px;align-items:center}.metric h3,.block h2,.conflict h3,.scenario h3,.assumption h3,.formula h2{margin:0}.metric p{margin:6px 0;color:var(--muted)}.metric b{font-size:13px}.formula p{margin:8px 0 0;color:var(--muted)}.weights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.weights span{border:1px solid var(--line);border-radius:16px;padding:10px;background:#f8fafc;color:#334155}.weights b{display:block;color:var(--text);font-size:18px}.chips{display:flex;gap:7px;flex-wrap:wrap}.chips em,td em,.block header span{font-style:normal;border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:#f8fafc;font-size:12px;font-weight:850}.block header,.conflict header,.scenario header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}.item{border-top:1px solid var(--line);padding:12px 0}.item:first-of-type{border-top:0}.item h3{font-size:16px;margin:0 0 6px}.item p{margin:8px 0 0;color:#334155}.signal{background:#fff7ed;border:1px solid #fed7aa;border-radius:18px;padding:12px;margin:12px 0}.signal b,.signal span,.signal small{display:block}.signal span{font-weight:900}.signal small{color:var(--muted)}ul{margin:8px 0 0;padding-inline-start:22px}.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.cols div{background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:12px}.evidenceTable{overflow:auto}.evidenceTable table{width:100%;border-collapse:separate;border-spacing:0 10px}.evidenceTable th{text-align:start;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.evidenceTable td{background:#f8fafc;border-block:1px solid var(--line);padding:12px;vertical-align:top}.evidenceTable td:first-child{border-inline-start:1px solid var(--line);border-start-start-radius:16px;border-end-start-radius:16px}.evidenceTable td:last-child{border-inline-end:1px solid var(--line);border-start-end-radius:16px;border-end-end-radius:16px}.muted{color:var(--muted)}@media(max-width:820px){.heroGrid,.grid,.cols,.weights{grid-template-columns:1fr}.shell{padding:20px 12px}.hero h1{font-size:28px}}@media print{@page{margin:14mm}body{background:white}.shell{padding:0}.hero,.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{box-shadow:none;break-inside:avoid;page-break-inside:avoid}.hero{border-radius:18px}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}
 .summaryGrid{grid-template-columns:minmax(0,1fr) minmax(300px,344px);align-items:start;max-width:100%;overflow:hidden}
 .summaryGrid>*{min-width:0}.scoreBox{width:100%;max-width:100%;min-width:0;overflow:hidden;padding-inline:22px}.scoreBox .metricRing.lg{width:min(160px,52vw);height:min(160px,52vw);max-width:160px;max-height:160px}.scoreBox .sectionKicker,.scoreBox .scoreLbl,.scoreBox .scoreHelp{max-width:100%;overflow-wrap:anywhere}.scoreMiniNote{width:100%;max-width:100%;border:1px solid color-mix(in srgb,var(--ringTone,var(--accent)) 18%,var(--line));border-radius:16px;padding:10px 12px;background:color-mix(in srgb,var(--ringTone,var(--accent)) 6%,var(--surface-solid));color:var(--text);font-size:12.5px;font-weight:900;line-height:1.45;text-align:center;box-shadow:var(--shadow-xs)}.scoreTopicBox{width:100%;max-width:100%;border:1px solid color-mix(in srgb,var(--ringTone,var(--line-strong)) 18%,var(--line));border-radius:18px;padding:10px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 98%,transparent),color-mix(in srgb,var(--surface-soft) 94%,transparent));box-shadow:var(--shadow-xs);text-align:start;display:grid;gap:4px}.scoreTopicBox span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:1000;color:var(--muted)}.scoreTopicBox strong{font-size:12.8px;line-height:1.35;color:var(--strong);overflow-wrap:anywhere;word-break:normal}.scoreFormulaCard p{overflow-wrap:anywhere}.diagnosticNote{max-width:100%;overflow-wrap:anywhere;white-space:normal}.scoreBox .chip{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:center}
 @media(max-width:1180px){.summaryGrid{grid-template-columns:1fr}.scoreBox{max-width:520px;margin-inline:auto}.scoreSystemGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -5382,7 +5521,7 @@ html[dir="rtl"] .welcomeEyebrow{
   }
 }
 
-</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p><p>${escapeHtml(a.subject.context || a.subject.question || "")}</p></div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(t("overallScore"))}</strong></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
+</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p><p>${escapeHtml(a.subject.context || a.subject.question || "")}</p></div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: ${b.analyticalCoverage}%</small><small>${escapeHtml(t("qualityGate"))}: ${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
 }
 
 function buildLosslessStrategicReport() {
@@ -5473,6 +5612,12 @@ function evidenceIntelligenceCopy() {
     supporting: labelText("Supporting", "داعم", "À l’appui"),
     counter: labelText("Counter", "مضاد", "Contraire"),
     balance: labelText("Balance", "التوازن", "Équilibre"),
+    balanceLabels: {
+      support_and_counter: labelText("support and counter", "دعم وأدلة مضادة", "appui et contre-preuves"),
+      support_only: labelText("support only", "دعم فقط", "appui seulement"),
+      counter_only: labelText("counter only", "أدلة مضادة فقط", "contre-preuves seulement"),
+      unreferenced: labelText("unreferenced", "بلا مراجع", "sans référence"),
+    },
     export: labelText("Export intelligence JSON", "تصدير JSON للاستخبارات", "Exporter le JSON d’intelligence"),
     reviewQueue: labelText("Evidence review queue", "قائمة مراجعة الأدلة", "File de revue des preuves"),
     reviewQueueIntro: labelText(
@@ -5561,9 +5706,16 @@ function renderEvidenceIntelligence(index) {
     return `<section data-review-phase="${escapeHtml(phase)}"><header><h5>${escapeHtml(phaseLabels[phase])}</h5><span>${tasks.length}</span></header>${items ? `<ol>${items}</ol>` : `<p class="evidenceIntelligenceEmpty">0</p>`}</section>`;
   }).join("");
   const reviewQueue = `<section class="evidenceReviewQueue" data-evidence-review-queue><header><div><h4>${escapeHtml(copy.reviewQueue)}</h4><p>${escapeHtml(copy.reviewQueueIntro)}</p></div><div><span class="reviewQueueActions"><button class="btn primary" id="openReviewLedger" type="button">${escapeHtml(copy.openLedger)}</button><button class="btn" id="exportReviewPlan" type="button">${escapeHtml(copy.exportReviewPlan)}</button></span><small>${escapeHtml(copy.derivedNote)}</small></div></header><div class="evidenceReviewPhases">${reviewGroups}</div></section>`;
-  const matrixRows = traceability.rows.map((row) => `<tr data-traceability-record="${escapeHtml(row.recordId)}"><th scope="row"><button type="button" data-reference-id="${escapeHtml(row.recordId)}"><span>${escapeHtml(row.label)}</span><code>${escapeHtml(row.recordId)}</code></button></th><td>${row.supportingIds.length ? row.supportingIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.counterIds.length ? row.counterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.clusterIds.length ? row.clusterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td><span class="traceabilityBalance ${escapeHtml(row.balance)}">${escapeHtml(String(row.balance).replaceAll("_", " "))}</span></td></tr>`).join("");
+  const matrixRows = traceability.rows.map((row) => `<tr data-traceability-record="${escapeHtml(row.recordId)}"><th scope="row"><button type="button" data-reference-id="${escapeHtml(row.recordId)}"><span>${escapeHtml(row.label)}</span><code>${escapeHtml(row.recordId)}</code></button></th><td>${row.supportingIds.length ? row.supportingIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.counterIds.length ? row.counterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td>${row.clusterIds.length ? row.clusterIds.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—"}</td><td><span class="traceabilityBalance ${escapeHtml(row.balance)}">${escapeHtml(copy.balanceLabels[row.balance] || String(row.balance).replaceAll("_", " "))}</span></td></tr>`).join("");
   const matrix = `<section class="evidenceTraceability"><header><div><h4>${escapeHtml(copy.matrix)}</h4><p>${escapeHtml(copy.matrixIntro)}</p></div><div><button class="btn" id="exportIntelligence" type="button">${escapeHtml(copy.export)}</button><small>${escapeHtml(copy.derivedNote)}</small></div></header><div class="evidenceTraceabilityTable"><table><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div></section>`;
   return `<details class="evidenceIntelligence" data-evidence-intelligence><summary><span><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="evidenceIntelligenceMetrics"><span><b>${intelligence.stats.sourceClusters}</b>${escapeHtml(copy.clusters)}</span><span><b>${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}</b>${escapeHtml(copy.cited)}</span><span><b>${intelligence.stats.gapCount}</b>${escapeHtml(copy.gaps)}</span></span></summary><div class="evidenceIntelligenceBody"><section><h4>${escapeHtml(copy.clusters)}</h4><div class="sourceClusterGrid">${clusterCards}</div></section><section><h4>${escapeHtml(copy.gaps)}</h4><div class="evidenceGapGrid">${gapGroups || `<p class="evidenceIntelligenceEmpty">0</p>`}</div></section>${reviewQueue}${matrix}</div></details>`;
+}
+// The layer a record belongs to, named in the interface language.
+function inspectionPillarLabel(lens, pillar) {
+  if (!pillar) return "";
+  const layer = tFor(state.lang, "pillars", lens)?.[pillar]?.[0];
+  const section = tFor(state.lang, pillar, lens);
+  return layer || (typeof section === "string" ? section : String(pillar).replaceAll("_", " "));
 }
 function renderInspectionDirectory(index) {
   const copy = inspectionCopy();
@@ -5575,10 +5727,11 @@ function renderInspectionDirectory(index) {
   const cards = index.nodes.length
     ? index.nodes.map((node) => {
         const inspection = index.inspect(node.id);
-        const search = [node.label, node.id, index.typeLabel(node.type), node.pillar]
+        const pillar = inspectionPillarLabel(index.lens, node.pillar);
+        const search = [node.label, node.id, index.typeLabel(node.type), node.pillar, pillar]
           .join(" ")
           .toLocaleLowerCase(state.lang);
-        return `<li class="inspectionDirectoryItem" data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="inspectionDirectoryType">${escapeHtml(index.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><span class="inspectionDirectoryMeta"><code>${escapeHtml(node.id)}</code><span>${escapeHtml(String(node.pillar || "").replaceAll("_", " "))}</span>${inspection?.confidence ? `<span>${escapeHtml(inspection.confidence)}</span>` : ""}</span></button></li>`;
+        return `<li class="inspectionDirectoryItem" data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="inspectionDirectoryType">${escapeHtml(index.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><span class="inspectionDirectoryMeta"><code>${escapeHtml(node.id)}</code><span>${escapeHtml(pillar)}</span>${inspection?.confidence ? `<span>${escapeHtml(confidenceInfo(inspection.confidence).label)}</span>` : ""}</span></button></li>`;
       }).join("")
     : `<li class="inspectionDirectoryEmpty">${escapeHtml(copy.empty)}</li>`;
   return `<section class="inspectionDirectory" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="inspectionDirectoryHeader"><div><div class="sectionKicker">${escapeHtml(t("nav").inspection)}</div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p>${escapeHtml(copy.intro)}</p></div><div class="inspectionDirectoryMetrics"><div><strong>${index.nodes.length}</strong><span>${escapeHtml(copy.records)}</span></div><div><strong>${index.occurrenceCount}</strong><span>${escapeHtml(copy.occurrences)}</span></div><div class="${concerns ? "concern" : "clear"}"><strong>${concerns}</strong><span>${escapeHtml(copy.concerns)}</span></div></div></header>${renderEvidenceIntelligence(index)}<div class="inspectionSearch"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="srOnly" role="status" aria-live="polite"></span></div><ul class="inspectionDirectoryList" id="inspectionDirectoryList">${cards}</ul><p class="inspectionDirectoryNoMatch" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
@@ -5592,7 +5745,7 @@ function wireInspectionDirectory() {
     exportButton.onclick = () => {
       const appVersion = currentAppVersion();
       const manifest = index.traceability.manifest({ appVersion, language: state.analysis?.language });
-      download(`${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
+      download(`${safeFileSlug(state.analysis?.subject?.title || state.topic, "analysis")}-${index.lens}-evidence-intelligence.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
   }
   const reviewPlanButton = $("exportReviewPlan");
@@ -5600,7 +5753,7 @@ function wireInspectionDirectory() {
     reviewPlanButton.onclick = () => {
       const appVersion = currentAppVersion();
       const manifest = index.reviewPlan.manifest({ appVersion, language: state.analysis?.language });
-      download(`${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
+      download(`${safeFileSlug(state.analysis?.subject?.title || state.topic, "analysis")}-${index.lens}-evidence-review-plan.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
     };
   }
   const ledgerButton = $("openReviewLedger");
@@ -6080,7 +6233,7 @@ function renderBiopoliticalReview() {
   if (jsonButton)
     jsonButton.onclick = () =>
       download(
-        `${safeFileSlug(state.analysis?.subject?.title || state.topic)}-biopolitical-v2-canonical.json`,
+        `${safeFileSlug(state.analysis?.subject?.title || state.topic, "analysis")}-biopolitical-v2-canonical.json`,
         `${JSON.stringify(state.analysis, null, 2)}\n`,
         "application/json",
       );
@@ -6105,7 +6258,7 @@ async function exportBiopoliticalReport() {
   try {
     const renderer = await loadBiopoliticalReportRenderer();
     download(
-      `${safeFileSlug(state.analysis?.subject?.title || state.topic)}-biopolitical-v2-report.html`,
+      `${safeFileSlug(state.analysis?.subject?.title || state.topic, "analysis")}-biopolitical-v2-report.html`,
       buildLosslessBiopoliticalReport(renderer),
       "text/html",
     );
@@ -6579,7 +6732,7 @@ async function saveEditorDraft() {
     state.editorSession = createCanonicalEditorSession({ payload: saved.working_draft.canonical_payload, validate: validateEditorPayload });
     await RECOVERY_JOURNAL.discard(saved.workspace_id);
     state.editorRecovery = null;
-    applyWorkspaceAnalysis(saved);
+    applyWorkspaceAnalysis(saved, { keepPendingReply: true });
     setWorkspaceStatus("good", editorText("saved"));
     renderCanonicalEditor();
   } catch (error) {
@@ -6896,7 +7049,7 @@ async function commitResolutionTransaction() {
     $("resolutionStatus").className = "status good";
     const message = resolutionText(state.resolutionProposal.transaction?.type === "revision_restore" ? "restored" : "committed");
     $("resolutionStatus").textContent = message;
-    applyWorkspaceAnalysis(saved);
+    applyWorkspaceAnalysis(saved, { keepPendingReply: true });
     closeResolutionTransaction();
     setWorkspaceStatus("good", message);
   } catch (error) {
@@ -7101,6 +7254,8 @@ async function exportReviewLedger() {
 }
 
 async function persistImportedAnalysis(analysis) {
+  // Until it is saved, no saved analysis is the one on screen.
+  state.activeWorkspaceId = null;
   state.workspaceSaveState = "saving";
   APPLICATION_SHELL.render();
   try {
@@ -7118,12 +7273,15 @@ async function persistImportedAnalysis(analysis) {
     if (ledgerButton) ledgerButton.disabled = false;
     return workspace;
   } catch (error) {
+    // Not saved, so it can be imported again.
+    savedReply = null;
+    $("importBtn").disabled = false;
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
     return null;
   }
 }
 
-function applyWorkspaceAnalysis(workspace) {
+function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   const analysis = normalizeAnalysis(structuredClone(workspace.working_draft.canonical_payload));
   state.analysis = analysis;
   state.analysisLens = analysis.analysis_lens;
@@ -7137,7 +7295,13 @@ function applyWorkspaceAnalysis(workspace) {
   state.context = analysis.subject?.context || "";
   $("topicInput").value = state.topic;
   $("timeframeInput").value = state.context;
-  $("jsonInput").value = JSON.stringify(analysis, null, 2);
+  // An edit saved to the analysis leaves a reply pasted but not imported yet.
+  const keepReply = keepPendingReply && hasPendingReply();
+  savedReply = JSON.stringify(analysis, null, 2);
+  if (!keepReply) {
+    $("jsonInput").value = savedReply;
+    $("importBtn").disabled = true;
+  }
   writeSettings({ activeWorkspaceId: workspace.workspace_id, analysisLens: state.analysisLens });
   state.workspaceSaveState = "saved";
   renderAll();
@@ -7175,8 +7339,14 @@ async function renderWorkspaceList() {
       : `<div class="empty"><strong>${escapeHtml(workspaceText("empty"))}</strong></div>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
       button.onclick = async () => {
+        if (!confirmReplacingReply(button.dataset.workspaceOpen)) {
+          setWorkspaceStatus("warn", replaceReplyText());
+          return;
+        }
         const workspace = await openStoredWorkspace(button.dataset.workspaceOpen);
-        if (workspace) await renderWorkspaceList();
+        if (!workspace) return;
+        discardTrip();
+        await renderWorkspaceList();
       };
     });
     target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await WORKSPACE_REPOSITORY.get(button.dataset.workspaceEdit); closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
@@ -7305,6 +7475,7 @@ async function importWorkspaceFile(file) {
     const workspace = await parseWorkspaceBundle(await file.text());
     await WORKSPACE_REPOSITORY.create(workspace);
     applyWorkspaceAnalysis(workspace);
+    discardTrip();
     setWorkspaceStatus("good", workspaceText("imported"));
     await renderWorkspaceList();
   } catch (error) {
@@ -7327,6 +7498,8 @@ function restorableInputs() {
     $("timeframeInput").value,
     $("sourcesInput").value,
     $("jsonInput").value,
+    repairBase,
+    cutOffVerdict,
   ];
 }
 // The last analysis and the analysis being prepared are read from storage after
@@ -7389,11 +7562,11 @@ function repairPrompt() {
   // Asked in the chosen language; the AI still has its answer in the same chat.
   const mismatch = state.importAudit?.languageMismatch;
   if (mismatch?.requested === "ar")
-    return `أعد كتابة إجابة JSON السابقة بالكامل باللغة العربية. حافظ تمامًا على بنية JSON نفسها والمفاتيح والمعرّفات ورموز القيم والأرقام والتواريخ والروابط والأدلة؛ ترجم النص المقروء فقط. اجعل قيمة "language" هي "ar". أعد كائن JSON فقط دون أي شرح.`;
+    return `أعد كتابة إجابة JSON السابقة بالكامل باللغة العربية. حافظ تمامًا على بنية JSON نفسها والمفاتيح والمعرّفات ورموز القيم والأرقام والتواريخ والروابط وعناوين المصادر والاقتباسات؛ وترجم بقية النص المقروء، بما فيه ادعاءات الأدلة. اجعل قيمة "language" هي "ar". لا تختصر ولا تلخّص ولا تستخدم علامات الحذف؛ وإذا نفدت المساحة فتوقف وسأطلب منك المتابعة. أعد كائن JSON فقط دون أي شرح.`;
   if (mismatch?.requested === "fr")
-    return `Réécrivez entièrement votre réponse JSON précédente en français. Conservez exactement la même structure JSON, les clés, identifiants, codes de valeurs, nombres, dates, URL et preuves ; traduisez uniquement le texte lisible. Mettez "language" à "fr". Retournez uniquement l’objet JSON, sans explication.`;
+    return `Réécrivez entièrement votre réponse JSON précédente en français. Conservez exactement la même structure JSON, les clés, identifiants, codes de valeurs, nombres, dates, URL, titres de sources et citations ; traduisez tout le reste du texte lisible, y compris les affirmations des preuves. Mettez "language" à "fr". N’abrégez pas, ne résumez pas et n’utilisez pas d’ellipses ; si l’espace manque, arrêtez-vous et je vous demanderai de continuer. Retournez uniquement l’objet JSON, sans explication.`;
   if (mismatch)
-    return `Rewrite your previous JSON answer entirely in English. Keep exactly the same JSON structure, keys, IDs, value codes, numbers, dates, URLs and evidence; translate only the human-readable text. Set "language" to "en". Return only the JSON object, with no explanation.`;
+    return `Rewrite your previous JSON answer entirely in English. Keep exactly the same JSON structure, keys, IDs, value codes, numbers, dates, URLs, source titles and quotations; translate all other human-readable text, including evidence claims. Set "language" to "en". Do not shorten, summarize, or use ellipses; if you run out of space, stop and I will ask you to continue. Return only the JSON object, with no explanation.`;
   if (
     state.importAudit?.completionCandidate &&
     state.importAudit?.completionDiagnostics?.length
@@ -7444,13 +7617,14 @@ ${ending}`;
 Your answer ended with:
 ${ending}`;
   }
+  repairBase = bad;
   const diagnostics = (state.importAudit?.errors || [])
     .slice(0, 20)
     .map((issue) => `${issue.path || "/"}: ${issue.message || issue.code}`)
     .join("\n");
   const diagnosticBlock = diagnostics || state.importAudit?.error || "JSON parsing failed.";
   if (ar)
-    return `هذه مهمة إصلاح تسلسل JSON وليست مهمة بحث أو إعادة كتابة. أعد كائن JSON واحدًا كاملًا ومضغوطًا فقط داخل كتلة كود واحدة \`\`\`json. لا تُعد Python أو JavaScript أو JSON Patch أو شرحًا أو علامات حذف. حافظ على كل المحتوى والمعرّفات، ولا تغيّر إلا علامات JSON أو أنواع الحقول المحددة في التشخيص. لا تختلق محتوى أو مصادر أو روابط أو محددات أو حالات تحقق. إذا كان الإدخال مبتورًا ومحتواه مفقودًا، فأعد فقط {"repair_status":"incomplete_input","reason":"truncated"} بدل اختلاق الباقي. لا تدرج علامات cite أو filecite أو turn. لا تستخدم verified دون verified_by وverification_date؛ وإلا استخدم unverified واتركهما فارغين.
+    return `هذه مهمة إصلاح تسلسل JSON وليست مهمة بحث أو إعادة كتابة. أعد كائن JSON واحدًا كاملًا ومضغوطًا فقط داخل كتلة كود واحدة \`\`\`json. لا تُعد Python أو JavaScript أو JSON Patch أو شرحًا أو علامات حذف. حافظ على كل المحتوى والمعرّفات، ولا تغيّر إلا علامات JSON أو أنواع الحقول المحددة في التشخيص. لا تختلق محتوى أو مصادر أو روابط أو محددات أو حالات تحقق. إذا كان الإدخال مبتورًا ومحتواه مفقودًا، فأعد فقط {"repair_status":"incomplete_input","reason":"truncated"} بدل اختلاق الباقي. لا تدرج علامات cite أو filecite أو turn. لا تجعل أي دليل verified: أبقِ verification_status على unverified واترك verified_by وverification_date فارغين.
 
 التشخيص:
 ${diagnosticBlock}
@@ -7458,14 +7632,14 @@ ${diagnosticBlock}
 النص:
 ${bad}`;
   if (fr)
-    return `Il s’agit d’une réparation de sérialisation JSON, pas d’une recherche ni d’une réécriture. Retournez exactement un objet JSON complet et minifié, dans un unique bloc de code \`\`\`json. Ne retournez ni Python, ni JavaScript, ni JSON Patch, ni explication, ni ellipse. Préservez tout le contenu et tous les identifiants ; ne modifiez que la ponctuation JSON ou les types de champs indiqués par le diagnostic. N’inventez aucun contenu, source, URL, localisateur ou état de vérification. Si l’entrée est tronquée et qu’il manque du contenu, retournez uniquement {"repair_status":"incomplete_input","reason":"truncated"}. N’insérez aucun marqueur cite, filecite ou turn. N’utilisez verified qu’avec verified_by et verification_date ; sinon utilisez unverified et laissez-les vides.
+    return `Il s’agit d’une réparation de sérialisation JSON, pas d’une recherche ni d’une réécriture. Retournez exactement un objet JSON complet et minifié, dans un unique bloc de code \`\`\`json. Ne retournez ni Python, ni JavaScript, ni JSON Patch, ni explication, ni ellipse. Préservez tout le contenu et tous les identifiants ; ne modifiez que la ponctuation JSON ou les types de champs indiqués par le diagnostic. N’inventez aucun contenu, source, URL, localisateur ou état de vérification. Si l’entrée est tronquée et qu’il manque du contenu, retournez uniquement {"repair_status":"incomplete_input","reason":"truncated"}. N’insérez aucun marqueur cite, filecite ou turn. Ne marquez jamais une preuve comme verified : gardez verification_status à unverified et laissez verified_by et verification_date vides.
 
 Diagnostic :
 ${diagnosticBlock}
 
 Texte :
 ${bad}`;
-  return `This is a JSON serialization repair task, not research or rewriting. Return exactly one complete minified JSON object, inside a single \`\`\`json code block. Do not return Python, JavaScript, JSON Patch, explanations, or ellipses. Preserve all content and IDs; change only JSON punctuation or the field types identified by the diagnostics. Never invent content, sources, URLs, locators, or verification states. If the input is truncated and content is missing, return only {"repair_status":"incomplete_input","reason":"truncated"} instead of inventing the remainder. Do not insert cite, filecite, or turn markers. Use verified only with both verified_by and verification_date; otherwise use unverified and leave them empty.
+  return `This is a JSON serialization repair task, not research or rewriting. Return exactly one complete minified JSON object, inside a single \`\`\`json code block. Do not return Python, JavaScript, JSON Patch, explanations, or ellipses. Preserve all content and IDs; change only JSON punctuation or the field types identified by the diagnostics. Never invent content, sources, URLs, locators, or verification states. If the input is truncated and content is missing, return only {"repair_status":"incomplete_input","reason":"truncated"} instead of inventing the remainder. Do not insert cite, filecite, or turn markers. Never mark evidence verified: keep verification_status unverified and leave verified_by and verification_date empty.
 
 Diagnostics:
 ${diagnosticBlock}
@@ -7499,6 +7673,10 @@ $("copyPromptBtn").onclick = async (event) => {
     $("topicStatus").textContent = t("topicNeeded");
     return;
   }
+  if (state.evidenceAccess === "provided" && !$("sourcesInput").value.trim()) {
+    toast(sourcesNeededText());
+    return;
+  }
   const p = buildPrompt();
   state.lastPrompt = p;
   const ok = await copyText(p);
@@ -7515,6 +7693,10 @@ $("previewPromptBtn").onclick = (event) => {
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
     toast(t("topicNeeded"));
+    return;
+  }
+  if (state.evidenceAccess === "provided" && !$("sourcesInput").value.trim()) {
+    toast(sourcesNeededText());
     return;
   }
   state.lastPrompt = buildPrompt();
@@ -7534,7 +7716,14 @@ $("jsonInput").addEventListener("input", () => {
 $("continuationInput").addEventListener("input", () => {
   const continuation = $("continuationInput").value;
   if (!continuation.trim()) return;
-  $("jsonInput").value = JSON_TOOLS.joinContinuation($("jsonInput").value, continuation);
+  const answer = $("jsonInput").value;
+  if (JSON_TOOLS.continuesAnswer(answer, continuation)) {
+    $("jsonInput").value = JSON_TOOLS.joinContinuation(answer, continuation);
+  } else {
+    // "It was already complete" is not added: the answer has a JSON error
+    // instead, so the repair prompt is offered.
+    cutOffVerdict = { text: answer.trim(), cutOff: false };
+  }
   $("continuationInput").value = "";
   validateJsonInput();
   keepTrip();
@@ -7545,6 +7734,7 @@ $("clearJsonBtn").onclick = () => {
   keepTrip();
 };
 $("importBtn").onclick = async () => {
+  if ($("jsonInput").value === savedReply) return;
   const a = validateJsonInput();
   if (!a) return;
   // The chosen analysis language stays as it is; a reply in another language
@@ -7564,6 +7754,8 @@ $("importBtn").onclick = async () => {
   state.context = $("timeframeInput").value;
   // Present the accepted canonical payload, not the provider's irregular spacing.
   $("jsonInput").value = JSON.stringify(a, null, 2);
+  savedReply = $("jsonInput").value;
+  $("importBtn").disabled = true;
   $("topicStatus").className = "status good";
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"));
@@ -7597,6 +7789,10 @@ $("repairPromptBtn").onclick = async (event) => {
     );
 };
 $("loadSampleBtn").onclick = async (event) => {
+  if (!confirmReplacingReply("sample")) {
+    toast(replaceReplyText());
+    return;
+  }
   try {
   const a = sampleAnalysis(state.analysisLang);
   if (a.analysis_lens === "biopolitical") {
@@ -7621,9 +7817,11 @@ $("loadSampleBtn").onclick = async (event) => {
   $("topicInput").value = state.topic;
   $("timeframeInput").value = state.context;
   $("jsonInput").value = JSON.stringify(a, null, 2);
+  savedReply = $("jsonInput").value;
+  $("importBtn").disabled = true;
   toast(t("sampleLoaded"));
   renderAll();
-  await persistImportedAnalysis(a);
+  if (await persistImportedAnalysis(a)) discardTrip();
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
@@ -7635,7 +7833,13 @@ $("modalClose").onclick = closeModal;
 $("workspaceBtn").onclick = (event) => openWorkspaceDialog(event.currentTarget);
 $("workspaceClose").onclick = closeWorkspaceDialog;
 $("workspaceExport").onclick = exportActiveWorkspace;
-$("workspaceImport").onclick = () => $("workspaceImportFile").click();
+$("workspaceImport").onclick = () => {
+  if (!confirmReplacingReply("file")) {
+    setWorkspaceStatus("warn", replaceReplyText());
+    return;
+  }
+  $("workspaceImportFile").click();
+};
 $("workspaceProtectStorage").onclick = () => renderStorageHealth({ request: true });
 let resetCurrentArmedUntil = 0;
 $("workspaceResetCurrent").onclick = async () => {
@@ -7653,6 +7857,9 @@ $("workspaceResetCurrent").onclick = async () => {
     const current = await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
     if (current) await WORKSPACE_REPOSITORY.remove(current.workspace_id, { expectedRevision: current.repository_revision });
     await RECOVERY_JOURNAL.discard(state.activeWorkspaceId);
+    for (const [lens, kept] of Object.entries(keptResults)) {
+      if (kept.workspaceId === state.activeWorkspaceId) delete keptResults[lens];
+    }
     state.activeWorkspaceId = null;
     state.analysis = null;
     state.stage = "topic";
@@ -7662,7 +7869,9 @@ $("workspaceResetCurrent").onclick = async () => {
     resetCurrentArmedUntil = 0;
     button.dataset.armed = "false";
     button.textContent = workspaceText("resetCurrent");
+    savedReply = null;
     renderAll();
+    validateJsonInput();
     await renderWorkspaceList();
     setWorkspaceStatus("good", workspaceText("resetCurrentDone"));
   } catch (error) {
@@ -7686,6 +7895,7 @@ $("workspaceResetAll").onclick = async () => {
     await WORKSPACE_REPOSITORY.clear();
     await RECOVERY_JOURNAL.clear();
     tripKept = false;
+    for (const lens of Object.keys(keptResults)) delete keptResults[lens];
     SETTINGS.remove();
     state.activeWorkspaceId = null;
     state.analysis = null;
@@ -7695,7 +7905,9 @@ $("workspaceResetAll").onclick = async () => {
     resetAllArmedUntil = 0;
     button.dataset.armed = "false";
     button.textContent = workspaceText("resetAll");
+    savedReply = null;
     renderAll();
+    validateJsonInput();
     await renderWorkspaceList();
     setWorkspaceStatus("good", workspaceText("resetDone"));
   } catch (error) {
