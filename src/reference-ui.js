@@ -104,6 +104,41 @@
   let wired = false;
 
   const humanize = (value) => String(value || "—").replaceAll("_", " ");
+  // Codes the drawer names itself: provenance states, Strategic layers and
+  // sample relations, and the app's own source types.
+  const CODE_LABELS = {
+    ar: {
+      missing: "غير متوفر", provided: "مذكور", traceable: "قابل للتتبع",
+      unassessed: "لم يُقيَّم", mismatched: "غير مطابق", contextual: "سياقي",
+      unreviewed: "لم يُراجَع", human_reviewed: "راجعه إنسان", approved: "معتمد",
+      interests: "المصالح", actors: "الفاعلون", tools: "الأدوات", narrative: "السردية",
+      results: "النتائج", feedback: "التغذية الراجعة", contradictions: "التناقضات",
+      scenarios: "السيناريوهات", evidence: "الأدلة",
+      motivates: "يحفّز", produces: "ينتج",
+      internal_sample: "عينة مدمجة", none: "دون مصدر",
+    },
+    fr: {
+      missing: "Absente", provided: "Indiquée", traceable: "Traçable",
+      unassessed: "Non évalué", mismatched: "Non concordant", contextual: "Contextuel",
+      unreviewed: "Non revu", human_reviewed: "Revu par un humain", approved: "Approuvé",
+      interests: "Intérêts", actors: "Acteurs", tools: "Outils", narrative: "Narratif",
+      results: "Résultats", feedback: "Rétroaction", contradictions: "Contradictions",
+      scenarios: "Scénarios", evidence: "Preuves",
+      motivates: "Motive", produces: "Produit",
+      internal_sample: "Exemple intégré", none: "Aucune source",
+    },
+  };
+  // A coded value in the drawer's language: a Biopolitical pillar's name, the
+  // drawer's own names, then the Biopolitical lens's names for its codes.
+  const codeLabel = (value) => {
+    const token = String(value || "");
+    const bio = root.Jarbou3iBiopolitics;
+    const pillar = token && bio?.ui?.(lang, `pillars.${token}`);
+    if (Array.isArray(pillar)) return pillar[0];
+    if (CODE_LABELS[lang]?.[token]) return CODE_LABELS[lang][token];
+    if (lang !== "en" && token && bio?.displayToken) return bio.displayToken(lang, token);
+    return humanize(token);
+  };
   const validHttpUrl = (value) => {
     try { return ["http:", "https:"].includes(new URL(String(value || "")).protocol); }
     catch { return false; }
@@ -138,14 +173,14 @@
     if (value === "" || value === null || value === undefined || (Array.isArray(value) && !value.length)) return "";
     const content = options.link && validHttpUrl(value)
       ? `<a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">${escapeHtml(options.linkLabel || value)}</a>`
-      : escapeHtml(Array.isArray(value) ? value.join(" · ") : options.raw ? value : humanize(value));
+      : escapeHtml(Array.isArray(value) ? value.join(" · ") : options.raw ? value : options.code ? codeLabel(value) : humanize(value));
     return `<div><dt>${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
   }
 
   function relationHtml(edge, direction) {
     const otherId = direction === "incoming" ? edge.source : edge.target;
     const other = graph.resolve(otherId);
-    const relation = humanize(edge.relation || "related_to");
+    const relation = codeLabel(edge.relation || "related_to");
     return `<li><button type="button" data-reference-id="${escapeHtml(otherId)}"><span>${escapeHtml(other?.label || otherId)}</span><small>${escapeHtml(otherId)} · ${escapeHtml(relation)}</small></button></li>`;
   }
 
@@ -162,11 +197,11 @@
     const facts = [
       fact(copy.sourceTitle, provenance.sourceUrl || provenance.sourceTitle, provenance.sourceUrl ? { link: true, linkLabel: provenance.sourceTitle || provenance.sourceUrl } : {}),
       fact(copy.sourceLocator, provenance.sourceLocator), fact(copy.sourceDate, provenance.sourceDate),
-      fact(copy.sourceType, provenance.sourceType), fact(copy.sourceTier, provenance.sourceTier),
-      fact(copy.sourceNote, provenance.sourceNote), fact(copy.verificationStatus, provenance.verificationStatus),
+      fact(copy.sourceType, provenance.sourceType, { code: true }), fact(copy.sourceTier, provenance.sourceTier, { code: true }),
+      fact(copy.sourceNote, provenance.sourceNote), fact(copy.verificationStatus, provenance.verificationStatus, { code: true }),
       fact(copy.verifiedBy, provenance.verifiedBy), fact(copy.verificationDate, provenance.verificationDate),
-      fact(copy.claimSourceFit, provenance.claimSourceFit), fact(copy.sourceStatus, provenance.sourceStatus),
-      fact(copy.claimStatus, provenance.claimStatus), fact(copy.reviewStatus, provenance.reviewStatus),
+      fact(copy.claimSourceFit, provenance.claimSourceFit, { code: true }), fact(copy.sourceStatus, provenance.sourceStatus, { code: true }),
+      fact(copy.claimStatus, provenance.claimStatus, { code: true }), fact(copy.reviewStatus, provenance.reviewStatus, { code: true }),
       provenance.sourceStatus ? fact(copy.approvalEligible, provenance.approvalEligible ? copy.yes : copy.no) : "",
     ].filter(Boolean).join("");
     return `<section class="referenceInspectorSection" data-inspection-section="provenance"><h3>${escapeHtml(copy.provenance)}</h3>${facts ? `<dl class="referenceInspectorFacts">${facts}</dl>` : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`}</section>`;
@@ -198,8 +233,8 @@
   function auditHtml(inspection, copy) {
     const audit = inspection?.audit || {};
     const facts = [
-      fact(copy.schemaVersion, audit.schemaVersion), fact(copy.contractStatus, audit.contractStatus),
-      fact(copy.modelStatus, audit.modelStatus), fact(copy.analysisId, audit.analysisId),
+      fact(copy.schemaVersion, audit.schemaVersion), fact(copy.contractStatus, audit.contractStatus, { code: true }),
+      fact(copy.modelStatus, audit.modelStatus, { code: true }), fact(copy.analysisId, audit.analysisId),
       fact(copy.uncertainty, audit.uncertainty), fact(copy.limitations, audit.limitations),
       fact(copy.evidenceStrength, audit.evidenceStrength), fact(copy.unresolvedLinks, audit.unresolvedLinks),
     ].filter(Boolean).join("");
@@ -242,8 +277,8 @@
     const permanentLink = inspection.relationship?.deepLink
       ? `<div><dt>${escapeHtml(copy.permanentLink)}</dt><dd><a class="referencePermanentLink" href="${escapeHtml(inspection.relationship.deepLink)}"><code>${escapeHtml(inspection.relationship.deepLink)}</code></a></dd></div>`
       : "";
-    const identity = `<section class="referenceInspectorSection" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="referenceInspectorFacts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar)}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence)}${permanentLink}</dl></section>`;
-    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="referenceInspectorSummary">${escapeHtml(inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
+    const identity = `<section class="referenceInspectorSection" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="referenceInspectorFacts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar, { code: true })}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence, { code: true })}${permanentLink}</dl></section>`;
+    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="referenceInspectorSummary">${escapeHtml(root.Jarbou3iBiopolitics?.displayCode?.(lang, inspection.summary) ?? inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
     const openButton = rootElement.querySelector("#referenceOpenRecord");
     openButton.textContent = copy.open;
     openButton.dataset.referenceOpenRecord = node.id;

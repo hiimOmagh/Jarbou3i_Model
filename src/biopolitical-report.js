@@ -13,6 +13,9 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   const safeId = (value) => text(value).replace(/[^A-Za-z0-9_-]/g, "-");
+  // A record ID as an anchor: every character other than a letter, digit, or
+  // "-" is spelled out, so IDs that differ only in punctuation keep their own.
+  const anchorId = (value) => text(value).replace(/[^A-Za-z0-9-]/g, (char) => `_${char.codePointAt(0).toString(16)}_`);
   const isHttpUrl = (value) => /^https?:\/\/[^\s]+$/i.test(text(value).trim());
 
   const COPY = {
@@ -57,6 +60,7 @@
       evidenceRecord: "Evidence record",
       sourceUnavailable: "No portable source link supplied",
       officialContract: "Canonical analysis contract",
+      schema: "schema",
       authored: "Authored causal connections",
       evidence: "Evidence connections",
       structural: "Structural references",
@@ -84,7 +88,7 @@
       humanReview: "المراجعة البشرية المستقلة",
       publication: "بوابة النشر",
       passed: "مستوفاة",
-      blocked: "محظورة",
+      blocked: "غير مستوفاة",
       blockedNote: "غير جاهز للنشر",
       passedNote: "اجتاز البوابات الآلية؛ ويبقى التحقق التحريري النهائي مطلوبًا.",
       evidenceVerification: "التحقق من الأدلة",
@@ -114,6 +118,7 @@
       evidenceRecord: "سجل دليل",
       sourceUnavailable: "لم يُقدَّم رابط مصدر قابل للنقل",
       officialContract: "عقد التحليل النظامي",
+      schema: "المخطط",
       authored: "العلاقات السببية المؤلَّفة",
       evidence: "علاقات الأدلة",
       structural: "المراجع البنيوية",
@@ -171,6 +176,7 @@
       evidenceRecord: "Élément de preuve",
       sourceUnavailable: "Aucun lien de source portable fourni",
       officialContract: "Contrat d’analyse canonique",
+      schema: "schéma",
       authored: "Connexions causales rédigées",
       evidence: "Connexions probatoires",
       structural: "Références structurelles",
@@ -196,6 +202,8 @@
     const locale = ["ar", "en", "fr"].includes(lang) ? lang : "en";
     const c = COPY[locale];
     const dir = locale === "ar" ? "rtl" : "ltr";
+    // A relationship reads right to left in Arabic, so its arrow points left.
+    const arrow = dir === "rtl" ? "←" : "→";
     const a = bio.sanitizePortableValue(bio.normalize(analysis));
     const score = bio.scores(a);
     const health = bio.health(a, locale);
@@ -206,7 +214,7 @@
     const canonicalJson = JSON.stringify(a).replaceAll("<", "\\u003c");
 
     const renderReference = (node) =>
-      `<a class="referenceChip" href="#ref-${safeId(node.id)}" title="${escapeHtml(graph.typeLabel(node.type))}"><span>${escapeHtml(node.label)}</span><small>[${escapeHtml(node.id)}]</small></a>`;
+      `<a class="referenceChip" href="#ref-${anchorId(node.id)}" title="${escapeHtml(graph.typeLabel(node.type))}"><span>${escapeHtml(node.label)}</span><small>[${escapeHtml(node.id)}]</small></a>`;
     const renderValue = (value) => {
       const portable = bio.sanitizePortableText(value);
       const referenceIds = text(portable)
@@ -236,7 +244,7 @@
     const renderList = (title, values) => {
       const items = arr(values).filter((value) => text(value).trim());
       return items.length
-        ? `<div class="recordList"><h4>${escapeHtml(title)}</h4><ul>${items.map((value) => `<li>${renderValue(value)}</li>`).join("")}</ul></div>`
+        ? `<div class="recordList">${title ? `<h4>${escapeHtml(title)}</h4>` : ""}<ul>${items.map((value) => `<li>${renderValue(value)}</li>`).join("")}</ul></div>`
         : "";
     };
     const renderRecord = (record, index, pillarKey) => {
@@ -245,7 +253,7 @@
         ? evidence[index - arr(a.competing_explanations).length] || null
         : null;
       const recordId = evidenceItem?.id || "";
-      return `<article class="recordCard${evidenceItem ? " evidenceCard" : ""}"${recordId ? ` id="evidence-${safeId(recordId)}" data-evidence-id="${escapeHtml(recordId)}"` : ""}>
+      return `<article class="recordCard${evidenceItem ? " evidenceCard" : ""}"${recordId ? ` id="evidence-${anchorId(recordId)}" data-evidence-id="${escapeHtml(recordId)}"` : ""}>
         <header><div>${evidenceItem ? `<span class="eyebrow">${escapeHtml(c.evidenceRecord)} · ${escapeHtml(recordId)}</span>` : ""}<h3>${renderValue(record.title || "—")}</h3></div>${evidenceItem ? sourceLink(evidenceItem.source_url) : ""}</header>
         ${record.summary ? `<p class="summary">${renderValue(record.summary)}</p>` : ""}
         ${record.meta.length ? `<div class="tags">${record.meta.map((item) => `<span>${display(item)}</span>`).join("")}</div>` : ""}
@@ -267,7 +275,7 @@
     }).join("");
 
     const conclusionGroups = bio.conclusionRecords(a, locale)
-      .map((group) => `<section class="conclusionGroup"><h3>${escapeHtml(group.label)}</h3>${renderList(group.label, group.items)}</section>`)
+      .map((group) => `<section class="conclusionGroup"><h3>${escapeHtml(group.label)}</h3>${renderList("", group.items)}</section>`)
       .join("");
     const audit = bio.SELF_AUDIT_KEYS.map((key) => {
       const value = a.self_audit[key] || "concern";
@@ -281,7 +289,7 @@
     const familyLabels = { explicit: c.authored, evidence: c.evidence, structural: c.structural };
     const relationshipGroups = ["explicit", "evidence", "structural"].map((family) => {
       const edges = graph.edges.filter((edge) => edge.family === family);
-      return `<details class="subsection" data-relationship-family="${family}"><summary><strong>${escapeHtml(familyLabels[family])}</strong><span>${edges.length}</span></summary>${edges.length ? `<ol class="edgeList">${edges.map((edge) => `<li>${renderValue(edge.source)} <span aria-hidden="true">→</span> ${renderValue(edge.target)} <span class="relation">${display(edge.relation)}</span>${edge.mechanism ? `<p>${renderValue(edge.mechanism)}</p>` : ""}</li>`).join("")}</ol>` : `<p class="empty">${escapeHtml(c.noRecords)}</p>`}</details>`;
+      return `<details class="subsection" data-relationship-family="${family}"><summary><strong>${escapeHtml(familyLabels[family])}</strong><span>${edges.length}</span></summary>${edges.length ? `<ol class="edgeList">${edges.map((edge) => `<li>${renderValue(edge.source)} <span aria-hidden="true">${arrow}</span> ${renderValue(edge.target)} <span class="relation">${display(edge.relation)}</span>${edge.mechanism ? `<p>${renderValue(edge.mechanism)}</p>` : ""}</li>`).join("")}</ol>` : `<p class="empty">${escapeHtml(c.noRecords)}</p>`}</details>`;
     }).join("");
     const temporal = graphApi.temporalProjection(a);
     const temporalLabels = { historical: c.historical, dated: c.dated, immediate: c.immediate, medium: c.medium, future: c.future };
@@ -291,7 +299,7 @@
     const atlas = `<details class="reportSection" id="relationships" data-relationship-atlas="complete"><summary><span class="sectionNumber">11</span><span class="sectionHeading"><strong>${escapeHtml(c.atlas)}</strong><small>${escapeHtml(c.atlasHint)}</small></span><span class="recordCount">${graph.edges.length}</span></summary><div class="sectionBody">${relationshipGroups}${temporalHtml}${comparisonHtml}</div></details>`;
 
     const explicitEdges = graph.edges.filter((edge) => edge.provenance === "explicit");
-    const directory = `<details class="reportSection" id="references" data-reference-directory="named"><summary><span class="sectionNumber">12</span><span class="sectionHeading"><strong>${escapeHtml(c.references)}</strong><small>${escapeHtml(c.referencesHint)}</small></span><span class="recordCount">${graph.nodes.length}</span></summary><div class="sectionBody"><div class="referenceIndex">${graph.nodes.map((node) => `<article id="ref-${safeId(node.id)}" tabindex="-1" data-reference-id="${escapeHtml(node.id)}"><span>${escapeHtml(graph.typeLabel(node.type))}</span><h3>${escapeHtml(`${node.label} [${node.id}]`)}</h3>${node.subtitle && node.subtitle !== node.label ? `<p>${escapeHtml(node.subtitle)}</p>` : ""}</article>`).join("")}</div>${explicitEdges.length ? `<section><h3>${escapeHtml(c.namedRelationships)}</h3><ol class="edgeList">${explicitEdges.map((edge) => `<li>${renderValue(edge.source)} <span aria-hidden="true">→</span> ${renderValue(edge.target)} <span class="relation">${display(edge.relation)}</span>${edge.mechanism ? `<p>${renderValue(edge.mechanism)}</p>` : ""}</li>`).join("")}</ol></section>` : ""}</div></details>`;
+    const directory = `<details class="reportSection" id="references" data-reference-directory="named"><summary><span class="sectionNumber">12</span><span class="sectionHeading"><strong>${escapeHtml(c.references)}</strong><small>${escapeHtml(c.referencesHint)}</small></span><span class="recordCount">${graph.nodes.length}</span></summary><div class="sectionBody"><div class="referenceIndex">${graph.nodes.map((node) => `<article id="ref-${anchorId(node.id)}" tabindex="-1" data-reference-id="${escapeHtml(node.id)}"><span>${escapeHtml(graph.typeLabel(node.type))}</span><h3>${escapeHtml(`${node.label} [${node.id}]`)}</h3>${node.subtitle && node.subtitle !== node.label ? `<p>${escapeHtml(bio.displayCode(locale, node.subtitle))}</p>` : ""}</article>`).join("")}</div>${explicitEdges.length ? `<section><h3>${escapeHtml(c.namedRelationships)}</h3><ol class="edgeList">${explicitEdges.map((edge) => `<li>${renderValue(edge.source)} <span aria-hidden="true">${arrow}</span> ${renderValue(edge.target)} <span class="relation">${display(edge.relation)}</span>${edge.mechanism ? `<p>${renderValue(edge.mechanism)}</p>` : ""}</li>`).join("")}</ol></section>` : ""}</div></details>`;
 
     const blockerList = renderList(c.blocking, health.missing);
     const migrationList = renderList(c.migration, a.migration?.warnings);
@@ -318,7 +326,7 @@
     const script = `(function(){const sections=[...document.querySelectorAll('.reportSection')];document.querySelector('[data-expand-all]').addEventListener('click',()=>sections.forEach(s=>s.open=true));document.querySelector('[data-collapse-all]').addEventListener('click',()=>sections.forEach(s=>s.open=false));document.querySelector('[data-print]').addEventListener('click',()=>window.print());document.addEventListener('click',event=>{const link=event.target.closest('.referenceChip');if(!link)return;const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();let parent=target.closest('details');while(parent){parent.open=true;parent=parent.parentElement.closest('details')}history.replaceState(null,'',link.getAttribute('href'));target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});const inspector=document.querySelector('.jsonInspector');inspector.addEventListener('toggle',()=>{if(!inspector.open)return;const target=document.getElementById('canonical-json-view');if(target.textContent)return;try{target.textContent=JSON.stringify(JSON.parse(document.getElementById('canonical-analysis').textContent),null,2)}catch(error){target.textContent='Unable to render canonical JSON.'}});})();`;
 
     return `<!doctype html><html lang="${locale}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="${escapeHtml(version)}"><meta name="analysis-lens" content="biopolitical"><meta name="analysis-contract" content="${escapeHtml(bio.APP_CONTRACT)}"><meta name="schema-version" content="${escapeHtml(bio.SCHEMA_VERSION)}"><title>${escapeHtml(a.subject.title || c.title)}</title><style>${css}</style></head><body data-publication-gate="${gate}"><a class="skipLink" href="#report-content">${escapeHtml(c.skip)}</a><main class="shell" id="report-content" data-analysis-lens="biopolitical" data-export-contract-lens="biopolitical" data-analysis-contract="${escapeHtml(bio.APP_CONTRACT)}" data-schema-version="${escapeHtml(bio.SCHEMA_VERSION)}" data-app-version="${escapeHtml(version)}">
-      <header class="hero"><div class="heroGrid"><div><p class="contractLine">${escapeHtml(c.officialContract)} · ${escapeHtml(bio.APP_CONTRACT)} · schema ${escapeHtml(bio.SCHEMA_VERSION)}</p><h1>${escapeHtml(a.subject.title || c.title)}</h1><p>${escapeHtml(c.title)}</p><p class="chain">${escapeHtml(c.chain)}</p></div><div class="statusPanel"><section class="metricCard gateCard"><span class="gateBadge">${escapeHtml(health.publishable ? c.passed : c.blocked)}</span><span>${escapeHtml(c.publication)}</span><small>${escapeHtml(health.publishable ? c.passedNote : c.blockedNote)}</small></section><section class="metricCard"><strong>${score.overall}%</strong><span>${escapeHtml(c.analyticalReadiness)}</span><small>${escapeHtml(c.readinessNote)}</small></section><section class="metricCard compactMetrics"><span><b>${score.analyticalCoverage}%</b> ${escapeHtml(c.analyticalCoverage)}</span><span><b>${score.provenance.sourceTraceability}%</b> ${escapeHtml(c.sourceTraceability)}</span><span><b>${score.provenance.humanReview}%</b> ${escapeHtml(c.humanReview)}</span></section></div></div></header>
+      <header class="hero"><div class="heroGrid"><div><p class="contractLine">${escapeHtml(c.officialContract)} · ${escapeHtml(bio.APP_CONTRACT)} · ${escapeHtml(c.schema)} ${escapeHtml(bio.SCHEMA_VERSION)}</p><h1>${escapeHtml(a.subject.title || c.title)}</h1><p>${escapeHtml(c.title)}</p><p class="chain">${escapeHtml(c.chain)}</p></div><div class="statusPanel"><section class="metricCard gateCard"><span class="gateBadge">${escapeHtml(health.publishable ? c.passed : c.blocked)}</span><span>${escapeHtml(c.publication)}</span><small>${escapeHtml(health.publishable ? c.passedNote : c.blockedNote)}</small></section><section class="metricCard"><strong>${score.overall}%</strong><span>${escapeHtml(c.analyticalReadiness)}</span><small>${escapeHtml(c.readinessNote)}</small></section><section class="metricCard compactMetrics"><span><b>${score.analyticalCoverage}%</b> ${escapeHtml(c.analyticalCoverage)}</span><span><b>${score.provenance.sourceTraceability}%</b> ${escapeHtml(c.sourceTraceability)}</span><span><b>${score.provenance.humanReview}%</b> ${escapeHtml(c.humanReview)}</span></section></div></div></header>
       <div class="overviewGrid"><section class="overviewCard"><h2>${escapeHtml(c.executive)}</h2><p>${renderValue(a.subject.executive_finding || "—")}</p><p>${renderValue(a.subject.context || "")}</p></section><section class="overviewCard blockers"><h2>${escapeHtml(c.reviewFirst)}</h2>${health.missing.length ? `<ol>${health.missing.slice(0,5).map((item)=>`<li>${renderValue(item)}</li>`).join("")}</ol>` : `<p>${escapeHtml(c.passedNote)}</p>`}</section></div>
       <nav class="reportToc" aria-label="${escapeHtml(c.contents)}"><h2>${escapeHtml(c.contents)}</h2><ol>${toc.map((item)=>`<li><a href="${item.href}"><span>${item.number}</span>${escapeHtml(item.label)}</a></li>`).join("")}</ol></nav>
       <div class="toolbar" aria-label="${escapeHtml(c.contents)}"><button type="button" data-expand-all>${escapeHtml(c.expand)}</button><button type="button" data-collapse-all>${escapeHtml(c.collapse)}</button><button type="button" data-print>${escapeHtml(c.print)}</button></div>

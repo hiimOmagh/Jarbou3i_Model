@@ -788,7 +788,7 @@ for (const token of [
 {
   const start = app.indexOf("function labelText(en, ar, fr) {");
   const frMap = app.slice(start, app.indexOf("  };", start));
-  for (const match of app.replace(/\r?\n\s*/g, " ").matchAll(/labelText\(\s*"([^"]+)",\s*"[^"]*"\s*\)/g)) {
+  for (const match of app.replace(/\r?\n\s*/g, " ").matchAll(/labelText\(\s*"([^"]+)",\s*"[^"]*"\s*,?\s*\)/g)) {
     if (!frMap.includes(`"${match[1]}":`) && !frMap.includes(` ${match[1]}:`)) {
       fail(`labelText "${match[1]}" has no French form`);
     }

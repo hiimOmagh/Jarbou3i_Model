@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import vm from "node:vm";
 
 const fail = (message) => {
   console.error(`Biopolitical language check failed: ${message}`);
@@ -104,6 +105,49 @@ for (const token of [
   "tokenCopy[lang]?.[token]",
 ]) {
   if (!explorer.includes(token)) fail(`localized relationship token contract missing: ${token}`);
+}
+// Every relation the graph draws, authored or derived from a reference, is
+// named in the explorer's language rather than in English.
+{
+  const sandbox = { console, URL };
+  sandbox.window = sandbox;
+  const context = vm.createContext(sandbox);
+  for (const file of [
+    "src/biopolitics-schema-validator.js",
+    "src/biopolitics-sample-i18n.js",
+    "src/biopolitics.js",
+    "src/biopolitics-graph.js",
+  ]) {
+    new vm.Script(fs.readFileSync(file, "utf8"), { filename: file }).runInContext(context);
+  }
+  const block = explorer.slice(explorer.indexOf("const tokenCopy = {"), explorer.indexOf("let container = null;"));
+  const tokenCopy = Function(`${block}; return tokenCopy;`)();
+  const schema = fs.readFileSync("src/biopolitics-schema-validator.js", "utf8");
+  const linkRelations = [...schema.match(/"relation":\{"enum":\[([^\]]*)\]/)[1].matchAll(/"([a-z_]+)"/g)].map((match) => match[1]);
+  const relations = new Set([...linkRelations, "related_to"]);
+  for (const [lang, fixture] of Object.entries(fixtures)) {
+    const graph = sandbox.Jarbou3iBiopoliticsGraph.build(sandbox.Jarbou3iBiopolitics.normalize(structuredClone(fixture)), lang);
+    for (const edge of graph.edges) relations.add(edge.relation);
+  }
+  for (const lang of ["ar", "fr"]) {
+    const missing = [...relations].filter((relation) => !tokenCopy[lang][relation]);
+    if (missing.length) fail(`${lang} relationship explorer names these relations in English: ${missing.join(", ")}`);
+  }
+  if (explorer.includes("مرجع قانوني")) fail("the Arabic explorer calls a canonical reference a legal one (مرجع قانوني)");
+
+  // Every coded value an analysis can hold is named in Arabic and French, not
+  // shown as its English code. Language and depth codes are never displayed.
+  const bioApi = sandbox.Jarbou3iBiopolitics;
+  const codes = new Set();
+  for (const match of schema.matchAll(/"enum":\[([^\]]*)\]/g)) {
+    for (const value of match[1].matchAll(/"([a-z_]+)"/g)) codes.add(value[1]);
+  }
+  for (const code of ["ar", "en", "fr", "simple", "focused", "expert", "research"]) codes.delete(code);
+  const english = (code) => code.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const unnamed = [...codes].filter(
+    (code) => bioApi.displayToken("ar", code) === english(code) || !bioApi.displayToken("fr", code),
+  );
+  if (unnamed.length) fail(`these Biopolitical codes show in English in Arabic and French: ${unnamed.join(", ")}`);
 }
 
 const app = fs.readFileSync("src/app.js", "utf8");

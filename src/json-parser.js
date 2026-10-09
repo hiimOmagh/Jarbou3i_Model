@@ -224,6 +224,24 @@
     return repairLabeledArrayEntries(conservative).source;
   }
 
+  // Whether an answer's brackets, read with no regard to quotes, close it
+  // exactly where its text ends. After a stray quote, string and non-string
+  // swap for the rest of the answer, so its quotes cannot be trusted there.
+  // Text cut off inside a string leaves a bracket open ("see note [1]") or
+  // goes on after the last closer ("art. 3} applies").
+  function closesAnswer(text) {
+    const stack = [];
+    for (let index = 0; index < text.length; index += 1) {
+      const char = text[index];
+      if (char === "{" || char === "[") stack.push(char);
+      else if (char === "}" || char === "]") {
+        if (stack.pop() !== (char === "}" ? "{" : "[")) return false;
+        if (!stack.length) return !text.slice(index + 1).trim();
+      }
+    }
+    return false;
+  }
+
   function structuralState(source) {
     const text = String(source || "");
     const stack = [];
@@ -235,11 +253,13 @@
     let marks = 0;
     // A closing fence met inside a string: the AI ended its answer there.
     let fenceEnd = -1;
+    let answerStart = -1;
     for (let index = 0; index < text.length; index += 1) {
       const char = text[index];
       if (!started) {
         if (!isJsonStart(text, index)) continue;
         started = true;
+        answerStart = index;
         stack.push(char);
         marks += 1;
         continue;
@@ -275,11 +295,14 @@
         if (!stack.length && !/^\s*,/.test(text.slice(index + 1))) break;
       }
     }
-    // A finished answer that ends on a closing bracket, but whose code block
-    // closes inside a string, has a stray quote: it is broken, not cut off.
-    const strayQuote = fenceEnd >= 0 && /[}\]]\s*$/.test(text.slice(0, fenceEnd));
+    // A code block that closes inside a string ends a finished answer with a
+    // stray quote when the answer's brackets close it there: it is broken,
+    // not cut off. Text that leaves it open was cut.
+    const strayQuote = fenceEnd >= 0 && closesAnswer(text.slice(answerStart, fenceEnd));
     return Object.freeze({
       started,
+      // "{" for an object, "[" for a list: an analysis is an object.
+      opener: started ? text[answerStart] : "",
       // After a wrong closer the depth is a guess; only an answer that ends
       // inside a string is surely cut off.
       incomplete:
@@ -309,18 +332,58 @@
           : null;
     // A copy that misses the first character leaves the answer without its
     // opening brace: '"contract":"…","subject":{…}}'. It is put back, or the
-    // first nested object would be taken for the whole answer.
-    const body = askedForm ?? raw;
-    const restored = /^"(?:[^"\\]|\\.)*"\s*:/.test(body) ? `{${body}` : null;
+    // first nested object would be taken for the whole answer. An answer with
+    // its own opening brace at the start of a line is not missing one, even
+    // after lines that look like members ("high": …), and neither is text
+    // whose first "member" holds prose ('"Biopower": the core.').
+    const restoredTexts = new Set();
+    // A brace at the start of a line that more members follow (",", "]", "}")
+    // opens a nested value of an answer written without indentation.
+    const opensAnswer = (answer) =>
+      [...answer.matchAll(/^\{/gm)].some((match) => {
+        const rest = answer.slice(match.index);
+        const value = balancedJsonSlice(rest);
+        return !value || !/^\s*[,\]}]/.test(rest.slice(value.length));
+      });
+    const restoreOpener = (text) => {
+      const answer = stripBom(text);
+      const firstMember = /^"(?:[^"\\]|\\.)*"\s*:\s*(?:["{\[\d-]|true\b|false\b|null\b)/;
+      if (!firstMember.test(answer) || opensAnswer(answer)) return null;
+      restoredTexts.add(`{${answer}`);
+      return `{${answer}`;
+    };
+    // The answer may also follow lines of prose with no quote or bracket
+    // ("Sure!", "Here is the analysis:").
+    const restored = restoreOpener(askedForm ?? raw.replace(/^(?:(?!```)[^"{}\[\]\r\n]*\r?\n)+/, ""));
     const whole = restored ?? raw;
     const openerRepair = (text) =>
-      text === restored ? [{ code: "ROOT_OPENER_RESTORED", count: 1 }] : [];
+      restoredTexts.has(text) ? [{ code: "ROOT_OPENER_RESTORED", count: 1 }] : [];
     const attempts = restored ? [restored, raw] : [raw];
     // Every fenced block, largest first: a short format example before or
-    // after the answer must not be taken for the answer.
+    // after the answer must not be taken for the answer. A block missing its
+    // opening brace is tried with it put back first.
     const fences = fenceMatches
       .map((match) => match[1])
-      .sort((a, b) => b.length - a.length);
+      .sort((a, b) => b.length - a.length)
+      .flatMap((block) => {
+        const withOpener = restoreOpener(block);
+        return withOpener ? [withOpener, block] : [block];
+      });
+    // A block that parses as it is once its opener is back comes before any
+    // repair of the reply as a whole, which would find a nested object first.
+    const parsesAsIs = (text) => {
+      try {
+        JSON.parse(text);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    attempts.splice(
+      restored ? 1 : 0,
+      0,
+      ...fences.filter((text) => restoredTexts.has(text) && parsesAsIs(text)),
+    );
     attempts.push(...fences);
     const balanced = balancedJsonSlice(whole);
     // After an early close, that slice is only the first part of the answer.
@@ -337,7 +400,7 @@
           value: JSON.parse(clean),
           recovered: clean !== raw && clean !== askedForm,
           source: clean,
-          ...(clean === restored ? { repairs: Object.freeze(openerRepair(clean)) } : {}),
+          ...(restoredTexts.has(clean) ? { repairs: Object.freeze(openerRepair(clean)) } : {}),
         };
       } catch {}
       const recovered = recoverCandidate(clean);
@@ -393,22 +456,62 @@
     // so only line breaks, fences, and the BOM are removed at the seam. A
     // trailing space can be too, when the reply is itself cut off.
     const reply = String(continuation || "").replace(/^﻿/, "");
-    const fenced = /```(?:[a-zA-Z]+(?=\s))?[ \t]*\r?\n?([\s\S]*?)(?:\r?\n?```|$)/.exec(reply);
+    // A reply that starts the answer over replaces it: appended, the answer
+    // would hold its opening twice and still read as cut off. Only one at
+    // least as long as the answer does, so nothing of the answer is lost.
+    const body = (text) => {
+      const start = text.indexOf("{");
+      return start < 0 ? "" : text.slice(start).replace(/\s+/g, "");
+    };
+    const opening = (text) => body(text).slice(0, 40);
+    const headOpening = opening(head);
+    const join = (text) => {
+      const tail = text.replace(/^[\r\n\t]+/, "").replace(/[\r\n\t]+$/, "");
+      if (
+        headOpening.length === 40 &&
+        tail.startsWith("{") &&
+        opening(tail) === headOpening &&
+        body(tail).length >= body(head).length
+      ) {
+        return tail;
+      }
+      // The whole record the answer was cut in may come again, however long.
+      const size = overlapLength(head, tail);
+      if (size < 8) return head + tail;
+      // Repetitive text ("0,0,0,0,") matches itself at any seam; trimming it
+      // could delete real content, so only a distinctive repeat is removed.
+      return isPeriodic(tail.slice(0, size)) ? head + tail : head + tail.slice(size);
+    };
     // An unfenced reply may open with a line of prose ("Here is the rest:"). A
     // fragment of the answer never has a first line ending in a colon with no
     // quote or bracket on it.
-    const unfenced = reply.replace(/^[^"{}\[\]\r\n]*\p{L}[^"{}\[\]\r\n]*:[ \t]*\r?\n/u, "");
-    const tail = (fenced ? fenced[1] : unfenced)
-      .replace(/^[\r\n\t]+/, "")
-      .replace(/[\r\n\t]+$/, "");
-    for (let size = Math.min(400, head.length, tail.length); size >= 8; size -= 1) {
-      const overlap = tail.slice(0, size);
-      if (!head.endsWith(overlap)) continue;
-      // Repetitive text ("0,0,0,0,") matches itself at any seam; trimming it
-      // could delete real content, so only a distinctive repeat is removed.
-      return isPeriodic(overlap) ? head + tail : head + tail.slice(size);
+    const leadIn = /^[^"{}\[\]\r\n]*\p{L}[^"{}\[\]\r\n]*:[ \t]*\r?\n/u;
+    const fenced = /```(?:[a-zA-Z]+(?=\s))?[ \t]*\r?\n?([\s\S]*?)(?:\r?\n?```|$)/.exec(reply);
+    const opened = join(fenced ? fenced[1] : reply.replace(leadIn, ""));
+    // An untagged first fence after text with a quote or bracket may instead
+    // close the cut-off code block ("...}}\n```\nHope this helps"), so that
+    // only the text before it belongs to the answer. That reading is kept
+    // only when it makes the answer whole and the fenced one does not: a
+    // lead-in with quotes ('Continuing from "context"') before a fenced part
+    // must not be pasted into the answer. Text ending in a colon introduces
+    // the fence ('the "context" value:'); an answer never ends that way
+    // before closing its block.
+    const firstFence = /```([a-zA-Z]*)/.exec(reply);
+    const beforeFence = firstFence ? reply.slice(0, firstFence.index) : "";
+    if (!firstFence || firstFence[1] || !/["{}\[\]]/.test(beforeFence) || /:\s*$/.test(beforeFence)) {
+      return opened;
     }
-    return head + tail;
+    const closed = join(beforeFence.replace(leadIn, ""));
+    return readsWhole(closed) && !readsWhole(opened) ? closed : opened;
+  }
+
+  function readsWhole(text) {
+    try {
+      extractJson(text);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // Whether a reply to the continue prompt carries a cut-off answer on. One
@@ -426,6 +529,21 @@
     const before = marksIn(base);
     const after = marksIn(joinContinuation(base, continuation));
     return before === null || after === null || after > before;
+  }
+
+  // The length of the longest end of `head` that `tail` starts with, in one
+  // pass: the Knuth–Morris–Pratt prefix function over tail, a separator, and
+  // head's end.
+  function overlapLength(head, tail) {
+    if (!head || !tail) return 0;
+    const text = `${tail}\u0000${head.slice(-tail.length)}`;
+    const longest = new Uint32Array(text.length);
+    for (let index = 1, length = 0; index < text.length; index += 1) {
+      while (length && text[index] !== text[length]) length = longest[length - 1];
+      if (text[index] === text[length]) length += 1;
+      longest[index] = length;
+    }
+    return longest[text.length - 1];
   }
 
   function isPeriodic(text) {

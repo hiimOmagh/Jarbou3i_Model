@@ -57,7 +57,7 @@
       noSupporting: "لا توجد أدلة مؤيدة في هذا العرض", noCounter: "لا توجد أدلة مضادة في هذا العرض",
       explicitWhy: "توضح هذه العلاقة المؤلَّفة كيف يقود السجل الأول إلى الثاني أو يشكّله.",
       supportWhy: "يُستشهد بهذا الدليل لتأييد السجل التحليلي.", counterWhy: "يُستشهد بهذا الدليل للطعن في السجل التحليلي.",
-      structuralWhy: "يربط مرجع قانوني داخل التحليل بين هذين السجلين.",
+      structuralWhy: "يربط مرجع نظامي داخل التحليل بين هذين السجلين.",
       focus: "وضع التركيز", exitFocus: "الخروج من وضع التركيز", startTour: "أرشدني", stopTour: "إنهاء الجولة",
       walkthrough: "جولة إرشادية", previous: "السابق", next: "التالي", finish: "إنهاء", of: "من",
       inspection: "المعاينة", selectedRecord: "السجل المحدد", connected: "العلاقات المفهرسة",
@@ -118,7 +118,8 @@
       supports: "Supports", supported_by: "Supported by", countered_by: "Countered by",
       references: "References", contains: "Contains", targets: "Targets", affects: "Affects",
       applies_to: "Applies to", benefits: "Benefits", burdens: "Burdens", produces: "Produces",
-      depends_on: "Depends on", high: "High", medium: "Medium", low: "Low",
+      depends_on: "Depends on", between: "Between", responds_to_classification: "Responds to classification",
+      governed_by: "Governed by", uses: "Uses", related_to: "Related to", high: "High", medium: "Medium", low: "Low",
       verified: "Verified", unverified: "Unverified", partially_verified: "Partially verified",
       explicit: "Authored", evidence: "Evidence", structural: "Structural",
     },
@@ -129,7 +130,8 @@
       supports: "يؤيد", supported_by: "مدعوم بـ", countered_by: "تعارضه أدلة",
       references: "يشير إلى", contains: "يتضمن", targets: "يستهدف", affects: "يؤثر في",
       applies_to: "ينطبق على", benefits: "يفيد", burdens: "يحمّل أعباء", produces: "ينتج",
-      depends_on: "يعتمد على", high: "عالية", medium: "متوسطة", low: "منخفضة",
+      depends_on: "يعتمد على", between: "بين", responds_to_classification: "يستجيب للتصنيف",
+      governed_by: "يحكمه", uses: "يستخدم", related_to: "مرتبط بـ", high: "عالية", medium: "متوسطة", low: "منخفضة",
       verified: "مُتحقَّق منه", unverified: "غير مُتحقَّق", partially_verified: "مُتحقَّق منه جزئيًا",
       explicit: "مؤلَّفة", evidence: "أدلة", structural: "بنيوية",
     },
@@ -140,7 +142,8 @@
       supports: "Appuie", supported_by: "Appuyé par", countered_by: "Contredit par",
       references: "Référence", contains: "Contient", targets: "Cible", affects: "Affecte",
       applies_to: "S’applique à", benefits: "Bénéficie à", burdens: "Fait peser sur", produces: "Produit",
-      depends_on: "Dépend de", high: "Élevée", medium: "Moyenne", low: "Faible",
+      depends_on: "Dépend de", between: "Entre", responds_to_classification: "Répond à la classification",
+      governed_by: "Gouverné par", uses: "Utilise", related_to: "Lié à", high: "Élevée", medium: "Moyenne", low: "Faible",
       verified: "Vérifiée", unverified: "Non vérifiée", partially_verified: "Partiellement vérifiée",
       explicit: "Rédigée", evidence: "Preuve", structural: "Structurelle",
     },
@@ -174,6 +177,8 @@
   let spatialAvailable = false;
 
   const c = () => copy[lang] || copy.en;
+  // A relationship reads right to left in Arabic, so its arrow points left.
+  const arrow = () => (lang === "ar" ? "←" : "→");
   const unique = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const option = (value, label, selected) => `<option value="${escapeHtml(value)}"${selected === value ? " selected" : ""}>${escapeHtml(label)}</option>`;
   const tokenLabel = (value) => {
@@ -382,7 +387,7 @@
         const node = graph.resolve(id);
         if (node) parts.push(nodeButton(node, { step: index + 1 }));
         const edge = path.edges[index];
-        if (edge) parts.push(`<button type="button" class="relationshipStoryConnector${state.tour && state.selectedEdgeId === edge.id ? " is-tour-target" : ""}" data-map-edge="${escapeHtml(edge.id)}" data-story-edge="${escapeHtml(edge.id)}" aria-label="${escapeHtml(`${c().why} ${tokenLabel(edge.relation)}`)}"><span aria-hidden="true">→</span><b>${escapeHtml(tokenLabel(edge.relation))}</b>${state.depth === "analyst" && edge.mechanism ? `<small>${escapeHtml(edge.mechanism)}</small>` : ""}</button>`);
+        if (edge) parts.push(`<button type="button" class="relationshipStoryConnector${state.tour && state.selectedEdgeId === edge.id ? " is-tour-target" : ""}" data-map-edge="${escapeHtml(edge.id)}" data-story-edge="${escapeHtml(edge.id)}" aria-label="${escapeHtml(`${c().why} ${tokenLabel(edge.relation)}`)}"><span aria-hidden="true">${arrow()}</span><b>${escapeHtml(tokenLabel(edge.relation))}</b>${state.depth === "analyst" && edge.mechanism ? `<small>${escapeHtml(edge.mechanism)}</small>` : ""}</button>`);
       });
       return `<section class="relationshipStoryPath" aria-label="${escapeHtml(`${c().story} ${pathIndex + 1}`)}"><header><span>${escapeHtml(c().story)} ${pathIndex + 1}</span><b>${path.nodes.length} ${escapeHtml(c().step)}</b></header><div class="relationshipStoryFlow">${parts.join("")}</div></section>`;
     }).join("");
@@ -470,7 +475,7 @@
   function edgeButton(edge) {
     const source = graph.resolve(edge.source);
     const target = graph.resolve(edge.target);
-    return `<button type="button" class="relationshipEdgeItem${state.selectedEdgeId === edge.id ? " is-selected" : ""}${state.tour && state.selectedEdgeId === edge.id ? " is-tour-target" : ""}" data-map-edge="${escapeHtml(edge.id)}"><span><b>${escapeHtml(source?.label || edge.source)}</b><i aria-hidden="true">→</i><b>${escapeHtml(target?.label || edge.target)}</b></span><small>${escapeHtml(tokenLabel(edge.relation))} · ${escapeHtml(tokenLabel(edge.family))}</small></button>`;
+    return `<button type="button" class="relationshipEdgeItem${state.selectedEdgeId === edge.id ? " is-selected" : ""}${state.tour && state.selectedEdgeId === edge.id ? " is-tour-target" : ""}" data-map-edge="${escapeHtml(edge.id)}"><span><b>${escapeHtml(source?.label || edge.source)}</b><i aria-hidden="true">${arrow()}</i><b>${escapeHtml(target?.label || edge.target)}</b></span><small>${escapeHtml(tokenLabel(edge.relation))} · ${escapeHtml(tokenLabel(edge.family))}</small></button>`;
   }
 
   function listHtml(data) {
@@ -508,7 +513,7 @@
     const target = graph.resolve(edge.target);
     const last = state.tourIndex === edges.length - 1;
     const progress = Math.round(((state.tourIndex + 1) / edges.length) * 100);
-    return `<section class="relationshipWalkthrough" aria-labelledby="relationshipWalkthroughTitle"><header><div><span>${state.tourIndex + 1} ${escapeHtml(c().of)} ${edges.length}</span><h3 id="relationshipWalkthroughTitle">${escapeHtml(c().walkthrough)}</h3></div><button type="button" data-tour-stop aria-label="${escapeHtml(c().stopTour)}">×</button></header><div class="relationshipWalkthroughProgress" role="progressbar" aria-valuemin="1" aria-valuemax="${edges.length}" aria-valuenow="${state.tourIndex + 1}"><i style="width:${progress}%"></i></div><div class="relationshipWalkthroughPath"><strong>${escapeHtml(source?.label || edge.source)}</strong><span><b>${escapeHtml(tokenLabel(edge.relation))}</b><i aria-hidden="true">→</i></span><strong>${escapeHtml(target?.label || edge.target)}</strong></div><p><b>${escapeHtml(c().why)}</b> ${escapeHtml(edgeExplanation(edge))}</p><footer><button type="button" data-tour-step="previous"${state.tourIndex === 0 ? " disabled" : ""}>${escapeHtml(c().previous)}</button><button type="button" data-tour-step="next">${escapeHtml(last ? c().finish : c().next)}</button></footer></section>`;
+    return `<section class="relationshipWalkthrough" aria-labelledby="relationshipWalkthroughTitle"><header><div><span>${state.tourIndex + 1} ${escapeHtml(c().of)} ${edges.length}</span><h3 id="relationshipWalkthroughTitle">${escapeHtml(c().walkthrough)}</h3></div><button type="button" data-tour-stop aria-label="${escapeHtml(c().stopTour)}">×</button></header><div class="relationshipWalkthroughProgress" role="progressbar" aria-valuemin="1" aria-valuemax="${edges.length}" aria-valuenow="${state.tourIndex + 1}"><i style="width:${progress}%"></i></div><div class="relationshipWalkthroughPath"><strong>${escapeHtml(source?.label || edge.source)}</strong><span><b>${escapeHtml(tokenLabel(edge.relation))}</b><i aria-hidden="true">${arrow()}</i></span><strong>${escapeHtml(target?.label || edge.target)}</strong></div><p><b>${escapeHtml(c().why)}</b> ${escapeHtml(edgeExplanation(edge))}</p><footer><button type="button" data-tour-step="previous"${state.tourIndex === 0 ? " disabled" : ""}>${escapeHtml(c().previous)}</button><button type="button" data-tour-step="next">${escapeHtml(last ? c().finish : c().next)}</button></footer></section>`;
   }
 
   function controlsHtml(data) {

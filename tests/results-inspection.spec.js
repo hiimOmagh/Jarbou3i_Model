@@ -22,6 +22,59 @@ for (const lens of ["strategic", "biopolitical"]) {
   });
 }
 
+for (const lens of ["strategic", "biopolitical"]) {
+  for (const language of ["ar", "fr"]) {
+    test(`the ${language} ${lens} record drawer names coded values in that language`, async ({ page }) => {
+      await page.goto("./");
+      await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
+      await page.locator("#analysisLang").selectOption(language);
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
+      const directory = page.locator("[data-results-inspection]");
+      await directory.locator('[data-inspection-directory-item] [data-reference-id="E1"]').click();
+      const inspector = page.locator(".referenceInspector");
+      await expect(inspector).toBeVisible();
+      // A coded value shown as its English code: lowercase words such as
+      // "high" or "primary legal policy".
+      const facts = await inspector.locator(".referenceInspectorFacts > div").evaluateAll((rows) =>
+        rows.map((row) => [row.querySelector("dt")?.textContent, row.querySelector("dd")?.textContent]),
+      );
+      const relations = await inspector.locator('[data-inspection-section="linked"] small').allTextContents();
+      const raw = [
+        ...facts.filter(([, value]) => /^[a-z][a-z_ ]*$/.test(value || "")).map(([label, value]) => `${label}: ${value}`),
+        ...relations.map((text) => text.split(" · ")[1] || "").filter((value) => /^[a-z][a-z_ ]*$/.test(value)),
+      ];
+      expect(raw).toEqual([]);
+    });
+  }
+}
+
+for (const lens of ["strategic", "biopolitical"]) {
+  for (const language of ["ar", "fr"]) {
+    test(`the ${language} ${lens} source clusters and reference summaries name coded values in that language`, async ({ page }) => {
+      await page.goto("./");
+      await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
+      await page.locator("#analysisLang").selectOption(language);
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
+      const bases = await page.locator(".sourceClusterBasis").allTextContents();
+      expect(bases.length).toBeGreaterThan(0);
+      expect(bases.filter((text) => /· (?:url|title locator|title|missing)$/.test(text.trim()))).toEqual([]);
+      if (lens !== "biopolitical") return;
+      // A record named by a coded field ("infrastructure", "litigation").
+      for (const id of ["ASYM1", "RES1"]) {
+        await page.locator(`[data-results-inspection] [data-inspection-directory-item] [data-reference-id="${id}"]`).click();
+        const summary = page.locator(".referenceInspector .referenceInspectorSummary");
+        await expect(summary).toBeVisible();
+        expect(await summary.textContent()).not.toMatch(/^[a-z][a-z_ ]*$/);
+        await page.locator(".referenceInspectorClose").click();
+      }
+    });
+  }
+}
+
 test("strategic inspection exposes canonical provenance and navigable occurrences", async ({ page }) => {
   await loadStrategicSample(page);
   await page.locator('[data-review="inspection"]').click();

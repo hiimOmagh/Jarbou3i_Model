@@ -11,7 +11,7 @@ async function startWithoutPersistedWorkspace(page) {
 async function openExplorer(
   page,
   lang = "en",
-  { expectColdStart = true } = {},
+  { expectColdStart = true, analysisLang = lang } = {},
 ) {
   await page.goto("./");
   if (expectColdStart) {
@@ -52,7 +52,7 @@ async function openExplorer(
       });
   }
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
-  await page.locator("#analysisLang").selectOption(lang);
+  await page.locator("#analysisLang").selectOption(analysisLang);
   await page.locator('[data-lens="biopolitical"]').click();
   if (expectColdStart) {
     await expect
@@ -620,6 +620,53 @@ test("map controls and nodes support keyboard-only use", async ({ page }) => {
   await expect(page.locator(".referenceInspector")).toBeVisible();
   await page.keyboard.press("Escape");
 });
+
+// For each relationship arrow on screen, whether it points from the source
+// toward the target once its glyph and any rotation are applied.
+async function arrowDirections(page) {
+  return page.evaluate(() => {
+    const forward = (arrow, source, target) => {
+      const transform = getComputedStyle(arrow).transform;
+      const matrix = transform === "none" ? new DOMMatrix() : new DOMMatrix(transform);
+      const glyph = { "→": 1, "←": -1 }[arrow.textContent.trim()] || 0;
+      const from = source.getBoundingClientRect();
+      const to = target.getBoundingClientRect();
+      const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+      const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+      return (dx * matrix.a + dy * matrix.b) * glyph > 0;
+    };
+    const found = [];
+    for (const arrow of document.querySelectorAll(".relationshipStoryConnector > span")) {
+      const connector = arrow.parentElement;
+      found.push(["story", forward(arrow, connector.previousElementSibling, connector.nextElementSibling)]);
+    }
+    for (const arrow of document.querySelectorAll(".relationshipEdgeItem i, .relationshipWalkthroughPath i")) {
+      const row = arrow.closest(".relationshipEdgeItem > span, .relationshipWalkthroughPath");
+      const [source, , target] = row.children;
+      found.push([row.matches(".relationshipWalkthroughPath") ? "walkthrough" : "list", forward(arrow, source, target)]);
+    }
+    return found;
+  });
+}
+
+// Also in Arabic between records with English names, which the
+// right-to-left layout would otherwise read left to right.
+for (const [lang, analysisLang, names] of [["ar", "ar", ""], ["en", "en", ""], ["ar", "en", " between English names"]]) {
+  for (const [size, viewport] of [["wide", { width: 1280, height: 900 }], ["phone", { width: 390, height: 844 }]]) {
+    test(`${lang} ${size} relationship arrows point from the source to the target${names}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await openExplorer(page, lang, { analysisLang });
+      await page.locator('[data-map-view="list"]').click();
+      const listed = await arrowDirections(page);
+      await page.locator('[data-map-view="map"]').click();
+      await page.locator("[data-tour-toggle]").click();
+      await expect(page.locator(".relationshipWalkthrough")).toBeVisible();
+      const arrows = [...listed, ...(await arrowDirections(page))];
+      expect([...new Set(arrows.map(([kind]) => kind))].sort()).toEqual(["list", "story", "walkthrough"]);
+      expect(arrows.filter(([, forward]) => !forward)).toEqual([]);
+    });
+  }
+}
 
 test("Arabic mobile explorer defaults to a labelled list without page overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

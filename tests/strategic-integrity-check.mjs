@@ -79,6 +79,14 @@ for (const [name, mutate] of Object.entries({
   assert.equal(result.ok, true, `Strategic drift was rejected: ${name} ${JSON.stringify(result.errors?.slice(0, 2))}`);
 }
 assert.equal(strategicDrift((d) => { d.schema_version = "2.0"; }).ok, false, "an unsupported major version must stay refused");
+// Links written like a section ({"items": [...]}) keep every link.
+{
+  assert.ok(fixture.links.length > 1, "the fixture needs links");
+  const result = strategicDrift((d) => { d.links = { items: d.links }; });
+  assert.equal(result.ok, true, `links under items were rejected: ${JSON.stringify(result.errors?.slice(0, 2))}`);
+  assert.equal(result.analysis.links.length, fixture.links.length, "links under items became one link");
+  assert.equal(result.analysis.links[0].from, fixture.links[0].from, "links under items were altered");
+}
 const hiddenAssumptions = structuredClone(fixture);
 hiddenAssumptions.assumptions = Object.fromEntries(
   [{ statement: "Budget pressure persists", basis: "context" }].map((item, index) => [`AS${index + 1}`, item]),

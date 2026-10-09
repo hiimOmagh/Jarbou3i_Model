@@ -79,7 +79,7 @@ async function workspaceDatabaseOperation(page, operation) {
             || (clearAll && database.objectStoreNames.contains(recoveryStore))
             ? [workspaceStore, recoveryStore]
             : [workspaceStore];
-          const mode = operationName.startsWith("clear-") ? "readwrite" : "readonly";
+          const mode = operationName.startsWith("clear-") || operationName === "damage-first-workspace" ? "readwrite" : "readonly";
           let transaction;
           try {
             transaction = database.transaction(stores, mode);
@@ -110,8 +110,22 @@ async function workspaceDatabaseOperation(page, operation) {
             request.onerror = () =>
               fail(`IndexedDB ${operationName} request failed`, request.error);
           } else if (operationName === "intake-draft") {
-            const request = transaction.objectStore(recoveryStore).get("intake-draft");
+            // Each tab keeps its own, under the ID it holds for the session.
+            const tab = sessionStorage.getItem("jarbou3i-tab");
+            const request = transaction.objectStore(recoveryStore).get(tab ? `intake-draft:${tab}` : "intake-draft");
             request.onsuccess = () => { result = request.result ?? null; };
+            request.onerror = () =>
+              fail(`IndexedDB ${operationName} request failed`, request.error);
+          } else if (operationName === "damage-first-workspace") {
+            // The stored draft no longer matches its checksum, as after damage.
+            const request = store.getAll();
+            request.onsuccess = () => {
+              const record = request.result[0];
+              if (!record) return;
+              record.working_draft.payload_checksum = "damaged";
+              store.put(record);
+              result = true;
+            };
             request.onerror = () =>
               fail(`IndexedDB ${operationName} request failed`, request.error);
           } else if (operationName === "first-workspace") {
@@ -150,6 +164,10 @@ export function countWorkspaceRecords(page) {
 // The analysis being prepared, as kept for a reload (null when there is none).
 export function readIntakeDraft(page) {
   return workspaceDatabaseOperation(page, "intake-draft");
+}
+
+export function damageFirstWorkspace(page) {
+  return workspaceDatabaseOperation(page, "damage-first-workspace");
 }
 
 export function readFirstWorkspace(page) {

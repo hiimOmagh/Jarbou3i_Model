@@ -169,7 +169,7 @@
           "Resistance, counter-conduct, feasible alternatives, calibrated conclusion, and self-audit.",
       },
       formula:
-        "Analytical coverage uses the six weighted dimensions below. Decision readiness cannot exceed the epistemic ceiling set by source traceability and independent human review.",
+        "Analytical coverage uses six weighted dimensions. Decision readiness cannot exceed the epistemic ceiling set by source traceability and independent human review.",
       nav: {
         overview: "Overview",
         pillars: "Protocol",
@@ -280,7 +280,7 @@
           "المقاومة والسلوك المضاد والبدائل الممكنة والخلاصة المُعايرة والمراجعة الذاتية.",
       },
       formula:
-        "تستخدم التغطية التحليلية الأبعاد الستة الموزونة أدناه. ولا يمكن أن تتجاوز جاهزية القرار السقف المعرفي الذي تحدده قابلية تتبع المصادر والمراجعة البشرية المستقلة.",
+        "تستخدم التغطية التحليلية ستة أبعاد موزونة. ولا يمكن أن تتجاوز جاهزية القرار السقف المعرفي الذي تحدده قابلية تتبع المصادر والمراجعة البشرية المستقلة.",
       nav: {
         overview: "الخلاصة",
         pillars: "البروتوكول",
@@ -392,7 +392,7 @@
           "Résistance, contre-conduite, alternatives faisables, conclusion calibrée et auto-audit.",
       },
       formula:
-        "La couverture analytique utilise les six dimensions pondérées ci-dessous. La préparation à la décision ne peut dépasser le plafond épistémique fixé par la traçabilité des sources et la revue humaine indépendante.",
+        "La couverture analytique utilise six dimensions pondérées. La préparation à la décision ne peut dépasser le plafond épistémique fixé par la traçabilité des sources et la revue humaine indépendante.",
       nav: {
         overview: "Vue d’ensemble",
         pillars: "Protocole",
@@ -649,6 +649,28 @@
     uses: ["يستخدم", "Utilise"],
     affects: ["يؤثر في", "Affecte"],
     related_to: ["مرتبط بـ", "Lié à"],
+    other: ["أخرى", "Autre"],
+    class: ["الطبقة الاجتماعية", "Classe sociale"],
+    race: ["العِرق", "Race"],
+    gender: ["النوع الاجتماعي", "Genre"],
+    disability: ["الإعاقة", "Handicap"],
+    age: ["العمر", "Âge"],
+    citizenship: ["المواطنة", "Citoyenneté"],
+    valid: ["صحيحة", "Valide"],
+    invalid: ["غير صحيحة", "Invalide"],
+    replicated: ["تكرّرت نتائجها", "Répliqué"],
+    partly_replicated: ["تكرّرت نتائجها جزئيًا", "Partiellement répliqué"],
+    not_replicated: ["لم تتكرّر نتائجها", "Non répliqué"],
+    refusal: ["الرفض", "Refus"],
+    protest: ["الاحتجاج", "Protestation"],
+    evasion: ["التملّص", "Contournement"],
+    mutual_aid: ["العون المتبادل", "Entraide"],
+    counterknowledge: ["المعرفة المضادة", "Contre-savoir"],
+    litigation: ["التقاضي", "Contentieux"],
+    unionization: ["التنظيم النقابي", "Syndicalisation"],
+    artistic_intervention: ["التدخل الفني", "Intervention artistique"],
+    technological_adaptation: ["التكيّف التقني", "Adaptation technologique"],
+    alternative_institution: ["مؤسسة بديلة", "Institution alternative"],
   };
 
   const AUDIT_LABELS = {
@@ -735,9 +757,11 @@
   }
 
   function humanizeToken(value) {
+    // Each word's first letter, also when it is accented ("état"), and not
+    // a letter after an accented one or an apostrophe.
     return str(value)
       .replaceAll("_", " ")
-      .replace(/\b\w/g, (character) => character.toUpperCase());
+      .replace(/(?<![\p{L}\p{N}'’])\p{L}/gu, (character) => character.toUpperCase());
   }
 
   function displayToken(lang, value) {
@@ -748,6 +772,15 @@
     if (lang === "fr" && translated) return translated[1];
     return humanizeToken(token);
   }
+
+  // A value the contract codes ("institutional", true) reads in the language;
+  // anything else is the AI's own text and stays as written.
+  function displayCode(lang, value) {
+    if (typeof value === "boolean") return displayToken(lang, value ? "yes" : "no");
+    return TOKEN_LABELS[str(value).trim()] ? displayToken(lang, value) : str(value);
+  }
+  const displayCodes = (lang, values) =>
+    Array.isArray(values) ? values.map((value) => displayCode(lang, value)) : displayCode(lang, values);
 
   function auditLabel(lang, key) {
     const translated = AUDIT_LABELS[key];
@@ -1839,8 +1872,9 @@
       skeleton.evidence.items = [evidence];
       skeleton.calibrated_conclusion.strongly_supported = [copy.noStrong];
       skeleton.calibrated_conclusion.overall_confidence = "low";
-      skeleton.self_audit.statistics_quotations_verified = "concern";
     }
+    // Rule 10: the AI's own output is never a documented verification.
+    skeleton.self_audit.statistics_quotations_verified = "concern";
     return JSON.stringify(skeleton);
   }
 
@@ -1852,6 +1886,13 @@
     evidenceAccess = "web",
   }) {
     const interchange = root.Jarbou3iAiInterchange;
+    // The depth as the interface names it, not its code.
+    const modeName =
+      {
+        ar: { simple: "مركّز", focused: "مركّز", expert: "خبير", research: "بحثي" },
+        fr: { simple: "Ciblé", focused: "Ciblé", expert: "Expert", research: "Recherche" },
+        en: { simple: "Focused", focused: "Focused", expert: "Expert", research: "Research" },
+      }[lang]?.[mode] || mode;
     const schema = interchange
       ? interchange.buildTemplate(lang, mode, evidenceAccess)
       : buildSchemaTemplate(lang, mode, evidenceAccess);
@@ -1877,7 +1918,7 @@
             : "عمق مركّز للمساعدات ذات حدود الإخراج الصغيرة: سجل واحد لكل مجموعة مطلوبة ما لم يكن سجل ثانٍ ضروريًا، وجملة واحدة قصيرة لكل قيمة نصية، وعنصر دليل واحد لكل مصدر متميز. أكمل مع ذلك كل الاختبارات والمجموعات الثابتة الإلزامية. إذا بلغت حد الإخراج فتوقف ببساطة دون اختصار أو علامات حذف؛ ستطلب منصة العمل المتابعة.";
       return `أنت نموذج تحليل حيوسياسي صارم تحكمه خريطة تدريب جربوعي 2.1. حلّل كيف تصبح وظائف الإنسان والأجساد والسكان والعلاقات والبيئات وأنظمة المعنى موضوعًا للحكم والمعرفة والتحسين والتسليع والانضباط والحماية والإقصاء والمقاومة.
 
-لغة الإخراج الإلزامية: العربية. اكتب جميع القيم التحليلية المقروءة بالعربية؛ أبقِ مفاتيح JSON والمعرّفات وقيم التعداد النظامية كما يحددها المخطط.
+لغة الإخراج الإلزامية: العربية. اكتب جميع القيم التحليلية المقروءة بالعربية؛ أبقِ مفاتيح JSON والمعرّفات وقيم التعداد النظامية كما يحددها المخطط، وأبقِ كل source_title كما يرد في المصدر نفسه دون ترجمة.
 
 <مادة_موضوع_غير_موثوقة>
 ${untrustedTopic}
@@ -1893,20 +1934,20 @@ ${evidenceRule}
 1. حوّل الادعاء المشحون إلى سؤال قابل للاختبار وعرّف المصطلحات المتنازع عليها.
 2. حدّد الوظيفة الإنسانية أولًا، ثم افصل الفاعلين الحاكمين عن السكان المتأثرين.
 3. حلّل التاريخ والقانون والمقارنة الدولية والملكية والعمل والربح والرعاية غير المدفوعة والبنى التحتية والبيانات والخوارزميات وأنظمة الحقيقة عندما تكون ذات صلة.
-4. لا تفترض الهيمنة أو الاستحواذ؛ صنّف التدخل وفق الأدلة واذكر المنافع المشروعة والأدلة المضادة.
+4. لا تفترض الهيمنة أو الاستحواذ؛ صنّف التدخلات من الحماية إلى نزع الملكية وفق الأدلة واذكر المنافع المشروعة والأدلة المضادة.
 5. مثّل معايير الاستحواذ الثلاثة عشر كلها مرة واحدة بالضبط، بما فيها غير المنطبق، مع سبب لكل حكم.
 6. مثّل عائلات التفسير التسع كلها مرة واحدة بالضبط، وحدد الصلة والحالة الإثباتية دون اختلاق ادعاء سببي.
 7. قيّم مستويات الاستحواذ الخمسة: الجسد والعقل والعلاقة والسكان والبيئة.
 8. افحص التوزيع والموافقة والرفض والخروج والطعن والمساءلة والنتائج المقصودة أو المتسامح معها أو المخفية أو غير المتوقعة.
 9. افصل الحقيقة المتحققة والتقدير والادعاء المؤسسي والتفسير والسردية والتصنيف القانوني والحكم الأخلاقي والاستنتاج والتخمين.
-10. سجّل بيانات تصميم الدليل، ومحدد المصدر، وملاءمة المصدر للادعاء، وحالة التحقق. لا تختلق مصدرًا أو إحصاءً أو اقتباسًا أو رقم صفحة. لا تضع في source_url إلا رابطًا مطلقًا يبدأ بـ https:// أو http://؛ وعند غيابه استخدم سلسلة فارغة "" وضع DOI أو الصفحة أو القسم في source_locator. بما أن مخرجاتك ليست مراجعة بشرية موثقة، عيّن دائمًا verification_status إلى unverified، واترك verified_by وverification_date فارغين. لا تعامل ناشر المصدر أو مؤلفه بصفته مراجعًا مستقلًا. تُسجَّل الموافقة البشرية لاحقًا داخل أداة العمل. يجب أن تكون statistics_quotations_verified مساوية concern. لا تُدرج رموز استشهاد خاصة بواجهة المساعد مثل cite أو filecite أو معرّفات turn داخل أي قيمة؛ استخدم معرّفات الأدلة E1 وE2 والروابط النظامية فقط. اعتبر نصوص أمثلة المخطط تعليمات للنوع ولا تنسخها حرفيًا.
+10. سجّل بيانات تصميم الدليل، ومحدد المصدر، وملاءمة المصدر للادعاء، وحالة التحقق. لا تختلق مصدرًا أو إحصاءً أو اقتباسًا أو رقم صفحة. لا تضع في source_url إلا رابطًا مطلقًا يبدأ بـ https:// أو http://؛ وعند غيابه استخدم سلسلة فارغة "" وضع DOI أو الصفحة أو القسم أو معرّف مجموعة البيانات أو مرجع الأرشيف في source_locator. بما أن مخرجاتك ليست مراجعة بشرية موثقة، عيّن دائمًا verification_status إلى unverified، واترك verified_by وverification_date فارغين. لا تعامل ناشر المصدر أو مؤلفه بصفته مراجعًا مستقلًا. تُسجَّل الموافقة البشرية لاحقًا داخل أداة العمل. يجب أن تكون statistics_quotations_verified مساوية concern. لا تُدرج رموز استشهاد خاصة بواجهة المساعد مثل cite أو filecite أو معرّفات turn داخل أي قيمة؛ استخدم معرّفات الأدلة E1 وE2 والروابط النظامية فقط. اعتبر نصوص أمثلة المخطط تعليمات للنوع ولا تنسخها حرفيًا.
 11. لا تقدّم إرشادات تشغيلية للقمع أو التلاعب الجماهيري أو التنميط التمييزي أو تحسين النسل أو التدخل الطبي القسري أو استهداف الفئات الهشة أو التحكم السلوكي السري أو العقاب الجماعي أو المراقبة القسرية.
 12. لا تستنتج سمات فردية حساسة من بدائل ضعيفة، ولا تحوّل نتائج جماعية تلقائيًا إلى تنبؤ فردي.
 13. لا تصنع الخوف، ولا تجرد جماعة من إنسانيتها، ولا تسهّل التحرش أو العقاب الجماعي، وقدّم الادعاءات المتنازع عليها بوصفها ادعاءات لا حقائق.
 14. قدّم مقاومة وفاعلية وبدائل واقعية أقل ضررًا وخلاصة مُعايرة وشروطًا قد تغيّرها.
 15. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
 
-العمق: ${mode}. ${depth}
+العمق: ${modeName}. ${depth}
 
 أعد فقط عقد التبادل المضغوط التالي. ستضيف الأداة البيانات الوصفية محليًا ثم تحوّله إلى العقد النظامي؛ املأ كل مجموعة ذات مفاتيح يعرضها:
 ${schema}${interchangeGuide}`;
@@ -1928,7 +1969,7 @@ ${schema}${interchangeGuide}`;
             : "Profondeur ciblée pour les assistants à faible limite de sortie : un seul élément par collection requise sauf si un second est indispensable, une phrase courte par valeur textuelle et un élément de preuve par source distincte. Complétez néanmoins chaque test et ensemble fixe obligatoire. Si vous atteignez votre limite de sortie, arrêtez-vous simplement, sans abréger ni utiliser de points de suspension : l’atelier demandera la suite.";
       return `Vous êtes un modèle d’analyse biopolitique rigoureux régi par la Carte d’entraînement Jarbou3i 2.1. Analysez comment fonctions humaines, corps, populations, relations, environnements et systèmes de sens deviennent objets de gouvernement, savoir, optimisation, marchandisation, discipline, protection, exclusion et résistance.
 
-Langue de sortie obligatoire : français. Rédigez en français toutes les valeurs analytiques lisibles ; conservez les clés JSON, identifiants et codes d’énumération prescrits par le schéma.
+Langue de sortie obligatoire : français. Rédigez en français toutes les valeurs analytiques lisibles ; conservez les clés JSON, identifiants et codes d’énumération prescrits par le schéma, et gardez chaque source_title tel que la source le donne, sans le traduire.
 
 <SUJET_NON_FIABLE>
 ${untrustedTopic}
@@ -1944,20 +1985,20 @@ ${evidenceRule}
 1. Reformulez toute affirmation chargée en question testable et définissez les termes contestés.
 2. Identifiez d’abord la fonction humaine, puis séparez les acteurs gouvernants des populations affectées.
 3. Analysez histoire, droit, comparaison internationale, propriété, travail, profit, soin non rémunéré, infrastructures, données, algorithmes et régimes de vérité lorsque pertinent.
-4. Ne présumez ni domination ni capture ; classez l’intervention selon les preuves et exposez bénéfices légitimes et contre-preuves.
+4. Ne présumez ni domination ni capture ; classez les interventions, de la protection à l’expropriation, selon les preuves et exposez bénéfices légitimes et contre-preuves.
 5. Représentez exactement une fois chacun des treize critères de capture, y compris « non applicable », avec une justification.
 6. Représentez exactement une fois chacune des neuf familles explicatives ; indiquez pertinence et statut probatoire sans inventer de causalité.
 7. Évaluez les cinq niveaux de capture : corps, esprit, relation, population et environnement.
 8. Examinez distribution, consentement, refus, sortie, contestabilité, responsabilité et caractère voulu, toléré, dissimulé ou imprévu des résultats.
 9. Séparez fait vérifié, estimation, affirmation institutionnelle, interprétation, récit, classification juridique, jugement éthique, inférence et spéculation.
-10. Renseignez conception probatoire, localisateur, adéquation source-affirmation et état de vérification. N’inventez jamais source, statistique, citation ou numéro de page. source_url doit être uniquement une URL absolue commençant par https:// ou http:// ; sinon utilisez la chaîne vide "" et placez DOI, page ou section dans source_locator. Votre sortie n’étant pas une vérification humaine documentée, fixez toujours verification_status à unverified et laissez verified_by et verification_date vides. Ne traitez jamais l’éditeur ou l’auteur de la source comme vérificateur indépendant. L’approbation humaine sera enregistrée ultérieurement dans l’outil. statistics_quotations_verified doit valoir concern. N’insérez aucun marqueur de citation propre à l’interface de l’assistant, notamment cite, filecite ou un identifiant turn ; utilisez uniquement les identifiants E1, E2 et les URL canoniques. Les textes d’exemple du schéma décrivent les types et ne doivent jamais être copiés littéralement.
+10. Renseignez conception probatoire, localisateur, adéquation source-affirmation et état de vérification. N’inventez jamais source, statistique, citation ou numéro de page. source_url doit être uniquement une URL absolue commençant par https:// ou http:// ; sinon utilisez la chaîne vide "" et placez DOI, page, section, identifiant de jeu de données ou référence d’archive dans source_locator. Votre sortie n’étant pas une vérification humaine documentée, fixez toujours verification_status à unverified et laissez verified_by et verification_date vides. Ne traitez jamais l’éditeur ou l’auteur de la source comme vérificateur indépendant. L’approbation humaine sera enregistrée ultérieurement dans l’outil. statistics_quotations_verified doit valoir concern. N’insérez aucun marqueur de citation propre à l’interface de l’assistant, notamment cite, filecite ou un identifiant turn ; utilisez uniquement les identifiants E1, E2 et les URL canoniques. Les textes d’exemple du schéma décrivent les types et ne doivent jamais être copiés littéralement.
 11. Ne fournissez aucune aide opérationnelle pour la répression, la manipulation de masse, le profilage discriminatoire, l’eugénisme, l’intervention médicale forcée, le ciblage de groupes vulnérables, le contrôle comportemental clandestin, la punition collective ou la surveillance coercitive.
 12. N’inférez pas de traits individuels sensibles à partir de proxys faibles et ne transformez pas automatiquement des résultats de groupe en prédictions individuelles.
 13. Ne fabriquez pas la peur, ne déshumanisez pas, ne facilitez ni harcèlement ni punition collective, et présentez les allégations contestées comme telles.
 14. Incluez résistance, agentivité, alternatives réalistes moins nocives, conclusion calibrée et éléments susceptibles de la modifier.
 15. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
 
-Profondeur : ${mode}. ${depth}
+Profondeur : ${modeName}. ${depth}
 
 Retournez uniquement le contrat d’échange compact suivant. L’outil ajoutera localement les métadonnées, puis le compilera vers le contrat canonique ; remplissez chaque ensemble à clés qu’il présente :
 ${schema}${interchangeGuide}`;
@@ -1978,7 +2019,7 @@ ${schema}${interchangeGuide}`;
           : "Focused depth for assistants with small output limits: one record per required collection unless a second is essential, one short sentence per text value, and one evidence record per distinct source. Still complete every mandatory assessment and fixed set. If you reach your output limit, simply stop without abbreviating or using ellipses; the workbench will ask you to continue.";
     return `You are a rigorous biopolitical analytical model governed by the Jarbou3i Training Map 2.1. Analyze how human functions, bodies, populations, relationships, environments, and meaning systems become objects of governance, knowledge, optimization, commercialization, discipline, protection, exclusion, and resistance.
 
-Mandatory output language: English. Write every human-readable analytical value in English; preserve only JSON keys, IDs, and schema enum codes in their canonical form.
+Mandatory output language: English. Write every human-readable analytical value in English; preserve JSON keys, IDs, and schema enum codes in their canonical form, and keep each source_title exactly as the source gives it, without translating it.
 
 <UNTRUSTED_TOPIC_MATERIAL>
 ${untrustedTopic}
@@ -2007,7 +2048,7 @@ ${evidenceRule}
 14. Include agency, resistance, feasible lower-harm alternatives, a calibrated conclusion, and evidence that would change it.
 15. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
 
-Depth: ${mode}. ${depth}
+Depth: ${modeName}. ${depth}
 
 Return only the compact interchange contract below. The workbench adds the metadata locally, then compiles it into the canonical contract; fill every keyed set it shows:
 ${schema}${interchangeGuide}`;
@@ -3362,7 +3403,7 @@ ${schema}${interchangeGuide}`;
                   "غائب عن السجل",
                   "Absent du dossier",
                 ),
-                item.missing_from_record,
+                displayCode(lang, item.missing_from_record),
               ),
             ],
             [
@@ -3386,7 +3427,7 @@ ${schema}${interchangeGuide}`;
             item.name,
             item.mandate,
             ["institution", item.confidence],
-            [pair(labelFor(lang, "Role", "الدور", "Rôle"), item.role)],
+            [pair(labelFor(lang, "Role", "الدور", "Rôle"), displayCode(lang, item.role))],
             [
               list(
                 labelFor(lang, "Accountability", "المساءلة", "Responsabilité"),
@@ -3397,7 +3438,7 @@ ${schema}${interchangeGuide}`;
         ),
         ...a.power_map.power_asymmetries.map((item) =>
           record(
-            item.resource,
+            displayCode(lang, item.resource),
             item.effect,
             ["power_asymmetry", item.confidence],
             [pair(labelFor(lang, "Between", "بين", "Entre"), item.between)],
@@ -3425,7 +3466,7 @@ ${schema}${interchangeGuide}`;
                 item.oversight,
               ),
             ],
-            [list(labelFor(lang, "Scale", "المقياس", "Échelle"), item.scale)],
+            [list(labelFor(lang, "Scale", "المقياس", "Échelle"), displayCodes(lang, item.scale))],
           ),
         ),
         ...a.mechanisms.infrastructures.map((item) =>
@@ -3521,7 +3562,7 @@ ${schema}${interchangeGuide}`;
         ),
         ...a.mechanisms.power_modes.map((item) =>
           record(
-            item.mode,
+            displayCode(lang, item.mode),
             item.mechanism,
             ["power_mode", item.confidence],
             [
@@ -3539,7 +3580,9 @@ ${schema}${interchangeGuide}`;
         ),
         ...a.links.map((item) =>
           record(
-            `${item.from} → ${item.to}`,
+            // Both ends read in the analysis's direction; the marks keep IDs
+            // that name no record, left as Latin text, right to left.
+            `${item.from} ${lang === "ar" ? "\u200F←\u200F" : "→"} ${item.to}`,
             item.mechanism,
             ["causal_link", item.relation, item.confidence],
           ),
@@ -3942,7 +3985,7 @@ ${schema}${interchangeGuide}`;
               ),
               pair(
                 labelFor(lang, "Scale", "المقياس", "Échelle"),
-                item.scale,
+                displayCodes(lang, item.scale),
               ),
               pair(
                 labelFor(
@@ -4006,14 +4049,14 @@ ${schema}${interchangeGuide}`;
                   "محاور اللامساواة",
                   "Axes d’inégalité",
                 ),
-                item.axes,
+                displayCodes(lang, item.axes),
               ),
             ],
           ),
         ),
         ...a.distribution.inequality_dimensions.map((item) =>
           record(
-            item.axis,
+            displayCode(lang, item.axis),
             item.mechanism,
             ["inequality", item.confidence],
             [
@@ -4075,7 +4118,7 @@ ${schema}${interchangeGuide}`;
           [
             list(
               labelFor(lang, "Scales", "المقاييس", "Échelles"),
-              a.scale_time.scales,
+              displayCodes(lang, a.scale_time.scales),
             ),
             list(
               labelFor(
@@ -4311,7 +4354,7 @@ ${schema}${interchangeGuide}`;
       return [
         ...a.resistance_agency.items.map((item) =>
           record(
-            item.form,
+            displayCode(lang, item.form),
             item.mechanism,
             ["resistance", item.confidence],
             [
@@ -4877,6 +4920,7 @@ ${schema}${interchangeGuide}`;
     SOURCE_TIERS,
     ui,
     displayToken,
+    displayCode,
     auditLabel,
     sanitizePortableText,
     sanitizePortableValue,

@@ -121,6 +121,7 @@ export function createIndexedDbRecoveryBackend({
   return Object.freeze({
     kind: "indexeddb",
     async get(workspaceId) { return transaction("readonly", (store) => requestResult(store.get(workspaceId))); },
+    async keys() { return transaction("readonly", (store) => requestResult(store.getAllKeys())); },
     async put(record) { return transaction("readwrite", async (store) => { await requestResult(store.put(clone(record))); return clone(record); }); },
     async delete(workspaceId) { return transaction("readwrite", async (store) => { await requestResult(store.delete(workspaceId)); return true; }); },
     async clear() { return transaction("readwrite", async (store) => { await requestResult(store.clear()); return true; }); },
@@ -133,6 +134,7 @@ export function createMemoryRecoveryBackend(initial = []) {
   return Object.freeze({
     kind: "memory",
     async get(workspaceId) { return records.has(workspaceId) ? clone(records.get(workspaceId)) : undefined; },
+    async keys() { return [...records.keys()]; },
     async put(record) { records.set(record.workspace_id, clone(record)); return clone(record); },
     async delete(workspaceId) { return records.delete(workspaceId); },
     async clear() { records.clear(); return true; },

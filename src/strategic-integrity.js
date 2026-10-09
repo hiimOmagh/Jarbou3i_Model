@@ -141,6 +141,13 @@ const isRecord = (value) => Boolean(value) && typeof value === "object" && !Arra
 export function reshapeStrategicSections(value) {
   const repairs = [];
   const quarantine = [];
+  // Links are a bare list; written like a section ({"items": [...]}), the
+  // list is taken out of it.
+  const links = value?.links;
+  if (isRecord(links) && Object.keys(links).length === 1 && Array.isArray(links.items)) {
+    value.links = links.items;
+    repairs.push({ code: "ITEMS_TO_LIST", path: "/links", count: links.items.length });
+  }
   for (const key of SECTIONS) {
     let section = value?.[key];
     if (Array.isArray(section)) {
@@ -176,6 +183,35 @@ export function reshapeStrategicSections(value) {
   return { repairs, quarantine };
 }
 
+// Schema errors split into completion gaps a draft may keep and errors that
+// block it: anything other than a missing or empty value, or a missing identity.
+function draftSchemaIssues(validator, value) {
+  validator(value);
+  const schemaErrors = schemaIssues(validator.errors).filter(
+    (error) => !["anyOf", "oneOf", "allOf", "if", "not"].includes(error.keyword),
+  );
+  const blocking = schemaErrors.filter(
+    (error) => !COMPLETION_KEYWORDS.has(error.keyword) || IDENTITY_PATH.test(
+      error.keyword === "required"
+        ? `${error.path.replace(/\/$/, "")}/${error.params?.missingProperty}`
+        : error.path,
+    ),
+  );
+  return { schemaErrors, blocking };
+}
+
+// Checks an edited Strategic analysis as it stands, without salvage: it may be
+// saved as a draft while its only problems are completion gaps.
+export function validateStrategicDraft(raw) {
+  const result = validateStrategicAnalysis(raw);
+  const validator = globalThis.Jarbou3iStrategicSchemaValidators?.canonical;
+  if (result.ok || typeof validator !== "function") return result;
+  const { schemaErrors, blocking } = draftSchemaIssues(validator, raw);
+  if (blocking.length) return { ...result, errors: blocking };
+  const semantic = semanticValidate(raw);
+  return { ok: true, canonical: false, state: "strategic_draft", analysis: structuredClone(raw), errors: [], warnings: [...schemaErrors, ...semantic.errors, ...semantic.warnings] };
+}
+
 export function salvageStrategicAnalysis(raw) {
   const value = structuredClone(raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {});
   const { repairs, quarantine } = reshapeStrategicSections(value);
@@ -208,17 +244,7 @@ export function salvageStrategicAnalysis(raw) {
   const result = validateStrategicAnalysis(value);
   if (result.ok) return { ...result, repairs, quarantine, diagnostics: [] };
   if (typeof validator !== "function") return { ...result, repairs, quarantine, diagnostics: [] };
-  validator(value);
-  const schemaErrors = schemaIssues(validator.errors).filter(
-    (error) => !["anyOf", "oneOf", "allOf", "if", "not"].includes(error.keyword),
-  );
-  const blocking = schemaErrors.filter(
-    (error) => !COMPLETION_KEYWORDS.has(error.keyword) || IDENTITY_PATH.test(
-      error.keyword === "required"
-        ? `${error.path.replace(/\/$/, "")}/${error.params?.missingProperty}`
-        : error.path,
-    ),
-  );
+  const { schemaErrors, blocking } = draftSchemaIssues(validator, value);
   if (blocking.length) return { ...result, errors: blocking, repairs, quarantine, diagnostics: [] };
   const semantic = semanticValidate(value);
   const diagnostics = [...schemaErrors, ...semantic.errors];

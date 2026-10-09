@@ -101,6 +101,38 @@ for (const [name, continuation] of [
   }
 }
 
+// A continuation that repeats the whole record it was cut in, however long,
+// adds it once; one that starts the answer over replaces it, whether the
+// restart is finished or cut off again.
+{
+  const actors = Array.from({ length: 6 }, (_, index) => ({
+    id: `A${index + 1}`,
+    name: `Actor ${index + 1}`,
+    rationale: `${"A rationale long enough to run past four hundred characters. ".repeat(9)}${index}`,
+  }));
+  const full = JSON.stringify({ schema_version: "2.1.0", analysis_lens: "strategic", actors }, null, 2);
+  const start = full.lastIndexOf("\n    {\n") + 1;
+  const cut = start + 500;
+  const head = full.slice(0, cut);
+  const whole = (text) => {
+    try {
+      return JSON.stringify(parser.extractJson(text).value) === JSON.stringify(JSON.parse(full));
+    } catch {
+      return false;
+    }
+  };
+  whole(parser.joinContinuation(head, "```json\n" + full.slice(start) + "\n```")) ||
+    fail("a record repeated past 400 characters was not added once");
+  const restart = "Sorry, here is the whole answer again:\n```json\n" + full + "\n```";
+  if (!parser.continuesAnswer(head, restart)) fail("an answer started over was refused as a continuation");
+  whole(parser.joinContinuation(head, restart)) ||
+    fail("an answer started over was not put in place of the cut-off one");
+  const cutAgain = full.slice(0, cut + 300);
+  if (parser.joinContinuation(head, "```json\n" + cutAgain + "\n```") !== cutAgain.replace(/[\r\n\t]+$/, "")) {
+    fail("an answer started over and cut off again did not replace the first one");
+  }
+}
+
 // Repetitive content at the seam is not a repeat and must not be trimmed, and
 // a leading space can be string content.
 for (const [head, tail, expected] of [
@@ -242,6 +274,9 @@ if (!parser.continuesAnswer(cutAfterEarlyClose, '2},"e":3}')) {
 for (const finished of [
   '```json\n{"a":"a 5\" screen","b":[1,2]}\n```',
   '```json\n{"a":"a 5\" screen","b":[1,2]}\n```\nHope this helps!',
+  // Also when more nesting follows the stray quote, compact or pretty-printed.
+  '```json\n{"subject":{"title":"A 5" screen","context":"x"},"items":[{"id":1}]}\n```',
+  '```json\n{\n  "subject": {\n    "title": "A 5" screen",\n    "context": "x"\n  },\n  "items": [\n    {"id": 1}\n  ]\n}\n```',
 ]) {
   try {
     parser.extractJson(finished);
@@ -250,12 +285,22 @@ for (const finished of [
     if (error.code !== "INVALID_JSON") fail(`a finished answer with a stray quote gave ${error.code}: ${finished}`);
   }
 }
-// Cut off inside a string and then fenced (as some apps copy it): still cut off.
-try {
-  parser.extractJson('```json\n{"a":"a 5 screen","b":"cut off mid\n```');
-  fail("a cut-off answer with a closing fence was accepted");
-} catch (error) {
-  if (error.code !== "TRUNCATED_JSON") fail(`a cut-off answer with a closing fence gave ${error.code}`);
+// Cut off inside a string and then fenced (as some apps copy it): still cut off,
+// also when the cut text itself ends on a bracket ("note [1]") or holds one
+// that would close the answer ("art. 3}").
+for (const cut of [
+  '```json\n{"a":"a 5 screen","b":"cut off mid\n```',
+  '```json\n{"a":"see note [1]\n```',
+  '```json\n{"a":["x","set {b}\n```',
+  '```json\n{"summary":"The rule (art. 3} applies and\n```',
+  '```json\n{"a":{"b":"x}} y\n```',
+]) {
+  try {
+    parser.extractJson(cut);
+    fail(`a cut-off answer with a closing fence was accepted: ${cut}`);
+  } catch (error) {
+    if (error.code !== "TRUNCATED_JSON") fail(`a cut-off answer with a closing fence gave ${error.code}: ${cut}`);
+  }
 }
 
 // A copy that misses the first character leaves the answer without its
@@ -265,6 +310,18 @@ for (const missingOpener of [
   '"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}',
   '```json\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}\n```',
   '\r\n  "contract": "c",\r\n  "lens": "l",\r\n  "subject": {"title": "t"},\r\n  "framing": {"x": 1}\r\n}',
+  // Also after a lead-in line of prose, fenced or not.
+  'Here is the analysis:\n```json\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}\n```',
+  'Here is the analysis:\n```json\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}\n```\nHope this helps!',
+  'Here is the analysis:\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}',
+  // After several lines of prose, and in a code block among prose or beside
+  // a format example.
+  'Sure!\nHere is the analysis:\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}',
+  'Here it is:\n```json\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}\n```\nI used "medium" where unsure.',
+  'Here:\n```json\n"contract":"c","lens":"l","subject":{"title":"t"},"framing":{"x":1}}\n```\nand an example\n```json\n{"id":"X"}\n```',
+  // Not indented, so a nested value opens at the start of a line.
+  '"contract":"c",\n"subject":\n{"title":"t"},"framing":{"x":1}}',
+  '"contract":"c","subject":{"title":"t"},"items":[\n{"id":1}],"framing":{"x":1}}',
 ]) {
   const parsed = parser.extractJson(missingOpener);
   if (
@@ -302,6 +359,104 @@ for (const leadIn of ["Here is the rest:", "Voici la suite :", "إليك بقي�
 const fencedCut = parser.joinContinuation('```json\n{"a":"x","b":[1,\n```', '```json\n2,3]}\n```');
 if (parser.extractJson(fencedCut).value.b?.join() !== "1,2,3") {
   fail(`a cut-off part copied with its closing fence did not join: ${fencedCut}`);
+}
+
+// A continuation that carries on inside the cut-off code block and closes it
+// joins like any other, whatever follows the closing fence.
+for (const ending of ['–2024"}}\n```', '–2024"}}```', '–2024"}}\n```\nHope this helps!']) {
+  const base = '```json\n{"subject":{"title":"Health passes","context":"EU 2020';
+  if (!parser.continuesAnswer(base, ending)) {
+    fail(`a continuation that closes the code block was refused: ${JSON.stringify(ending)}`);
+  }
+  const joined = parser.joinContinuation(base, ending);
+  let context;
+  try {
+    context = parser.extractJson(joined).value.subject?.context;
+  } catch {}
+  if (context !== "EU 2020–2024") {
+    fail(`a continuation that closes the code block did not join: ${JSON.stringify(joined)}`);
+  }
+}
+
+// Text that only looks like a missing opener ("Legend:\n"high": …") is not
+// taken for one when the answer has its own opening brace, and a blank line
+// after a lead-in does not stop the opener from being restored.
+for (const pasted of [
+  'Legend:\n"high": strong evidence, "medium": mixed.\n{"contract":"c","subject":{"title":"t"}}',
+  'Here is the analysis:\n"Strategic analysis": below\n{"contract":"c","subject":{"title":"t"}}',
+  'Here is the analysis:\n\n"contract":"c","subject":{"title":"t"},"framing":{"x":1}}',
+  'Here is the analysis:\r\n\r\n```json\r\n"contract":"c","subject":{"title":"t"},"framing":{"x":1}}\r\n```',
+]) {
+  let value;
+  try {
+    value = parser.extractJson(pasted).value;
+  } catch (error) {
+    value = error.code;
+  }
+  if (value?.contract !== "c" || value?.subject?.title !== "t") {
+    fail(`a lead-in was misread: ${JSON.stringify(value)} from ${JSON.stringify(pasted)}`);
+  }
+}
+
+// An untagged fence after answer text is read as closing the cut-off code
+// block when that reading fits the answer, whatever prose follows it; when
+// the text before it is prose, the fence opens the rest of the answer.
+{
+  const cutInString = '```json\n{"subject":{"title":"Health passes","context":"EU 2020';
+  for (const ending of [
+    '–2024"}}\n```\nLet me know if you want the "Biopolitical" lens too.',
+    '–2024"}}\n```\nSources: [1] Reuters.',
+  ]) {
+    if (!parser.continuesAnswer(cutInString, ending)) {
+      fail(`a continuation followed by a sign-off was refused: ${JSON.stringify(ending)}`);
+    }
+    let context;
+    try {
+      context = parser.extractJson(parser.joinContinuation(cutInString, ending)).value.subject?.context;
+    } catch {}
+    if (context !== "EU 2020–2024") {
+      fail(`a sign-off was joined into the answer: ${JSON.stringify(ending)}`);
+    }
+  }
+  const proseFirst = parser.joinContinuation(cutInString, 'Continuing the "context" value:\n```\n–2024 and beyond\n```');
+  if (!proseFirst.endsWith('"context":"EU 2020–2024 and beyond')) {
+    fail(`a lead-in line before an untagged fence was joined into the answer: ${JSON.stringify(proseFirst)}`);
+  }
+}
+
+// A whole answer pasted after a line that only looks like a member
+// ('"Power is everywhere": Foucault.') is kept, not read as cut off.
+for (const pasted of [
+  'Here is my answer.\n"Power is everywhere": Foucault.\n  {"contract":"c","subject":{"title":"t"}}',
+  'Summary:\n"Biopower": the core.\nJSON: {"contract":"c","subject":{"title":"t"}}',
+  'Sure!\n"high": strong. Answer: {"contract":"c","subject":{"title":"t"}}',
+]) {
+  let value;
+  try {
+    value = parser.extractJson(pasted).value;
+  } catch (error) {
+    value = error.code;
+  }
+  if (value?.contract !== "c" || value?.subject?.title !== "t") {
+    fail(`an answer after a member-like line was misread: ${JSON.stringify(value)} from ${JSON.stringify(pasted)}`);
+  }
+}
+
+// A lead-in with quotes before a continuation that was itself cut off again
+// is not joined into the answer.
+{
+  const cutInString = '```json\n{"subject":{"title":"Health passes","context":"EU 2020';
+  const quoted = parser.joinContinuation(
+    cutInString,
+    'Continuing from "context" (it was cut at "EU 2020")\n```\n–2024 and beyond"}',
+  );
+  if (!quoted.endsWith('"context":"EU 2020–2024 and beyond"}')) {
+    fail(`a quoted lead-in was joined into the answer: ${JSON.stringify(quoted.slice(-60))}`);
+  }
+  const unquotedEnd = 'Continuing the "context" value\n```\n–2024 and beyond';
+  if (parser.continuesAnswer(cutInString, unquotedEnd)) {
+    fail("a lead-in before a continuation that adds no quote or bracket was taken for the rest of the answer");
+  }
 }
 
 console.log("JSON parser checks passed.");

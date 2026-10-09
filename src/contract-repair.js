@@ -341,7 +341,7 @@
     if (canonical.ok || canonical.state !== "canonical") {
       return { value, validation: canonical, candidate: value, diagnostics: [], repairs, quarantine };
     }
-    const diagnostics = canonical.errors;
+    const diagnostics = [...canonical.errors];
     const draft = interchange.asReviewableDraft(value, diagnostics, options);
     salvageSchemaErrors(draft, validators?.generatedDraft, repairs, quarantine);
     // The draft keeps the subject shape; a missing part is an empty, listed gap.
@@ -350,6 +350,23 @@
       for (const key of SUBJECT_KEYS) draft.subject[key] ??= "";
     }
     quarantineUnknownProperties(draft, repairs, quarantine, validators?.generatedDraft);
+    // A schema failure hides the reference checks; their gaps are listed now,
+    // so completing the analysis does not reveal new ones. Only gaps a
+    // completion can fill are added: any other would turn the completion
+    // prompt into the full repair prompt.
+    const listed = new Set(diagnostics.map((item) => `${item.path} ${item.message}`));
+    try {
+      const normalized = root.Jarbou3iBiopolitics.normalize(draft);
+      const semantic = integrity.semanticValidate({ ...normalized, contract_status: "canonical" });
+      for (const error of semantic.errors) {
+        const fillable =
+          interchange.isReviewableCompletionGap(error) ||
+          ["BROKEN_REFERENCE", "DUPLICATE_GLOBAL_ID"].includes(String(error.code || "").toUpperCase());
+        if (fillable && !listed.has(`${error.path} ${error.message}`)) diagnostics.push(error);
+      }
+    } catch {
+      // A draft that cannot be checked keeps the gaps already found.
+    }
     return {
       value: draft,
       validation: integrity.validateImport(draft),

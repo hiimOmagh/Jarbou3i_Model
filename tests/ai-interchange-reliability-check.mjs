@@ -183,6 +183,49 @@ if (
   fail("a top-level copy of a member its section already has was not quarantined");
 }
 
+// A member a section does not use is kept in the import audit, not dropped
+// unseen; top-level members written inside a section are put back.
+if (compiled.audit.quarantine.length) {
+  fail(`a clean answer had members quarantined: ${compiled.audit.quarantine.map((item) => item.path)}`);
+}
+const unusedMember = structuredClone(interchange);
+unusedMember.power.actor = unusedMember.power.actors;
+delete unusedMember.power.actors;
+const unusedCompilation = compiler.compile(unusedMember, { generatedAt: fixture.generated_at });
+if (!unusedCompilation.audit.quarantine.some((item) => item.path === "/power/actor" && item.value?.length)) {
+  fail("a section member the import does not use was dropped without a trace");
+}
+const nestedTop = structuredClone(interchange);
+if (!nestedTop.links?.length || !nestedTop.self_audit_notes?.length) fail("fixture has no links or notes to misplace");
+nestedTop.self_audit = { ...nestedTop.self_audit, links: nestedTop.links, self_audit_notes: nestedTop.self_audit_notes };
+delete nestedTop.links;
+delete nestedTop.self_audit_notes;
+const nestedCompilation = compiler.compile(nestedTop, { generatedAt: fixture.generated_at });
+if (JSON.stringify(nestedCompilation.value) !== JSON.stringify(compiled.value)) {
+  fail("top-level members found inside a section were not put back");
+}
+if (
+  nestedCompilation.audit.quarantine.length ||
+  !nestedCompilation.audit.transformations.some(
+    (item) => item.code === "MISPLACED_MEMBER_RESTORED" && item.path === "/links" && item.from === "/self_audit/links",
+  )
+) {
+  fail("putting back a top-level member found inside a section was not reported");
+}
+
+// A confidence the answer leaves out is a gap to complete, not "low".
+{
+  const noConfidence = structuredClone(interchange);
+  delete noConfidence.conclusion.overall_confidence;
+  delete noConfidence.intervention.capture.confidence;
+  const value = compiler.compile(noConfidence, { generatedAt: fixture.generated_at }).value;
+  if (
+    value.calibrated_conclusion.overall_confidence !== undefined ||
+    value.intervention_assessment.capture_assessment.confidence !== undefined
+  ) {
+    fail("a confidence the answer left out was set to low");
+  }
+}
 const extraCanonical = structuredClone(fixture);
 extraCanonical.theoretical_comparison[0].confidence = "medium";
 const extraRepair =
@@ -319,6 +362,21 @@ if (
 ) {
   fail("completion prompt must name the record and show the shape of a missing list");
 }
+// A capture criterion is named by its code, the key the AI wrote it under.
+const criterionGap = structuredClone(fixture);
+delete criterionGap.intervention_assessment.capture_assessment.criteria[1].status;
+const criterionPrompt = compiler.buildCompletionPrompt(
+  criterionGap,
+  window.Jarbou3iBiopoliticsIntegrity.validateImport(criterionGap).errors,
+  "en",
+  bioTemplate,
+);
+const criterionLine = criterionPrompt
+  .split("\n")
+  .find((line) => line.startsWith("/intervention_assessment/capture_assessment/criteria/1/status"));
+if (!criterionLine?.includes(`"${fixture.intervention_assessment.capture_assessment.criteria[1].criterion}"`)) {
+  fail(`completion prompt must name the criterion whose status is missing: ${criterionLine}`);
+}
 // A generated ID skips the ones the answer already uses: an AI that drops a
 // record and forgets one ref must not end with two records sharing an ID.
 const idCandidate = { evidence: { items: [{ id: "E1" }, { id: "E3" }, { claim: "no ref" }] } };
@@ -442,6 +500,18 @@ if (!truncationDetected) {
   fail("truncated JSON was not classified explicitly");
 }
 
+// Rule 10 asks for "concern" in every source mode; the template must not
+// offer "pass", which an AI following it would copy.
+for (const access of ["web", "provided", "none"]) {
+  for (const [name, template] of [
+    ["interchange", JSON.parse(compiler.buildTemplate("en", "research", access))],
+    ["canonical", JSON.parse(window.Jarbou3iBiopolitics.buildSchemaTemplate("en", "research", access))],
+  ]) {
+    if (template.self_audit.statistics_quotations_verified !== "concern") {
+      fail(`${name} template (${access}) offers statistics_quotations_verified other than concern`);
+    }
+  }
+}
 const compactTemplate = compiler.buildTemplate("en", "research");
 const canonicalTemplate =
   window.Jarbou3iBiopolitics.buildSchemaTemplate("en", "research", "web");
@@ -475,6 +545,51 @@ function importResult(text) {
     mode: "focused",
   });
 }
+// The gaps a schema failure hides are listed with it, so completing the
+// analysis does not reveal new ones.
+{
+  const raw = structuredClone(fixture);
+  delete raw.links[0].relation;
+  raw.power_map.power_asymmetries[0].between[0] = "Nobody named";
+  const result = REPAIR.salvageBiopolitical(raw, { origin: "canonical", language: "en", mode: "focused" });
+  const paths = result.diagnostics.map((item) => item.path);
+  if (!paths.some((path) => path.startsWith("/links/0")) || !paths.includes("/power_map/power_asymmetries/0/between/0")) {
+    fail(`schema and reference gaps must be listed together: ${paths.join(", ")}`);
+  }
+  if (new Set(paths).size !== paths.length) fail(`a gap is listed twice: ${paths.join(", ")}`);
+}
+// A fixed-set entry the reply leaves out is a gap to complete, never a
+// judgment the compiler invents ("uncertain", "concern").
+{
+  const omitted = structuredClone(interchange);
+  const [level] = Object.keys(omitted.capture_levels);
+  const [criterion] = Object.keys(omitted.intervention.capture.criteria);
+  const [type] = Object.keys(omitted.explanations);
+  const [auditKey] = Object.keys(omitted.self_audit);
+  delete omitted.capture_levels[level];
+  delete omitted.intervention.capture.criteria[criterion];
+  delete omitted.explanations[type];
+  delete omitted.self_audit[auditKey];
+  const compiledOmitted = compiler.compile(structuredClone(omitted)).value;
+  const at = {
+    level: compiledOmitted.capture_levels.findIndex((item) => item.level === level),
+    criterion: compiledOmitted.intervention_assessment.capture_assessment.criteria.findIndex((item) => item.criterion === criterion),
+    type: compiledOmitted.competing_explanations.findIndex((item) => item.type === type),
+  };
+  const result = importResult(JSON.stringify(omitted));
+  if (result.validation.state === "canonical") fail("a reply missing fixed-set entries imported as canonical");
+  // What the completion prompt will ask for.
+  const gapPaths = compiler.completionTargets(result.diagnostics);
+  for (const expected of [
+    `/capture_levels/${at.level}/status`,
+    `/intervention_assessment/capture_assessment/criteria/${at.criterion}/status`,
+    `/competing_explanations/${at.type}/relevance`,
+    `/self_audit/${auditKey}`,
+  ]) {
+    if (!gapPaths.includes(expected)) fail(`missing fixed-set entry is not a completion gap: ${expected} (gaps: ${gapPaths.join(", ")})`);
+  }
+}
+
 const drift = (mutate) => {
   const value = structuredClone(interchange);
   return JSON.stringify(mutate(value) ?? value);
@@ -755,6 +870,31 @@ if (refLoopIds.join() !== refLoops.scale_time.future_feedback_loops.map((loop) =
 if (!/evidence_of_benefit: evidence IDs/.test(compiler.buildFieldGuide())) {
   fail("the record guide does not say evidence_of_benefit holds evidence IDs");
 }
+// Without source access the placeholder is not evidence: real replies cited it
+// in evidence_of_benefit, the one list the guide asked to fill with evidence IDs.
+for (const mode of ["focused", "expert", "research"]) {
+  const line = compiler
+    .buildFieldGuide("none", mode)
+    .split("\n")
+    .find((entry) => entry.startsWith("interventions.evidence_of_benefit:"));
+  if (!line || /E1/.test(line) || !/empty/.test(line)) {
+    fail(`without source access the record guide does not keep evidence_of_benefit empty (${mode}): ${line}`);
+  }
+}
+// A source keeps its own title: real replies translated it into the analysis
+// language, which no reader can then find.
+const bioLanguageLine = /^(Mandatory output language|Langue de sortie obligatoire|لغة الإخراج الإلزامية)/;
+for (const lang of ["ar", "en", "fr"]) {
+  if (!compiler.buildChecklist(lang).includes("source_title")) {
+    fail(`the ${lang} checklist asks for every text value in the analysis language, source titles included`);
+  }
+  const line = window.Jarbou3iBiopolitics.buildPrompt({ topic: "Source titles", lang, mode: "research", evidenceAccess: "web" })
+    .split("\n")
+    .find((entry) => bioLanguageLine.test(entry));
+  if (!line?.includes("source_title")) {
+    fail(`the ${lang} Biopolitical language rule does not keep source titles untranslated: ${line}`);
+  }
+}
 // Free-tier assistants wrote names here, which no record resolves.
 if (
   !/power_asymmetries\.between: refs of .*never names/.test(compiler.buildFieldGuide()) ||
@@ -776,6 +916,14 @@ for (const mode of ["research", "expert"]) {
   if (!/\bassumptions\b/.test(populateLine(mode)) || !/\blinks\b/.test(populateLine(mode))) {
     fail(`${mode} field guide does not ask to fill assumptions and links`);
   }
+}
+// The guide's opening line is plain words, not the compiler's.
+if (/ref becomes id locally|keys are canonical/.test(compiler.buildFieldGuide("web", "research"))) {
+  fail("the field guide opens with compiler jargon");
+}
+// The template holds example records for most of these.
+if (/template arrays are empty/.test(populateLine("research"))) {
+  fail("the field guide calls template arrays empty that hold example records");
 }
 if (/\blinks\b/.test(populateLine("focused"))) {
   fail("focused field guide asks for links it does not need");
@@ -916,6 +1064,74 @@ for (const lang of ["ar", "en", "fr"]) {
   const web = JSON.parse(compiler.buildTemplate(lang, "research", "web"));
   if (!evidenceRefLists(web).some((list) => list.length) || web.conclusion.overall_confidence === "low") {
     fail(`${lang}: the no-source changes leaked into the template for other access modes`);
+  }
+}
+
+// A list answered one level up may hold only the missing records, in order;
+// each lands in the record it was asked for. A list of any other length that
+// does not reach every record asked for is not guessed at: it is reported.
+{
+  const base = { list: [{ claim: "a" }, { claim: "" }, { claim: "c" }, { claim: "" }] };
+  const targets = ["/list/1/claim", "/list/3/claim"];
+  const claims = (result) => result.value.list.map((item) => item.claim).join();
+  const compact = compiler.applyCompletion(base, { fill: { "/list": [{ claim: "B" }, { claim: "D" }] } }, targets);
+  if (claims(compact) !== "a,B,c,D" || compact.applied !== 2 || compact.ignored.length) {
+    fail(`a list holding only the missing records was misplaced: ${claims(compact)}, ${JSON.stringify(compact.ignored)}`);
+  }
+  const full = compiler.applyCompletion(
+    base,
+    { fill: { "/list": [{ claim: "x" }, { claim: "B" }, { claim: "y" }, { claim: "D" }] } },
+    targets,
+  );
+  if (claims(full) !== "a,B,c,D" || full.applied !== 2) {
+    fail(`a whole list answered one level up was not read by position: ${claims(full)}`);
+  }
+  const unclear = compiler.applyCompletion(base, { fill: { "/list": [{ claim: "B" }, { claim: "C" }, { claim: "D" }] } }, targets);
+  if (claims(unclear) !== "a,,c," || unclear.applied !== 0 || unclear.ignored.join() !== "/list") {
+    fail(`a list of unclear length was guessed at: ${claims(unclear)}, ${JSON.stringify(unclear.ignored)}`);
+  }
+}
+
+// A section written beside its items ({items: [...], note}) keeps every
+// record, and what was written beside them is kept for review.
+{
+  const besideItems = JSON.parse(compiler.buildTemplate("en", "research"));
+  besideItems.evidence = { items: [{ id: "E1", claim: "Real claim one" }, { id: "E2", claim: "Real claim two" }], note: "Sources checked in May" };
+  const compiled = compiler.compile(besideItems, { generatedAt: "2026-10-07T00:00:00Z" });
+  if (compiled.value.evidence.items.map((item) => item.claim).join() !== "Real claim one,Real claim two") {
+    fail(`records written beside a note were lost: ${JSON.stringify(compiled.value.evidence.items)}`);
+  }
+  if (!compiled.audit.quarantine.some((item) => item.path === "/evidence/note" && item.value === "Sources checked in May")) {
+    fail("text written beside a section's items was not kept for review");
+  }
+}
+
+// A section in a shape that cannot be read (a list where a section of named
+// parts is asked for, or text where a list is) is kept for review, never
+// emptied without a trace.
+{
+  const wrongShape = JSON.parse(compiler.buildTemplate("en", "research"));
+  const distribution = [{ group: "Migrants", burden: "Checks at every border" }];
+  wrongShape.distribution = distribution;
+  wrongShape.assumptions = "The registry is accurate";
+  const compiled = compiler.compile(wrongShape, { generatedAt: "2026-10-07T00:00:00Z" });
+  const kept = (path) => compiled.audit.quarantine.find((item) => item.path === path);
+  if (JSON.stringify(kept("/distribution")?.value) !== JSON.stringify(distribution)) {
+    fail("a section written as a list was emptied without being kept for review");
+  }
+  if (kept("/assumptions")?.value !== "The registry is accurate") {
+    fail("a list written as text was emptied without being kept for review");
+  }
+}
+
+// An ID made for an explanation never repeats one the answer already uses.
+{
+  const explained = JSON.parse(compiler.buildTemplate("en", "research"));
+  const [first] = Object.keys(explained.explanations);
+  explained.explanations[first].id = "EX2";
+  const ids = compiler.compile(explained, { generatedAt: "2026-10-07T00:00:00Z" }).value.competing_explanations.map((item) => item.id);
+  if (ids[0] !== "EX2" || new Set(ids).size !== ids.length) {
+    fail(`explanation IDs collide: ${ids.join()}`);
   }
 }
 

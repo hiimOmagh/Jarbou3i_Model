@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import fs from "node:fs/promises";
+import path from "node:path";
 import {
   clearWorkspaceStorage,
   readFirstWorkspace,
@@ -47,6 +49,7 @@ test.describe("Resolution transactions", () => {
     await start(page, "strategic");
     await saveTitle(page, "Committed strategic resolution");
     await page.locator("#editorResolve").click();
+    await expect(page.locator("#resolutionSummary")).toContainText("Passed");
     await approve(page, "Approved after reviewing the exact Strategic subject diff.");
     await expect(page.locator("#topicInput")).toHaveValue("Committed strategic resolution");
     const stored = await readFirstWorkspace(page);
@@ -55,9 +58,34 @@ test.describe("Resolution transactions", () => {
     expect(stored.revisions[1].kind).toBe("committed_resolution");
     expect(stored.revisions[1].parent_revision_id).toBe(stored.revisions[0].revision_id);
     expect(stored.resolution_ledger.records).toHaveLength(1);
+    expect(stored.resolution_ledger.records[0].diagnostics_after.contract_valid).toBe(true);
     expect(stored.working_draft.dirty).toBe(false);
     await page.reload();
     await expect(page.locator("#topicInput")).toHaveValue("Committed strategic resolution");
+  });
+
+  test("records a committed Strategic draft as a draft, never as a valid contract", async ({ page }) => {
+    const draft = JSON.parse(await fs.readFile(path.join(process.cwd(), "fixtures", "sample-analysis-en.json"), "utf8"));
+    delete draft.evidence.items[0].source_type;
+    await page.goto("./");
+    await clearWorkspaceStorage(page);
+    await page.reload();
+    await page.locator("#langEn").click();
+    await page.locator("#jsonInput").fill(JSON.stringify(draft));
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#jsonStatus")).toContainText(/draft/i);
+    await page.locator("#workspaceBtn").click();
+    await page.locator(".workspaceRow.active").getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    await saveTitle(page, "Committed strategic draft");
+    await expect(page.locator("#editorFieldStatus")).toContainText(/draft/i);
+    await expect(page.locator("#editorFieldStatus")).not.toContainText("Contract validation passed");
+    await page.locator("#editorResolve").click();
+    await expect(page.locator("#resolutionSummary")).toContainText("Draft");
+    await expect(page.locator("#resolutionSummary")).not.toContainText("Passed");
+    await approve(page, "Approved as a draft after reviewing the exact subject diff.");
+    const stored = await readFirstWorkspace(page);
+    expect(stored.resolution_ledger.records[0].diagnostics_after.contract_valid).toBe(false);
   });
 
   test("commits a Biopolitical draft from the verified workspace manager", async ({ page }) => {

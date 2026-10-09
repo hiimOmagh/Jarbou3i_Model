@@ -221,6 +221,69 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#reviewContent")).toContainText(preservedFinding);
   });
 
+  test("JSON that is not an analysis gets the same answer in both lenses", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    const reply = '{"message":"I cannot complete this analysis with the information provided."}';
+    for (const lens of ["strategic", "biopolitical"]) {
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#jsonInput").fill(reply);
+      await expect(page.locator("#jsonStatus")).toContainText("No analysis was found");
+    }
+  });
+
+  test("a French draft lists its gaps in French", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langFr").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const reply = JSON.parse(await fs.readFile("fixtures/sample-analysis-bio-fr.json", "utf8"));
+    reply.evidence.items[0].counter_evidence = "";
+    await page.locator("#jsonInput").fill(JSON.stringify(reply));
+    await page.locator("#importBtn").click();
+    const migration = page.locator(".bioMigration");
+    await expect(migration).toContainText("/evidence/items/0/counter_evidence");
+    await expect(migration).not.toContainText(/must|characters/);
+  });
+
+  test("a completion that fills nothing says so plainly", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await captureCopies(page);
+    const draft = JSON.parse(await fs.readFile("fixtures/sample-analysis-bio-en.json", "utf8"));
+    delete draft.links[0].relation;
+    await page.locator("#jsonInput").fill(JSON.stringify(draft));
+    await page.locator("#repairPromptBtn").click();
+    await page.locator("#jsonInput").fill('```json\n{"fill":{"/links/9/relation":"enables"}}\n```');
+    await expect(page.locator("#jsonStatus")).toContainText("No missing part was added");
+    await expect(page.locator("#jsonStatus")).not.toContainText("Added 0");
+  });
+
+  test("a Strategic value the contract does not allow is said to be set aside", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    const reply = JSON.parse(await fs.readFile("fixtures/sample-analysis-en.json", "utf8"));
+    reply.actors[0].confidence = "very high";
+    await page.locator("#jsonInput").fill(JSON.stringify(reply));
+    await expect(page.locator("#jsonStatus")).toHaveClass(/warn/);
+    await expect(page.locator("#jsonStatus")).toContainText("1 value the contract does not allow was set aside");
+  });
+
+  test("lists every gap at once and each review item once", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    const reply = JSON.parse(await fs.readFile("fixtures/sample-analysis-bio-en.json", "utf8"));
+    delete reply.links[0].relation;
+    reply.power_map.power_asymmetries[0].between[0] = "Nobody named";
+    await page.locator("#jsonInput").fill(JSON.stringify(reply));
+    await expect(page.locator("#jsonStatus")).toContainText("2 targeted completion gaps");
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    const text = await audit.textContent();
+    expect(text.split("/power_map/power_asymmetries/0/between/0").length - 1).toBe(1);
+  });
+
   test("compiles interchange drafts, quarantines extensions, and detects truncation", async ({
     page,
   }) => {
@@ -566,6 +629,93 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#topicStatus")).not.toContainText(RESTORED);
   });
 
+  test("keeps the topic, context and sources typed before a prompt is copied, and edits after it", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    await page.locator("#evidenceAccess").selectOption("provided");
+    await page.locator("#topicInput").fill("Typed before any prompt");
+    await page.locator("#timeframeInput").fill("Context typed before any prompt");
+    await page.locator("#sourcesInput").fill("Source typed before any prompt");
+    await expect.poll(async () => (await readIntakeDraft(page))?.sources).toBe("Source typed before any prompt");
+    await page.reload();
+    await expect(page.locator("#topicInput")).toHaveValue("Typed before any prompt");
+    await expect(page.locator("#timeframeInput")).toHaveValue("Context typed before any prompt");
+    await expect(page.locator("#sourcesInput")).toHaveValue("Source typed before any prompt");
+
+    await page.locator("#copyPromptBtn").click();
+    await expect(page.locator("#topicStatus")).toContainText("Prompt copied");
+    await page.locator("#topicInput").fill("Edited after the prompt was copied");
+    await expect.poll(async () => (await readIntakeDraft(page))?.topic).toBe("Edited after the prompt was copied");
+    await page.reload();
+    await expect(page.locator("#topicInput")).toHaveValue("Edited after the prompt was copied");
+  });
+
+  test("two tabs keep their own analysis being prepared", async ({ page, context }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("Tab A topic");
+    await page.locator("#jsonInput").fill('{"tab": "A"');
+    await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe('{"tab": "A"');
+
+    const other = await context.newPage();
+    await other.goto("./");
+    await other.locator("#langEn").click();
+    await other.locator("#topicInput").fill("Tab B topic");
+    await other.locator("#jsonInput").fill('{"tab": "B"');
+    await expect.poll(async () => (await readIntakeDraft(other))?.reply).toBe('{"tab": "B"');
+    await page.reload();
+    await expect(page.locator("#topicInput")).toHaveValue("Tab A topic");
+    await expect(page.locator("#jsonInput")).toHaveValue('{"tab": "A"');
+
+    // The other tab opens an analysis and imports nothing pending.
+    await other.locator("#clearJsonBtn").click();
+    await other.locator("#loadSampleBtn").click();
+    await expect(other.locator("#workspaceSaveState")).toHaveText("Saved locally");
+    await page.reload();
+    await expect(page.locator("#topicInput")).toHaveValue("Tab A topic");
+    await expect(page.locator("#jsonInput")).toHaveValue('{"tab": "A"');
+
+    // A tab opened after the first one closed takes over what it left.
+    await page.close();
+    // The closed tab has let go of its draft once only the other tab holds a lock;
+    // a loaded browser can take a while to release a closed page's lock.
+    await expect.poll(() => other.evaluate(async () => (await navigator.locks.query()).held.length), { timeout: 20_000 }).toBe(1);
+    const later = await context.newPage();
+    await later.goto("./");
+    await expect(later.locator("#jsonInput")).toHaveValue('{"tab": "A"');
+    await expect(later.locator("#topicInput")).toHaveValue("Tab A topic");
+  });
+
+  test("a topic typed in a lens with no analysis comes back after a lens round trip", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#workspaceSaveState")).toHaveText("Saved locally");
+    const sampleTitle = await page.locator("#topicInput").inputValue();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#topicInput").fill("A Biopolitical topic typed by the user");
+    await page.locator('[data-lens="strategic"]').click();
+    await expect(page.locator("#topicInput")).toHaveValue(sampleTitle);
+    await page.locator('[data-lens="biopolitical"]').click();
+    await expect(page.locator("#topicInput")).toHaveValue("A Biopolitical topic typed by the user");
+  });
+
+  test("a reload after switching to a lens with no analysis stays in that lens", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#workspaceSaveState")).toHaveText("Saved locally");
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#jsonInput").fill('{"pending": "Biopolitical reply"');
+    await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe('{"pending": "Biopolitical reply"');
+    await page.reload();
+    await expect(page.locator("#jsonInput")).toHaveValue('{"pending": "Biopolitical reply"');
+    await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute("aria-checked", "true");
+  });
+
   test("keeps copy and import messages when the page redraws", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();
@@ -634,7 +784,11 @@ test.describe("AI interchange reliability", () => {
       .fill("The JSON object was already complete; it ends with `]}`. Nothing remains.");
     await expect(page.locator("#continuationField")).toBeHidden();
     await expect(page.locator("#jsonInput")).toHaveValue(stray);
-    await expect(page.locator("#jsonStatus")).toContainText("That reply does not continue the answer");
+    await expect(page.locator("#jsonStatus")).toContainText("That reply does not seem to continue the answer");
+    // A reply that adds only words may still be the rest of the answer.
+    await expect(page.locator("#jsonStatus")).toContainText(
+      "If that reply is the rest of the answer, paste it at the end of the answer box yourself.",
+    );
     await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
     await expect.poll(async () => (await readIntakeDraft(page))?.verdict?.cutOff).toBe(false);
 
@@ -681,6 +835,24 @@ test.describe("AI interchange reliability", () => {
 
     await page.locator("#continuationInput").fill(broken.slice(cut));
     await expect(page.locator("#jsonInput")).toHaveValue(broken);
+    await expect(page.locator("#continuationField")).toBeHidden();
+    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+  });
+
+  test("a complete answer stays complete when the AI says it is cut off", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-en.json");
+    const title = JSON.stringify(data.subject.title);
+    const text = JSON.stringify(data).replace(title, `${title.slice(0, -1)} "as quoted" here"`);
+    await page.locator("#jsonInput").fill(text);
+    await page.locator("#repairPromptBtn").click();
+    await page
+      .locator("#jsonInput")
+      .fill('```json\n{"repair_status":"incomplete_input","reason":"truncated"}\n```');
+    await expect(page.locator("#jsonInput")).toHaveValue(text);
+    await expect(page.locator("#jsonStatus")).toContainText("it has a JSON error the AI did not find");
     await expect(page.locator("#continuationField")).toBeHidden();
     await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
   });
@@ -747,6 +919,65 @@ test.describe("AI interchange reliability", () => {
     );
   });
 
+  test("a complete answer with one JSON slip says so, and the repair prompt gives the parser's error", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-en.json");
+    const title = JSON.stringify(data.subject.title);
+    const text = JSON.stringify(data, null, 2).replace(title, `${title.slice(0, -1)} "as quoted" here"`);
+    await page.locator("#jsonInput").fill(text);
+    await expect(page.locator("#jsonStatus")).toContainText("has a JSON error");
+    await expect(page.locator("#jsonStatus")).not.toContainText("No analysis was found");
+
+    await page.locator("#repairPromptBtn").click();
+    const parserError = await page.evaluate((answer) => {
+      try {
+        JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1));
+        return "";
+      } catch (error) {
+        return error.message;
+      }
+    }, text);
+    expect(parserError).not.toBe("");
+    const prompt = await lastCopy(page);
+    expect(prompt).toContain(parserError);
+    expect(prompt).not.toContain("No analysis was found");
+  });
+
+  test("the repair prompt lets the AI fix the values its diagnostics name, each named once", async ({
+    page,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-en.json");
+    await page.locator("#jsonInput").fill(JSON.stringify({ ...data, schema_version: "2.x" }));
+    await page.locator("#repairPromptBtn").click();
+    const prompt = await lastCopy(page);
+    expect(prompt).toContain("/schema_version");
+    expect(prompt).toContain("change only JSON punctuation and the fields the diagnostics name");
+    expect(prompt).not.toMatch(/^(\/[^:\s]+): \1\b/m);
+  });
+
+  test("a continue prompt that cannot be copied is shown under its own name", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        value: { writeText: () => Promise.reject(new Error("denied")) },
+      });
+      document.execCommand = () => false;
+    });
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    const text = JSON.stringify(await fixture("sample-analysis-en.json"));
+    await page.locator("#jsonInput").fill(text.slice(0, Math.floor(text.length / 2)));
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Continue cut-off result prompt");
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#modalTitle")).toHaveText("Continue cut-off result prompt");
+  });
+
   test("corrects a wrong language label to the language the reply is written in", async ({
     page,
   }) => {
@@ -775,6 +1006,8 @@ test.describe("AI interchange reliability", () => {
       "captureCriterion.criterion",
       "explanation.type",
       "evidence.verification_status",
+      // Rule 10: always "concern" in the AI's answer.
+      "selfAudit.statistics_quotations_verified",
     ]);
     const languageName = { en: "English", ar: "العربية", fr: "français" };
     const word = (key) => new RegExp(`(?<!\\w)${key}(?!\\w)`);
@@ -830,6 +1063,51 @@ test.describe("AI interchange reliability", () => {
         expect.soft(prompt, where).not.toMatch(
           /no Markdown, code fence|sans Markdown, bloc de code|دون Markdown أو أسوار كود/,
         );
+      }
+    }
+  });
+
+  test("Strategic prompts name feedback speed, the no-source placeholder, and source titles", async ({
+    page,
+  }) => {
+    // Real replies wrote feedback speed "medium", handled the no-source
+    // placeholder four different ways, and translated source titles.
+    const sourceRule = /^(Source access:|Accès aux sources :|الوصول إلى المصادر:)/;
+    const modeLine = /^(Mode:|Mode :|النمط:)/;
+    const languageRule = /^- (Write all analysis content|Rédige tout le contenu|اكتب كل محتوى التحليل)/;
+    const copyAsWritten = { en: "word for word", fr: "mot pour mot", ar: "حرفيًا" };
+    const followSourceRule = {
+      en: "follow the source-access rule",
+      fr: "suis la règle d’accès aux sources",
+      ar: "قاعدة الوصول إلى المصادر",
+    };
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#topicInput").fill("EU Carbon Border Adjustment Mechanism");
+    await page.locator('[data-lens="strategic"]').click();
+    await page.locator("#evidenceAccess").selectOption("none");
+    for (const language of ["en", "ar", "fr"]) {
+      for (const mode of ["simple", "expert", "research"]) {
+        await page.locator("#analysisLang").selectOption(language);
+        await page.locator("#promptMode").selectOption(mode);
+        await page.locator("#previewPromptBtn").click();
+        const prompt = await page.locator("#modalContent").textContent();
+        await page.keyboard.press("Escape");
+        const where = `${language}/${mode}`;
+        const lines = prompt.split("\n");
+        const rule = lines.find((line) => sourceRule.test(line)) || "";
+        expect.soft(rule, `${where}: placeholder title`).toContain("UNSOURCED MODEL SYNTHESIS — PLACEHOLDER");
+        expect.soft(rule, `${where}: placeholder copied as written`).toContain(copyAsWritten[language]);
+        expect
+          .soft(lines.find((line) => modeLine.test(line)), `${where}: depth defers evidence to the source rule`)
+          .toContain(followSourceRule[language]);
+        const speedRule = lines.some(
+          (line) => line.startsWith("- ") && ["speed", "fast", "slow", "medium"].every((word) => line.includes(word)),
+        );
+        expect.soft(speedRule, `${where}: feedback speed is fast or slow`).toBe(true);
+        expect
+          .soft(lines.find((line) => languageRule.test(line)), `${where}: source titles untranslated`)
+          .toContain("source_title");
       }
     }
   });

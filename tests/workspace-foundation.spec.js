@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import {
   clearWorkspaceRecords,
   countWorkspaceRecords,
+  damageFirstWorkspace,
   readIntakeDraft,
   slowStorageOpens,
   storageTransactionsDone,
@@ -62,6 +63,157 @@ test("an analysis whose save failed leaves no other analysis marked current", as
   await expect(page.locator(".workspaceRow")).toHaveCount(1);
   await expect(page.locator(".workspaceRow.active")).toHaveCount(0);
   await expect(page.locator("#workspaceExport")).toBeDisabled();
+});
+
+test("a failed save is said when it happens and stays shown in Workspaces", async ({ page }) => {
+  await useEnglish(page);
+  await page.evaluate(() => {
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) {
+      if (this.name === "workspaces") throw new DOMException("Storage is full", "QuotaExceededError");
+      return put.apply(this, args);
+    };
+  });
+  await page.locator("#jsonInput").fill(JSON.stringify(await fixture("sample-analysis-en.json")));
+  await page.locator("#importBtn").click();
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "error");
+  await expect(page.locator("#toast")).toContainText("was not saved on this device");
+
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("#workspaceStatus")).not.toContainText("storage is ready");
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "error");
+});
+
+test("Arabic Workspaces name rows and damage in Arabic", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langAr").click();
+  await createSavedWorkspace(page, "strategic");
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator(".workspaceRow .workspaceRowMeta").first()).not.toContainText(/strategic|verified/);
+  await damageFirstWorkspace(page);
+  await page.reload();
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator(".workspaceRow.corrupt")).toBeVisible();
+  await expect(page.locator(".workspaceRow.corrupt")).not.toContainText(/[A-Z_]{6,}/);
+});
+
+test("an Arabic save failure is said in Arabic", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langAr").click();
+  await page.evaluate(() => {
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) {
+      if (this.name === "workspaces") throw new DOMException("Storage is full", "QuotaExceededError");
+      return put.apply(this, args);
+    };
+  });
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "error");
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator("#workspaceStatus")).not.toBeEmpty();
+  await expect(page.locator("#workspaceStatus")).not.toContainText(/[A-Za-z]{3,}/);
+});
+
+// Changes the stored workspace behind the open list, as another tab would.
+function changeStoredWorkspace(page, change) {
+  return change === "damage" ? damageFirstWorkspace(page) : clearWorkspaceRecords(page);
+}
+
+for (const [change, said] of [["remove", "no longer saved"], ["damage", "integrity"]]) {
+  test(`a row whose workspace was ${change}d says so instead of opening another`, async ({ page }) => {
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await useEnglish(page);
+    await createSavedWorkspace(page, "strategic");
+    await page.locator("#workspaceBtn").click();
+    await changeStoredWorkspace(page, change);
+    await page.locator("[data-workspace-edit]").first().click();
+    await expect(page.locator("#workspaceStatus")).toContainText(said);
+    await expect(page.locator("#editorBackdrop")).not.toHaveClass(/show/);
+    expect(errors).toEqual([]);
+  });
+}
+
+test("switching lens while the analysis saves keeps it with its workspace", async ({ page }) => {
+  await useEnglish(page);
+  // Saves finish late, as on a slow device.
+  await page.evaluate(() => {
+    const transaction = IDBDatabase.prototype.transaction;
+    IDBDatabase.prototype.transaction = function (...args) {
+      const created = transaction.apply(this, args);
+      if (args[1] === "readwrite") {
+        Object.defineProperty(created, "oncomplete", {
+          set(handler) {
+            created.addEventListener("complete", (event) => setTimeout(() => handler.call(created, event), 1500));
+          },
+        });
+      }
+      return created;
+    };
+  });
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  await page.locator('[data-lens="biopolitical"]').click();
+  await expect(page.locator("#workspaceSaveState")).not.toHaveAttribute("data-state", "saving", { timeout: 10_000 });
+  await page.locator('[data-lens="strategic"]').click();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator(".workspaceRow.active")).toHaveCount(1);
+  await expect(page.locator("#workspaceExport")).toBeEnabled();
+});
+
+test("importing the analysis already open does not save it twice", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator(".workspaceRow")).toHaveCount(1);
+  await expect(page.locator(".workspaceRow.active")).toHaveCount(1);
+});
+
+test("a reply left in the box by Reset app data is still kept and guarded", async ({ page }) => {
+  await useEnglish(page);
+  const reply = JSON.stringify(await fixture("sample-analysis-fr.json"));
+  await page.locator("#jsonInput").fill(reply);
+  await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(reply);
+  await page.locator("#workspaceBtn").click();
+  await page.locator("#workspaceResetAll").click();
+  await page.locator("#workspaceResetAll").click();
+  await expect(page.locator("#workspaceStatus")).toContainText(/reset|cleared|removed/i);
+  await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(reply);
+  await page.keyboard.press("Escape");
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#toast")).toContainText("Click again");
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+});
+
+test("importing an analysis of the other lens sets aside the one on screen", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await page.locator("#jsonInput").fill(JSON.stringify(await fixture("sample-analysis-bio-en.json")));
+  await page.locator("#importBtn").click();
+  await expect(page.locator("[data-results-orientation]")).toHaveAttribute("data-analysis-lens", "biopolitical");
+  await page.locator('[data-lens="strategic"]').click();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  await expect(page.locator("[data-results-orientation]")).toHaveAttribute("data-analysis-lens", "strategic");
+  await expect(page.locator(".orientationConclusion")).toContainText("bipolar order");
+});
+
+test("a damaged workspace can be removed after a second click", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await damageFirstWorkspace(page);
+  await page.reload();
+  await page.locator("#workspaceBtn").click();
+  const remove = page.locator(".workspaceRow.corrupt [data-workspace-remove-damaged]");
+  await remove.click();
+  expect(await countWorkspaceRecords(page)).toBe(1);
+  await remove.click();
+  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  expect(await countWorkspaceRecords(page)).toBe(0);
 });
 
 test("loading the sample asks before replacing a reply that is not imported", async ({ page }) => {
@@ -206,6 +358,72 @@ test("saving an edit keeps a reply that is pasted but not imported", async ({ pa
   await page.locator("#editorSave").click();
   await expect(page.locator("#editorDirty")).toContainText("No unsaved");
   await expect(page.locator("#topicInput")).toHaveValue("Edited while a reply waits");
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+});
+
+test("a reply pasted but not imported stays guarded and kept when the lens changes", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await page.locator('[data-shell-nav="workflow"]').click();
+  const reply = JSON.stringify(await fixture("sample-analysis-fr.json"));
+  await page.locator("#jsonInput").fill(reply);
+  await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(reply);
+
+  await page.locator('[data-lens="biopolitical"]').click();
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#toast")).toContainText("Click again");
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+
+  // The analysis set aside comes back without taking the reply's place.
+  await page.locator('[data-lens="strategic"]').click();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+  await page.reload();
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+});
+
+test("a reply pasted but not imported survives a reload after another saved analysis is edited", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await createSavedWorkspace(page, "biopolitical");
+  await page.locator('[data-shell-nav="workflow"]').click();
+  const reply = JSON.stringify(await fixture("sample-analysis-fr.json"));
+  await page.locator("#jsonInput").fill(reply);
+  await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(reply);
+
+  await page.locator("#workspaceBtn").click();
+  await page.locator(".workspaceRow:not(.active)").getByRole("button", { name: "Edit draft" }).click();
+  await page.locator('[data-editor-path="/subject"]').click();
+  const field = page.locator("#editorField");
+  const subject = JSON.parse(await field.inputValue());
+  subject.title = "Edited in another analysis";
+  await field.fill(JSON.stringify(subject, null, 2));
+  await field.press("Control+Enter");
+  await page.locator("#editorSave").click();
+  await expect(page.locator("#editorDirty")).toContainText("No unsaved");
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+  await page.locator("#editorClose").click();
+
+  await page.reload();
+  await expect(page.locator("#topicInput")).toHaveValue("Edited in another analysis");
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+});
+
+test("a reply pasted but not imported survives a reload after the lens brings back another analysis", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await createSavedWorkspace(page, "biopolitical");
+  await page.locator('[data-shell-nav="workflow"]').click();
+  const reply = JSON.stringify(await fixture("sample-analysis-fr.json"));
+  await page.locator("#jsonInput").fill(reply);
+  await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(reply);
+
+  // The Strategic analysis set aside comes back as the current one.
+  await page.locator('[data-lens="strategic"]').click();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  await expect(page.locator("#jsonInput")).toHaveValue(reply);
+  await page.reload();
   await expect(page.locator("#jsonInput")).toHaveValue(reply);
 });
 

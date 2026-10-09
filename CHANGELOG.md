@@ -84,6 +84,64 @@
 - Keeps the space where a continuation joins the first part
   ("Claim number"), and drops a code fence or lead-in sentence at the start
   of the continuation.
+- Lists a Biopolitical capture level, capture criterion, competing
+  explanation, or self-audit item that the answer leaves out as a gap to
+  complete. The compiler filled in "uncertain" or "concern", and the answer
+  imported as complete with judgments it never made.
+- Puts a completion reply that lists only the missing records, in order,
+  under the list that holds them (`"/list": [B, D]` for records 1 and 3)
+  into those records; they landed in the wrong ones. A list too short to
+  reach every record asked for, without one entry per missing record, is
+  reported as matching nothing asked for, not guessed at.
+- Keeps a Biopolitical section's records when the answer writes a note
+  beside them (`{"items": [...], "note": "..."}`); every record was lost.
+  The note is kept for review.
+- Keeps for review a Biopolitical section written in a shape that cannot be
+  read, such as a list where named parts are asked for or text where a list
+  is. It was emptied without a trace.
+- Gives a generated competing-explanation ID a number the answer has not
+  already used; two explanations could share `EX2`.
+- Joins a continuation that carries on inside the cut-off code block and
+  ends with its closing fence, also when a sign-off follows the fence. It
+  was joined as empty, or the sign-off was pasted into the answer. A
+  continuation that adds no quote or bracket is still not joined, since it
+  cannot be told apart from "the answer was already complete"; the message
+  now says how to add it by hand if it is the rest of the answer.
+- Also restores a missing first `{` when the answer follows lines of prose
+  ("Sure!", "Here is the analysis:") or sits in one of several code blocks.
+  The contract and subject were dropped, or a format example was taken for
+  the whole answer, without a warning.
+
+- Joins a continue reply that repeats the whole record the answer was cut
+  in, however long; a repeat over 400 characters was added twice.
+- Puts an answer the AI started over in place of the cut-off one, instead of
+  appending it and asking for the rest again.
+- Keeps a Biopolitical section member the import does not use (`power.actor`
+  for `actors`) in the import audit instead of dropping it unseen, and puts
+  back `links` and other top-level members written inside a section.
+- Reads Strategic links written as `{"items": [...]}` as the list of links,
+  not as one link holding them all.
+
+- Says that a complete answer with a JSON error has one, instead of "No
+  analysis was found", and gives the AI the parser's error in the repair
+  prompt instead of that message.
+- Keeps a complete answer complete when the AI replies that it is cut off,
+  and says the AI missed its JSON error; the continue prompt was offered.
+- Leaves a Biopolitical confidence the answer does not give as a gap to
+  complete; it was set to "low" while the status said nothing was invented.
+- Lists every gap of a Biopolitical answer at once, broken references
+  included, and each only once in the review. A schema gap hid the others,
+  so completing it revealed new gaps, which the review then listed twice.
+- Says "No analysis was found" for JSON that is not an analysis in the
+  Biopolitical lens too, instead of "Unsupported contract: missing / missing".
+- Records a draft's gaps in the interface language; a French import showed
+  the validator's English ("must NOT have fewer than 1 characters").
+- Says "No missing part was added" instead of "Added 0 missing parts".
+- Says when a Strategic value the contract does not allow (a confidence of
+  "very high", "élevée" or 0.8) was set aside; the status read "Valid JSON"
+  while the value was left out.
+- Sets aside the analysis on screen when an import brings one of the other
+  lens, so switching back brings it back instead of an empty lens.
 
 ### Workspaces
 
@@ -94,6 +152,47 @@
   chosen again; exports and resets acted on the other lens's workspace.
 - Keeps a pasted answer when an edit is saved or a resolution is committed.
 - Resets no longer bring back results set aside for the other lens.
+- Saves an edit to a Strategic answer imported as a draft. The editor
+  accepted only a complete analysis, so a draft could not be saved or
+  committed. An edit to a complete analysis must still keep it complete.
+  The editor says when a field parses but the draft still has parts missing.
+- Records a committed Strategic or Biopolitical draft as a draft in the
+  resolution ledger; it was recorded as a valid contract. The ledger shows
+  Passed, Draft, or Failed.
+- Leaves an answer that is pasted but not imported in the box, still
+  guarded, when the lens is switched, also across a reload after the switch
+  brings back the other lens's analysis; switching back no longer replaces
+  it.
+- Keeps an answer that is pasted but not imported across a reload after an
+  edit is saved or a resolution is committed; its saved copy was discarded.
+
+- Keeps each tab's analysis being prepared apart: a second tab no longer
+  replaces or deletes the first one's pasted reply, and a reload reopens the
+  tab's own analysis. A new tab takes over what a closed tab left.
+- Keeps the topic, context, and sources for a reload as they are typed, also
+  before a prompt is copied; edits made after copying were undone.
+- Brings back a topic typed in a lens with no result when the other lens is
+  chosen and then this one again; the other lens's title replaced it.
+- Stays in a lens with no result across a reload, with its pasted reply,
+  instead of reopening the other lens's analysis.
+- Says when an imported analysis could not be saved, at once and again in
+  Workspaces, which said "storage is ready" instead.
+- Says a failed save in the draft editor itself; it was shown only in the
+  closed Workspaces dialog.
+- Speaks the interface language in Workspaces: lens names, the integrity
+  label, a damaged row and storage failures no longer show English text or
+  raw codes in Arabic and French.
+- A row whose workspace was removed in another tab, or damaged, says so;
+  Edit draft opened the analysis on screen instead, or failed silently.
+- Keeps an analysis with its workspace when the lens is switched while it
+  saves; it came back detached, with Export and Remove disabled.
+- Does not save the analysis already open a second time when it is imported
+  again (the sample loaded twice made two workspaces).
+- Asks a question before closing the editor with unsaved changes, and a
+  restored edit that was never applied reads as unsaved and can be saved.
+- Keeps and guards a reply left in the box by Reset app data.
+- A damaged workspace row can be removed (after a second click); it could
+  not be opened or removed before.
 
 ### Prompts
 
@@ -112,6 +211,32 @@
 - Stops telling the assistant that the tool fills the keyed sets it must
   write, and stops asking for traceable or source-grounded evidence at
   Research depth when no source access is chosen.
+- Tells Strategic answers without source access, at every depth, to copy the
+  placeholder evidence item word for word as the only evidence. Four answers
+  handled the placeholder in four different ways.
+- States that Strategic feedback `speed` is `fast` or `slow`, never
+  `medium`; five answers wrote `medium`.
+- Asks both lenses to keep each `source_title` as the source gives it;
+  answers translated titles into the analysis language.
+- Tells Biopolitical answers without source access to leave
+  `evidence_of_benefit` empty; three answers cited the placeholder there.
+
+- Fills `statistics_quotations_verified` with "concern" in every source
+  mode, as the rules ask; the web and provided-source templates offered
+  "pass", which flagged answers that followed them.
+
+- Names the capture criterion in each missing-part line of the completion
+  prompt; the AI saw only a list position.
+- Lets the repair prompt fix the values its diagnostics name, and names
+  each path once.
+- Names the Biopolitical prompt's depth as the interface does ("Focused"),
+  not by its code ("simple").
+- No longer calls the template's example records "empty" in the Biopolitical
+  field guide, and opens the guide in plain words instead of "keys are
+  canonical; ref becomes id locally".
+- Gives the Arabic and French Biopolitical rules the details the English ones
+  have: the range from protection to expropriation, and dataset IDs and
+  archive references as source locators.
 
 ### Reports and interface
 
@@ -136,6 +261,45 @@
   the interface language.
 - Shows the source type codes `internal_sample` and `none` as words.
 - Adds French for five Strategic labels that showed English.
+- Names every Biopolitical code in Arabic and French; 22, such as resistance
+  forms, social dimensions, and replication status, showed in English.
+- Names Strategic actor types, tool categories, frames, horizons, stakes,
+  and values in Arabic and French, and shows a confidence as one ("High
+  confidence") rather than a bare "High".
+- Shows the record drawer's coded values (pillar, status, confidence, source
+  type and tier, relation) in the interface language.
+- Names five more relationship types in the relationship explorer in Arabic
+  and French, and corrects an Arabic explanation that called a structural
+  link a legal reference.
+- Adds the research question and each evidence item's source note,
+  uncertainty, and strength to the Strategic report; they were left out.
+  Layer confidence chips there read "High confidence", not "High".
+- Points relationship arrows from source to target in Arabic, in the
+  Biopolitical report and the relationship explorer, on desktop and phone,
+  and in causal link titles and the model chain under the Arabic report
+  titles; they pointed backwards in the right-to-left layout.
+- Names Biopolitical scales, inequality axes, power modes, asymmetry
+  resources, resistance forms, and institution roles in Arabic and French,
+  in the records and the report's reference directory, and shows "Missing
+  from record" as yes or no. They showed as English codes and `false`.
+- Names a source cluster's identity basis in the interface language.
+- Capitalizes an accented word where the AI's own text stands in a coded
+  field: "État", not "éTat".
+- Gives two references whose IDs differ only in punctuation (`ACT.1`,
+  `ACT-1`) their own anchors in the Biopolitical report; a link to one
+  could open the other.
+
+- Heads each conclusion group of the Biopolitical report once, and
+  translates "schema" in its Arabic and French header.
+- Ends long export file names at a whole word, never on a dash.
+- Titles the continue prompt by its own name when it cannot be copied.
+- Gives one verdict in both gates of the Biopolitical overview ("Review
+  needed", not "Blocked" beside it), and the quality gate lists every open
+  item, not the first four.
+- No longer says the six scoring dimensions are "below" the rule; they can
+  sit beside it or before it.
+- Says an unapproved publication gate is "not approved" in Arabic
+  (غير معتمد, and غير مستوفاة in the report) instead of "banned" (محظور).
 
 ### Tests and tooling
 
@@ -149,6 +313,7 @@
   analysis in the analysis-language test that was flaky on WebKit CI.
 - Checks the no-source Biopolitical prompt against the template it sends, in
   every language.
+- The French label check now also finds a label call that ends in a comma.
 - Splits the workspace reset test in two. Under load on WebKit it reached the
   60-second test timeout.
 - Adds `npm run corpus`, which asks models on OpenRouter for analyses and runs

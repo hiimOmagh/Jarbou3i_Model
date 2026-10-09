@@ -102,16 +102,24 @@
     return normalized || "generated-analysis";
   }
 
-  function quarantine(path, value, audit) {
+  function quarantine(path, value, audit, code = "UNKNOWN_PROPERTY_QUARANTINED") {
     audit.quarantine.push(
       Object.freeze({
-        code: "UNKNOWN_PROPERTY_QUARANTINED",
+        code,
         path,
         value: clone(value),
         action: "preserved_in_import_audit",
         severity: "information",
       }),
     );
+  }
+
+  // A part in a shape that cannot be read (a list or text where named parts
+  // are asked for, text where a list is) is kept for review in the import
+  // audit, never emptied unseen.
+  function keepUnreadable(path, value, audit) {
+    if (value === undefined || value === null || value === "") return;
+    quarantine(path, value, audit, "INVALID_VALUE_QUARANTINED");
   }
 
   // An extra closing brace can leave a section member at the top level
@@ -158,6 +166,25 @@
         }),
       );
     }
+    // A top-level member written inside a section ("self_audit": {..., "links": [...]})
+    // is put back when the top level does not have it.
+    for (const [section, value] of Object.entries(out)) {
+      if (!isObject(value)) continue;
+      for (const key of Object.keys(value)) {
+        if (!TOP_LEVEL_KEYS.has(key) || sectionOf(key) || out[key] !== undefined) continue;
+        out[key] = value[key];
+        out[section] = { ...out[section] };
+        delete out[section][key];
+        audit.transformations.push(
+          Object.freeze({
+            code: "MISPLACED_MEMBER_RESTORED",
+            path: `/${key}`,
+            from: `/${section}/${key}`,
+            count: 1,
+          }),
+        );
+      }
+    }
     return out;
   }
 
@@ -199,13 +226,20 @@
     return item;
   }
 
-  function normalizeCollection(value) {
-    // The canonical {items: [...]} form, written where a list is asked for.
-    if (isObject(value) && Array.isArray(value.items) && Object.keys(value).length === 1) {
-      return normalizeCollection(value.items);
+  function normalizeCollection(value, path, audit) {
+    // The canonical {items: [...]} form, written where a list is asked for;
+    // anything written beside the items is kept for review.
+    if (isObject(value) && Array.isArray(value.items)) {
+      for (const [key, extra] of Object.entries(value)) {
+        if (key !== "items") quarantine(`${path}/${key}`, extra, audit);
+      }
+      return normalizeCollection(value.items, path, audit);
     }
     if (Array.isArray(value)) return value.map(normalizeRecord);
-    if (!isObject(value)) return [];
+    if (!isObject(value)) {
+      keepUnreadable(path, value, audit);
+      return [];
+    }
     return Object.entries(value).map(([id, item]) => ({
       id: object(item).id || id,
       ...normalizeRecord(item),
@@ -215,7 +249,10 @@
   // Canonical-style arrays ([{level:"body",…}]) are keyed by the entry value that
   // names a set member; entries that name none are quarantined, never dropped.
   function keyedSet(value, expected, path, audit) {
-    if (!Array.isArray(value)) return object(value);
+    if (!Array.isArray(value)) {
+      if (!isObject(value)) keepUnreadable(path, value, audit);
+      return object(value);
+    }
     const keyed = {};
     value.forEach((item, index) => {
       const key = isObject(item)
@@ -275,6 +312,26 @@
       throw error;
     }
     const audit = { transformations: [], quarantine: [] };
+    // Each section records the members the import reads; the rest are kept in
+    // the import audit at the end, never dropped unseen.
+    const sections = [];
+    const section = (path, value) => {
+      if (!isObject(value)) keepUnreadable(path, value, audit);
+      const members = object(value);
+      const read = new Set();
+      sections.push({ path, members, read });
+      return new Proxy(members, {
+        get(target, key, receiver) {
+          read.add(key);
+          return Reflect.get(target, key, receiver);
+        },
+      });
+    };
+    const list = (path, value) => {
+      if (!Array.isArray(value)) keepUnreadable(path, value, audit);
+      return array(value);
+    };
+    const collection = (path, value) => normalizeCollection(value, path, audit);
     const source = restoreMisplacedMembers(object(raw), audit);
     const top = knownObject(source, TOP_LEVEL_KEYS, "", audit);
     const BIO = root.Jarbou3iBiopolitics;
@@ -294,14 +351,16 @@
         Object.freeze({ code: "SUBJECT_TEXT_TO_TITLE", path: "/subject", count: 1 }),
       );
     }
-    const subject = subjectText ? { title: top.subject } : object(top.subject);
-    const power = object(top.power);
-    const mechanisms = object(top.mechanisms);
-    const meaning = object(top.meaning);
-    const intervention = object(top.intervention);
-    const capture = object(intervention.capture);
-    const distribution = object(top.distribution);
-    const conclusion = object(top.conclusion);
+    const subject = subjectText ? { title: top.subject } : section("/subject", top.subject);
+    const power = section("/power", top.power);
+    const mechanisms = section("/mechanisms", top.mechanisms);
+    const meaning = section("/meaning", top.meaning);
+    const intervention = section("/intervention", top.intervention);
+    const capture = section("/intervention/capture", intervention.capture);
+    const scaleTime = section("/scale_time", top.scale_time);
+    const distribution = section("/distribution", top.distribution);
+    const conclusion = section("/conclusion", top.conclusion);
+    const selfAudit = section("/self_audit", top.self_audit);
     const language = LANGUAGES.has(top.language) ? top.language : "en";
     const mode = MODES.has(top.mode) ? top.mode : "focused";
     const generatedAt =
@@ -328,57 +387,66 @@
           subject.executive_finding ?? subject.finding,
         ),
       },
-      framing: clone(object(top.framing)),
-      legal_framework: clone(object(top.legal_framework)),
-      international_comparison: normalizeCollection(
+      framing: clone(section("/framing", top.framing)),
+      legal_framework: clone(section("/legal_framework", top.legal_framework)),
+      international_comparison: collection(
+        "/international_comparison",
         top.international_comparison,
       ),
       capture_levels: fixedMap(
         top.capture_levels,
         captureLevels,
+        // A judgment the reply did not give stays empty: a gap to complete.
         (level, item) => ({
           level,
-          status: item.status || "uncertain",
+          status: item.status || undefined,
           finding: text(item.finding),
           evidence_ids: array(item.evidence_ids ?? item.evidence_refs),
         }),
         "/capture_levels",
         audit,
       ),
-      theoretical_comparison: normalizeCollection(
+      theoretical_comparison: collection(
+        "/theoretical_comparison",
         top.theoretical_comparison,
       ),
-      human_functions: normalizeCollection(top.human_functions),
+      human_functions: collection("/human_functions", top.human_functions),
       power_map: {
-        actors: normalizeCollection(power.actors),
-        affected_populations: normalizeCollection(
+        actors: collection("/power/actors", power.actors),
+        affected_populations: collection(
+          "/power/affected_populations",
           power.affected_populations ?? power.populations,
         ),
-        institutions: normalizeCollection(power.institutions),
-        power_asymmetries: normalizeCollection(
+        institutions: collection("/power/institutions", power.institutions),
+        power_asymmetries: collection(
+          "/power/power_asymmetries",
           power.power_asymmetries ?? power.asymmetries,
         ),
       },
       mechanisms: {
-        instruments: normalizeCollection(mechanisms.instruments),
-        infrastructures: normalizeCollection(mechanisms.infrastructures),
-        political_economy: normalizeCollection(
+        instruments: collection("/mechanisms/instruments", mechanisms.instruments),
+        infrastructures: collection("/mechanisms/infrastructures", mechanisms.infrastructures),
+        political_economy: collection(
+          "/mechanisms/political_economy",
           mechanisms.political_economy,
         ),
-        power_modes: normalizeCollection(mechanisms.power_modes),
+        power_modes: collection("/mechanisms/power_modes", mechanisms.power_modes),
       },
       meaning_systems: {
-        norms: normalizeCollection(meaning.norms),
-        regimes_of_truth: normalizeCollection(
+        norms: collection("/meaning/norms", meaning.norms),
+        regimes_of_truth: collection(
+          "/meaning/regimes_of_truth",
           meaning.regimes_of_truth ?? meaning.truth_regimes,
         ),
-        classifications: normalizeCollection(meaning.classifications),
-        looping_effects: normalizeCollection(
+        classifications: collection("/meaning/classifications", meaning.classifications),
+        looping_effects: collection(
+          "/meaning/looping_effects",
           meaning.looping_effects ?? meaning.loops,
         ),
       },
       intervention_assessment: {
-        interventions: normalizeCollection(
+        interventions: collection(
+          "/intervention/interventions",
           intervention.interventions ?? intervention.items,
         ),
         capture_assessment: {
@@ -388,7 +456,7 @@
             captureCriteria,
             (criterion, item) => ({
               criterion,
-              status: item.status || "uncertain",
+              status: item.status || undefined,
               evidence_ids: array(
                 item.evidence_ids ?? item.evidence_refs,
               ),
@@ -397,41 +465,45 @@
             "/intervention/capture/criteria",
             audit,
           ),
-          counter_evidence: array(capture.counter_evidence),
-          legitimate_benefits: array(capture.legitimate_benefits),
+          counter_evidence: list("/intervention/capture/counter_evidence", capture.counter_evidence),
+          legitimate_benefits: list("/intervention/capture/legitimate_benefits", capture.legitimate_benefits),
           conclusion: text(capture.conclusion),
-          confidence: capture.confidence || "low",
+          confidence: capture.confidence,
         },
-        care_control_tensions: normalizeCollection(
+        care_control_tensions: collection(
+          "/intervention/care_control_tensions",
           intervention.care_control_tensions ?? intervention.tensions,
         ),
       },
       scale_time: {
-        ...clone(object(top.scale_time)),
-        ...(object(top.scale_time).future_feedback_loops !== undefined && {
-          future_feedback_loops: normalizeCollection(
-            top.scale_time.future_feedback_loops,
+        ...clone(scaleTime),
+        ...(scaleTime.future_feedback_loops !== undefined && {
+          future_feedback_loops: collection(
+            "/scale_time/future_feedback_loops",
+            scaleTime.future_feedback_loops,
           ),
         }),
       },
       distribution: {
-        items: normalizeCollection(distribution.items),
-        inequality_dimensions: normalizeCollection(
+        items: collection("/distribution/items", distribution.items),
+        inequality_dimensions: collection(
+          "/distribution/inequality_dimensions",
           distribution.inequality_dimensions ?? distribution.inequalities,
         ),
-        necropolitical_dimensions: normalizeCollection(
+        necropolitical_dimensions: collection(
+          "/distribution/necropolitical_dimensions",
           distribution.necropolitical_dimensions ??
             distribution.necropolitics,
         ),
       },
-      consent_exit: clone(object(top.consent_exit)),
+      consent_exit: clone(section("/consent_exit", top.consent_exit)),
       competing_explanations: fixedMap(
         top.explanations,
         explanationTypes,
         (type, item, index) => ({
-          id: item.id || `EX${index + 1}`,
+          id: item.id || undefined,
           type,
-          relevance: item.relevance || "uncertain",
+          relevance: item.relevance || undefined,
           evidentiary_status:
             item.evidentiary_status ?? item.status ?? "not_assessed",
           claim: text(item.claim),
@@ -447,35 +519,36 @@
               item.counter,
           ),
           falsified_if: array(item.falsified_if),
-          confidence: item.confidence || "low",
+          confidence: item.confidence,
         }),
         "/explanations",
         audit,
       ),
-      evidence: { items: normalizeCollection(top.evidence) },
-      assumptions: { items: normalizeCollection(top.assumptions) },
+      evidence: { items: collection("/evidence", top.evidence) },
+      assumptions: { items: collection("/assumptions", top.assumptions) },
       resistance_agency: {
-        items: normalizeCollection(top.resistance),
+        items: collection("/resistance", top.resistance),
       },
-      alternatives: { items: normalizeCollection(top.alternatives) },
+      alternatives: { items: collection("/alternatives", top.alternatives) },
       calibrated_conclusion: {
-        strongly_supported: array(conclusion.strongly_supported),
-        plausible_unconfirmed: array(conclusion.plausible_unconfirmed),
-        disputed: array(conclusion.disputed),
-        unknown: array(conclusion.unknown),
-        evidence_that_would_change: array(
+        strongly_supported: list("/conclusion/strongly_supported", conclusion.strongly_supported),
+        plausible_unconfirmed: list("/conclusion/plausible_unconfirmed", conclusion.plausible_unconfirmed),
+        disputed: list("/conclusion/disputed", conclusion.disputed),
+        unknown: list("/conclusion/unknown", conclusion.unknown),
+        evidence_that_would_change: list(
+          "/conclusion/evidence_that_would_change",
           conclusion.evidence_that_would_change,
         ),
-        overall_confidence: conclusion.overall_confidence || "low",
+        overall_confidence: conclusion.overall_confidence,
       },
       self_audit: Object.fromEntries(
         selfAuditKeys.map((key) => [
           key,
-          object(top.self_audit)[key] || "concern",
+          selfAudit[key] || undefined,
         ]),
       ),
-      self_audit_notes: array(top.self_audit_notes),
-      links: normalizeCollection(top.links).map((item) => {
+      self_audit_notes: list("/self_audit_notes", top.self_audit_notes),
+      links: collection("/links", top.links).map((item) => {
         const link = { ...item };
         delete link.id;
         return link;
@@ -484,6 +557,23 @@
     };
 
     addGeneratedIds(candidate, audit);
+    // Explanation IDs are made here, not asked of the model, and skip any ID
+    // the answer already gave one.
+    const explanationIds = new Set(
+      candidate.competing_explanations.map((item) => text(item.id).trim()).filter(Boolean),
+    );
+    candidate.competing_explanations.forEach((item, index) => {
+      if (text(item.id).trim()) return;
+      let number = index + 1;
+      while (explanationIds.has(`EX${number}`)) number += 1;
+      item.id = `EX${number}`;
+      explanationIds.add(item.id);
+    });
+    for (const { path, members, read } of sections) {
+      for (const [key, value] of Object.entries(members)) {
+        if (!read.has(key)) quarantine(`${path}/${key}`, value, audit);
+      }
+    }
     audit.transformations.unshift(
       Object.freeze({
         code: "AI_INTERCHANGE_COMPILED",
@@ -985,8 +1075,9 @@
       template.evidence = [{ ref: id, ...record }];
       template.conclusion.strongly_supported = [copy.noStrong];
       template.conclusion.overall_confidence = "low";
-      template.self_audit.statistics_quotations_verified = "concern";
     }
+    // Rule 10: the AI's own output is never a documented verification.
+    template.self_audit.statistics_quotations_verified = "concern";
     return JSON.stringify(template);
   }
 
@@ -1009,9 +1100,9 @@
       ...(["research", "expert"].includes(mode) ? ["assumptions", "links"] : []),
     ];
     return [
-      "Interchange record guide (keys are canonical; ref becomes id locally):",
+      "Record guide (use these field names exactly; a record's ref is its ID, which other records use to point to it):",
       // Without source access the template's placeholder is the only evidence.
-      `Populate these even though their template arrays are empty: ${populate.slice(0, -1).join(", ")}, and ${populate.at(-1)}.`,
+      `Populate these, each with at least one record: ${populate.slice(0, -1).join(", ")}, and ${populate.at(-1)}.`,
       "institutions: {ref,name,mandate,role,accountability[],confidence}",
       "power_asymmetries: {ref,between[],resource,effect,confidence}",
       "infrastructures: {ref,name,owner,dependency_created,actions_enabled_or_blocked[],access_conditions[],confidence}",
@@ -1031,7 +1122,10 @@
       "resistance: {ref,actor_or_population,form,mechanism,effect_on_system,constraints[],confidence}",
       "alternatives: {ref,level,proposal,mechanism,feasibility,tradeoffs[],rights_safeguards[],evidence_needed[],lower_harm_rationale}",
       "links: {from,to,relation,mechanism,confidence}",
-      "interventions.evidence_of_benefit: evidence IDs (E1, E2…), never descriptions; state the benefit itself in stated_benefit",
+      // Without source access the placeholder is not evidence; nothing cites it.
+      evidenceAccess === "none"
+        ? "interventions.evidence_of_benefit: always empty [] without source access, since the placeholder is not evidence; state the benefit itself in stated_benefit"
+        : "interventions.evidence_of_benefit: evidence IDs (E1, E2…), never descriptions; state the benefit itself in stated_benefit",
       "power_asymmetries.between: refs of actors, affected_populations, or institutions in this answer, never names",
       "links.from, links.to: refs of records in this answer (an actor, intervention, evidence item…), never names or descriptions",
       // The importer rejects any other code or number; the AI must see them all.
@@ -1058,7 +1152,7 @@
     if (lang === "ar") {
       return [
         "قبل الإرسال، تحقّق من:",
-        "- كل قيمة نصية مكتوبة بالعربية؛ وتبقى المفاتيح والمعرّفات والرموز كما هي في المخطط.",
+        "- كل قيمة نصية مكتوبة بالعربية، عدا source_title الذي يبقى كما يرد في المصدر؛ وتبقى المفاتيح والمعرّفات والرموز كما هي في المخطط.",
         "- الحقول المرمّزة تستخدم القيم المدرجة فقط، والأرقام ضمن نطاقاتها المحددة.",
         "- كائن JSON واحد داخل كتلة كود واحدة ```json، دون أي نص قبلها أو بعدها.",
         "- لا \"...\" ولا كلمات القالب مثل \"string\" مكان المحتوى.",
@@ -1068,7 +1162,7 @@
     if (lang === "fr") {
       return [
         "Avant d’envoyer, vérifiez :",
-        "- Chaque valeur textuelle est rédigée en français ; clés, identifiants et codes restent tels que dans le schéma.",
+        "- Chaque valeur textuelle est rédigée en français, sauf source_title, qui reste tel que la source le donne ; clés, identifiants et codes restent tels que dans le schéma.",
         "- Les champs codés n’utilisent que les valeurs listées, et les nombres restent dans leurs plages indiquées.",
         "- Un seul objet JSON, dans un unique bloc de code ```json, sans aucun texte avant ou après.",
         "- Aucun « ... » ni mot du modèle comme \"string\" à la place du contenu.",
@@ -1077,7 +1171,7 @@
     }
     return [
       "Before you send, check:",
-      "- Every text value is written in English; keys, IDs, and codes stay as the schema shows them.",
+      "- Every text value is written in English, except source_title, which stays as the source gives it; keys, IDs, and codes stay as the schema shows them.",
       "- Coded fields use only the listed values, and numbers stay within their stated ranges.",
       "- One JSON object, inside a single ```json code block, with no text before or after it.",
       "- No \"...\" and no template words such as \"string\" left in place of content.",
@@ -1112,7 +1206,7 @@
       .slice(1)
       .map((key) => key.replaceAll("~1", "/").replaceAll("~0", "~"));
 
-  const LABEL_KEYS = ["name", "title", "term", "claim", "rhetoric", "description"];
+  const LABEL_KEYS = ["name", "title", "term", "claim", "rhetoric", "description", "criterion"];
   const COMPLETION_COPY = {
     en: {
       intro: `Some parts of your previous answer are missing. Do not resend the whole analysis. Reply with only the missing parts, as one JSON object inside a single \`\`\`json code block, using exactly the paths listed below as keys:
@@ -1259,11 +1353,24 @@ Parties manquantes :`,
       const target = fillTarget(key);
       // Models also answer one level up, keyed by the record or list that
       // holds the missing parts; only the parts asked for are read from it.
+      // A list there may hold only the missing records, in order ([B, D] for
+      // records 1 and 3). One too short to reach every record asked for, but
+      // not one entry per record either, is not guessed at.
+      const below = [...asked].filter((path) => path.startsWith(`${target}/`));
+      const records = [...new Set(below.map((path) => pointerKeys(path.slice(target.length))[0]))];
+      const indexes = records.every((key) => /^\d+$/.test(key))
+        ? records.map(Number).sort((a, b) => a - b)
+        : [];
+      let read = next;
+      if (Array.isArray(next) && indexes.length && next.length <= indexes.at(-1)) {
+        read = next.length === indexes.length
+          ? Object.fromEntries(indexes.map((index, position) => [index, next[position]]))
+          : undefined;
+      }
       const parts = asked.has(target)
         ? [[target, next]]
-        : [...asked]
-            .filter((path) => path.startsWith(`${target}/`))
-            .map((path) => [path, pointerKeys(path.slice(target.length)).reduce((node, part) => node?.[part], next)])
+        : below
+            .map((path) => [path, pointerKeys(path.slice(target.length)).reduce((node, part) => node?.[part], read)])
             .filter(([, part]) => part !== undefined);
       const written = parts.filter(([path, part]) => put(path, part)).length;
       if (!written) ignored.push(target);
