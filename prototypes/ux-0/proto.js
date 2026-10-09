@@ -1528,7 +1528,9 @@ async function bioReport() {
     for (const file of ["biopolitics-graph.js", "biopolitical-report.js"]) await import(`../../src/${file}`);
     const a = state.analysis;
     const html = window.Jarbou3iBiopoliticalReport.build({ analysis: a, lang: ["ar", "en", "fr"].includes(a.language) ? a.language : "en", version: "ux-0-prototype", bio: real.bio, graphApi: window.Jarbou3iBiopoliticsGraph });
-    const slug = String(a.subject?.title || "analysis").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\u0600-\u06ff]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "analysis";
+    // File name as safeFileSlug() in src/app.js: a long title ends at a whole word, never on a dash.
+    const slug = String(a.subject?.title || "analysis").toLowerCase().replace(/œ/g, "oe").replace(/æ/g, "ae").normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\u0600-\u06ff]+/gi, "-").replace(/^-+|-+$/g, "").replace(/^(.{1,70})(?=-|$).*/, "$1").slice(0, 70) || "analysis";
     const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
     const link = Object.assign(document.createElement("a"), { href: url, download: `${slug}-biopolitical-v2-report.html`, hidden: true });
     document.body.append(link);
