@@ -225,6 +225,7 @@
       conclusion: "Calibrated judgment",
       selfAudit: "Model self-audit",
       migration: "Legacy Biopolitical import migrated to v2",
+      draftGaps: "Gaps to complete before publication",
       noRecords: "No structured records in this pillar.",
       sourceTier: "Source tier",
       counterEvidence: "Counter-evidence",
@@ -336,6 +337,7 @@
       conclusion: "الحكم المُعاير",
       selfAudit: "المراجعة الذاتية للنموذج",
       migration: "تمت ترقية الاستيراد الحيوسياسي القديم إلى الإصدار 2",
+      draftGaps: "فجوات يجب استكمالها قبل النشر",
       noRecords: "لا توجد سجلات منظّمة في هذه الركيزة.",
       sourceTier: "رتبة المصدر",
       counterEvidence: "دليل مضاد",
@@ -448,6 +450,7 @@
       conclusion: "Jugement calibré",
       selfAudit: "Auto-audit du modèle",
       migration: "Import biopolitique historique migré vers v2",
+      draftGaps: "Lacunes à compléter avant publication",
       noRecords: "Aucun enregistrement structuré dans ce pilier.",
       sourceTier: "Niveau de source",
       counterEvidence: "Contre-preuve",
@@ -563,19 +566,20 @@
     limited_capture: ["استحواذ محدود", "Capture limitée"],
     mixed_capture: ["استحواذ مختلط", "Capture mixte"],
     substantial_capture: ["استحواذ جوهري", "Capture substantielle"],
-    knowledge_deficit: ["عجز معرفي", "Déficit de connaissance"],
-    consent_failure: ["فشل الموافقة", "Défaillance du consentement"],
-    vulnerability_exploitation: ["استغلال الهشاشة", "Exploitation de la vulnérabilité"],
-    unequal_distribution: ["توزيع غير متكافئ", "Distribution inégale"],
-    disproportionate_power_or_profit: ["قوة أو ربح غير متناسب", "Pouvoir ou profit disproportionné"],
-    dependency_or_costly_exit: ["تبعية أو خروج مكلف", "Dépendance ou sortie coûteuse"],
-    alternatives_suppressed: ["قمع البدائل", "Alternatives supprimées"],
-    behavior_optimized_without_oversight: ["تحسين السلوك دون رقابة", "Comportement optimisé sans contrôle"],
-    choice_architecture_constraint: ["تقييد بنية الاختيار", "Contrainte de l’architecture du choix"],
-    data_repurposing: ["إعادة توظيف البيانات", "Réutilisation des données"],
-    human_capacity_commercialized: ["تسليع القدرة الإنسانية", "Commercialisation d’une capacité humaine"],
-    classification_not_contestable: ["تصنيف غير قابل للطعن", "Classification non contestable"],
-    environmental_unavoidability: ["حتمية بيئية", "Inévitabilité environnementale"],
+    // Capture criteria carry an English label too: their keys are compressed phrases.
+    knowledge_deficit: ["عجز معرفي", "Déficit de connaissance", "Knowledge deficit"],
+    consent_failure: ["فشل الموافقة", "Défaillance du consentement", "Consent failure"],
+    vulnerability_exploitation: ["استغلال الهشاشة", "Exploitation de la vulnérabilité", "Exploitation of vulnerability"],
+    unequal_distribution: ["توزيع غير متكافئ", "Distribution inégale", "Unequal distribution"],
+    disproportionate_power_or_profit: ["قوة أو ربح غير متناسب", "Pouvoir ou profit disproportionné", "Disproportionate power or profit"],
+    dependency_or_costly_exit: ["تبعية أو خروج مكلف", "Dépendance ou sortie coûteuse", "Dependency or costly exit"],
+    alternatives_suppressed: ["قمع البدائل", "Alternatives supprimées", "Alternatives suppressed"],
+    behavior_optimized_without_oversight: ["تحسين السلوك دون رقابة", "Comportement optimisé sans contrôle", "Behavior optimized without oversight"],
+    choice_architecture_constraint: ["تقييد بنية الاختيار", "Contrainte de l’architecture du choix", "Constrained choice architecture"],
+    data_repurposing: ["إعادة توظيف البيانات", "Réutilisation des données", "Data repurposing"],
+    human_capacity_commercialized: ["تسليع القدرة الإنسانية", "Commercialisation d’une capacité humaine", "Human capacity commercialized"],
+    classification_not_contestable: ["تصنيف غير قابل للطعن", "Classification non contestable", "Classification not contestable"],
+    environmental_unavoidability: ["حتمية بيئية", "Inévitabilité environnementale", "Environmental unavoidability"],
     care_control_tension: ["توتر الرعاية والسيطرة", "Tension soin-contrôle"],
     consent: ["الموافقة", "Consentement"],
     distribution: ["توزيع", "Distribution"],
@@ -673,25 +677,26 @@
     alternative_institution: ["مؤسسة بديلة", "Institution alternative"],
   };
 
+  // [Arabic, French, English]: the keys are compressed sentences, so English needs its own label too.
   const AUDIT_LABELS = {
-    malicious_intent_without_evidence: ["نسبة نية خبيثة دون دليل", "Intention malveillante attribuée sans preuve"],
-    institutional_claims_uncritically: ["قبول الادعاءات المؤسسية بلا نقد", "Énoncés institutionnels acceptés sans critique"],
-    metaphor_as_mechanism: ["معاملة الاستعارة كآلية", "Métaphore traitée comme mécanisme"],
-    human_function_identified: ["تحديد الوظيفة الإنسانية", "Fonction humaine identifiée"],
-    mechanism_explained: ["شرح الآلية", "Mécanisme expliqué"],
-    care_control_overlap: ["فحص تداخل الرعاية والسيطرة", "Chevauchement soin-contrôle examiné"],
-    material_and_meaning: ["فحص المادة والمعنى", "Dimensions matérielle et symbolique examinées"],
-    history_included: ["إدراج التاريخ", "Histoire incluse"],
-    political_economy_included: ["إدراج الاقتصاد السياسي", "Économie politique incluse"],
-    inequality_dimensions: ["فحص أبعاد اللامساواة", "Dimensions d’inégalité examinées"],
-    agency_resistance: ["فحص الفاعلية والمقاومة", "Agentivité et résistance examinées"],
-    competing_explanations: ["فحص التفسيرات المتنافسة", "Explications concurrentes examinées"],
-    statistics_quotations_verified: ["التحقق من الإحصاءات والاقتباسات", "Statistiques et citations vérifiées"],
-    uncertainty_stated: ["بيان عدم اليقين", "Incertitude explicitée"],
-    benefits_costs_identified: ["تحديد المنافع والتكاليف", "Bénéfices et coûts identifiés"],
-    realistic_alternatives: ["تقديم بدائل واقعية", "Alternatives réalistes proposées"],
-    stigmatization_risk_checked: ["فحص خطر الوصم", "Risque de stigmatisation vérifié"],
-    falsifier_identified: ["تحديد شروط الإبطال", "Réfutateurs identifiés"],
+    malicious_intent_without_evidence: ["نسبة نية خبيثة دون دليل", "Intention malveillante attribuée sans preuve", "Malicious intent attributed without evidence"],
+    institutional_claims_uncritically: ["قبول الادعاءات المؤسسية بلا نقد", "Énoncés institutionnels acceptés sans critique", "Institutional claims accepted uncritically"],
+    metaphor_as_mechanism: ["معاملة الاستعارة كآلية", "Métaphore traitée comme mécanisme", "Metaphor treated as mechanism"],
+    human_function_identified: ["تحديد الوظيفة الإنسانية", "Fonction humaine identifiée", "Human function identified"],
+    mechanism_explained: ["شرح الآلية", "Mécanisme expliqué", "Mechanism explained"],
+    care_control_overlap: ["فحص تداخل الرعاية والسيطرة", "Chevauchement soin-contrôle examiné", "Care–control overlap examined"],
+    material_and_meaning: ["فحص المادة والمعنى", "Dimensions matérielle et symbolique examinées", "Material and symbolic dimensions examined"],
+    history_included: ["إدراج التاريخ", "Histoire incluse", "History included"],
+    political_economy_included: ["إدراج الاقتصاد السياسي", "Économie politique incluse", "Political economy included"],
+    inequality_dimensions: ["فحص أبعاد اللامساواة", "Dimensions d’inégalité examinées", "Inequality dimensions examined"],
+    agency_resistance: ["فحص الفاعلية والمقاومة", "Agentivité et résistance examinées", "Agency and resistance examined"],
+    competing_explanations: ["فحص التفسيرات المتنافسة", "Explications concurrentes examinées", "Competing explanations examined"],
+    statistics_quotations_verified: ["التحقق من الإحصاءات والاقتباسات", "Statistiques et citations vérifiées", "Statistics and quotations verified"],
+    uncertainty_stated: ["بيان عدم اليقين", "Incertitude explicitée", "Uncertainty stated"],
+    benefits_costs_identified: ["تحديد المنافع والتكاليف", "Bénéfices et coûts identifiés", "Benefits and costs identified"],
+    realistic_alternatives: ["تقديم بدائل واقعية", "Alternatives réalistes proposées", "Realistic alternatives proposed"],
+    stigmatization_risk_checked: ["فحص خطر الوصم", "Risque de stigmatisation vérifié", "Stigmatization risk checked"],
+    falsifier_identified: ["تحديد شروط الإبطال", "Réfutateurs identifiés", "Falsifiers identified"],
   };
 
   const arr = (value) => (Array.isArray(value) ? value : []);
@@ -770,6 +775,7 @@
     const translated = TOKEN_LABELS[token];
     if (lang === "ar" && translated) return translated[0];
     if (lang === "fr" && translated) return translated[1];
+    if (translated?.[2]) return translated[2];
     return humanizeToken(token);
   }
 
@@ -786,6 +792,7 @@
     const translated = AUDIT_LABELS[key];
     if (lang === "ar" && translated) return translated[0];
     if (lang === "fr" && translated) return translated[1];
+    if (translated) return translated[2];
     return humanizeToken(key);
   }
 
@@ -3581,8 +3588,11 @@ ${schema}${interchangeGuide}`;
         ...a.links.map((item) =>
           record(
             // Both ends read in the analysis's direction; the marks keep IDs
-            // that name no record, left as Latin text, right to left.
-            `${item.from} ${lang === "ar" ? "\u200F←\u200F" : "→"} ${item.to}`,
+            // that name no record, left as Latin text, right to left. A missing
+            // end reads "—"; a link with no ends has no title, like any empty entry.
+            filled(item.from) || filled(item.to)
+              ? `${filled(item.from) ? item.from : "—"} ${lang === "ar" ? "\u200F←\u200F" : "→"} ${filled(item.to) ? item.to : "—"}`
+              : "",
             item.mechanism,
             ["causal_link", item.relation, item.confidence],
           ),

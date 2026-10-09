@@ -245,6 +245,15 @@ for (const lang of ["ar", "en", "fr"]) {
       fail(`${lang} review projection omitted high-value evidence field: ${token}`);
     }
   }
+  // A link with no ends is empty like any other entry; a missing end never reads "undefined".
+  const linked = structuredClone(normalized);
+  linked.links.push({ id: "LNK-EMPTY" }, { id: "LNK-HALF", from: "MEC1" });
+  if (JSON.stringify(bio.recordsFor("mechanisms_infrastructure", linked, lang)).includes("undefined")) {
+    fail(`${lang} link record shows "undefined" for a missing end`);
+  }
+  if (bio.pillarCount(linked, "mechanisms_infrastructure") !== bio.pillarCount(normalized, "mechanisms_infrastructure") + 1) {
+    fail(`${lang} pillar count must skip the empty link and keep the half-written one`);
+  }
 }
 
 for (const unsupported of [

@@ -55,6 +55,13 @@
   record refs, not names.
 - Stops counting the compilation of a Biopolitical answer as repairs. Every
   answer in the requested form showed about 28 repairs.
+- Gives the 18 Biopolitical self-audit checks and the 13 capture criteria
+  English labels in the app and the report ("Statistics and quotations
+  verified", not the raw key "Statistics Quotations Verified"); Arabic and
+  French already had theirs.
+- Shows a Biopolitical link that is missing an end as "— → MEC1" in the app
+  and the report, not "undefined → MEC1", and no longer counts a link with
+  neither end toward the Mechanisms pillar, in all three languages.
 - Offers no repair prompt for a valid answer with nothing to fix. The button
   stayed active, and its prompt told the AI that JSON parsing had failed.
 - Offers the continue prompt for an answer cut off after a wrong closing
@@ -300,6 +307,8 @@
   sit beside it or before it.
 - Says an unapproved publication gate is "not approved" in Arabic
   (غير معتمد, and غير مستوفاة in the report) instead of "banned" (محظور).
+- Heads the gap list of an AI draft "Gaps to complete before publication";
+  "Legacy Biopolitical import migrated to v2" is kept for legacy imports.
 
 ### Tests and tooling
 
@@ -330,6 +339,9 @@
 - Runs the WebKit core suite in four CI shards instead of two. With the tests
   added in this release, the second shard needed about 18 minutes and was
   stopped at the 15-minute job limit; no test failed.
+- Adds regression tests for removing the open damaged workspace, an older save
+  finishing after a newer import, parser positions after prose, and a restart
+  shorter than the answer.
 
 ### Repository cleanup
 
