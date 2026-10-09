@@ -115,7 +115,7 @@ const phasesOf = (a) => (isBio(a) ? BIO_PHASES : PHASES);
 // The records behind each pillar, grouped as recordsFor() in src/biopolitics.js groups them, so the
 // counts match the app's pillarCount(). A path to an object (not a list) is one section record.
 const PILLAR_LISTS = {
-  question_context: ["subject", "legal_framework", "international_comparison", "capture_levels", "theoretical_comparison"],
+  question_context: ["subject", "legal_framework", "international_comparison", "capture_levels", "theoretical_comparison", "migration"],
   human_functions: ["human_functions"],
   actors_institutions: ["power_map/actors", "power_map/affected_populations", "power_map/institutions", "power_map/power_asymmetries"],
   mechanisms_infrastructure: ["mechanisms/instruments", "mechanisms/infrastructures", "mechanisms/political_economy", "mechanisms/power_modes", "links"],
@@ -127,7 +127,7 @@ const PILLAR_LISTS = {
 };
 const TITLE_FIELDS = ["name", "claim", "proposal", "assumption", "care_claim", "category", "term", "tradition", "jurisdiction_or_context", "actor_or_population", "between", "axis"];
 const TOKEN_TITLES = ["level", "mode", "criterion"];
-const SECTIONS = ["subject", "legal_framework", "intervention_assessment/capture_assessment", "consent_exit", "scale_time"];
+const SECTIONS = ["subject", "legal_framework", "intervention_assessment/capture_assessment", "consent_exit", "scale_time", "migration"];
 // Like the app, an entry with no text besides its id (an empty template entry) is not counted.
 const hasText = (v) => (typeof v === "string" ? v.trim() !== "" : v && typeof v === "object" ? Object.values(v).some(hasText) : false);
 function bioRecords(a) {
@@ -136,8 +136,9 @@ function bioRecords(a) {
     for (const list of PILLAR_LISTS[pillar]) {
       const value = dig(a, list.replaceAll("/", "."));
       if (!Array.isArray(value)) {
-        // As in the app: a section with a fixed title always counts; the subject counts when it has text.
-        if (SECTIONS.includes(list) && (list !== "subject" || hasText(value))) out.push({ kind: "pillar", pillar, list, id: list, title: list === "subject" ? value.research_question || value.title : t(`sections.${list}`), path: `/${list}`, data: value || {} });
+        // As in the app: a section with a fixed title always counts; the subject counts when it has text,
+        // and the migration note of a salvaged or migrated draft when it is there.
+        if (SECTIONS.includes(list) && (list === "subject" ? hasText(value) : list !== "migration" || value)) out.push({ kind: "pillar", pillar, list, id: list, title: list === "subject" ? value.research_question || value.title : t(`sections.${list}`), path: `/${list}`, data: value || {} });
         continue;
       }
       value.forEach((item, i) => {
@@ -509,6 +510,7 @@ function checkAnswer(raw, lens = null) {
   } catch (error) {
     return { status: "invalid", message: t("vInvalid", { error: String(error.message).replace(/^JSON\.parse: /, "").slice(0, 80) }) };
   }
+  data = realImport(data);
   const lensName = (key) => t(key === "biopolitical" ? "lensBio" : "lensStrategic");
   const found = isBio(data) ? "biopolitical" : "strategic";
   if (lens && lens !== found) return { status: "invalid", message: t("vWrongLens", { x: lensName(found), y: lensName(lens) }) };
@@ -1497,9 +1499,26 @@ function updateAnswer(value) {
 // Served next to the app (the dev server or a branch preview), the prototype lists the workspaces the
 // app saved in this browser, opens a copy of one and runs the app's own Bio publication gate. It never
 // writes to the app's storage. Elsewhere (the standalone artifact) it keeps the samples and stand-ins.
-const ENGINE = ["biopolitics-schema-validator.js", "core/provenance.js", "biopolitics.js", "ai-interchange.js", "biopolitics-integrity.js"];
+const ENGINE = ["biopolitics-schema-validator.js", "core/provenance.js", "biopolitics.js", "ai-interchange.js", "biopolitics-integrity.js", "contract-repair.js"];
 const REVISION_KINDS = { imported_canonical: "imported", committed_resolution: "committed", restored_revision: "restored" };
 const real = { status: "loading", list: [], repo: null, bio: null, memo: { key: "", gate: null } };
+// The app's import chain for a pasted answer, as in validateJsonInput() in src/app.js: find the
+// result, compile the compact interchange form the prompt asks for, repair the contract, validate,
+// and salvage what fails into a reviewable draft. Without the engine, the answer is read as is.
+function realImport(data) {
+  const AI = window.Jarbou3iAiInterchange, REPAIR = window.Jarbou3iContractRepair, INTEGRITY = window.Jarbou3iBiopoliticsIntegrity;
+  if (!AI || !REPAIR || !INTEGRITY) return data;
+  try {
+    let input = AI.recognize(data).value;
+    const fromInterchange = AI.supports(input);
+    if (fromInterchange) input = AI.compile(input).value;
+    if (input?.analysis_lens !== "biopolitical") return input;
+    const repaired = REPAIR.repairBiopolitical(input).value;
+    const validation = INTEGRITY.validateImport(repaired);
+    if (validation.ok) return validation.analysis;
+    return REPAIR.salvageBiopolitical(repaired, { origin: fromInterchange ? "interchange" : "canonical", language: repaired.language, mode: repaired.model_mode }).value;
+  } catch { return data; }
+}
 function realGate(a) {
   if (!real.bio) return null;
   const key = `${state.lang}|${JSON.stringify(a)}`;

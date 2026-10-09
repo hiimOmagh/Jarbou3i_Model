@@ -58,6 +58,10 @@ publication gate (`BIO.health` from `src/biopolitics.js`). The flow:
 3. It opens as a copy, in the Case file layout unless you picked A (B is now the default), with
    the app's revisions; a banner says edits stay in the preview. The prototype only calls the repository's `list()` and `get()`: it never writes.
 
+Pasting an AI answer in the prototype (guided step 5, or Paste in the workspace) runs the app's own
+import chain from `src/` (interchange compile, contract repair, integrity check, salvage), as the
+app does, but keeps the result in the preview instead of saving it.
+
 Bio analyses show the app's gate verdict and its list of what blocks publication, in the page's
 language. The Strategic gate stays a labelled stand-in (the app's is inside `app.js`). In the
 standalone artifact, the app's files are not there, so it keeps the samples and the stand-ins.
