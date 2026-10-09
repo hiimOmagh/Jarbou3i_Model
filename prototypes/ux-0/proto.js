@@ -1029,11 +1029,13 @@ function futuresView(a) {
 }
 // The spoken state follows the tone: only a "crit" row blocks publication.
 const row = (ok, text, note = "", tone = ok ? "ok" : "crit") => `<li><span class="status ${tone}" aria-hidden="true"></span><span>${esc(text)}${tone === "idle" ? "" : `<span class="srOnly"> — ${esc(t({ ok: "readyShort", warn: "attention", crit: "blocked" }[tone]))}</span>`}${note ? `<small>${esc(note)}</small>` : ""}</span></li>`;
-const exportsPanel = () => `<div class="panelBox"><span class="label">${esc(t("exports"))}</span>
+// A Bio case gets the app's own HTML report when the engine is served here (see bioReport()).
+const exportsPanel = (bio = false) => `<div class="panelBox"><span class="label">${esc(t("exports"))}</span>
         <div style="display:grid;gap:var(--s-3)">
           <button type="button" class="btn primary" data-action="copyJson">${icon("copy")}${esc(t("copyJson"))}</button>
-          <button type="button" class="btn" disabled title="${esc(t("inApp"))}">${esc(t("htmlReport"))}</button>
-          <p class="help">${esc(t("inApp"))}</p>
+          ${bio && real.bio ? `<button type="button" class="btn" data-action="bioReport">${esc(t("htmlReport"))}</button>`
+            : `<button type="button" class="btn" disabled title="${esc(t("inApp"))}">${esc(t("htmlReport"))}</button>
+          <p class="help">${esc(t("inApp"))}</p>`}
         </div>
       </div>`;
 function publishView(a, m) {
@@ -1241,7 +1243,7 @@ function bioPublishView(a, m) {
         </ul>
         ${m.gate ? gateBox(m.gate) : `<p class="help">${esc(t("gateStandIn"))}</p>`}
       </div>
-      ${exportsPanel()}
+      ${exportsPanel(true)}
     </div>
     <div class="split2">
       <div class="panelBox"><span class="label">${esc(bioLabel("ui", "conclusion"))}</span>
@@ -1519,6 +1521,22 @@ function realImport(data) {
     return REPAIR.salvageBiopolitical(repaired, { origin: fromInterchange ? "interchange" : "canonical", language: repaired.language, mode: repaired.model_mode }).value;
   } catch { return data; }
 }
+// The app's HTML report, as exportBiopoliticalReport() in src/app.js: its renderer and graph modules are
+// loaded on first use and given the current case. Like the app, a blocked draft still exports.
+async function bioReport() {
+  try {
+    for (const file of ["biopolitics-graph.js", "biopolitical-report.js"]) await import(`../../src/${file}`);
+    const a = state.analysis;
+    const html = window.Jarbou3iBiopoliticalReport.build({ analysis: a, lang: ["ar", "en", "fr"].includes(a.language) ? a.language : "en", version: "ux-0-prototype", bio: real.bio, graphApi: window.Jarbou3iBiopoliticsGraph });
+    const slug = String(a.subject?.title || "analysis").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\u0600-\u06ff]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "analysis";
+    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    const link = Object.assign(document.createElement("a"), { href: url, download: `${slug}-biopolitical-v2-report.html`, hidden: true });
+    document.body.append(link);
+    link.click();
+    setTimeout(() => { URL.revokeObjectURL(url); link.remove(); }, 30_000);
+    toast(t("reportSaved"));
+  } catch { toast(t("reportFailed"), "warn"); }
+}
 function realGate(a) {
   if (!real.bio) return null;
   const key = `${state.lang}|${JSON.stringify(a)}`;
@@ -1635,6 +1653,7 @@ const handlers = {
   inspector: () => { state.inspectorOpen = !state.inspectorOpen; render({ focus: state.inspectorOpen ? ".inspector .inspToggle" : '.topbar [data-action="inspector"]' }); },
   copyPath: (el) => copy(el.dataset.value, t("pathCopied")),
   copyJson: () => copy(JSON.stringify(state.analysis, null, 2), t("jsonCopied")),
+  bioReport: () => bioReport(),
   palette: (el) => { state.palette = { query: "", index: 0, invoker: el?.dataset?.action }; render(); },
   palPick: (el) => runPaletteItem(Number(el.dataset.value)),
   closeOverlay: (el, event) => { if (event.target === el) closeOverlay(); },
