@@ -590,6 +590,11 @@ dl.consent { display: grid; grid-template-columns: repeat(auto-fill, minmax(150p
 .revList, .wsList { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
 .revList li, .wsList li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
 .wsList li small { display: block; color: var(--crit); font-size: var(--t-12); }
+.wsList li small.meta { color: var(--fg-faint); }
+.empty .realList, .card .realList { width: min(100%, 60ch); text-align: start; }
+.gateBox { display: grid; gap: var(--s-2); margin-top: var(--s-3); }
+.gateBox p { margin: 0; }
+.gateList { margin: 0; padding-inline-start: var(--s-5); display: grid; gap: var(--s-1); }
 .trust { margin: 0; font: 500 var(--t-12)/1.5 var(--font-data); color: var(--fg-faint); }
 .diffWrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-2); }
 .diff { width: 100%; border-collapse: collapse; font-size: var(--t-13); }

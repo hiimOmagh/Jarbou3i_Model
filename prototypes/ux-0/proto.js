@@ -1,6 +1,7 @@
 // Jarbou3i UX-0 prototype: guided wizard + mission-control workspace.
-// Self-contained: no network, no framework. Reads only the bundled sample analyses
-// and whatever the user pastes. Nothing is persisted except UI preferences.
+// No network, no framework. Reads the bundled sample analyses, whatever the user pastes and,
+// when served next to the app, the app's saved workspaces (read-only, see "Real app data").
+// Nothing is persisted except UI preferences.
 import { SAMPLES, BIO_SAMPLES } from "./samples.js";
 import { I18N, LANGS } from "./i18n.js";
 import { BIO_PILLARS, BIO_LABELS } from "./bio-labels.js";
@@ -33,7 +34,7 @@ const state = {
   theme: prefs.get("theme", null), // null follows the system
   density: prefs.get("density", "comfortable"),
   mode: prefs.get("mode", "guided"),
-  concept: prefs.get("concept", "a"), // "a" mission control, "b" case file
+  concept: prefs.get("concept", "b"), // "a" mission control, "b" case file (the default for real-data testing)
   scrollTo: null, // element id to bring into view after the next render
   step: 0,
   stepDir: "forward",
@@ -209,9 +210,11 @@ function bioMetrics(a) {
     audit: audit.length > 0 && !concerns.length,
     agency: (a.resistance_agency?.items || []).length > 0 && (a.alternatives?.items || []).length > 0,
   };
-  // Prototype gate, a stand-in for the app's Bio gate: pillars, a checkable source, a clean self-audit.
-  const blocked = !checks.pillars || !checks.sources || !checks.audit;
-  return { bio: true, counts, populated, total: BIO_PILLARS.length, evidence: evidence.length, sourced, rated: rated.length, high: rated.filter((r) => r.data.confidence === "high").length, links: (a.links || []).length, explanations: explanations.length, assessed, concerns, checks, blocked };
+  // The app's own publication gate when its engine is served alongside; otherwise a stand-in:
+  // pillars, a checkable source, a clean self-audit.
+  const gate = realGate(a);
+  const blocked = gate ? !gate.publishable : !checks.pillars || !checks.sources || !checks.audit;
+  return { bio: true, gate, counts, populated, total: BIO_PILLARS.length, evidence: evidence.length, sourced, rated: rated.length, high: rated.filter((r) => r.data.confidence === "high").length, links: (a.links || []).length, explanations: explanations.length, assessed, concerns, checks, blocked };
 }
 
 /* ---------- Workspace lifecycle (simulated; the app's model in miniature) ---------- */
@@ -256,6 +259,7 @@ function lifeBanners() {
   if (L?.conflict) out.push(banner("crit", "", t("life.conflict"), actionBtn("copyUnsaved", t("life.copyUnsaved")) + actionBtn("reopen", t("life.reopen"), { cls: "primary" })));
   if (L?.snapshot) out.push(banner("warn", t("life.recoveryTitle"), t("life.recoveryHint"), actionBtn("restoreSnapshot", t("life.restore"), { cls: "primary" }) + actionBtn("discardSnapshot", t("life.discard")) + actionBtn("workspace", t("life.compare"), { cls: "ghost" })));
   if (state.damaged) out.push(banner("crit", "", t("life.damagedBanner"), actionBtn("workspace", t("life.reviewWorkspaces"))));
+  if (L?.source) out.push(banner("", t("real.bannerTitle"), t("real.bannerBody", { x: L.source.title || t("real.untitled") })));
   if (state.offline) out.push(banner("", "", t("life.offline")));
   return out.length ? `<div class="banners">${out.join("")}</div>` : "";
 }
@@ -299,7 +303,8 @@ function workspacePanel() {
       </ul>
       <p class="help">${esc(t("life.storage"))}</p>
       <div class="acts"><button type="button" class="btn" disabled title="${esc(t("inApp"))}">${esc(t("life.exportBundle"))}</button></div>
-    </section>`);
+    </section>
+    ${realList()}`);
 }
 const resolveSource = () => (state.panel?.from ? state.life.revisions.find((r) => r.seq === state.panel.from) : null);
 const resolveChanges = () => diffPaths(headRev().data, resolveSource()?.data ?? state.life.saved);
@@ -406,6 +411,8 @@ function caseGroups(a) {
 }
 // What the stand-in gate would flag, each with the place to fix it.
 function caseIssues(a, m) {
+  // With the app's gate, its own list is what needs work; Publish shows it in full.
+  if (m.gate) return m.gate.missing.map((text) => ({ tone: "crit", text, jump: "publish" }));
   const out = caseGroups(a).filter((g) => g.required && !g.records.length).map((g) => ({ tone: "crit", text: t("cb.emptyGroup", { x: g.title }), jump: g.id }));
   if (!m.checks.sources) out.push({ tone: "crit", text: t("ck.sources"), note: a.quality_gate?.next_improvement || "", content: true, jump: m.bio ? "evidence_explanations" : "evidence" });
   if (m.bio) {
@@ -427,7 +434,7 @@ function nextAction(a, m) {
   if (issue) return { tone: "crit", text: t("cb.nextFix", { x: issue.text }), action: "jump", value: issue.jump, label: t("cb.show") };
   if (uncommitted.length) return { tone: "warn", text: t("life.long.uncommitted", { n: fmtNum(headRev().seq) }), action: "resolve", label: t("life.reviewCommit") };
   if (reviewTasks(m).some((x) => x.status !== "completed" && x.status !== "waived")) return { tone: "warn", text: t("cb.nextReview"), action: "jump", value: "publish", label: t("cb.show") };
-  return { tone: "ok", text: t("cb.nextExport"), action: "copyJson", label: t("copyJson") };
+  return { tone: "ok", text: t(m.gate ? "real.nextExport" : "cb.nextExport"), action: "copyJson", label: t("copyJson") };
 }
 function caseItemRow(a, r) {
   const open = state.selection?.type === "record" && state.selection.id === r.id;
@@ -456,7 +463,7 @@ function caseFile(a, m) {
       <h3 id="h-grp-${esc(g.id)}" tabindex="-1">${esc(g.title)} <small>${esc(t("items", { n: fmtNum(g.records.length) }))}</small></h3>
       ${g.desc ? `<p class="help">${esc(g.desc)}</p>` : ""}
       ${g.records.length ? `<ul class="items">${g.records.map((r) => caseItemRow(a, r)).join("")}</ul>` : `<p class="note${g.required ? " warn" : ""}">${esc(t("cb.emptyGroup", { x: g.title }))}</p>`}</section>`).join(""))}
-    ${sec("work", t("cb.needsWork"), issues.length ? `<ul class="checklist tasks">${issues.map((x) => `<li><span class="status ${x.tone}" aria-hidden="true"></span><span>${esc(x.text)}<span class="srOnly"> — ${esc(t(x.tone === "crit" ? "blocked" : "attention"))}</span>${x.note ? `<small ${x.content ? contentLang(a) : ""}>${esc(x.note)}</small>` : ""}</span><span class="acts">${actionBtn("jump", t("cb.show"), { value: x.jump })}</span></li>`).join("")}</ul>` : `<p class="note">${esc(t("cb.noWork"))}</p>`)}
+    ${sec("work", t("cb.needsWork"), issues.length ? `<ul class="checklist tasks">${issues.map((x) => `<li><span class="status ${x.tone}" aria-hidden="true"></span><span>${esc(x.text)}<span class="srOnly"> — ${esc(t(x.tone === "crit" ? "blocked" : "attention"))}</span>${x.note ? `<small ${x.content ? contentLang(a) : ""}>${esc(x.note)}</small>` : ""}</span><span class="acts">${actionBtn("jump", t("cb.show"), { value: x.jump })}</span></li>`).join("")}</ul>` : `<p class="note">${esc(t(m.gate ? "real.noWork" : "cb.noWork"))}</p>`)}
     <section class="docSec" id="sec-publish">${publishView(a, m)}</section>
   </article>`;
 }
@@ -622,7 +629,8 @@ function wizardStep() {
         <div class="field">
           <label for="context">${esc(t("contextLabel"))} <span class="help">(${esc(t("optional"))})</span></label>
           <input id="context" type="text" data-bind="context" value="${esc(d.context)}" placeholder="${esc(t("contextPlaceholder"))}">
-        </div>`,
+        </div>
+        ${real.list.length ? realList() : ""}`,
       canContinue: d.topic.trim().length >= 4,
     };
     case 1: return {
@@ -841,6 +849,7 @@ function emptyWorkspace() {
       <button type="button" class="btn ghost lg" data-action="loadSample" data-value="strategic">${esc(t("loadSample"))}</button>
       <button type="button" class="btn ghost lg" data-action="loadSample" data-value="biopolitical">${esc(t("loadBioSample"))}</button>
     </div>
+    ${realList()}
   </div>`;
 }
 function head(title, hint, extra = "") {
@@ -1228,7 +1237,7 @@ function bioPublishView(a, m) {
           ${row(m.checks.audit, t("ckBio.audit"), m.concerns.map(auditName).join(" · "))}
           ${reviewRow(m)}
         </ul>
-        <p class="help">${esc(t("gateStandIn"))}</p>
+        ${m.gate ? gateBox(m.gate) : `<p class="help">${esc(t("gateStandIn"))}</p>`}
       </div>
       ${exportsPanel()}
     </div>
@@ -1484,6 +1493,73 @@ function updateAnswer(value) {
   }
 }
 
+/* ---------- Real app data (read-only, same origin as the app) ---------- */
+// Served next to the app (the dev server or a branch preview), the prototype lists the workspaces the
+// app saved in this browser, opens a copy of one and runs the app's own Bio publication gate. It never
+// writes to the app's storage. Elsewhere (the standalone artifact) it keeps the samples and stand-ins.
+const ENGINE = ["biopolitics-schema-validator.js", "core/provenance.js", "biopolitics.js", "ai-interchange.js", "biopolitics-integrity.js"];
+const REVISION_KINDS = { imported_canonical: "imported", committed_resolution: "committed", restored_revision: "restored" };
+const real = { status: "loading", list: [], repo: null, bio: null, memo: { key: "", gate: null } };
+function realGate(a) {
+  if (!real.bio) return null;
+  const key = `${state.lang}|${JSON.stringify(a)}`;
+  if (real.memo.key !== key) {
+    let gate = null;
+    try { gate = real.bio.health(a, state.lang); } catch { /* keep the stand-in */ }
+    real.memo = { key, gate };
+  }
+  return real.memo.gate;
+}
+const gateBox = (g) => `<div class="gateBox"><p><b>${esc(t("real.gateTitle"))}</b> ${statusTag(g.publishable ? "ok" : "crit", g.publishable ? t("real.gateOk") : t("real.gateBlocked", { n: fmtNum(g.missing.length) }))}</p>
+  ${g.missing.length ? `<ul class="gateList">${g.missing.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+  <p class="help">${esc(t("real.gateNote"))}</p></div>`;
+function realList() {
+  const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" });
+  const rows = real.list.map((w) => (w.integrity_status === "verified"
+    ? `<li><span dir="auto">${esc(w.metadata?.title || t("real.untitled"))}<small class="meta">${esc(t("real.updated", { x: date.format(new Date(w.metadata?.updated_at)) }))}</small></span>${state.life?.source?.id === w.workspace_id ? `<span class="chip">${esc(t("life.current"))}</span>` : actionBtn("openReal", t("real.open"), { value: w.workspace_id })}</li>`
+    : `<li><span class="mono">${esc(w.workspace_id)}<small>${esc(t("real.corrupt"))}</small></span></li>`)).join("");
+  const note = real.status === "loading" ? "real.loading" : real.status === "unavailable" ? "real.unavailable" : rows ? "real.listHint" : "real.none";
+  return `<section class="lifeCard realList"><span class="label">${esc(t("real.listTitle"))}</span>
+    ${rows ? `<ul class="wsList">${rows}</ul>` : ""}
+    <p class="help">${esc(t(note))}</p>
+    ${real.status === "ready" && !rows ? `<div class="acts"><a class="btn" href="../../">${esc(t("real.openApp"))}</a></div>` : ""}
+  </section>`;
+}
+async function loadReal() {
+  try {
+    for (const file of ENGINE) await import(`../../src/${file}`);
+    real.bio = window.Jarbou3iBiopolitics?.health ? window.Jarbou3iBiopolitics : null;
+  } catch { /* the engine is not served here */ }
+  try {
+    const { createIndexedDbWorkspaceBackend, createWorkspaceRepository } = await import("../../src/core/workspace-storage.js");
+    real.repo = createWorkspaceRepository({ backend: createIndexedDbWorkspaceBackend() });
+    real.list = await real.repo.list();
+    real.status = "ready";
+  } catch { real.status = "unavailable"; }
+  render();
+}
+// Picks up what the app saved in another tab when this one comes back into view.
+async function refreshReal() {
+  if (!real.repo) return;
+  try {
+    const list = await real.repo.list();
+    if (same(list, real.list)) return;
+    real.list = list;
+    render();
+  } catch { /* keep the last list */ }
+}
+async function openReal(id) {
+  let ws = null;
+  try { ws = await real.repo.get(id); } catch { /* reported below */ }
+  if (!ws) { toast(t("real.openFailed"), "warn"); return; }
+  openAnalysis(ws.working_draft.canonical_payload, t("real.opened"));
+  // The app's revisions, oldest first as the app appends them, so the history and head match the app's.
+  state.life.revisions = ws.revisions.map((r, i) => ({ seq: i + 1, kind: REVISION_KINDS[r.kind] || "committed", data: structuredClone(r.canonical_payload) }));
+  state.life.source = { id, title: ws.metadata?.title || "" };
+  state.panel = null;
+  if (state.mode === "pro") render({ focus: "#main" }); else setMode("pro");
+}
+
 const handlers = {
   lang: (el) => setLang(el.dataset.value),
   theme: toggleTheme,
@@ -1544,6 +1620,7 @@ const handlers = {
   palPick: (el) => runPaletteItem(Number(el.dataset.value)),
   closeOverlay: (el, event) => { if (event.target === el) closeOverlay(); },
   workspace: (el) => openPanel("workspace", el),
+  openReal: (el) => openReal(el.dataset.value),
   concept: (el) => setConcept(el.dataset.value),
   caseItem: (el) => {
     const id = el.dataset.value;
@@ -1706,5 +1783,7 @@ app.addEventListener("drop", async (event) => {
 });
 window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => { if (!state.theme) render(); });
 for (const type of ["online", "offline"]) window.addEventListener(type, () => { state.offline = !navigator.onLine; render(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshReal(); });
 
 render();
+loadReal();

@@ -43,6 +43,8 @@ Cloudflare must publish the same curated artifact as GitHub Pages, not the repos
 - Build command: `node scripts/build-pages-artifact.mjs`
 - Build output directory: `build/pages`
 
+Branch preview builds (Cloudflare sets `CF_PAGES_BRANCH` to a branch other than `main`) also include the UX-0 prototype at `/prototypes/ux-0/`, so it can be tried against the real app on the preview origin. Production and GitHub Pages builds never include it.
+
 The artifact includes `_headers`, so the response-header policy is preserved. Serving the repository root would publish `tests/`, `docs/`, `package.json`, and every other repository file on the production origin. Verify after each settings change that `https://jarbou3i-model.pages.dev/package.json` returns the application HTML fallback rather than the package manifest, and that the `content-security-policy` response header is still present.
 
 Under those controls, Cloudflare is downstream of the CI admission boundary: it deploys automatically only after a commit lawfully reaches protected `main`. If protection, required checks, the production branch, or bypass policy changes, automatic Cloudflare production deployment becomes untrusted and releases must stop until the control chain is restored.

@@ -1,7 +1,8 @@
 # UX-0 concept prototype — "Mission control"
 
 Clickable concept for the UX-0 gate in `docs/product-ui-execution-plan.md`. It is **not** the app:
-nothing here is imported by `src/`, and `scripts/build-pages-artifact.mjs` never copies `prototypes/`.
+nothing here is imported by `src/`. `scripts/build-pages-artifact.mjs` copies this folder only into Cloudflare
+branch previews (`CF_PAGES_BRANCH` set and not `main`), never into production or GitHub Pages.
 
 Open it with the dev server running: <http://127.0.0.1:4173/prototypes/ux-0/index.html>
 (the static server only maps `/` to an index, so name the file).
@@ -47,6 +48,19 @@ Open it with the dev server running: <http://127.0.0.1:4173/prototypes/ux-0/inde
   app's integrity checks are named in its wording but not computed here, and confidence is the only
   editable field.
 - Review tasks follow the stand-in gate's checks; the app derives its own tasks.
+
+## Testing with real data
+Served next to the app (the dev server, or a branch preview at `<preview-url>/prototypes/ux-0/index.html`),
+the prototype reads the app's own saved workspaces in that browser and runs the app's own Bio
+publication gate (`BIO.health` from `src/biopolitics.js`). The flow:
+1. In the app (`/`), generate the real prompt, run it in your AI, and import the answer. The app saves it.
+2. Open the prototype: "Saved in the app" lists those workspaces (also in the workspace panel). Open one.
+3. It opens as a copy, in the Case file layout unless you picked A (B is now the default), with
+   the app's revisions; a banner says edits stay in the preview. The prototype only calls the repository's `list()` and `get()`: it never writes.
+
+Bio analyses show the app's gate verdict and its list of what blocks publication, in the page's
+language. The Strategic gate stays a labelled stand-in (the app's is inside `app.js`). In the
+standalone artifact, the app's files are not there, so it keeps the samples and the stand-ins.
 
 ## Files
 `proto.js` (behaviour), `proto.css` (tokens + layout), `i18n.js` (prototype copy), `samples.js`
