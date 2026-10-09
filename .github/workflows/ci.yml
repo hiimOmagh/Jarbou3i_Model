@@ -56,16 +56,26 @@ jobs:
             browser: firefox
             shard: "1/1"
             artifact: firefox
-          - label: webkit shard 1 of 2
+          - label: webkit shard 1 of 4
             project: webkit
             browser: webkit
-            shard: "1/2"
-            artifact: webkit-1-of-2
-          - label: webkit shard 2 of 2
+            shard: "1/4"
+            artifact: webkit-1-of-4
+          - label: webkit shard 2 of 4
             project: webkit
             browser: webkit
-            shard: "2/2"
-            artifact: webkit-2-of-2
+            shard: "2/4"
+            artifact: webkit-2-of-4
+          - label: webkit shard 3 of 4
+            project: webkit
+            browser: webkit
+            shard: "3/4"
+            artifact: webkit-3-of-4
+          - label: webkit shard 4 of 4
+            project: webkit
+            browser: webkit
+            shard: "4/4"
+            artifact: webkit-4-of-4
           - label: mobile-chrome
             project: mobile-chrome
             browser: chromium

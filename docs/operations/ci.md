@@ -26,14 +26,18 @@ After `No-browser gates` succeeds, six browser runners execute concurrently:
 | --- | --- | --- |
 | `Browser core (chromium)` | Complete core suite, Chromium project | Chromium |
 | `Browser core (firefox)` | Complete core suite, Firefox project | Firefox |
-| `Browser core (webkit shard 1 of 2)` | First half of the WebKit core suite | WebKit |
-| `Browser core (webkit shard 2 of 2)` | Second half of the WebKit core suite | WebKit |
+| `Browser core (webkit shard 1 of 4)` | First quarter of the WebKit core suite | WebKit |
+| `Browser core (webkit shard 2 of 4)` | Second quarter of the WebKit core suite | WebKit |
+| `Browser core (webkit shard 3 of 4)` | Third quarter of the WebKit core suite | WebKit |
+| `Browser core (webkit shard 4 of 4)` | Last quarter of the WebKit core suite | WebKit |
 | `Browser core (mobile-chrome)` | Complete core suite, mobile Chromium project | Chromium |
 | `Browser evidence` | Hosted evidence and visual-audit evidence | Chromium |
 
 Each core runner uses two Playwright workers. WebKit is split with Playwright's
-native `1/2` and `2/2` shards because a single WebKit job exceeded the 15-minute
-job limit; together the two shards run the complete WebKit suite. Evidence
+native `1/4` to `4/4` shards because a single WebKit job, and later the
+second of two shards, exceeded the 15-minute job limit; together the four shards
+run the complete WebKit suite. Shards follow alphabetical file order, so the
+slowest specs fall in the last shard; watch its duration as the suite grows. Evidence
 generation keeps the single-worker limits encoded in the npm scripts so
 screenshots and metadata remain deterministic.
 
@@ -46,7 +50,7 @@ deployment dependency, together with `No-browser gates`.
 - Matrix fail-fast is disabled, so one browser failure does not hide results from
   the other engines.
 - Every failed core leg uploads a uniquely named debug artifact, including
-  separate artifacts for both WebKit shards.
+  separate artifacts for each WebKit shard.
 - Evidence artifacts upload even when their producing step fails, provided files
   exist.
 - Debug artifacts are kept for 7 days; release evidence for 14 days.

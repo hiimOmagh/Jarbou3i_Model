@@ -327,6 +327,9 @@
   Only replies the app imported are scored. With a free judge, it first asks
   OpenRouter how many free-model requests are left today and stops when none
   are.
+- Runs the WebKit core suite in four CI shards instead of two. With the tests
+  added in this release, the second shard needed about 18 minutes and was
+  stopped at the 15-minute job limit; no test failed.
 
 ### Repository cleanup
 

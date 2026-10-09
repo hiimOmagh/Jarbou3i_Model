@@ -153,13 +153,19 @@ for (const token of [
   "fail-fast: false",
   "- label: chromium",
   "- label: firefox",
-  "- label: webkit shard 1 of 2",
-  "- label: webkit shard 2 of 2",
+  "- label: webkit shard 1 of 4",
+  "- label: webkit shard 2 of 4",
+  "- label: webkit shard 3 of 4",
+  "- label: webkit shard 4 of 4",
   "- label: mobile-chrome",
-  'shard: "1/2"',
-  'shard: "2/2"',
-  "artifact: webkit-1-of-2",
-  "artifact: webkit-2-of-2",
+  'shard: "1/4"',
+  'shard: "2/4"',
+  'shard: "3/4"',
+  'shard: "4/4"',
+  "artifact: webkit-1-of-4",
+  "artifact: webkit-2-of-4",
+  "artifact: webkit-3-of-4",
+  "artifact: webkit-4-of-4",
   "actions/checkout@v5",
   "actions/setup-node@v5",
   "node-version: 24",
@@ -215,8 +221,8 @@ for (const retiredAction of [
 if ((workflow.match(/actions\/upload-artifact@v7/g) || []).length !== 4) {
   fail("workflow must use upload-artifact@v7 for exactly four artifact steps");
 }
-if ((workflow.match(/project: webkit/g) || []).length !== 2) {
-  fail("WebKit must be represented by exactly two core shards");
+if ((workflow.match(/project: webkit/g) || []).length !== 4) {
+  fail("WebKit must be represented by exactly four core shards");
 }
 if ((workflow.match(/project: chromium/g) || []).length !== 1) {
   fail("desktop Chromium must be represented by exactly one core matrix leg");
