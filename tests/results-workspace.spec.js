@@ -73,18 +73,9 @@ for (const language of ["ar", "fr"]) {
     await page.locator('[data-lens="strategic"]').click();
     await page.locator("#loadSampleBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();
-    const shown = [];
-    const collect = async () =>
-      shown.push(...(await page.locator("#reviewContent .chip, #reviewContent .assumptionCard p").allTextContents()));
-    for (const review of ["overview", "contradictions", "scenarios", "evidence"]) {
-      await page.locator(`[data-review="${review}"]`).click();
-      await collect();
-    }
-    await page.locator('[data-review="pillars"]').click();
-    for (const pillar of ["interests", "actors", "tools", "narrative", "results", "feedback"]) {
-      await page.locator(`[data-pillar-card="${pillar}"]`).click();
-      await collect();
-    }
+    // The case file holds every section and pillar at once.
+    const shown = await page.locator("#reviewContent .chip, #reviewContent .assumptionCard p").allTextContents();
+    expect(shown.length).toBeGreaterThan(0);
     // Codes shown in English: any Latin word in Arabic; in French, the English
     // words that read differently in French.
     const english = ["State", "High", "Medium", "Low", "Diplomatic", "Legal", "Unintended", "Strategic", "Long", "Existential", "high", "medium", "low"];
