@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { clearWorkspaceStorage, damageFirstWorkspace } from "./helpers/browser-persistence.js";
+import { clearWorkspaceStorage, countRecoverySnapshots, damageFirstWorkspace } from "./helpers/browser-persistence.js";
 import { openStep } from "./helpers/guided-flow.js";
 import { expectKernel } from "./helpers/kernel-check.js";
 
@@ -21,20 +21,6 @@ async function setTitle(page, title) {
   await field.fill(JSON.stringify(subject, null, 2));
   await field.press("Control+Enter");
   await expect(page.locator("#editorDirty")).toContainText("Unsaved");
-}
-
-// Snapshots in the recovery journal, read straight from IndexedDB.
-function journalCount(page) {
-  return page.evaluate(() => new Promise((resolve, reject) => {
-    const open = indexedDB.open("jarbou3i-model-workspaces");
-    open.onerror = () => reject(open.error);
-    open.onsuccess = () => {
-      const database = open.result;
-      const request = database.transaction("recovery-journal").objectStore("recovery-journal").count();
-      request.onsuccess = () => { database.close(); resolve(request.result); };
-      request.onerror = () => { database.close(); reject(request.error); };
-    };
-  }));
 }
 
 async function editTitle(page, title) {
@@ -130,7 +116,7 @@ test.describe("Work panel", () => {
   test("an edit still open in another tab is not offered as a recovery snapshot", async ({ page, context }) => {
     await page.locator("#loadSampleBtn").click();
     await editTitle(page, "Typed in the first tab");
-    await expect.poll(() => journalCount(page)).toBe(1);
+    await expect.poll(() => countRecoverySnapshots(page)).toBe(1);
     const other = await context.newPage();
     await other.goto("./");
     await openEditor(other);

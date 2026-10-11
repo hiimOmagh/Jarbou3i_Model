@@ -46,7 +46,7 @@ async function workspaceDatabaseOperation(page, operation) {
           timeoutMs,
         );
         const openRequest = indexedDB.open(databaseName);
-        const emptyDatabaseResult = operationName === "count-workspaces"
+        const emptyDatabaseResult = ["count-workspaces", "count-recovery-snapshots"].includes(operationName)
           ? 0
           : ["first-workspace", "intake-draft"].includes(operationName)
             ? null
@@ -75,7 +75,7 @@ async function workspaceDatabaseOperation(page, operation) {
           }
 
           const clearAll = operationName === "clear-all";
-          const stores = operationName === "intake-draft"
+          const stores = ["intake-draft", "count-recovery-snapshots"].includes(operationName)
             || (clearAll && database.objectStoreNames.contains(recoveryStore))
             ? [workspaceStore, recoveryStore]
             : [workspaceStore];
@@ -114,6 +114,14 @@ async function workspaceDatabaseOperation(page, operation) {
             const tab = sessionStorage.getItem("jarbou3i-tab");
             const request = transaction.objectStore(recoveryStore).get(tab ? `intake-draft:${tab}` : "intake-draft");
             request.onsuccess = () => { result = request.result ?? null; };
+            request.onerror = () =>
+              fail(`IndexedDB ${operationName} request failed`, request.error);
+          } else if (operationName === "count-recovery-snapshots") {
+            // Editor snapshots are keyed by workspace; intake drafts share the store.
+            const request = transaction.objectStore(recoveryStore).getAllKeys();
+            request.onsuccess = () => {
+              result = request.result.filter((key) => !String(key).startsWith("intake-draft")).length;
+            };
             request.onerror = () =>
               fail(`IndexedDB ${operationName} request failed`, request.error);
           } else if (operationName === "damage-first-workspace") {
@@ -159,6 +167,11 @@ export function clearWorkspaceRecords(page) {
 
 export function countWorkspaceRecords(page) {
   return workspaceDatabaseOperation(page, "count-workspaces");
+}
+
+// Editor recovery snapshots in the journal, whichever tab captured them.
+export function countRecoverySnapshots(page) {
+  return workspaceDatabaseOperation(page, "count-recovery-snapshots");
 }
 
 // The analysis being prepared, as kept for a reload (null when there is none).
