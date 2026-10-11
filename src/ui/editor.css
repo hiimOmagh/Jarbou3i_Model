@@ -38,7 +38,9 @@
 .j-editor-check[data-tone="ok"] { border-inline-start-color: var(--j-ok); background: var(--j-ok-wash); }
 .j-editor-check[data-tone="warn"] { border-inline-start-color: var(--j-warn); background: var(--j-warn-wash); }
 .j-editor-check[data-tone="crit"] { border-inline-start-color: var(--j-crit); background: var(--j-crit-wash); }
-.j-editor-errors ul { max-height: 140px; overflow: auto; margin: 0; padding-inline-start: var(--j-s-5); color: var(--j-fg); }
+/* Not a scroll box of its own: it has nothing to focus, so a keyboard could
+   not scroll it. The dialog scrolls instead. */
+.j-editor-errors ul { margin: 0; padding-inline-start: var(--j-s-5); color: var(--j-fg); }
 
 @media (max-width: 720px) {
   .j-editor-grid { grid-template-columns: 1fr; }
