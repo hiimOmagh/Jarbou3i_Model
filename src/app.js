@@ -6260,8 +6260,10 @@ function renderBiopoliticalOverview() {
   ]
     .map((key) => metricCard(key, labels[key], scores[key], hints[key]))
     .join("");
+  // Only a legacy import was migrated; an AI draft lists the gaps it still has.
+  const migrationTitle = String(a.migration?.adapter || "").startsWith("legacy-") ? "migration" : "draftGaps";
   const migration = a.migration
-    ? `<div class="bioMigration"><strong>${escapeHtml(BIO.ui(state.lang, "migration"))}</strong><p>${escapeHtml(arr(a.migration.warnings).join(" · "))}</p></div>`
+    ? `<div class="bioMigration"><strong>${escapeHtml(BIO.ui(state.lang, migrationTitle))}</strong><p>${escapeHtml(arr(a.migration.warnings).join(" · "))}</p></div>`
     : "";
   const missing = health.missing.length
     ? health.missing

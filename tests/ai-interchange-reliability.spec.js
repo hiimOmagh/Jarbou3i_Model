@@ -243,6 +243,7 @@ test.describe("AI interchange reliability", () => {
     const migration = page.locator(".bioMigration");
     await expect(migration).toContainText("/evidence/items/0/counter_evidence");
     await expect(migration).not.toContainText(/must|characters/);
+    await expect(migration.locator("strong")).toHaveText("Lacunes à compléter avant publication");
   });
 
   test("a completion that fills nothing says so plainly", async ({ page }) => {
@@ -927,7 +928,8 @@ test.describe("AI interchange reliability", () => {
     await captureCopies(page);
     const data = await fixture("sample-analysis-en.json");
     const title = JSON.stringify(data.subject.title);
-    const text = JSON.stringify(data, null, 2).replace(title, `${title.slice(0, -1)} "as quoted" here"`);
+    // Prose before the JSON must not shift the position the parser reports.
+    const text = `Here is the analysis:\n${JSON.stringify(data, null, 2).replace(title, `${title.slice(0, -1)} "as quoted" here"`)}`;
     await page.locator("#jsonInput").fill(text);
     await expect(page.locator("#jsonStatus")).toContainText("has a JSON error");
     await expect(page.locator("#jsonStatus")).not.toContainText("No analysis was found");
@@ -935,13 +937,17 @@ test.describe("AI interchange reliability", () => {
     await page.locator("#repairPromptBtn").click();
     const parserError = await page.evaluate((answer) => {
       try {
-        JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1));
+        const start = answer.indexOf("{");
+        JSON.parse(answer.slice(0, start).replace(/[^\n]/g, " ") + answer.slice(start, answer.lastIndexOf("}") + 1));
         return "";
       } catch (error) {
         return error.message;
       }
     }, text);
     expect(parserError).not.toBe("");
+    // Where the engine names a position, it is the one in the pasted text.
+    const position = /position (\d+)/.exec(parserError);
+    if (position) expect(text.slice(Number(position[1]))).toMatch(/^as quoted/);
     const prompt = await lastCopy(page);
     expect(prompt).toContain(parserError);
     expect(prompt).not.toContain("No analysis was found");

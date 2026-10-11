@@ -511,6 +511,7 @@ function checkAnswer(raw, lens = null) {
     return { status: "invalid", message: t("vInvalid", { error: String(error.message).replace(/^JSON\.parse: /, "").slice(0, 80) }) };
   }
   data = realImport(data);
+  if (data?.notImported) return { status: "invalid", message: typeof data.notImported === "string" ? t(`real.${data.notImported}`) : t("real.notImported", { n: fmtNum(data.notImported) }) };
   const lensName = (key) => t(key === "biopolitical" ? "lensBio" : "lensStrategic");
   const found = isBio(data) ? "biopolitical" : "strategic";
   if (lens && lens !== found) return { status: "invalid", message: t("vWrongLens", { x: lensName(found), y: lensName(lens) }) };
@@ -1505,8 +1506,9 @@ const ENGINE = ["biopolitics-schema-validator.js", "core/provenance.js", "biopol
 const REVISION_KINDS = { imported_canonical: "imported", committed_resolution: "committed", restored_revision: "restored" };
 const real = { status: "loading", list: [], repo: null, bio: null, memo: { key: "", gate: null } };
 // The app's import chain for a pasted answer, as in validateJsonInput() in src/app.js: find the
-// result, compile the compact interchange form the prompt asks for, repair the contract, validate,
-// and salvage what fails into a reviewable draft. Without the engine, the answer is read as is.
+// result, compile the compact interchange form the prompt asks for, repair the contract and validate.
+// As in the app, an answer that fails is not imported (the app's salvage only counts the parts its
+// completion prompt asks for), and an old-format one is refused. Without the engine, it is read as is.
 function realImport(data) {
   const AI = window.Jarbou3iAiInterchange, REPAIR = window.Jarbou3iContractRepair, INTEGRITY = window.Jarbou3iBiopoliticsIntegrity;
   if (!AI || !REPAIR || !INTEGRITY) return data;
@@ -1517,8 +1519,11 @@ function realImport(data) {
     if (input?.analysis_lens !== "biopolitical") return input;
     const repaired = REPAIR.repairBiopolitical(input).value;
     const validation = INTEGRITY.validateImport(repaired);
-    if (validation.ok) return validation.analysis;
-    return REPAIR.salvageBiopolitical(repaired, { origin: fromInterchange ? "interchange" : "canonical", language: repaired.language, mode: repaired.model_mode }).value;
+    // A draft passes validation but, as in the app, is not imported.
+    if (validation.ok && validation.state === "canonical") return validation.analysis;
+    if (validation.errors?.[0]?.code === "LEGACY_CONTRACT") return { notImported: "legacy" };
+    const gaps = REPAIR.salvageBiopolitical(repaired, { origin: fromInterchange ? "interchange" : "canonical", language: repaired.language, mode: repaired.model_mode }).diagnostics.length;
+    return { notImported: gaps || validation.errors.length || "incomplete" };
   } catch { return data; }
 }
 // The app's HTML report, as exportBiopoliticalReport() in src/app.js: its renderer and graph modules are

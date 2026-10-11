@@ -59,8 +59,11 @@ publication gate (`BIO.health` from `src/biopolitics.js`). The flow:
    the app's revisions; a banner says edits stay in the preview. The prototype only calls the repository's `list()` and `get()`: it never writes.
 
 Pasting an AI answer in the prototype (guided step 5, or Paste in the workspace) runs the app's own
-import chain from `src/` (interchange compile, contract repair, integrity check, salvage), as the
-app does, but keeps the result in the preview instead of saving it.
+import chain from `src/` (interchange compile, contract repair, integrity check), as the app does,
+but keeps the result in the preview instead of saving it. As in the app, a Biopolitical answer that
+fails the check or is still a draft is not imported (the app offers its targeted completion prompt),
+and an old-format answer is refused. A Strategic answer is only compiled: the app's Strategic checks
+are inside `app.js`, so the prototype does not hold back an incomplete one.
 
 Bio analyses show the app's gate verdict and its list of what blocks publication, in the page's
 language. The Strategic gate stays a labelled stand-in (the app's is inside `app.js`). In the

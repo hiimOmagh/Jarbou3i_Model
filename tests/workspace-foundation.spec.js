@@ -202,6 +202,56 @@ test("importing an analysis of the other lens sets aside the one on screen", asy
   await expect(page.locator(".orientationConclusion")).toContainText("bipolar order");
 });
 
+test("removing the damaged analysis that is open leaves none open", async ({ page }) => {
+  await useEnglish(page);
+  await createSavedWorkspace(page, "strategic");
+  await damageFirstWorkspace(page);
+  await page.locator("#workspaceBtn").click();
+  const remove = page.locator(".workspaceRow.corrupt [data-workspace-remove-damaged]");
+  await remove.click();
+  await remove.click();
+  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("#workspaceExport")).toBeDisabled();
+  await expect(page.locator("#workspaceResetCurrent")).toBeDisabled();
+});
+
+test("an older save finishing last does not take over the analysis imported after it", async ({ page }) => {
+  await useEnglish(page);
+  // The first save finishes late, after the second one.
+  await page.evaluate(() => {
+    const transaction = IDBDatabase.prototype.transaction;
+    let slow = true;
+    IDBDatabase.prototype.transaction = function (...args) {
+      const created = transaction.apply(this, args);
+      if (slow && args[1] === "readwrite" && [].concat(args[0]).includes("workspaces")) {
+        slow = false;
+        Object.defineProperty(created, "oncomplete", {
+          set(handler) {
+            created.addEventListener("complete", (event) =>
+              setTimeout(() => {
+                handler.call(created, event);
+                window.slowSaveDone = true;
+              }, 2000),
+            );
+          },
+        });
+      }
+      return created;
+    };
+  });
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#reviewPanel")).toBeVisible();
+  const second = await fixture("sample-analysis-en.json");
+  second.subject.title = "Imported while the sample saved";
+  await page.locator("#jsonInput").fill(JSON.stringify(second));
+  await page.locator("#importBtn").click();
+  await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
+  await page.waitForFunction(() => window.slowSaveDone === true);
+  await page.locator("#workspaceBtn").click();
+  await expect(page.locator(".workspaceRow")).toHaveCount(2);
+  await expect(page.locator(".workspaceRow.active")).toContainText("Imported while the sample saved");
+});
+
 test("a damaged workspace can be removed after a second click", async ({ page }) => {
   await useEnglish(page);
   await createSavedWorkspace(page, "strategic");

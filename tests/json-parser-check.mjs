@@ -131,6 +131,11 @@ for (const [name, continuation] of [
   if (parser.joinContinuation(head, "```json\n" + cutAgain + "\n```") !== cutAgain.replace(/[\r\n\t]+$/, "")) {
     fail("an answer started over and cut off again did not replace the first one");
   }
+  // A restart shorter than the answer would lose what only the answer holds.
+  const shortRestart = full.slice(0, Math.floor(cut / 2));
+  if (!parser.joinContinuation(head, "```json\n" + shortRestart + "\n```").startsWith(head)) {
+    fail("a restart shorter than the answer replaced it");
+  }
 }
 
 // Repetitive content at the seam is not a repeat and must not be trimmed, and
