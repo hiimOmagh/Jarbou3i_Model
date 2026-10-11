@@ -21,7 +21,7 @@
 - A cut-off answer's message points up to the box for the rest of the answer,
   where it now appears.
 
-### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file, work panel and editor
+### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file, work panel, editor, commit and history
 
 - Rebuilds the global header and workspace bar on the kernel, in the case-file
   direction:
@@ -73,6 +73,15 @@
   - its labels and button names in AR, EN and FR (some were English only).
   An edit still open in another tab is no longer offered as a recovery
   snapshot, and discarding edits no longer deletes another tab's snapshot.
+- Rebuilds the commit (resolution) and revision history dialogs on the
+  kernel:
+  - each change shows its operation, named in the page language instead of
+    as a code, its path, and its values before and after;
+  - revision IDs and checksums read left to right in Arabic too;
+  - the selected revision and the current head are marked by more than
+    colour;
+  - counts use each language's plural forms ("1 change", not "1 changes");
+  - the commit dialog's close button is named in AR, EN and FR.
 - Adds a command palette (Ctrl/⌘ K, or Commands in the header):
   - it lists every enabled control of the shell and of the open review by its
     own label, and runs one by clicking it;

@@ -7252,8 +7252,6 @@ function revisionText(key, values = {}) {
     trust: ["Read-only history · restore never overwrites a revision or moves the head backward", "سجل للقراءة فقط · لا تستبدل الاستعادة أي نسخة ولا تعيد المؤشر إلى الخلف", "Historique en lecture seule · une restauration n’écrase rien et ne fait jamais reculer la tête"],
     revisions: ["Immutable revisions", "النسخ غير القابلة للتغيير", "Révisions immuables"],
     compare: ["Compared with current head", "مقارنة بالنسخة الحالية", "Comparaison avec la tête actuelle"],
-    count: ["{count} revisions", "{count} نسخ", "{count} révisions"],
-    changes: ["{count} changes", "{count} تغييرات", "{count} modifications"],
     revision: ["Revision {sequence}", "النسخة {sequence}", "Révision {sequence}"],
     imported: ["Imported", "مستوردة", "Importée"],
     committed: ["Committed", "معتمدة", "Validée"],
@@ -7292,15 +7290,15 @@ async function renderRevisionHistory() {
   $("revisionTrust").textContent = revisionText("trust");
   $("revisionListTitle").textContent = revisionText("revisions");
   $("revisionCompareTitle").textContent = revisionText("compare");
-  $("revisionCount").textContent = revisionText("count", { count: history.revision_count });
+  $("revisionCount").textContent = pluralText(history.revision_count, REVISION_COUNT);
   $("revisionRestore").textContent = revisionText("restore");
   $("revisionList").innerHTML = [...history.revisions].reverse().map((revision) => {
     const badges = [
-      revision.is_head ? `<span class="revisionBadge head">${escapeHtml(revisionText("head"))}</span>` : "",
-      revision.is_imported ? `<span class="revisionBadge">${escapeHtml(revisionText("imported"))}</span>` : "",
-      revision.kind === "restored_revision" ? `<span class="revisionBadge">${escapeHtml(revisionText("restored"))}</span>` : "",
+      revision.is_head ? `<span class="j-chip" data-tone="ok">${escapeHtml(revisionText("head"))}</span>` : "",
+      revision.is_imported ? `<span class="j-commit-tag">${escapeHtml(revisionText("imported"))}</span>` : "",
+      revision.kind === "restored_revision" ? `<span class="j-commit-tag">${escapeHtml(revisionText("restored"))}</span>` : "",
     ].join("");
-    return `<button class="revisionItem${revision.revision_id === selected?.revision_id ? " active" : ""}" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="revisionItemTop"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><code dir="ltr">${escapeHtml(revision.revision_id)}</code><span class="revisionItemMeta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
+    return `<button class="j-rev-item" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="j-rev-top"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><code class="j-mono" dir="ltr">${escapeHtml(revision.revision_id)}</code><span class="j-rev-meta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
   }).join("");
   $("revisionList").querySelectorAll("[data-revision-id]").forEach((button) => {
     button.onclick = async () => {
@@ -7313,15 +7311,15 @@ async function renderRevisionHistory() {
     baseRevisionId: history.head_revision_id,
     targetRevisionId: selected.revision_id,
   });
-  $("revisionChangeCount").textContent = revisionText("changes", { count: comparison.diff.change_count });
+  $("revisionChangeCount").textContent = pluralText(comparison.diff.change_count, CHANGE_COUNT);
   $("revisionMetadata").innerHTML = [
     [revisionText("created"), new Date(selected.created_at).toLocaleString(state.lang)],
     [revisionText("kind"), revisionKindText(selected.kind)],
     [revisionText("parent"), selected.parent_revision_id || "—"],
     [revisionText("checksum"), selected.payload_checksum],
-  ].map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong${label === revisionText("checksum") || label === revisionText("parent") ? ' dir="ltr"' : ""}>${escapeHtml(value)}</strong></div>`).join("");
+  ].map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd${label === revisionText("checksum") || label === revisionText("parent") ? ' class="j-mono" dir="ltr"' : ""}>${escapeHtml(value)}</dd></div>`).join("");
   $("revisionDiff").innerHTML = comparison.diff.changes.length
-    ? comparison.diff.changes.map((change) => `<li class="resolutionChange"><span class="resolutionOperation">${escapeHtml(change.operation)}</span><code class="resolutionPath" dir="ltr">${escapeHtml(change.path)}</code><div class="resolutionValues"><div class="resolutionValue"><span>${escapeHtml(resolutionText("before"))}</span><code>${escapeHtml(formatResolutionValue(change.before))}</code></div><div class="resolutionValue"><span>${escapeHtml(resolutionText("after"))}</span><code>${escapeHtml(formatResolutionValue(change.after))}</code></div></div></li>`).join("")
+    ? comparison.diff.changes.map(diffItem).join("")
     : "";
   const blockedMessage = history.draft_dirty
     ? revisionText("dirtyBlocked")
@@ -7372,7 +7370,7 @@ async function prepareSelectedRevisionRestore() {
   if (revisionRestorePending || !state.revisionWorkspace || !state.revisionSelectedId) return;
   revisionRestorePending = true;
   $("revisionRestore").disabled = true;
-  $("revisionStatus").className = "status";
+  $("revisionStatus").dataset.tone = "idle";
   $("revisionStatus").textContent = revisionText("preparing");
   try {
     const workspace = state.revisionWorkspace;
@@ -7391,7 +7389,7 @@ async function prepareSelectedRevisionRestore() {
     await openResolutionTransaction(prepared.workspace, $("workspaceSaveState"), prepared.proposal);
   } catch (error) {
     revisionRestorePending = false;
-    $("revisionStatus").className = "status bad";
+    $("revisionStatus").dataset.tone = "crit";
     $("revisionStatus").textContent = revisionText("error", { message: error?.message || error?.code || "unknown" });
     await renderRevisionHistory();
   }
@@ -7406,7 +7404,6 @@ function resolutionText(key) {
     hint: ["Inspect the exact canonical diff, whole-document validation, and local approval before creating an immutable revision.", "افحص الفرق النظامي الدقيق والتحقق من المستند كاملًا والموافقة المحلية قبل إنشاء نسخة غير قابلة للتغيير.", "Inspectez le diff canonique exact, la validation intégrale et l’approbation locale avant de créer une révision immuable."],
     trust: ["Commit creates a new immutable revision · it never rewrites imported or earlier committed history", "ينشئ الاعتماد نسخة جديدة غير قابلة للتغيير · ولا يعيد كتابة النسخ المستوردة أو المعتمدة سابقًا", "La validation crée une nouvelle révision immuable sans réécrire l’historique importé ou déjà validé"],
     diff: ["Exact proposed changes", "التغييرات المقترحة الدقيقة", "Modifications exactes proposées"],
-    changes: ["{count} changes", "{count} تغييرات", "{count} modifications"],
     base: ["Base revision", "النسخة الأساس", "Révision de base"],
     validation: ["Whole-draft validation", "التحقق من كامل المسودة", "Validation du brouillon entier"],
     valid: ["Passed", "ناجح", "Réussie"],
@@ -7421,6 +7418,9 @@ function resolutionText(key) {
     noChanges: ["The working draft has no saved changes to commit.", "لا تحتوي مسودة العمل على تغييرات محفوظة لاعتمادها.", "Le brouillon ne contient aucune modification enregistrée à valider."],
     before: ["Before", "قبل", "Avant"],
     after: ["After", "بعد", "Après"],
+    add: ["Added", "أُضيف", "Ajouté"],
+    replace: ["Changed", "عُدِّل", "Modifié"],
+    remove: ["Removed", "حُذف", "Supprimé"],
     integrity: ["Proposal integrity", "سلامة الاقتراح", "Intégrité de la proposition"],
     verified: ["Verified", "متحقق منها", "Vérifiée"],
     restoreTitle: ["Safe revision restore", "استعادة آمنة لنسخة سابقة", "Restauration sûre d’une révision"],
@@ -7447,6 +7447,30 @@ function resolutionDiagnosticsFor(workspace, payload) {
 
 function resolutionDiagnostics(payload) {
   return resolutionDiagnosticsFor(state.resolutionWorkspace, payload);
+}
+
+// Counts in the page language's plural forms (Intl.PluralRules categories).
+const CHANGE_COUNT = {
+  en: { one: "{count} change", other: "{count} changes" },
+  ar: { zero: "لا تغييرات", one: "تغيير واحد", two: "تغييران", few: "{count} تغييرات", many: "{count} تغييرًا", other: "{count} تغيير" },
+  fr: { one: "{count} modification", other: "{count} modifications" },
+};
+const REVISION_COUNT = {
+  en: { one: "{count} revision", other: "{count} revisions" },
+  ar: { zero: "لا نسخ", one: "نسخة واحدة", two: "نسختان", few: "{count} نسخ", many: "{count} نسخة", other: "{count} نسخة" },
+  fr: { one: "{count} révision", other: "{count} révisions" },
+};
+
+function pluralText(count, forms) {
+  const lang = ["ar", "fr"].includes(state.lang) ? state.lang : "en";
+  return (forms[lang][new Intl.PluralRules(lang).select(count)] || forms[lang].other).replace("{count}", count);
+}
+
+// One change of a canonical diff, the same in the commit and history dialogs.
+function diffItem(change) {
+  const tone = { add: "ok", replace: "warn", remove: "crit" }[change.operation];
+  const value = (key, data) => `<div class="j-diff-val"><span>${escapeHtml(resolutionText(key))}</span><pre class="j-mono" dir="ltr">${escapeHtml(formatResolutionValue(data))}</pre></div>`;
+  return `<li class="j-diff-item"><span class="j-chip" data-tone="${tone}">${escapeHtml(resolutionText(change.operation))}</span><code class="j-diff-path j-mono" dir="ltr">${escapeHtml(change.path)}</code><div class="j-diff-vals">${value("before", change.before)}${value("after", change.after)}</div></li>`;
 }
 
 function formatResolutionValue(value) {
@@ -7477,14 +7501,14 @@ function renderResolutionProposal() {
   $("resolutionRationaleLabel").textContent = resolutionText("rationale");
   $("resolutionConfirmLabel").textContent = resolutionText("confirm");
   $("resolutionCommit").textContent = resolutionText(restoring ? "restoreCommit" : "commit");
-  $("resolutionChangeCount").textContent = resolutionText("changes").replace("{count}", proposal.diff.change_count);
+  $("resolutionChangeCount").textContent = pluralText(proposal.diff.change_count, CHANGE_COUNT);
   $("resolutionSummary").innerHTML = [
-    [resolutionText("base"), proposal.base_revision_id],
-    ...(restoring ? [[resolutionText("source"), proposal.transaction.source_revision_id]] : []),
+    [resolutionText("base"), proposal.base_revision_id, true],
+    ...(restoring ? [[resolutionText("source"), proposal.transaction.source_revision_id, true]] : []),
     [resolutionText("validation"), resolutionText(!proposal.validation.valid ? "failed" : proposal.diagnostics_after?.contract_valid ? "valid" : "draft")],
     [resolutionText("integrity"), resolutionText("verified")],
-  ].map(([label, value]) => `<div class="resolutionMetric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join("");
-  $("resolutionDiff").innerHTML = proposal.diff.changes.map((change) => `<li class="resolutionChange"><span class="resolutionOperation">${escapeHtml(change.operation)}</span><code class="resolutionPath" dir="ltr">${escapeHtml(change.path)}</code><div class="resolutionValues"><div class="resolutionValue"><span>${escapeHtml(resolutionText("before"))}</span><code>${escapeHtml(formatResolutionValue(change.before))}</code></div><div class="resolutionValue"><span>${escapeHtml(resolutionText("after"))}</span><code>${escapeHtml(formatResolutionValue(change.after))}</code></div></div></li>`).join("");
+  ].map(([label, value, code]) => `<div><dt>${escapeHtml(label)}</dt><dd${code ? ' class="j-mono" dir="ltr"' : ""}>${escapeHtml(value)}</dd></div>`).join("");
+  $("resolutionDiff").innerHTML = proposal.diff.changes.map(diffItem).join("");
   updateResolutionCommitState();
 }
 
@@ -7498,6 +7522,9 @@ async function openResolutionTransaction(workspace = null, invoker = document.ac
       deriveDiagnostics: (payload) => resolutionDiagnosticsFor(loaded, payload),
     });
     resolutionDialogInvoker = invoker;
+    $("resolutionClose").setAttribute("aria-label", labelText(
+      "Close resolution transaction", "إغلاق معاملة الاعتماد", "Fermer la transaction de résolution",
+    ));
     const settings = readSettings();
     if (!settings.reviewerId) writeSettings({ reviewerId: globalThis.crypto.randomUUID() });
     $("resolutionReviewer").value = settings.reviewerName || "";
@@ -7529,7 +7556,7 @@ async function commitResolutionTransaction() {
   if (resolutionCommitPending || !state.resolutionWorkspace || !state.resolutionProposal) return;
   resolutionCommitPending = true;
   updateResolutionCommitState();
-  $("resolutionStatus").className = "status";
+  $("resolutionStatus").dataset.tone = "idle";
   $("resolutionStatus").textContent = resolutionText("committing");
   try {
     const settings = readSettings();
@@ -7546,7 +7573,7 @@ async function commitResolutionTransaction() {
     });
     const saved = await WORKSPACE_REPOSITORY.replace(next, { expectedRevision });
     resolutionCommitPending = false;
-    $("resolutionStatus").className = "status good";
+    $("resolutionStatus").dataset.tone = "ok";
     const message = resolutionText(state.resolutionProposal.transaction?.type === "revision_restore" ? "restored" : "committed");
     $("resolutionStatus").textContent = message;
     applyWorkspaceAnalysis(saved, { keepPendingReply: true });
@@ -7555,7 +7582,7 @@ async function commitResolutionTransaction() {
   } catch (error) {
     resolutionCommitPending = false;
     noteWriteConflict(error, state.resolutionWorkspace);
-    $("resolutionStatus").className = "status bad";
+    $("resolutionStatus").dataset.tone = "crit";
     $("resolutionStatus").textContent = workspaceFailureMessage(error);
     updateResolutionCommitState();
   }

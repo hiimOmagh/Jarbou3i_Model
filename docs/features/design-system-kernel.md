@@ -189,6 +189,31 @@ time.
 - **Tests:** `tests/canonical-editor.spec.js` (contracts and axe in both
   themes), and the cross-tab snapshot case in `tests/work-panel.spec.js`.
 
+## Commit and revision history
+
+`src/ui/commit.css` (`.j-commit-*`, `.j-diff-*`, `.j-rev-*`) and
+`renderResolutionProposal` / `renderRevisionHistory` / `diffItem` in
+`src/app.js`: the commit (resolution) dialog and the revision history on
+kernel controls.
+
+- **The diff:** both dialogs show a change the same way (`diffItem`): its
+  operation as a chip named in the page language (added `ok`, changed `warn`,
+  removed `crit`), its path, and the values before and after.
+- **Facts:** the base, source, validation and integrity of a commit, and a
+  revision's metadata, are a `dl`; revision IDs and checksums read left to
+  right in monospace.
+- **Approval:** the approver and rationale are kernel fields; the
+  confirmation is a 44px label.
+- **Revisions:** each is a button with `aria-pressed`; the current head
+  carries an `ok` chip, imported and restored a plain tag.
+- **Status:** `#resolutionStatus`, `#revisionStatus` and `#revisionBlocked`
+  set `data-tone`.
+- **Counts:** `pluralText` uses the language's plural forms (Arabic has six).
+- No part scrolls on its own except the revision list, whose buttons take
+  focus; the dialog scrolls instead.
+- **Tests:** `tests/revision-history.spec.js` (contracts and axe in both
+  themes, Arabic labels, plurals) and `tests/resolution-transaction.spec.js`.
+
 ## Not in the kernel yet
 
 These controls come with the views that first need them, each with a

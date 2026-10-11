@@ -93,6 +93,9 @@ const FREE_CLASSES = [
   "j-save-light", "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
   "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-check", "j-editor-errors",
+  "j-commit", "j-commit-trust", "j-commit-facts", "j-commit-head", "j-commit-tag", "j-commit-approve", "j-commit-confirm",
+  "j-commit-note", "j-commit-acts", "j-diff", "j-diff-item", "j-diff-path", "j-diff-vals", "j-diff-val",
+  "j-rev-grid", "j-rev-list", "j-rev-compare", "j-rev-items", "j-rev-item", "j-rev-top", "j-rev-meta",
 ];
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());
 
