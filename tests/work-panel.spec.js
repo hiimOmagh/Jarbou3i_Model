@@ -23,6 +23,20 @@ async function setTitle(page, title) {
   await expect(page.locator("#editorDirty")).toContainText("Unsaved");
 }
 
+// Snapshots in the recovery journal, read straight from IndexedDB.
+function journalCount(page) {
+  return page.evaluate(() => new Promise((resolve, reject) => {
+    const open = indexedDB.open("jarbou3i-model-workspaces");
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const database = open.result;
+      const request = database.transaction("recovery-journal").objectStore("recovery-journal").count();
+      request.onsuccess = () => { database.close(); resolve(request.result); };
+      request.onerror = () => { database.close(); reject(request.error); };
+    };
+  }));
+}
+
 async function editTitle(page, title) {
   await openEditor(page);
   await setTitle(page, title);
@@ -116,7 +130,7 @@ test.describe("Work panel", () => {
   test("an edit still open in another tab is not offered as a recovery snapshot", async ({ page, context }) => {
     await page.locator("#loadSampleBtn").click();
     await editTitle(page, "Typed in the first tab");
-    await page.waitForTimeout(700);
+    await expect.poll(() => journalCount(page)).toBe(1);
     const other = await context.newPage();
     await other.goto("./");
     await openEditor(other);
@@ -125,6 +139,9 @@ test.describe("Work panel", () => {
     await other.locator("#editorClose").click();
     // Once that tab has closed, what it left is offered.
     await page.close();
+    // Its lock goes with it, a moment later: then only this tab's own is held.
+    await expect.poll(() => other.evaluate(async () => (await navigator.locks.query()).held
+      .filter((lock) => lock.name.startsWith("intake-draft:")).length)).toBe(1);
     await other.reload();
     await expect(light(other)).toHaveAttribute("data-life", "snapshot");
   });

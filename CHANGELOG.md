@@ -20,6 +20,8 @@
   hint in Arabic, English and French.
 - A cut-off answer's message points up to the box for the rest of the answer,
   where it now appears.
+- Closing a reference inspector gives focus back to the reference that opened
+  it before hiding, so WebKit no longer drops it.
 
 ### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file, work panel, editor, commit, history, import and export
 

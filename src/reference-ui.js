@@ -306,10 +306,12 @@
     const rootElement = document.getElementById("referenceInspectorRoot");
     if (!rootElement || rootElement.hidden) return;
     const closingId = activeNode?.id;
+    document.querySelector("main")?.removeAttribute("inert");
+    // Focus goes back before the inspector hides, so the element holding focus
+    // is never hidden under it: WebKit can otherwise clear the restored focus.
+    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus();
     rootElement.hidden = true;
     document.documentElement.classList.remove("referenceInspectorOpen");
-    document.querySelector("main")?.removeAttribute("inert");
-    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus();
     returnFocus = null;
     activeNode = null;
     activeInspection = null;

@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { clearWorkspaceStorage, restoreSavedDraft } from "./helpers/browser-persistence.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
 test.describe("Structured canonical editor", () => {
   test.beforeEach(async ({ page }) => {
@@ -275,16 +275,6 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(field).toHaveAttribute("aria-invalid", "true");
     await expect(page.locator('[data-editor-path="/subject"] .j-chip')).toContainText("للإصلاح");
-    const problems = await page.evaluate(async () => {
-      const { checkContracts } = await import("./src/ui/contracts.js");
-      return checkContracts(document.querySelector(".j-editor"));
-    });
-    expect(problems).toEqual([]);
-    for (const theme of ["light", "dark"]) {
-      await page.evaluate((value) => { document.documentElement.dataset.theme = value; }, theme);
-      const { violations } = await new AxeBuilder({ page }).include("#editorDialog").analyze();
-      const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
-      expect(serious, `${theme}: ${JSON.stringify(serious, null, 2)}`).toEqual([]);
-    }
+    await expectKernel(page, ".j-editor", "#editorDialog");
   });
 });

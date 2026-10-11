@@ -10,7 +10,15 @@ export async function expectKernel(page, root, scope = root) {
   }, root);
   expect(problems).toEqual([]);
   for (const theme of ["light", "dark"]) {
-    await page.evaluate((value) => { document.documentElement.dataset.theme = value; }, theme);
+    await page.evaluate((value) => {
+      document.documentElement.dataset.theme = value;
+      // Colours change through transitions: end them now, so axe never reads a
+      // control with one theme's text on the other's background. Waiting would
+      // hang where a headless page's animation clock does not advance.
+      for (const animation of document.getAnimations()) {
+        if (animation instanceof CSSTransition) animation.finish();
+      }
+    }, theme);
     const { violations } = await new AxeBuilder({ page }).include(scope).analyze();
     const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
     expect(serious, `${scope} ${theme}: ${JSON.stringify(serious, null, 2)}`).toEqual([]);
