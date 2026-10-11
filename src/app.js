@@ -2170,7 +2170,7 @@ function renderImportAuditDetails({
         .slice(0, 12)
         .map(
           (warning) =>
-            `<li><span class="importAuditPath" dir="ltr">${escapeHtml(warning.path || "/")}</span> — ${escapeHtml(localizedImportIssueMessage(warning))}</li>`,
+            `<li><span class="j-audit-path" dir="ltr">${escapeHtml(warning.path || "/")}</span> — ${escapeHtml(localizedImportIssueMessage(warning))}</li>`,
         )
         .join("")}</ul>`
     : `<p>${escapeHtml(labelText("No contract or integrity warnings.", "لا توجد تنبيهات عقد أو نزاهة.", "Aucun avertissement de contrat ou d’intégrité."))}</p>`;
@@ -2355,19 +2355,19 @@ function renderImportAuditDetails({
       : "",
   ].filter(Boolean);
   const quarantineHtml = quarantined.length
-    ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h4><p>${escapeHtml(labelText("Unknown properties and invalid values were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues et les valeurs invalides n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
+    ? `<section class="j-audit-group"><h4>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h4><p>${escapeHtml(labelText("Unknown properties and invalid values were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues et les valeurs invalides n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
         .slice(0, 20)
         .map(
           (item) =>
-            `<li><span class="importAuditPath" dir="ltr">${escapeHtml(item.path || "/")}</span> — <code>${escapeHtml(JSON.stringify(item.value))}</code></li>`,
+            `<li><span class="j-audit-path" dir="ltr">${escapeHtml(item.path || "/")}</span> — <code>${escapeHtml(JSON.stringify(item.value))}</code></li>`,
         )
         .join("")}</ul></section>`
     : "";
   body.innerHTML = `${
     provenance?.total
-      ? `<section class="importAuditGroup"><h4>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Draft import is allowed; model-declared verification remains untrusted.`, `يفتقر ${blocking} من ${provenance.total} سجلات أدلة إلى اعتماد مستقل. استيراد المسودة مسموح؛ ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. L’import du brouillon est permis ; la vérification déclarée par le modèle reste non fiable.`))}</p></section>`
+      ? `<section class="j-audit-group"><h4>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Draft import is allowed; model-declared verification remains untrusted.`, `يفتقر ${blocking} من ${provenance.total} سجلات أدلة إلى اعتماد مستقل. استيراد المسودة مسموح؛ ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. L’import du brouillon est permis ; la vérification déclarée par le modèle reste non fiable.`))}</p></section>`
       : ""
-  }<section class="importAuditGroup"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="importAuditGroup"><h4>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
+  }<section class="j-audit-group"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="j-audit-group"><h4>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
   details.hidden = false;
 }
 function validateJsonInput() {
@@ -6641,7 +6641,7 @@ async function exportBiopoliticalReport() {
   );
   if (status) {
     status.innerHTML = "";
-    status.classList.remove("warning");
+    status.dataset.tone = "idle";
     status.removeAttribute("role");
   }
   try {
@@ -6653,9 +6653,9 @@ async function exportBiopoliticalReport() {
     );
   } catch {
     if (status) {
-      status.classList.add("warning");
+      status.dataset.tone = "warn";
       status.setAttribute("role", "alert");
-      status.innerHTML = `<p>${escapeHtml(labelText("The biopolitical report renderer could not be loaded.", "تعذّر تحميل مُصيّر التقرير الحيوسياسي.", "Impossible de charger le moteur de rendu du rapport biopolitique."))}</p><button type="button" class="secondary" data-retry-biopolitical-report>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button>`;
+      status.innerHTML = `<p>${escapeHtml(labelText("The biopolitical report renderer could not be loaded.", "تعذّر تحميل مُصيّر التقرير الحيوسياسي.", "Impossible de charger le moteur de rendu du rapport biopolitique."))}</p><button type="button" class="j-btn" data-retry-biopolitical-report>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button>`;
       status
         .querySelector("[data-retry-biopolitical-report]")
         ?.addEventListener("click", exportBiopoliticalReport, { once: true });
@@ -6690,9 +6690,9 @@ function renderExports() {
     fr: "Un rapport HTML autonome pour la revue humaine et un JSON canonique qui préserve l’intégralité du contrat sans perte de champ.",
   };
   const canonicalInspector = state.analysis
-    ? `<details class="canonicalInspector"><summary>${escapeHtml(labelText("Inspect the complete canonical contract", "افحص العقد النظامي الكامل", "Inspecter le contrat canonique complet"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
+    ? `<details class="j-export-raw"><summary>${escapeHtml(labelText("Inspect the complete canonical contract", "افحص العقد النظامي الكامل", "Inspecter le contrat canonique complet"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
     : "";
-  return `<h3>${t("exports")}</h3><div class="exportGrid"><div class="exportCard exportWide"><h4>${t("downloadHtml")}</h4><p>${d[state.lang] || d.en}</p><button class="btn primary" id="exportHtml" type="button" aria-describedby="exportHtmlStatus">${t("downloadHtml")}</button><div id="exportHtmlStatus" class="capabilityStatus" aria-live="polite"></div></div><div class="exportCard"><h4>${t("downloadJson")}</h4><p>${escapeHtml(labelText("Lossless machine-readable analysis for verification, re-import, and archival.", "تحليل آلي كامل للتحقق وإعادة الاستيراد والأرشفة.", "Analyse lisible par machine, sans perte, pour vérification, réimport et archivage."))}</p><button class="btn" id="exportJson" type="button">${t("downloadJson")}</button></div></div>${canonicalInspector}`;
+  return `<h3>${t("exports")}</h3><div class="j-root j-export"><div class="j-card"><h4>${t("downloadHtml")}</h4><p>${d[state.lang] || d.en}</p><button class="j-btn" data-variant="primary" id="exportHtml" type="button" aria-describedby="exportHtmlStatus">${t("downloadHtml")}</button><div id="exportHtmlStatus" class="j-note" data-tone="idle" aria-live="polite"></div></div><div class="j-card"><h4>${t("downloadJson")}</h4><p>${escapeHtml(labelText("Lossless machine-readable analysis for verification, re-import, and archival.", "تحليل آلي كامل للتحقق وإعادة الاستيراد والأرشفة.", "Analyse lisible par machine, sans perte, pour vérification, réimport et archivage."))}</p><button class="j-btn" id="exportJson" type="button">${t("downloadJson")}</button></div></div>${canonicalInspector}`;
 }
 function renderReviewNav() {
   const counts = {
@@ -6864,6 +6864,7 @@ async function renderStorageHealth({ request = false } = {}) {
   if (!target) return;
   const health = request ? await requestStoragePersistence() : await inspectStorageHealth();
   target.dataset.state = health.state;
+  target.dataset.tone = { persistent: "ok", pressure: "warn", critical: "crit" }[health.state] || "idle";
   target.textContent = formatStorageHealth(health);
   $("workspaceProtectStorage").hidden = health.persisted === true || !health.canPersist;
 }
@@ -6872,7 +6873,7 @@ function setWorkspaceStatus(kind, message) {
   state.workspaceSaveState = kind === "bad" ? "error" : state.activeWorkspaceId ? "saved" : "idle";
   const target = $("workspaceStatus");
   if (target) {
-    target.className = `status ${kind || ""}`.trim();
+    target.dataset.tone = { good: "ok", warn: "warn", bad: "crit" }[kind] || "idle";
     target.textContent = message;
   }
   APPLICATION_SHELL.render();
@@ -7880,14 +7881,14 @@ async function renderWorkspaceList() {
     target.innerHTML = entries.length
       ? entries.map((entry) => {
           if (entry.integrity_status !== "verified") {
-            return `<article class="workspaceRow corrupt" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(labelText("Unreadable local workspace", "مساحة عمل محلية غير قابلة للقراءة", "Espace local illisible"))}</p><div class="workspaceRowMeta"><strong title="${escapeHtml(entry.error_code || "WORKSPACE_INTEGRITY_FAILED")}">${escapeHtml(workspaceText("damaged"))}</strong></div></div><div class="actions"><button class="btn" type="button" data-workspace-remove-damaged="${escapeHtml(entry.workspace_id)}">${escapeHtml(workspaceText("removeDamaged"))}</button></div></article>`;
+            return `<article class="j-ws-row" data-state="damaged" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="j-ws-name">${escapeHtml(labelText("Unreadable local workspace", "مساحة عمل محلية غير قابلة للقراءة", "Espace local illisible"))}</p><div class="j-ws-meta"><strong title="${escapeHtml(entry.error_code || "WORKSPACE_INTEGRITY_FAILED")}">${escapeHtml(workspaceText("damaged"))}</strong></div></div><div class="j-ws-row-acts"><button class="j-btn" data-variant="danger" type="button" data-workspace-remove-damaged="${escapeHtml(entry.workspace_id)}">${escapeHtml(workspaceText("removeDamaged"))}</button></div></article>`;
           }
           const active = entry.workspace_id === state.activeWorkspaceId;
           const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" })
             .format(new Date(entry.metadata.updated_at));
-          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="actions">${active ? "" : `<button class="btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}`}<button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
+          return `<article class="j-ws-row"${active ? ' aria-current="true"' : ""} data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="j-ws-name">${escapeHtml(entry.metadata.title)}</p><div class="j-ws-meta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="j-ws-row-acts">${active ? "" : `<button class="j-btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="j-btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="j-btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}`}<button class="j-btn" data-variant="primary" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
         }).join("")
-      : `<div class="empty"><strong>${escapeHtml(workspaceText("empty"))}</strong></div>`;
+      : `<p class="j-ws-empty">${escapeHtml(workspaceText("empty"))}</p>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
       button.onclick = async () => {
         if (!confirmReplacingReply(button.dataset.workspaceOpen)) {

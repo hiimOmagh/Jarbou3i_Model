@@ -21,7 +21,7 @@
 - A cut-off answer's message points up to the box for the rest of the answer,
   where it now appears.
 
-### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file, work panel, editor, commit and history
+### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file, work panel, editor, commit, history, import and export
 
 - Rebuilds the global header and workspace bar on the kernel, in the case-file
   direction:
@@ -82,6 +82,14 @@
     colour;
   - counts use each language's plural forms ("1 change", not "1 changes");
   - the commit dialog's close button is named in AR, EN and FR.
+- Rebuilds import and export on the kernel:
+  - the workspace list under "Where your work is": its actions, the storage
+    health and status as notes, and one row per workspace, the open and the
+    damaged one marked by a thicker edge as well as colour;
+  - deleting and resetting use a new `danger` button;
+  - the case file's exports (HTML report, canonical JSON, the full contract)
+    and the import's review details under the answer.
+  The editor's and commit dialogs' status lines become one kernel note.
 - Adds a command palette (Ctrl/⌘ K, or Commands in the header):
   - it lists every enabled control of the shell and of the open review by its
     own label, and runs one by clicking it;

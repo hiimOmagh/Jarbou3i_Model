@@ -158,7 +158,7 @@ for (const token of [
   "L’URL de la source n’est pas une URL HTTP(S) absolue",
   "لا تطابق القيمة بنية عقد التحليل المطلوبة",
   "La valeur ne respecte pas la structure requise",
-  'class="importAuditPath" dir="ltr"',
+  'class="j-audit-path" dir="ltr"',
 ]) {
   if (!app.includes(token)) fail(`localized import-audit contract missing: ${token}`);
 }

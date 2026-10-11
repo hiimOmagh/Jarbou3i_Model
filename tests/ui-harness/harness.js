@@ -7,7 +7,7 @@ import { bindSegmented } from "../../src/ui/controls.js";
 const STRINGS = {
   en: {
     title: "Kernel controls", lead: "Every base control of the design system, in each state.",
-    buttons: "Buttons", open: "Open the analysis", continue: "Continue", cancel: "Cancel", next: "Next step", disabled: "Not available", menu: "Menu",
+    buttons: "Buttons", open: "Open the analysis", continue: "Continue", cancel: "Cancel", next: "Next step", disabled: "Not available", menu: "Menu", remove: "Delete",
     choices: "Choices", language: "Language", theme: "Theme", system: "System", dark: "Dark", light: "Light", density: "Density", comfortable: "Comfortable", compact: "Compact",
     statuses: "Status", saved: "Saved", unsaved: "Unsaved changes", failed: "Not saved", idle: "Not started",
     chips: "Confidence", high: "High", medium: "Medium", low: "Low", unrated: "Unrated",
@@ -17,7 +17,7 @@ const STRINGS = {
   },
   ar: {
     title: "عناصر النواة", lead: "كل عنصر أساسي في نظام التصميم، في كل حالة.",
-    buttons: "الأزرار", open: "افتح التحليل", continue: "متابعة", cancel: "إلغاء", next: "الخطوة التالية", disabled: "غير متاح", menu: "القائمة",
+    buttons: "الأزرار", open: "افتح التحليل", continue: "متابعة", cancel: "إلغاء", next: "الخطوة التالية", disabled: "غير متاح", menu: "القائمة", remove: "حذف",
     choices: "الاختيارات", language: "اللغة", theme: "المظهر", system: "النظام", dark: "داكن", light: "فاتح", density: "الكثافة", comfortable: "مريحة", compact: "مضغوطة",
     statuses: "الحالة", saved: "محفوظ", unsaved: "تغييرات غير محفوظة", failed: "لم يُحفظ", idle: "لم يبدأ",
     chips: "الثقة", high: "عالية", medium: "متوسطة", low: "منخفضة", unrated: "غير مقيّمة",
@@ -27,7 +27,7 @@ const STRINGS = {
   },
   fr: {
     title: "Contrôles du noyau", lead: "Chaque contrôle de base du système de design, dans chaque état.",
-    buttons: "Boutons", open: "Ouvrir l’analyse", continue: "Continuer", cancel: "Annuler", next: "Étape suivante", disabled: "Indisponible", menu: "Menu",
+    buttons: "Boutons", open: "Ouvrir l’analyse", continue: "Continuer", cancel: "Annuler", next: "Étape suivante", disabled: "Indisponible", menu: "Menu", remove: "Supprimer",
     choices: "Choix", language: "Langue", theme: "Thème", system: "Système", dark: "Sombre", light: "Clair", density: "Densité", comfortable: "Confortable", compact: "Compacte",
     statuses: "État", saved: "Enregistré", unsaved: "Modifications non enregistrées", failed: "Non enregistré", idle: "Pas commencé",
     chips: "Confiance", high: "Élevée", medium: "Moyenne", low: "Faible", unrated: "Non évaluée",
@@ -72,6 +72,7 @@ document.getElementById("harness").innerHTML = `
       <button type="button" class="j-btn" data-variant="primary" data-size="lg">${s.next} ${nextIcon}</button>
       <button type="button" class="j-btn" data-size="icon" aria-label="${s.menu}">${menuIcon}</button>
       <button type="button" class="j-btn" disabled>${s.disabled}</button>
+      <button type="button" class="j-btn" data-variant="danger">${s.remove}</button>
       <span>${s.key} <kbd class="j-kbd">Ctrl K</kbd></span>
     </div>
   </section>
@@ -91,6 +92,8 @@ document.getElementById("harness").innerHTML = `
       <span class="j-status" data-tone="crit">${s.failed}</span>
       <span class="j-status" data-tone="idle">${s.idle}</span>
     </div>
+    <p class="j-note" data-tone="ok">${s.saved}</p>
+    <p class="j-note" data-tone="crit">${s.failed}</p>
     <p class="j-label">${s.chips}</p>
     <div class="row">
       <span class="j-chip" data-tone="ok">${s.high}</span>

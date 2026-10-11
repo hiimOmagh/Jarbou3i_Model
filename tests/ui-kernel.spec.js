@@ -95,7 +95,7 @@ test.describe("Design-system kernel", () => {
     });
     expect(problems).toEqual([
       "j-btn: a <button> needs a type",
-      'j-btn: data-variant="loud" is not one of primary, ghost',
+      'j-btn: data-variant="loud" is not one of primary, ghost, danger',
       "j-btn: needs an accessible name",
       "j-btn: an icon-only button needs aria-label",
       "j-status: needs data-tone (ok, warn, crit, idle)",

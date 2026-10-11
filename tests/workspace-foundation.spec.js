@@ -44,7 +44,7 @@ test("switching lens and back makes that lens's saved analysis current again", a
 
   await expect(page.locator("#topicInput")).toHaveValue(strategicTitle);
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow.active .workspaceRowTitle")).toHaveText(strategicTitle);
+  await expect(page.locator("[data-workspace-row][aria-current=true] .j-ws-name")).toHaveText(strategicTitle);
 });
 
 test("an analysis whose save failed leaves no other analysis marked current", async ({ page }) => {
@@ -65,8 +65,8 @@ test("an analysis whose save failed leaves no other analysis marked current", as
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "error");
 
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(1);
-  await expect(page.locator(".workspaceRow.active")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(1);
+  await expect(page.locator("[data-workspace-row][aria-current=true]")).toHaveCount(0);
   await expect(page.locator("#workspaceExport")).toBeDisabled();
 });
 
@@ -86,7 +86,7 @@ test("a failed save is said when it happens and stays shown in Workspaces", asyn
   await expect(page.locator("#toast")).toContainText("was not saved on this device");
 
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
   await expect(page.locator("#workspaceStatus")).not.toContainText("storage is ready");
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "error");
 });
@@ -96,12 +96,12 @@ test("Arabic Workspaces name rows and damage in Arabic", async ({ page }) => {
   await page.locator("#langAr").click();
   await createSavedWorkspace(page, "strategic");
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow .workspaceRowMeta").first()).not.toContainText(/strategic|verified/);
+  await expect(page.locator("[data-workspace-row] .j-ws-meta").first()).not.toContainText(/strategic|verified/);
   await damageFirstWorkspace(page);
   await page.reload();
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow.corrupt")).toBeVisible();
-  await expect(page.locator(".workspaceRow.corrupt")).not.toContainText(/[A-Z_]{6,}/);
+  await expect(page.locator("[data-workspace-row][data-state=damaged]")).toBeVisible();
+  await expect(page.locator("[data-workspace-row][data-state=damaged]")).not.toContainText(/[A-Z_]{6,}/);
 });
 
 test("an Arabic save failure is said in Arabic", async ({ page }) => {
@@ -171,7 +171,7 @@ test("switching lens while the analysis saves keeps it with its workspace", asyn
   await expect(page.locator("#reviewPanel")).toBeVisible();
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow.active")).toHaveCount(1);
+  await expect(page.locator("[data-workspace-row][aria-current=true]")).toHaveCount(1);
   await expect(page.locator("#workspaceExport")).toBeEnabled();
 });
 
@@ -181,8 +181,8 @@ test("importing the analysis already open does not save it twice", async ({ page
   await page.locator("#loadSampleBtn").click();
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(1);
-  await expect(page.locator(".workspaceRow.active")).toHaveCount(1);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(1);
+  await expect(page.locator("[data-workspace-row][aria-current=true]")).toHaveCount(1);
 });
 
 test("a reply left in the box by Reset app data is still kept and guarded", async ({ page }) => {
@@ -221,10 +221,10 @@ test("removing the damaged analysis that is open leaves none open", async ({ pag
   await createSavedWorkspace(page, "strategic");
   await damageFirstWorkspace(page);
   await page.locator("#workspaceSaveState").click();
-  const remove = page.locator(".workspaceRow.corrupt [data-workspace-remove-damaged]");
+  const remove = page.locator("[data-workspace-row][data-state=damaged] [data-workspace-remove-damaged]");
   await remove.click();
   await remove.click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
   await expect(page.locator("#workspaceExport")).toBeDisabled();
   await expect(page.locator("#workspaceResetCurrent")).toBeDisabled();
 });
@@ -263,8 +263,8 @@ test("an older save finishing last does not take over the analysis imported afte
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
   await page.waitForFunction(() => window.slowSaveDone === true);
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(2);
-  await expect(page.locator(".workspaceRow.active")).toContainText("Imported while the sample saved");
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(2);
+  await expect(page.locator("[data-workspace-row][aria-current=true]")).toContainText("Imported while the sample saved");
 });
 
 test("a damaged workspace can be removed after a second click", async ({ page }) => {
@@ -273,11 +273,11 @@ test("a damaged workspace can be removed after a second click", async ({ page })
   await damageFirstWorkspace(page);
   await page.reload();
   await page.locator("#workspaceSaveState").click();
-  const remove = page.locator(".workspaceRow.corrupt [data-workspace-remove-damaged]");
+  const remove = page.locator("[data-workspace-row][data-state=damaged] [data-workspace-remove-damaged]");
   await remove.click();
   expect(await countWorkspaceRecords(page)).toBe(1);
   await remove.click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
   expect(await countWorkspaceRecords(page)).toBe(0);
 });
 
@@ -317,7 +317,7 @@ test("opening a saved analysis asks before replacing a reply that is not importe
   await page.locator("#jsonInput").fill(reply);
 
   await page.locator("#workspaceSaveState").click();
-  const open = page.locator(".workspaceRow", { hasText: strategicTitle }).locator("[data-workspace-open]");
+  const open = page.locator("[data-workspace-row]", { hasText: strategicTitle }).locator("[data-workspace-open]");
   await open.click();
   await expect(page.locator("#workspaceStatus")).toContainText("Click again");
   await expect(page.locator("#jsonInput")).toHaveValue(reply);
@@ -352,7 +352,7 @@ for (const reset of ["workspaceResetCurrent", "workspaceResetAll"]) {
     await page.locator("#workspaceSaveState").click();
     await page.locator(`#${reset}`).click();
     await page.locator(`#${reset}`).click();
-    await expect(page.locator(".workspaceRow")).toHaveCount(0);
+    await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
     await page.locator("#workspaceClose").click();
 
     await openStep(page, "lens");
@@ -399,7 +399,7 @@ test("after a reset, the reply left in the box can be imported again", async ({ 
   await page.locator("#workspaceSaveState").click();
   await page.locator("#workspaceResetCurrent").click();
   await page.locator("#workspaceResetCurrent").click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
 
   await expect(page.locator("#importBtn")).toBeEnabled();
 });
@@ -476,7 +476,7 @@ test("a reply pasted but not imported survives a reload after another saved anal
   await expect.poll(async () => (await readIntakeDraft(page))?.reply).toBe(reply);
 
   await page.locator("#workspaceSaveState").click();
-  await page.locator(".workspaceRow:not(.active)").getByRole("button", { name: "Edit draft" }).click();
+  await page.locator("[data-workspace-row]:not([aria-current=true])").getByRole("button", { name: "Edit draft" }).click();
   await page.locator('[data-editor-path="/subject"]').click();
   const field = page.locator("#editorField");
   const subject = JSON.parse(await field.inputValue());
@@ -521,7 +521,7 @@ test("clicking Import twice saves the analysis once", async ({ page }) => {
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
   await expect(page.locator("#importBtn")).toBeDisabled();
   await page.locator("#workspaceSaveState").click();
-  await expect(page.locator(".workspaceRow")).toHaveCount(1);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(1);
   expect(await countWorkspaceRecords(page)).toBe(1);
 });
 
@@ -573,7 +573,7 @@ test(`${lens} IndexedDB workspace survives reload and reopens a verified draft`,
   await expect(page.locator("#reviewPanel")).toBeVisible();
   await page.locator("#workspaceSaveState").click();
   await expect(page.locator("#workspaceDialog")).toBeVisible();
-  await expect(page.locator(".workspaceRow.active")).toContainText(title);
+  await expect(page.locator("[data-workspace-row][aria-current=true]")).toContainText(title);
 });
 
 test(`${lens} portable bundle restores losslessly and corrupted bundles fail closed`, async ({ page }, testInfo) => {
@@ -607,9 +607,9 @@ test(`${lens} portable bundle restores losslessly and corrupted bundles fail clo
   bundle.workspace.working_draft.canonical_payload.subject.title = "Undetected mutation";
   await fs.writeFile(corruptPath, JSON.stringify(bundle), "utf8");
   await page.locator("#workspaceImportFile").setInputFiles(corruptPath);
-  await expect(page.locator("#workspaceStatus")).toHaveClass(/bad/);
+  await expect(page.locator("#workspaceStatus")).toHaveAttribute("data-tone", "crit");
   await expect(page.locator("#workspaceStatus")).toContainText(/integrity|checksum/i);
-  await expect(page.locator(".workspaceRow")).toHaveCount(1);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(1);
 });
 }
 
@@ -621,7 +621,7 @@ test("guarded reset removes the current workspace", async ({ page }) => {
   await expect(page.locator("#workspaceStatus")).toContainText("Click again");
   await page.locator("#workspaceResetCurrent").click();
   await expect(page.locator("#workspaceStatus")).toContainText("was removed");
-  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
 });
 
 // Separate from the guarded reset above: together they ran close to the test
@@ -635,7 +635,7 @@ test("full reset clears workspaces and preferences", async ({ page }) => {
   await expect(page.locator("#workspaceStatus")).toContainText("Click again");
   await page.locator("#workspaceResetAll").click();
   await expect(page.locator("#workspaceStatus")).toContainText("preferences were removed");
-  await expect(page.locator(".workspaceRow")).toHaveCount(0);
+  await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
   await page.reload();
   await expect(page.locator("#workspaceSaveState"))
   .toHaveAttribute("data-state", "empty");

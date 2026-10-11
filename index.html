@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="src/ui/work.css" />
 <link rel="stylesheet" href="src/ui/editor.css" />
   <link rel="stylesheet" href="src/ui/commit.css" />
+  <link rel="stylesheet" href="src/ui/exchange.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-192.png" fetchpriority="high" />
 </head>
 <body>
@@ -178,9 +179,9 @@
             <button class="j-btn" data-variant="ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
           </div>
           <div class="status" id="jsonStatus" role="status" aria-live="polite">الصق نتيجة JSON للتحقق.</div>
-          <details class="importAudit" id="importAuditDetails" hidden>
+          <details class="j-audit" id="importAuditDetails" hidden>
             <summary id="importAuditSummary">Import review details</summary>
-            <div class="importAuditBody" id="importAuditBody"></div>
+            <div class="j-audit-body" id="importAuditBody"></div>
           </details>
         </div>
         <div class="j-flow-actions">
@@ -237,18 +238,20 @@
       <button class="btn iconBtn" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
     </header>
     <div class="j-root j-life" id="workLife" hidden></div>
-    <h4 class="workspaceListTitle" id="workspaceListTitle">مساحات العمل</h4>
-    <div class="workspaceDialogActions">
-      <button class="btn" id="workspaceExport" type="button" disabled>تصدير مساحة العمل</button>
-      <button class="btn" id="workspaceImport" type="button">استيراد حزمة</button>
-      <button class="btn" id="workspaceProtectStorage" type="button">حماية التخزين</button>
-      <button class="btn danger" id="workspaceResetCurrent" type="button" disabled>حذف الحالية</button>
-      <button class="btn danger" id="workspaceResetAll" type="button">إعادة ضبط الكل</button>
-      <input class="srOnly" id="workspaceImportFile" type="file" accept="application/json,.json" aria-labelledby="workspaceImport" />
+    <div class="j-root j-ws">
+      <h4 class="j-ws-title" id="workspaceListTitle">مساحات العمل</h4>
+      <div class="j-ws-acts">
+        <button class="j-btn" id="workspaceExport" type="button" disabled>تصدير مساحة العمل</button>
+        <button class="j-btn" id="workspaceImport" type="button">استيراد حزمة</button>
+        <button class="j-btn" data-variant="ghost" id="workspaceProtectStorage" type="button">حماية التخزين</button>
+        <button class="j-btn" data-variant="danger" id="workspaceResetCurrent" type="button" disabled>حذف الحالية</button>
+        <button class="j-btn" data-variant="danger" id="workspaceResetAll" type="button">إعادة ضبط الكل</button>
+        <input class="j-sr-only" id="workspaceImportFile" type="file" accept="application/json,.json" aria-labelledby="workspaceImport" />
+      </div>
+      <p class="j-note" data-tone="idle" id="storageHealth" role="status" aria-live="polite"></p>
+      <p class="j-note" data-tone="idle" id="workspaceStatus" role="status" aria-live="polite"></p>
+      <div class="j-ws-list" id="workspaceList"></div>
     </div>
-    <div class="storageHealth" id="storageHealth" role="status" aria-live="polite"></div>
-    <div class="status" id="workspaceStatus" role="status" aria-live="polite"></div>
-    <div class="workspaceList" id="workspaceList"></div>
   </section>
 </div>
 <div class="workspaceBackdrop" id="editorBackdrop" aria-hidden="true">
@@ -281,7 +284,7 @@
             <p class="j-help j-mono" id="editorPath" dir="ltr"></p>
             <textarea id="editorField" class="j-input j-mono j-editor-json" spellcheck="true" dir="ltr" aria-describedby="editorPath"></textarea>
           </div>
-          <p class="j-editor-check" data-tone="ok" id="editorFieldStatus" role="status" aria-live="polite"></p>
+          <p class="j-note" data-tone="ok" id="editorFieldStatus" role="status" aria-live="polite"></p>
           <div class="j-editor-errors" id="editorErrors" aria-live="polite"></div>
         </div>
       </div>
@@ -344,8 +347,8 @@
           <div class="j-commit-head"><h4 id="revisionCompareTitle"></h4><span class="j-commit-tag" id="revisionChangeCount"></span></div>
           <dl class="j-commit-facts" id="revisionMetadata"></dl>
           <ol class="j-diff" id="revisionDiff"></ol>
-          <p class="j-commit-note" data-tone="warn" id="revisionBlocked" role="status" aria-live="polite" hidden></p>
-          <p class="j-commit-note" data-tone="idle" id="revisionStatus" role="status" aria-live="polite"></p>
+          <p class="j-note" data-tone="warn" id="revisionBlocked" role="status" aria-live="polite" hidden></p>
+          <p class="j-note" data-tone="idle" id="revisionStatus" role="status" aria-live="polite"></p>
           <div class="j-commit-acts"><button class="j-btn" data-variant="primary" id="revisionRestore" type="button" disabled></button></div>
         </section>
       </div>
@@ -370,7 +373,7 @@
         <div class="j-field"><label id="resolutionRationaleLabel" for="resolutionRationale"></label><textarea class="j-input" id="resolutionRationale" rows="4" maxlength="2000"></textarea></div>
         <label class="j-commit-confirm"><input id="resolutionConfirm" type="checkbox" /><span id="resolutionConfirmLabel"></span></label>
       </div>
-      <p class="j-commit-note" data-tone="idle" id="resolutionStatus" role="status" aria-live="polite"></p>
+      <p class="j-note" data-tone="idle" id="resolutionStatus" role="status" aria-live="polite"></p>
       <div class="j-commit-acts"><button class="j-btn" data-variant="primary" id="resolutionCommit" type="button" disabled></button></div>
     </div>
   </section>

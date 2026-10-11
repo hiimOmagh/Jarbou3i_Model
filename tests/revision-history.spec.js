@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 import {
   beginLongPersistenceWorkflow,
   clearWorkspaceStorage,
@@ -49,22 +49,6 @@ async function commitTitle(page, title) {
   await saveTitle(page, title);
   await page.locator("#editorResolve").click();
   await approveOpenTransaction(page, `Approve ${title} after exact diff review.`);
-}
-
-// The dialog's controls keep their contracts, and axe finds nothing serious
-// in either theme.
-async function expectKernel(page, dialog) {
-  const problems = await page.evaluate(async (selector) => {
-    const { checkContracts } = await import("./src/ui/contracts.js");
-    return checkContracts(document.querySelector(`${selector} .j-commit`));
-  }, dialog);
-  expect(problems).toEqual([]);
-  for (const theme of ["light", "dark"]) {
-    await page.evaluate((value) => { document.documentElement.dataset.theme = value; }, theme);
-    const { violations } = await new AxeBuilder({ page }).include(dialog).analyze();
-    const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
-    expect(serious, `${dialog} ${theme}: ${JSON.stringify(serious, null, 2)}`).toEqual([]);
-  }
 }
 
 async function storedWorkspace(page) {
@@ -152,13 +136,13 @@ test.describe("Revision history and safe restore", () => {
     // Operations are named in the page language, not as codes.
     await expect(page.locator("#revisionDiff")).toContainText("عُدِّل");
     await expect(page.locator("#revisionDiff")).not.toContainText("replace");
-    await expectKernel(page, "#revisionDialog");
+    await expectKernel(page, "#revisionDialog .j-commit", "#revisionDialog");
 
     await page.locator("#revisionRestore").click();
     await expect(page.locator("#resolutionDialog")).toBeVisible();
     await expect(page.locator("#resolutionClose")).toHaveAttribute("aria-label", "إغلاق معاملة الاعتماد");
     await expect(page.locator("#resolutionDiff")).toContainText("عُدِّل");
     await expect(page.locator("#resolutionSummary dd[dir=ltr]")).toHaveCount(2);
-    await expectKernel(page, "#resolutionDialog");
+    await expectKernel(page, "#resolutionDialog .j-commit", "#resolutionDialog");
   });
 });

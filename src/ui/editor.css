@@ -27,17 +27,9 @@
 /* On the panel colour, so it keeps its contrast on the selected section too. */
 .j-editor-sec .j-chip { flex: none; background: var(--j-panel); }
 
-/* One canonical field as JSON, with its check and the problems under it. */
+/* One canonical field as JSON, with its check (a kernel note) and the problems under it. */
 .j-editor-main { display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; }
 .j-editor .j-editor-json { min-height: 360px; resize: vertical; text-align: left; font-family: var(--j-font-data); }
-.j-editor-check {
-  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-inline-start-width: 4px;
-  border-radius: var(--j-r-2); color: var(--j-fg); font-size: var(--j-t-13);
-}
-.j-editor-check:empty { display: none; }
-.j-editor-check[data-tone="ok"] { border-inline-start-color: var(--j-ok); background: var(--j-ok-wash); }
-.j-editor-check[data-tone="warn"] { border-inline-start-color: var(--j-warn); background: var(--j-warn-wash); }
-.j-editor-check[data-tone="crit"] { border-inline-start-color: var(--j-crit); background: var(--j-crit-wash); }
 /* Not a scroll box of its own: it has nothing to focus, so a keyboard could
    not scroll it. The dialog scrolls instead. */
 .j-editor-errors ul { margin: 0; padding-inline-start: var(--j-s-5); color: var(--j-fg); }

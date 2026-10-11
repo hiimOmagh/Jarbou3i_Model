@@ -45,14 +45,6 @@
 .j-commit-confirm { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: var(--j-s-2); min-height: 44px; padding-block: var(--j-s-2); color: var(--j-fg); cursor: pointer; }
 .j-commit-confirm input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--j-signal); }
 
-.j-commit-note {
-  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-inline-start-width: 4px;
-  border-radius: var(--j-r-2); color: var(--j-fg); font-size: var(--j-t-13);
-}
-.j-commit-note:empty { display: none; }
-.j-commit-note[data-tone="ok"] { border-inline-start-color: var(--j-ok); background: var(--j-ok-wash); }
-.j-commit-note[data-tone="warn"] { border-inline-start-color: var(--j-warn); background: var(--j-warn-wash); }
-.j-commit-note[data-tone="crit"] { border-inline-start-color: var(--j-crit); background: var(--j-crit-wash); }
 .j-commit-acts { display: flex; justify-content: flex-end; gap: var(--j-s-2); }
 
 /* Revisions beside the comparison with the current head. */

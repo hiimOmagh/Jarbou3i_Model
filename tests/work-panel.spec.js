@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { clearWorkspaceStorage, damageFirstWorkspace } from "./helpers/browser-persistence.js";
+import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
 // The work panel (UX-0, ADR-0002): the save light says where the work is and
 // opens "Where your work is"; banners raise what needs a decision.
@@ -166,7 +168,7 @@ test.describe("Work panel", () => {
     await expect(banner).toContainText("One saved workspace failed its integrity check.");
     await banner.getByRole("button", { name: "Review workspaces" }).click();
     await expect(page.locator("#workspaceDialog")).toBeFocused();
-    await expect(page.locator(".workspaceRow.corrupt")).toHaveCount(1);
+    await expect(page.locator("[data-workspace-row][data-state=damaged]")).toHaveCount(1);
   });
 
   test("says when the device is offline", async ({ page, context }) => {
@@ -192,5 +194,17 @@ test.describe("Work panel", () => {
     const { violations } = await new AxeBuilder({ page }).include("#workspaceDialog").include("#workspaceSaveState").analyze();
     const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
     expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+  });
+
+  test("the workspace list and its actions keep their contracts and read in both themes", async ({ page }) => {
+    await page.locator("#loadSampleBtn").click();
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#loadSampleBtn").click();
+    await light(page).click();
+    await expect(page.locator("[data-workspace-row]")).toHaveCount(2);
+    await expect(page.locator("[data-workspace-row][aria-current=true]")).toHaveCount(1);
+    await expect(page.locator("#workspaceResetAll")).toHaveAttribute("data-variant", "danger");
+    await expectKernel(page, "#workspaceDialog .j-ws", "#workspaceDialog");
   });
 });

@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
 async function fixture(name) {
   return JSON.parse(
@@ -103,6 +104,27 @@ test.describe("Runtime import validation", () => {
     await expect(review).toContainText(/before publication/i);
   });
 
+  test("the import review details and the exports keep their contracts and read in both themes", async ({
+    page,
+  }) => {
+    await openBiopoliticalImport(page);
+    const data = await fixture("sample-analysis-bio-en.json");
+    data.evidence.items[0].source_url = "not-a-url";
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    const audit = page.locator("#importAuditDetails");
+    await audit.locator("summary").click();
+    await expect(audit.locator(".j-audit-group").first()).toBeVisible();
+    await expectKernel(page, "#importAuditDetails");
+    await page.locator("#importBtn").click();
+    const exports = page.locator(".j-export");
+    await exports.scrollIntoViewIfNeeded();
+    await expect(exports.locator("#exportHtml")).toHaveAttribute("data-variant", "primary");
+    await page.locator(".j-export-raw > summary").click();
+    await expectKernel(page, ".j-export", "#reviewContent .j-export-raw");
+    await expectKernel(page, ".j-export");
+  });
+
   test("localizes import warnings and schema failures while isolating canonical paths", async ({
     page,
   }) => {
@@ -134,7 +156,7 @@ test.describe("Runtime import validation", () => {
       await audit.locator("summary").click();
       await expect(audit).toContainText(current.warning);
       await expect(audit).not.toContainText("Source URL is not an absolute HTTP(S) URL");
-      await expect(audit.locator(".importAuditPath").first()).toHaveAttribute("dir", "ltr");
+      await expect(audit.locator(".j-audit-path").first()).toHaveAttribute("dir", "ltr");
 
       const malformed = await fixture(current.fixture);
       malformed.evidence.items[0].source_tier = "academic";

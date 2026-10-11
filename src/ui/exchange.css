@@ -1,0 +1,33 @@
+/* Jarbou3i import and export (UIX-4, ADR-0002): the case file's exports and
+   the import's review details under the answer. Classes are .j-export-* and
+   .j-audit-*; the cards, buttons and notes are kernel controls. */
+
+/* In the case file, so it takes the case's colour. */
+.j-export { display: grid; gap: var(--j-s-3); background: transparent; }
+.j-export .j-card h4 { margin: 0; font-size: var(--j-t-16); }
+.j-export .j-card p { margin: 0; color: var(--j-fg-muted); }
+.j-export .j-card .j-btn { justify-self: start; }
+@media (min-width: 720px) {
+  .j-export { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+}
+
+/* Disclosures: the whole canonical contract, and the import's review details. */
+.j-export-raw, .j-audit { border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel); color: var(--j-fg); }
+.j-export-raw { margin-top: var(--j-s-3); }
+.j-export-raw > summary, .j-audit > summary {
+  display: flex; align-items: center; min-height: 44px; padding: 0 var(--j-s-3);
+  font-weight: 600; font-size: var(--j-t-13); cursor: pointer;
+}
+.j-export-raw > summary:focus-visible, .j-audit > summary:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+/* It takes focus, so the keyboard can scroll it. */
+.j-export-raw pre {
+  max-height: 50vh; overflow: auto; margin: 0; padding: var(--j-s-3); border-top: 1px solid var(--j-line);
+  font: var(--j-t-12)/1.5 var(--j-font-data); text-align: left; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.j-export-raw pre:focus-visible { outline: 2px solid var(--j-signal); outline-offset: -2px; }
+
+.j-audit-body { display: grid; gap: var(--j-s-3); padding: 0 var(--j-s-3) var(--j-s-3); font-size: var(--j-t-13); }
+.j-audit-group h4 { margin: 0 0 var(--j-s-1); font-size: var(--j-t-13); }
+.j-audit-group p, .j-audit-group ul { margin: 0; }
+.j-audit-group ul { padding-inline-start: var(--j-s-5); }
+.j-audit-path, .j-audit-group code { font-family: var(--j-font-data); overflow-wrap: anywhere; }

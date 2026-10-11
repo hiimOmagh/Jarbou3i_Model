@@ -34,7 +34,9 @@ framework. The modern shell (UIX-2) is the first part of the app built on it.
 - **Contracts.** A `.j-*` class may only be used with the structure in
   `contracts.js`: a status needs a tone and text, a segmented control is a
   radiogroup with exactly one checked option, a field's label names its input,
-  and so on. A class the registry does not know is an error. The stylesheet
+  and so on. A button is plain, `primary`, `ghost` or `danger` (deletes and
+  resets). A note (`.j-note`) is a sentence that says a state: it needs a
+  tone, and is hidden while empty. A class the registry does not know is an error. The stylesheet
   and the registry must list the same classes.
 - **Themes.** Dark first. Light is designed, not inverted. Without
   `data-theme` the theme follows the system.
@@ -167,6 +169,12 @@ UX-0 work panel, built on the app's own workspace model.
 - **What it reads:** one read of the repository and the recovery journal
   after each save, open, commit, reset and editor close. Edits in an open
   editor are not counted as a snapshot.
+- **The workspaces:** under the cards, in `.j-ws` (in `work.css`): the
+  actions (export, restore a file, protect storage, and the two resets as
+  `danger` buttons), the storage health and the status as notes, then one row
+  per workspace. The open one has `aria-current="true"`, a damaged one
+  `data-state="damaged"`; both have a thicker edge. Tests find rows by
+  `[data-workspace-row]`.
 - **Tests:** `tests/work-panel.spec.js`.
 
 ## Canonical editor
@@ -182,7 +190,7 @@ time.
   with problems carries a "{n} to fix" chip. The dialog opens on the first
   content section.
 - **The field:** a kernel field whose help is the JSON path. Its check
-  (`#editorFieldStatus`) sets `data-tone` `ok`, `warn` (valid only as a
+  (`#editorFieldStatus`, a kernel note) sets `data-tone` `ok`, `warn` (valid only as a
   draft) or `crit`, and the field gets `aria-invalid`.
 - **Recovery:** the snapshot banner is the work panel's `j-life-banner`.
 - Labels, the sections' and the close button's names are in AR, EN and FR.
@@ -207,12 +215,28 @@ kernel controls.
 - **Revisions:** each is a button with `aria-pressed`; the current head
   carries an `ok` chip, imported and restored a plain tag.
 - **Status:** `#resolutionStatus`, `#revisionStatus` and `#revisionBlocked`
-  set `data-tone`.
+  are kernel notes.
 - **Counts:** `pluralText` uses the language's plural forms (Arabic has six).
 - No part scrolls on its own except the revision list, whose buttons take
   focus; the dialog scrolls instead.
 - **Tests:** `tests/revision-history.spec.js` (contracts and axe in both
   themes, Arabic labels, plurals) and `tests/resolution-transaction.spec.js`.
+
+## Import and export
+
+`src/ui/exchange.css` (`.j-export*`, `.j-audit*`): the case file's exports
+and the import's review details under the answer.
+
+- **Exports:** the HTML report and the canonical JSON are kernel cards with
+  kernel buttons; the report's failure is a `warn` note with a retry. "Inspect
+  the complete canonical contract" is a disclosure whose code block takes
+  focus, so it can be scrolled from the keyboard.
+- **Import review details:** `#importAuditDetails` keeps its groups
+  (publication blockers, review required, repairs, preserved extensions);
+  paths are monospace.
+- **Tests:** `tests/import-validation.spec.js` (contracts and axe in both
+  themes for both), with `expectKernel` from `tests/helpers/kernel-check.js`,
+  which the history and work-panel tests use too.
 
 ## Not in the kernel yet
 

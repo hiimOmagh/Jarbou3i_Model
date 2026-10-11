@@ -34,3 +34,21 @@
 @media (max-width: 900px) {
   .j-life-grid { grid-template-columns: 1fr; }
 }
+
+/* The workspaces on this device, under the open one's cards. */
+.j-ws { display: grid; gap: var(--j-s-3); margin-top: var(--j-s-4); background: transparent; }
+.j-ws-title { margin: 0; font-size: var(--j-t-14); }
+.j-ws-acts, .j-ws-row-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
+.j-ws-list { display: grid; gap: var(--j-s-2); }
+.j-ws-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-3);
+  padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
+}
+.j-ws-row > div:first-child { flex: 1 1 240px; min-width: 0; }
+/* The open one and a damaged one by a thicker edge too, not by colour alone. */
+.j-ws-row[aria-current="true"] { border-color: var(--j-signal); border-inline-start-width: 4px; }
+.j-ws-row[data-state="damaged"] { border-color: var(--j-crit); border-inline-start-width: 4px; background: var(--j-crit-wash); }
+.j-ws-name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.j-ws-meta { display: flex; flex-wrap: wrap; gap: var(--j-s-1) var(--j-s-3); margin-top: var(--j-s-1); color: var(--j-fg-muted); font-size: var(--j-t-12); }
+.j-ws-meta strong { color: var(--j-fg); }
+.j-ws-empty { margin: 0; color: var(--j-fg-muted); }

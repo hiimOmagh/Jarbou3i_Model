@@ -1341,7 +1341,7 @@ test.describe("AI interchange reliability", () => {
           await expect(page.locator("#jsonStatus")).toHaveClass(/status (good|warn|bad)/);
           results[variant] = await page.evaluate(() => ({
             status: document.getElementById("jsonStatus").className,
-            gaps: [...document.querySelectorAll("#importAuditDetails .importAuditPath")].map(
+            gaps: [...document.querySelectorAll("#importAuditDetails .j-audit-path")].map(
               (path) => path.textContent,
             ),
           }));

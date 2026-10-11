@@ -199,7 +199,7 @@ for (const token of [
 ]) {
   if (!app.includes(token)) fail(`application integration token missing: ${token}`);
 }
-if (!css.includes(".canonicalInspector") || !css.includes(".bioAuditGrid")) {
+if (!read("src/ui/exchange.css").includes(".j-export-raw") || !css.includes(".bioAuditGrid")) {
   fail("review/export styles are missing");
 }
 if (fs.existsSync("Editorial_Intelligence_v2.html") || fs.existsSync("TM_BrainMap.html")) {

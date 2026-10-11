@@ -95,7 +95,7 @@ test.describe("Resolution transactions", () => {
     await saveTitle(page, "Committed biopolitical resolution");
     await page.locator("#editorClose").click();
     await page.locator("#workspaceSaveState").click();
-    await expect(page.locator(".workspaceRow.active")).toContainText("verified");
+    await expect(page.locator("[data-workspace-row][aria-current=true]")).toContainText("verified");
     await page.getByRole("button", { name: "Review and commit" }).click();
     await approve(page, "Approved after full Biopolitical contract validation and exact diff review.");
     await expect(page.locator("#topicInput")).toHaveValue("Committed biopolitical resolution");
