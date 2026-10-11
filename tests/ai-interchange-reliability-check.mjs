@@ -870,6 +870,9 @@ if (refLoopIds.join() !== refLoops.scale_time.future_feedback_loops.map((loop) =
 if (!/evidence_of_benefit: evidence IDs/.test(compiler.buildFieldGuide())) {
   fail("the record guide does not say evidence_of_benefit holds evidence IDs");
 }
+if (!/evidence.items.counter_evidence: never empty/.test(compiler.buildFieldGuide())) {
+  fail("the record guide does not say counter_evidence must never be empty");
+}
 // Without source access the placeholder is not evidence: real replies cited it
 // in evidence_of_benefit, the one list the guide asked to fill with evidence IDs.
 for (const mode of ["focused", "expert", "research"]) {

@@ -229,13 +229,11 @@ if (
   fail("future schema versions must be rejected explicitly");
 }
 
+// The old six-layer format comes from an old prompt: refused with its own code, never upgraded.
 const legacy = readJson("fixtures/sample-analysis-bio-en.legacy-v1.json");
-const draft = integrity.validateImport(legacy);
-if (!draft.ok || draft.canonical || draft.state !== "migrated_draft") {
-  fail("legacy input did not remain an explicitly non-canonical draft");
-}
-if (!draft.warnings.some((warning) => warning.code === "MIGRATED_DRAFT_NOT_CANONICAL")) {
-  fail("migrated draft warning is missing");
+const refused = integrity.validateImport(legacy);
+if (refused.ok || refused.canonical || refused.errors[0]?.code !== "LEGACY_CONTRACT") {
+  fail("legacy input must be refused with LEGACY_CONTRACT");
 }
 
 const health = bio.health(valid.analysis, "en");

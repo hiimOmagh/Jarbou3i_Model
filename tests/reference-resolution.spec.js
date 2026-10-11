@@ -1,15 +1,18 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
+import { openStep } from "./helpers/guided-flow.js";
 
 test("named evidence references open an accessible relationship inspector", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langEn").click();
+  await openStep(page, "settings");
   await page.locator("#analysisLang").selectOption("en");
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="evidence"]').click();
 
-  const reference = page.locator('#reviewContent [data-reference-id="E1"]').first();
+  const reference = page.locator('#case-evidence [data-reference-id="E1"]').first();
   await expect(reference).toBeVisible();
   await expect(reference).toContainText("Rules linked defined health credentials");
   await expect(reference).toContainText("E1");
@@ -34,7 +37,9 @@ test("named evidence references open an accessible relationship inspector", asyn
 test("biopolitical HTML export includes names and a canonical reference directory", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langEn").click();
+  await openStep(page, "settings");
   await page.locator("#analysisLang").selectOption("en");
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="exports"]').click();

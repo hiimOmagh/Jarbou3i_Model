@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
+import { openStep } from "./helpers/guided-flow.js";
 
 async function readFixture(name) {
   const raw = await fs.readFile(path.join(process.cwd(), 'fixtures', name), 'utf8');
@@ -12,16 +13,19 @@ async function importFixture(page, fixtureName, wrongInitialLens) {
   const data = await readFixture(fixtureName);
 
   await page.goto('./');
-  await expect(page.locator('#copyPromptBtn')).toBeVisible();
+  await expect(page.locator('#loadSampleBtn')).toBeVisible();
   await page.locator('#langEn').click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
   // Prove import, not the previous UI toggle state, controls the final lens.
+  await openStep(page, "lens");
   await page.locator(`[data-lens="${wrongInitialLens}"]`).click();
   await expect(page.locator(`[data-lens="${wrongInitialLens}"]`)).toHaveAttribute('aria-checked', 'true');
 
+  await openStep(page, "answer");
   await page.locator('#jsonInput').fill(JSON.stringify(data, null, 2));
   await expect(page.locator('#importBtn')).toBeEnabled();
+  await openStep(page, "answer");
   await page.locator('#importBtn').click();
 
   return data;
@@ -33,7 +37,7 @@ async function exportCurrentReport(page, testInfo, label) {
   await exportTab.focus();
   await expect(exportTab).toBeFocused();
   await exportTab.press('Enter');
-  await expect(exportTab).toHaveAttribute('aria-selected', 'true');
+  await expect(exportTab).toHaveAttribute("aria-current", "location");
   await expect(page.locator('#exportHtml')).toBeVisible();
 
   const [download] = await Promise.all([
@@ -93,9 +97,11 @@ test.describe('Imported analysis lens contract', () => {
     data.evidence.items[0].source_note = 'Portable source note. \uE200filecite\uE202turn0file0\uE202L2-L4\uE201';
     await page.goto('./');
     await page.locator('#langEn').click();
+    await openStep(page, "answer");
     await page.locator('#jsonInput').fill(JSON.stringify(data));
     await expect(page.locator('#importBtn')).toBeEnabled();
     await expect(page.locator('#jsonStatus')).toContainText(/2 non-portable assistant citation markers were removed/i);
+    await openStep(page, "answer");
     await page.locator('#importBtn').click();
     const html = await exportCurrentReport(page, testInfo, 'strategic');
     expect(html).toContain('Portable strategic thesis.');
@@ -104,19 +110,25 @@ test.describe('Imported analysis lens contract', () => {
     expect(html).not.toMatch(/turn8search1|turn0file0|filecite/);
   });
 
-  test('legacy six-layer biopolitical JSON is migrated without hiding its gaps', async ({ page }) => {
-    await importFixture(page, 'sample-analysis-bio-en.legacy-v1.json', 'strategic');
+  test('legacy six-layer biopolitical JSON is refused, never migrated', async ({ page }) => {
+    const data = await readFixture('sample-analysis-bio-en.legacy-v1.json');
+    await page.goto('./');
+    await page.locator('#langEn').click();
+    await openStep(page, "answer");
+    await page.locator('#jsonInput').fill(JSON.stringify(data, null, 2));
+    await expect(page.locator('#importBtn')).toBeDisabled();
+    await expect(page.locator('#jsonStatus')).toContainText('old analysis format');
+  });
+
+  test('a biopolitical pillar opens from the keyboard', async ({ page }) => {
+    await importFixture(page, 'sample-analysis-bio-en.json', 'strategic');
 
     await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.locator('#reviewContent')).toContainText('Legacy Biopolitical import migrated to v2');
-    await expect(page.locator('#reviewContent')).toContainText('Separate governing actors from affected populations');
-
     const actors = page.locator('[data-bio-pillar="actors_institutions"]');
     await actors.focus();
     await expect(actors).toBeFocused();
     await actors.press('Enter');
-    await expect(page.locator('[data-bio-review="pillars"]')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('[data-bio-review="pillars"]')).toHaveAttribute("aria-current", "location");
     await expect(page.locator('[data-bio-acc="actors_institutions"]')).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('#reviewContent')).toContainText('Vaccinated, tested, and uncertified persons');
   });
 });

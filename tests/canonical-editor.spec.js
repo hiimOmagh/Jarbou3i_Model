@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { clearWorkspaceStorage } from "./helpers/browser-persistence.js";
+import { clearWorkspaceStorage, restoreSavedDraft } from "./helpers/browser-persistence.js";
 
 test.describe("Structured canonical editor", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("edits, validates, undoes, persists and reopens a draft", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await expect(page.locator("#editorDialog")).toBeVisible();
     await page.locator('[data-editor-path="/subject"]').click();
@@ -35,15 +35,12 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#topicInput")).toHaveValue("Editor persistence proof");
   });
 
-  test("saves an edit to a Strategic answer imported as a draft", async ({ page }) => {
+  test("saves an edit to a saved Strategic draft", async ({ page }) => {
     const draft = JSON.parse(await fs.readFile(path.join(process.cwd(), "fixtures", "sample-analysis-en.json"), "utf8"));
     delete draft.evidence.items[0].source_type;
-    await page.locator("#jsonInput").fill(JSON.stringify(draft));
-    await page.locator("#importBtn").click();
-    await expect(page.locator("#jsonStatus")).toContainText(/draft/i);
+    await restoreSavedDraft(page, draft);
 
-    await page.locator("#workspaceBtn").click();
-    await page.locator(".workspaceRow.active").getByRole("button", { name: "Edit draft" }).click();
+    await page.locator("#workLife").getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
     const subject = JSON.parse(await field.inputValue());
@@ -56,7 +53,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("a save that fails is said inside the editor", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -78,7 +75,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("rejects malformed field JSON without mutating the draft", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     await page.locator("#editorField").fill("{");
@@ -88,7 +85,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("treats focused textarea input as unsaved and never loses it on Escape", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -107,7 +104,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("applies the current field before switching canonical sections", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -122,7 +119,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("does not save an edit that turns a complete Strategic analysis into a draft", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     const field = page.locator("#editorField");
     await page.locator('[data-editor-path="/links"]').click();
@@ -147,7 +144,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("blocks malformed strategic values from immutable resolution", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/actors"]').click();
     const field = page.locator("#editorField");
@@ -174,7 +171,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("a restored edit that was never applied can be saved", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -185,7 +182,7 @@ test.describe("Structured canonical editor", () => {
 
     page.once("dialog", async (dialog) => dialog.accept());
     await page.reload();
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator("#editorRecoveryRestore").click();
     await expect.poll(async () => JSON.parse(await field.inputValue()).title).toBe("Typed before the crash");
@@ -194,7 +191,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("restores a revision-anchored snapshot after an interrupted editor session", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -207,7 +204,7 @@ test.describe("Structured canonical editor", () => {
 
     page.once("dialog", async (dialog) => dialog.accept());
     await page.reload();
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await expect(page.locator("#editorRecovery")).toBeVisible();
     await page.locator("#editorRecoveryRestore").click();
@@ -221,7 +218,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("does not offer recovery for edits saved before the recovery capture fires", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -235,14 +232,14 @@ test.describe("Structured canonical editor", () => {
     await page.locator("#editorClose").click();
 
     await page.reload();
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await expect(page.locator("#editorDialog")).toBeVisible();
     await expect(page.locator("#editorRecovery")).toBeHidden();
   });
 
   test("preserves incomplete field JSON without mutating canonical history", async ({ page }) => {
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
@@ -251,7 +248,7 @@ test.describe("Structured canonical editor", () => {
 
     page.once("dialog", async (dialog) => dialog.accept());
     await page.reload();
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await page.locator("#editorRecoveryRestore").click();
     await expect(field).toHaveValue('{"title":"Interrupted');

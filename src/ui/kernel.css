@@ -1,0 +1,239 @@
+/* Jarbou3i design-system kernel (UIX-1, ADR-0002).
+   Tokens, themes, accessibility foundations and base controls, taken from the
+   accepted UX-0 concept (prototypes/ux-0/proto.css). Every token is --j-* and
+   every class .j-*, so the kernel can sit next to src/styles.css during the
+   migration without either changing the other. Foundations apply only inside
+   .j-root. System fonts only: no remote fonts without an ADR. The contract for
+   each control is in src/ui/contracts.js. */
+
+:root {
+  /* Surfaces: blue-biased blacks, so the dark theme reads as an instrument */
+  --j-bg: #070b12;
+  --j-panel: #0c131e;
+  --j-panel-2: #111a28;
+  --j-raise: #172235;
+  --j-line: #1d2939;
+  --j-line-strong: #2c3b52;
+  --j-fg: #e6edf7;
+  --j-fg-muted: #9aaac0;
+  --j-fg-faint: #7385a0;
+  /* One accent for interaction; status colours are separate */
+  --j-signal: #4cc9f0;
+  --j-signal-strong: #7dd9f5;
+  --j-on-signal: #04121b;
+  --j-signal-wash: rgba(76, 201, 240, .12);
+  --j-ok: #3ddc97;
+  --j-warn: #f5b83d;
+  --j-crit: #ff6b78;
+  --j-ok-wash: rgba(61, 220, 151, .12);
+  --j-warn-wash: rgba(245, 184, 61, .12);
+  --j-crit-wash: rgba(255, 107, 120, .12);
+  --j-scrim: rgba(2, 5, 10, .64);
+  --j-glow: 0 0 0 1px rgba(76, 201, 240, .35), 0 0 18px rgba(76, 201, 240, .22);
+  --j-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+
+  /* Type: eight sizes only */
+  --j-font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", "Noto Sans Arabic", "Geeza Pro", Tahoma, sans-serif;
+  --j-font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", "Noto Sans Arabic", "Geeza Pro", sans-serif;
+  --j-font-data: ui-monospace, "Cascadia Code", "SF Mono", "JetBrains Mono", Consolas, "Noto Sans Arabic", monospace;
+  --j-t-12: 12px; --j-t-13: 13px; --j-t-14: 14px; --j-t-16: 16px;
+  --j-t-18: 18px; --j-t-22: 22px; --j-t-28: 28px; --j-t-36: 36px;
+
+  /* Space, radius, motion, layers */
+  --j-s-1: 4px; --j-s-2: 8px; --j-s-3: 12px; --j-s-4: 16px; --j-s-5: 24px; --j-s-6: 32px; --j-s-7: 48px;
+  --j-r-1: 4px; --j-r-2: 8px; --j-r-3: 14px;
+  --j-dur-1: 120ms; --j-dur-2: 200ms; --j-dur-3: 320ms;
+  --j-ease-out: cubic-bezier(.2, .8, .2, 1);
+  --j-ease-in: cubic-bezier(.4, 0, 1, 1);
+  --j-z-rail: 10; --j-z-top: 20; --j-z-drawer: 40; --j-z-dialog: 100; --j-z-toast: 200;
+
+  /* Density: comfortable by default. Controls keep a 44px target in both. */
+  --j-control: 44px;
+  --j-card-pad: var(--j-s-6);
+  --j-card-gap: var(--j-s-5);
+}
+[data-density="compact"] {
+  --j-card-pad: var(--j-s-4);
+  --j-card-gap: var(--j-s-3);
+}
+/* The light theme is designed, not inverted. It follows the system unless a
+   theme is chosen; both selectors carry the same values. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --j-bg: #edf1f6; --j-panel: #ffffff; --j-panel-2: #f6f8fb; --j-raise: #eef2f7;
+    --j-line: #dbe2ec; --j-line-strong: #c3cede;
+    --j-fg: #0b1220; --j-fg-muted: #44546b; --j-fg-faint: #5b6b82;
+    --j-signal: #0a6f94; --j-signal-strong: #075a79; --j-on-signal: #ffffff; --j-signal-wash: rgba(10, 111, 148, .09);
+    --j-ok: #0f7a52; --j-warn: #8f5a00; --j-crit: #c42737;
+    --j-ok-wash: rgba(15, 122, 82, .1); --j-warn-wash: rgba(143, 90, 0, .1); --j-crit-wash: rgba(196, 39, 55, .09);
+    --j-scrim: rgba(11, 18, 32, .42);
+    --j-glow: 0 0 0 1px rgba(10, 111, 148, .45), 0 0 0 4px rgba(10, 111, 148, .12);
+    --j-shadow: 0 18px 50px rgba(15, 30, 55, .16);
+  }
+}
+:root[data-theme="light"] {
+  --j-bg: #edf1f6; --j-panel: #ffffff; --j-panel-2: #f6f8fb; --j-raise: #eef2f7;
+  --j-line: #dbe2ec; --j-line-strong: #c3cede;
+  --j-fg: #0b1220; --j-fg-muted: #44546b; --j-fg-faint: #5b6b82;
+  --j-signal: #0a6f94; --j-signal-strong: #075a79; --j-on-signal: #ffffff; --j-signal-wash: rgba(10, 111, 148, .09);
+  --j-ok: #0f7a52; --j-warn: #8f5a00; --j-crit: #c42737;
+  --j-ok-wash: rgba(15, 122, 82, .1); --j-warn-wash: rgba(143, 90, 0, .1); --j-crit-wash: rgba(196, 39, 55, .09);
+  --j-scrim: rgba(11, 18, 32, .42);
+  --j-glow: 0 0 0 1px rgba(10, 111, 148, .45), 0 0 0 4px rgba(10, 111, 148, .12);
+  --j-shadow: 0 18px 50px rgba(15, 30, 55, .16);
+}
+
+/* ---------- Foundations (inside .j-root only) ---------- */
+/* The colour scheme (form controls, scrollbars) is set on .j-root, not the
+   page, so the kernel does not restyle the current app around it. */
+.j-root { color-scheme: dark; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .j-root { color-scheme: light; } }
+:root[data-theme="light"] .j-root { color-scheme: light; }
+.j-root, .j-root *, .j-root *::before, .j-root *::after { box-sizing: border-box; }
+.j-root {
+  background: var(--j-bg);
+  color: var(--j-fg);
+  font: 400 var(--j-t-14)/1.55 var(--j-font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+.j-root :is(button, input, select, textarea) { font: inherit; color: inherit; }
+.j-root button:not(:disabled) { cursor: pointer; }
+.j-root :focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-root :is(h1, h2, h3, h4) { margin: 0; font-family: var(--j-font-display); text-wrap: balance; }
+.j-root p { margin: 0; }
+/* Components set display; the hidden attribute still wins. */
+.j-root [hidden] { display: none !important; }
+.j-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.j-mono { font-family: var(--j-font-data); font-variant-numeric: tabular-nums; }
+.j-label {
+  font: 600 var(--j-t-12)/1.3 var(--j-font-data);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--j-fg-muted);
+}
+/* Arabic has no capitals and loses its joins when letters are spaced apart. */
+:root[dir="rtl"] :is(.j-label, .j-status) { letter-spacing: 0; text-transform: none; font-family: var(--j-font-ui); }
+.j-icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+:root[dir="rtl"] .j-icon[data-flip] { transform: scaleX(-1); }
+
+/* ---------- Button ---------- */
+.j-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--j-s-2);
+  min-height: var(--j-control); padding: 0 var(--j-s-4);
+  border: 1px solid var(--j-line-strong); border-radius: var(--j-r-2);
+  background: var(--j-panel-2); color: var(--j-fg);
+  font-weight: 600; text-decoration: none;
+  transition: background-color var(--j-dur-1) var(--j-ease-out), border-color var(--j-dur-1) var(--j-ease-out), box-shadow var(--j-dur-1) var(--j-ease-out), transform var(--j-dur-1) var(--j-ease-out);
+}
+.j-btn:hover:not(:disabled) { border-color: var(--j-signal); background: var(--j-raise); }
+.j-btn:active:not(:disabled) { transform: scale(.98); }
+.j-btn:disabled { opacity: .45; cursor: not-allowed; }
+.j-btn[data-variant="primary"] { background: var(--j-signal); border-color: var(--j-signal); color: var(--j-on-signal); }
+.j-btn[data-variant="primary"]:hover:not(:disabled) { background: var(--j-signal-strong); border-color: var(--j-signal-strong); box-shadow: var(--j-glow); }
+.j-btn[data-variant="ghost"] { background: transparent; border-color: transparent; color: var(--j-fg-muted); }
+.j-btn[data-variant="ghost"]:hover:not(:disabled) { color: var(--j-fg); background: var(--j-raise); border-color: var(--j-line); }
+.j-btn[data-size="lg"] { min-height: 52px; padding: 0 var(--j-s-5); font-size: var(--j-t-16); }
+.j-btn[data-size="icon"] { width: var(--j-control); padding: 0; flex: none; }
+.j-kbd {
+  white-space: nowrap;
+  font: 500 var(--j-t-12) var(--j-font-data); padding: 1px 6px;
+  border: 1px solid var(--j-line-strong); border-bottom-width: 2px; border-radius: var(--j-r-1);
+  color: var(--j-fg-muted); background: var(--j-panel);
+}
+
+/* ---------- Segmented control (one choice of a few) ---------- */
+.j-seg { flex: none; display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel); }
+.j-seg > button {
+  min-height: 38px; min-width: 44px; padding: 0 var(--j-s-3); border: 0; border-radius: 6px;
+  background: transparent; color: var(--j-fg-muted); font: 600 var(--j-t-13) var(--j-font-ui);
+}
+.j-seg > button[aria-checked="true"] { background: var(--j-raise); color: var(--j-fg); box-shadow: inset 0 0 0 1px var(--j-line-strong); }
+
+/* ---------- Status: shape + colour + text, never colour alone ---------- */
+.j-status { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; font: 600 var(--j-t-12)/1 var(--j-font-data); letter-spacing: .06em; text-transform: uppercase; }
+.j-status::before { content: ""; width: 8px; height: 8px; flex: none; }
+.j-status[data-tone="ok"] { color: var(--j-ok); }
+.j-status[data-tone="ok"]::before { border-radius: 50%; background: var(--j-ok); }
+.j-status[data-tone="warn"] { color: var(--j-warn); }
+.j-status[data-tone="warn"]::before { width: 0; height: 0; border-inline: 5px solid transparent; border-bottom: 9px solid var(--j-warn); }
+.j-status[data-tone="crit"] { color: var(--j-crit); }
+.j-status[data-tone="crit"]::before { background: var(--j-crit); }
+.j-status[data-tone="idle"] { color: var(--j-fg-faint); }
+.j-status[data-tone="idle"]::before { border-radius: 50%; border: 1.5px solid var(--j-fg-faint); }
+
+/* ---------- Chip (a short qualifier, e.g. confidence) ---------- */
+.j-chip {
+  width: fit-content;
+  display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 8px;
+  border: 1px solid var(--j-line-strong); border-radius: 999px;
+  font: 600 var(--j-t-12)/1 var(--j-font-ui); color: var(--j-fg-muted); white-space: nowrap;
+}
+.j-chip[data-tone="ok"] { color: var(--j-ok); border-color: color-mix(in srgb, var(--j-ok) 45%, transparent); }
+.j-chip[data-tone="warn"] { color: var(--j-warn); border-color: color-mix(in srgb, var(--j-warn) 45%, transparent); }
+.j-chip[data-tone="crit"] { color: var(--j-crit); border-color: color-mix(in srgb, var(--j-crit) 45%, transparent); }
+
+/* ---------- Card ---------- */
+.j-card {
+  background: var(--j-panel); border: 1px solid var(--j-line); border-radius: var(--j-r-3);
+  padding: var(--j-card-pad); display: grid; gap: var(--j-card-gap); min-width: 0;
+}
+
+/* ---------- Field ---------- */
+.j-field { display: grid; gap: var(--j-s-2); min-width: 0; }
+.j-field > label { font-weight: 600; font-size: var(--j-t-14); }
+.j-help { color: var(--j-fg-faint); font-size: var(--j-t-13); }
+.j-input {
+  width: 100%; min-height: var(--j-control); padding: var(--j-s-3);
+  border: 1px solid var(--j-line-strong); border-radius: var(--j-r-2);
+  background: var(--j-panel-2); color: var(--j-fg);
+  transition: border-color var(--j-dur-1) var(--j-ease-out), box-shadow var(--j-dur-1) var(--j-ease-out);
+}
+textarea.j-input { resize: vertical; line-height: 1.5; }
+.j-input:focus { outline: none; border-color: var(--j-signal); box-shadow: var(--j-glow); }
+.j-input[aria-invalid="true"] { border-color: var(--j-crit); }
+.j-input::placeholder { color: var(--j-fg-faint); opacity: 1; }
+
+/* ---------- Toast ---------- */
+.j-toast {
+  position: fixed; z-index: var(--j-z-toast); bottom: calc(var(--j-s-5) + env(safe-area-inset-bottom, 0px));
+  inset-inline-start: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--j-s-2); max-width: calc(100vw - 2 * var(--j-s-4));
+  padding: var(--j-s-3) var(--j-s-4); border-radius: var(--j-r-2); border: 1px solid var(--j-line-strong);
+  background: var(--j-raise); color: var(--j-fg); box-shadow: var(--j-shadow); font-weight: 600;
+  animation: j-toast-in var(--j-dur-2) var(--j-ease-out);
+}
+:root[dir="rtl"] .j-toast { transform: translateX(50%); }
+@keyframes j-toast-in { from { opacity: 0; translate: 0 8px; } }
+
+/* ---------- Dialog (native <dialog>, opened with showModal) ---------- */
+.j-dialog {
+  width: min(560px, calc(100vw - 2 * var(--j-s-4))); max-height: min(70vh, 560px);
+  padding: 0; border: 1px solid var(--j-line-strong); border-radius: var(--j-r-3);
+  background: var(--j-panel); color: var(--j-fg); box-shadow: var(--j-shadow);
+  animation: j-dialog-in var(--j-dur-2) var(--j-ease-out);
+}
+.j-dialog[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.j-dialog::backdrop { background: var(--j-scrim); }
+.j-dialog > .j-field { padding: var(--j-s-3) var(--j-s-3) 0; }
+.j-dialog > p { margin: 0; padding: 0 var(--j-s-4) var(--j-s-4); color: var(--j-fg-faint); }
+@keyframes j-dialog-in { from { opacity: 0; translate: 0 -8px; } }
+
+/* ---------- Listbox (one choice of many, e.g. palette results) ---------- */
+.j-listbox { list-style: none; margin: 0; padding: var(--j-s-2); overflow-y: auto; display: grid; align-content: start; gap: 2px; }
+.j-option {
+  display: flex; align-items: center; min-height: var(--j-control); padding: 0 var(--j-s-3);
+  border-radius: var(--j-r-2); color: var(--j-fg-muted); cursor: pointer;
+}
+.j-option:hover { background: var(--j-raise); color: var(--j-fg); }
+.j-option[aria-selected="true"] { background: var(--j-signal-wash); color: var(--j-fg); box-shadow: inset 3px 0 0 var(--j-signal); }
+:root[dir="rtl"] .j-option[aria-selected="true"] { box-shadow: inset -3px 0 0 var(--j-signal); }
+
+/* ---------- Motion and forced colours ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .j-root *, .j-root *::before, .j-root *::after { animation: none !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}
+@media (forced-colors: active) {
+  .j-status::before { forced-color-adjust: none; background: CanvasText; border-color: CanvasText; }
+  .j-btn[data-variant="primary"] { border: 2px solid ButtonText; }
+  .j-option[aria-selected="true"] { outline: 2px solid Highlight; }
+}

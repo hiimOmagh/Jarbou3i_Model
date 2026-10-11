@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { openStep } from "./helpers/guided-flow.js";
 
 async function fixture(name) {
   return JSON.parse(
@@ -11,6 +12,7 @@ async function fixture(name) {
 async function openBiopoliticalImport(page) {
   await page.goto("./");
   await page.locator("#langEn").click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
 }
 
@@ -21,6 +23,7 @@ test.describe("Runtime import validation", () => {
     await openBiopoliticalImport(page);
     const data = await fixture("sample-analysis-bio-en.json");
     data.schema_version = "99.0.0";
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeDisabled();
     await expect(page.locator("#jsonStatus")).toContainText(
@@ -34,6 +37,7 @@ test.describe("Runtime import validation", () => {
     await openBiopoliticalImport(page);
     const data = await fixture("sample-analysis-bio-en.json");
     data.evidence.items[0].sample_size = 100;
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeEnabled();
     const audit = page.locator("#importAuditDetails");
@@ -43,34 +47,31 @@ test.describe("Runtime import validation", () => {
     );
   });
 
-  test("keeps semantic duplicate IDs as a reviewable draft gap", async ({
+  test("holds back semantic duplicate IDs as a completion gap", async ({
     page,
   }) => {
     await openBiopoliticalImport(page);
     const data = await fixture("sample-analysis-bio-en.json");
     data.power_map.actors[0].id = data.evidence.items[0].id;
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#importBtn")).toBeEnabled();
-    await expect(page.locator("#jsonStatus")).toContainText(
-      /reviewable generated draft[\s\S]*publication remains blocked/i,
-    );
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#jsonStatus")).toContainText(/not imported yet/i);
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     await expect(audit).toContainText("/power_map/actors/0/id");
   });
 
-  test("accepts legacy content only as a disclosed migrated draft", async ({
+  test("refuses legacy six-layer content and asks for a new prompt", async ({
     page,
   }) => {
     await openBiopoliticalImport(page);
     const data = await fixture("sample-analysis-bio-en.legacy-v1.json");
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#importBtn")).toBeEnabled();
-    await expect(page.locator("#jsonStatus")).toContainText(/migrated draft/i);
-    await page.locator("#importBtn").click();
-    await expect(page.locator("#reviewContent")).toContainText(
-      /cannot be published|not publication-ready/i,
-    );
+    await expect(page.locator("#importBtn")).toBeDisabled();
+    await expect(page.locator("#jsonStatus")).toContainText(/old analysis format[\s\S]*Generate a new prompt/);
+    await expect(page.locator("#repairPromptBtn")).toBeDisabled();
   });
 
   test("imports review-required evidence while keeping publication blocked", async ({
@@ -80,6 +81,7 @@ test.describe("Runtime import validation", () => {
     const data = await fixture("sample-analysis-bio-en.json");
     data.evidence.items[0].source_url = "not-a-url";
     data.self_audit.statistics_quotations_verified = "pass";
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeEnabled();
     await expect(page.locator("#jsonStatus")).toContainText(
@@ -94,6 +96,7 @@ test.describe("Runtime import validation", () => {
     await expect(page.locator("#importBtn")).toBeEnabled();
     await expect(audit).toContainText(/Review required/i);
     await expect(audit).toContainText(/original pasted text is preserved/i);
+    await openStep(page, "answer");
     await page.locator("#importBtn").click();
     const review = page.locator("#reviewContent");
     await expect(review).toContainText(/Quality gate:\s*Review needed/i);
@@ -120,9 +123,11 @@ test.describe("Runtime import validation", () => {
     for (const current of cases) {
       await page.goto("./");
       await page.locator(current.button).click();
+      await openStep(page, "lens");
       await page.locator('[data-lens="biopolitical"]').click();
       const reviewable = await fixture(current.fixture);
       reviewable.evidence.items[0].source_url = "not-a-url";
+      await openStep(page, "answer");
       await page.locator("#jsonInput").fill(JSON.stringify(reviewable));
       await expect(page.locator("#importBtn")).toBeEnabled();
       const audit = page.locator("#importAuditDetails");
@@ -133,8 +138,9 @@ test.describe("Runtime import validation", () => {
 
       const malformed = await fixture(current.fixture);
       malformed.evidence.items[0].source_tier = "academic";
+      await openStep(page, "answer");
       await page.locator("#jsonInput").fill(JSON.stringify(malformed));
-      await expect(page.locator("#importBtn")).toBeEnabled();
+      await expect(page.locator("#importBtn")).toBeDisabled();
       await expect(audit).toContainText(current.schema);
     }
   });
@@ -154,6 +160,7 @@ test.describe("Runtime import validation", () => {
       verification_date: "2026-07-17",
       claim_source_fit: "direct",
     });
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeDisabled();
     await expect(page.locator("#jsonStatus")).toContainText(/absolute HTTP\(S\)/i);
@@ -175,11 +182,13 @@ test.describe("Runtime import validation", () => {
       claim_source_fit: "direct",
     });
     data.self_audit.statistics_quotations_verified = "pass";
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeEnabled();
     await expect(page.locator("#jsonStatus")).toContainText(
       /reviewable draft|publication is blocked/i,
     );
+    await openStep(page, "answer");
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewContent")).toContainText(
       /Quality gate:\s*Review needed/i,
@@ -188,7 +197,7 @@ test.describe("Runtime import validation", () => {
     await evidenceTab.focus();
     await expect(evidenceTab).toBeFocused();
     await evidenceTab.press("Enter");
-    await expect(evidenceTab).toHaveAttribute("aria-selected", "true");
+    await expect(evidenceTab).toHaveAttribute("aria-current", "location");
     await expect(page.locator("#reviewContent")).toContainText(/Partially verified/i);
   });
 
@@ -201,11 +210,13 @@ test.describe("Runtime import validation", () => {
       "Portable finding. \uE200cite\uE202turn7search2\uE201";
     data.evidence.items[0].limitations =
       "Traceable limit \uE200filecite\uE202turn0file0\uE202L5-L10\uE201.";
+    await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeEnabled();
     await expect(page.locator("#jsonStatus")).toContainText(
       /2 non-portable assistant citation markers were removed/i,
     );
+    await openStep(page, "answer");
     await page.locator("#importBtn").click();
     await page.locator('[data-bio-review="exports"]').click();
     const [download] = await Promise.all([

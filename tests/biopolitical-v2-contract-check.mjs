@@ -245,6 +245,15 @@ for (const lang of ["ar", "en", "fr"]) {
       fail(`${lang} review projection omitted high-value evidence field: ${token}`);
     }
   }
+  // A link with no ends is empty like any other entry; a missing end never reads "undefined".
+  const linked = structuredClone(normalized);
+  linked.links.push({ id: "LNK-EMPTY" }, { id: "LNK-HALF", from: "MEC1" });
+  if (JSON.stringify(bio.recordsFor("mechanisms_infrastructure", linked, lang)).includes("undefined")) {
+    fail(`${lang} link record shows "undefined" for a missing end`);
+  }
+  if (bio.pillarCount(linked, "mechanisms_infrastructure") !== bio.pillarCount(normalized, "mechanisms_infrastructure") + 1) {
+    fail(`${lang} pillar count must skip the empty link and keep the half-written one`);
+  }
 }
 
 for (const unsupported of [
@@ -265,20 +274,20 @@ for (const unsupported of [
   if (!rejected) fail("unsupported or versionless input was silently normalized");
 }
 
+// An answer in the old six-layer format comes from an old prompt: it is refused, never upgraded.
 const legacy = readJson("fixtures/sample-analysis-bio-en.legacy-v1.json");
-const migrated = bio.normalize(legacy);
-if (
-  migrated.schema_version !== bio.DRAFT_SCHEMA_VERSION ||
-  migrated.analysis_contract !== bio.DRAFT_CONTRACT ||
-  migrated.contract_status !== "migrated_draft"
-) {
-  fail("legacy fixture was falsely promoted to the canonical contract");
+if (bio.route(legacy).kind !== "legacy" || bio.route(legacy).supported) {
+  fail("the legacy six-layer format must be recognised and refused");
 }
-if (migrated.migration?.adapter !== "legacy-six-layer-to-biopolitical-draft-v1") {
-  fail("legacy draft adapter metadata is missing");
+let legacyError = null;
+try {
+  bio.normalize(legacy);
+} catch (error) {
+  legacyError = error;
 }
-if (migrated.power_map.actors.length) {
-  fail("legacy migration must not invent governing actors");
+if (legacyError?.code !== "BIOPOLITICAL_CONTRACT_UNSUPPORTED") {
+  fail("a legacy six-layer answer was upgraded instead of refused");
 }
+if (bio.migrateLegacy) fail("the legacy migration adapter must be removed");
 
 console.log("Biopolitical v2 contract checks passed.");

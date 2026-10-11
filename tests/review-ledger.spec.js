@@ -53,8 +53,8 @@ test.describe("Operational review ledger", () => {
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
     await expect(page.locator("#ledgerTrust")).toContainText(/does not validate conclusions/i);
     await page.locator("#ledgerClose").click();
-    await page.locator("#workspaceBtn").click();
-    await page.locator(".workspaceRow.active [data-workspace-edit]").click();
+    await page.locator("#workspaceSaveState").click();
+    await page.locator("#workLife [data-life-action=\"edit\"]").click();
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
     const subject = JSON.parse(await field.inputValue());

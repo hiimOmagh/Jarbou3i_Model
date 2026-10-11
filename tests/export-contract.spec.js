@@ -1,20 +1,24 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
+import { openStep } from "./helpers/guided-flow.js";
 
 async function exportSampleReport(page, testInfo, lens) {
   await page.goto('./');
-  await expect(page.locator('#copyPromptBtn')).toBeVisible();
+  await expect(page.locator('#loadSampleBtn')).toBeVisible();
 
   // Sample content is localized; pin English before asserting English sample tokens.
   await page.locator('#langEn').click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await openStep(page, "settings");
   await page.locator('#analysisLang').selectOption('en');
 
   if (lens === 'biopolitical') {
+    await openStep(page, "lens");
     await page.locator('[data-lens="biopolitical"]').click();
     await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute('aria-checked', 'true');
   } else {
+    await openStep(page, "lens");
     await page.locator('[data-lens="strategic"]').click();
     await expect(page.locator('[data-lens="strategic"]')).toHaveAttribute('aria-checked', 'true');
   }
@@ -24,7 +28,7 @@ async function exportSampleReport(page, testInfo, lens) {
   await expect(page.locator('#reviewContent')).toContainText(/\S/);
   const exportTab = page.locator(lens === 'biopolitical' ? '[data-bio-review="exports"]' : '[data-review="exports"]');
   await exportTab.click();
-  await expect(exportTab).toHaveAttribute('aria-selected', 'true');
+  await expect(exportTab).toHaveAttribute("aria-current", "location");
   await expect(page.locator('#exportHtml')).toBeVisible();
 
   const [download] = await Promise.all([
@@ -121,10 +125,12 @@ test.describe('HTML export lens contract', () => {
 
 async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
   await page.goto('./');
-  await expect(page.locator('#copyPromptBtn')).toBeVisible();
+  await expect(page.locator('#loadSampleBtn')).toBeVisible();
   await page.locator(`#lang${ui}`).click();
+  await openStep(page, "answer");
   await page.locator('#jsonInput').fill(JSON.stringify(data));
   await expect(page.locator('#importBtn')).toBeEnabled();
+  await openStep(page, "answer");
   await page.locator('#importBtn').click();
   const exportTab = page.locator('[data-review="exports"]');
   await exportTab.click();
@@ -205,7 +211,9 @@ test.describe('Strategic HTML report content', () => {
 
     await page.goto('./');
     await page.locator('#langAr').click();
+    await openStep(page, "settings");
     await page.locator('#analysisLang').selectOption('en');
+    await openStep(page, "lens");
     await page.locator('[data-lens="biopolitical"]').click();
     await page.locator('#loadSampleBtn').click();
     await expect(page.locator('#reviewPanel')).toBeVisible();
@@ -275,10 +283,12 @@ test.describe('Strategic HTML report content', () => {
   test('report file names follow the lens and keep French ligatures', async ({ page }) => {
     const exportedName = async (data, tab) => {
       await page.goto('./');
-      await expect(page.locator('#copyPromptBtn')).toBeVisible();
+      await expect(page.locator('#loadSampleBtn')).toBeVisible();
       await page.locator('#langEn').click();
+      await openStep(page, "answer");
       await page.locator('#jsonInput').fill(JSON.stringify(data));
       await expect(page.locator('#importBtn')).toBeEnabled();
+      await openStep(page, "answer");
       await page.locator('#importBtn').click();
       await page.locator(tab).click();
       await expect(page.locator('#exportHtml')).toBeVisible();
@@ -289,8 +299,9 @@ test.describe('Strategic HTML report content', () => {
       return download.suggestedFilename();
     };
 
+    // An empty title is not imported; one with no letters falls back the same way.
     const untitled = await strategicFixture('sample-analysis-bio-en.json');
-    untitled.subject.title = '';
+    untitled.subject.title = '—';
     expect(await exportedName(untitled, '[data-bio-review="exports"]')).toBe('analysis-biopolitical-v2-report.html');
 
     const french = await strategicFixture('sample-analysis-fr.json');

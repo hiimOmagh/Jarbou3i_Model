@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import vm from "node:vm";
 import Ajv2020 from "ajv/dist/2020.js";
 import { createWorkspace, createWorkspaceBundle } from "../src/core/workspace-contract.js";
 import { appendReviewEvent } from "../src/core/review-ledger.js";
@@ -129,19 +128,10 @@ if (canonical(invalid)) {
   fail("canonical validator accepted an invalid evidence verification type");
 }
 
-const context = { window: {} };
-context.window.window = context.window;
-vm.createContext(context);
-new vm.Script(fs.readFileSync("src/biopolitics.js", "utf8"), {
-  filename: "src/biopolitics.js",
-}).runInContext(context);
+// The old six-layer format is refused, so it passes as neither contract.
 const legacy = readJson("fixtures/sample-analysis-bio-en.legacy-v1.json");
-const draft = context.window.Jarbou3iBiopolitics.migrateLegacy(legacy);
-if (!migratedDraft(draft)) {
-  fail(`legacy adapter output failed the migrated-draft schema: ${JSON.stringify(migratedDraft.errors)}`);
-}
-if (canonical(draft)) {
-  fail("a migrated draft must never validate as a canonical analysis");
+if (canonical(legacy) || migratedDraft(legacy)) {
+  fail("a legacy six-layer answer must validate as neither a canonical analysis nor a migrated draft");
 }
 
 try {

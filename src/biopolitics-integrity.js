@@ -477,22 +477,24 @@
         state: routed.kind,
         canonical: false,
         errors: [
-          issue(
-            "UNSUPPORTED_CONTRACT",
-            "/schema_version",
-            `Unsupported Biopolitical contract/schema: ${routed.analysis_contract || "missing"} / ${routed.schema_version || "missing"}.`,
-          ),
+          routed.kind === "legacy"
+            ? issue(
+                "LEGACY_CONTRACT",
+                "/schema_version",
+                "This answer uses the old six-layer Biopolitical format, which is no longer imported. Generate a new prompt and ask the AI again.",
+              )
+            : issue(
+                "UNSUPPORTED_CONTRACT",
+                "/schema_version",
+                `Unsupported Biopolitical contract/schema: ${routed.analysis_contract || "missing"} / ${routed.schema_version || "missing"}.`,
+              ),
         ],
         warnings: [],
       };
     }
 
     let candidate = raw;
-    let state = routed.kind;
-    if (routed.kind === "legacy") {
-      candidate = BIO.migrateLegacy(raw);
-      state = "migrated_draft";
-    }
+    const state = routed.kind;
     const verificationRepair = prepareReviewableVerification(candidate);
     candidate = verificationRepair.candidate;
     const draft = ["migrated_draft", "generated_draft"].includes(state);

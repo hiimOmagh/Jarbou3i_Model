@@ -287,3 +287,10 @@ A milestone does not close until:
 Only `BR-0 + GATE-0-SETUP` is authorized by this document. It prepares
 measurement and authority assets. It does not authorize Alpha.56, runtime UI
 changes, dossier schema implementation, or design-system implementation.
+
+**Amendment (2026-10-10, [ADR-0002](decisions/0002-select-case-file-and-waive-gate0.md)):**
+the product owner selected UX-0 concept B (case file) and waived the Gate 0
+human benchmark. `UIX-1` and `UIX-2` are now authorized under this plan's boundaries. UX-0's
+five-second acceptance target remains unmeasured. The app's screens are then rebuilt to the
+prototype's structure, one at a time: the guided flow (setup), the case file (`UIX-3`, ahead of
+`RESEARCH-1`) and the work panel.

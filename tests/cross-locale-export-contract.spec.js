@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
+import { openStep } from "./helpers/guided-flow.js";
 
 const LOCALES = [
   { id: 'ar', button: '#langAr', dir: 'rtl' },
@@ -41,13 +42,15 @@ const LENSES = [
 
 async function exportLocalizedSample(page, testInfo, locale, lens) {
   await page.goto('./');
-  await expect(page.locator('#copyPromptBtn')).toBeVisible();
+  await expect(page.locator('#loadSampleBtn')).toBeVisible();
 
   await page.locator(locale.button).click();
   await expect(page.locator('html')).toHaveAttribute('lang', locale.id);
   await expect(page.locator('html')).toHaveAttribute('dir', locale.dir);
+  await openStep(page, "settings");
   await page.locator('#analysisLang').selectOption(locale.id);
 
+  await openStep(page, "lens");
   await page.locator(`[data-lens="${lens.id}"]`).click();
   await expect(page.locator(`[data-lens="${lens.id}"]`)).toHaveAttribute('aria-checked', 'true');
 
@@ -60,7 +63,7 @@ async function exportLocalizedSample(page, testInfo, locale, lens) {
   await exportTab.focus();
   await expect(exportTab).toBeFocused();
   await exportTab.press('Enter');
-  await expect(exportTab).toHaveAttribute('aria-selected', 'true');
+  await expect(exportTab).toHaveAttribute("aria-current", "location");
   await expect(page.locator('#exportHtml')).toBeVisible();
 
   const [download] = await Promise.all([

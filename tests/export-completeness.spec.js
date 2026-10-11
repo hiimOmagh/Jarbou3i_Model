@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { openStep } from "./helpers/guided-flow.js";
 
 test.setTimeout(60_000);
 
@@ -111,13 +112,16 @@ test("biopolitical HTML and JSON exports preserve the complete canonical contrac
       failures: 0,
     });
   await page.locator("#langFr").click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
+  await openStep(page, "answer");
   await page.locator("#jsonInput").fill(JSON.stringify(fixture));
   await expect(page.locator("#importBtn")).toBeEnabled();
+  await openStep(page, "answer");
   await page.locator("#importBtn").click();
   const exportTab = page.locator('[data-bio-review="exports"]');
   await exportTab.click();
-  await expect(exportTab).toHaveAttribute("aria-selected", "true");
+  await expect(exportTab).toHaveAttribute("aria-current", "location");
   await expect(page.locator("#exportHtml")).toBeVisible();
   await expect(page.locator("#exportJson")).toBeVisible();
   await expect
@@ -178,7 +182,9 @@ test("biopolitical HTML and JSON exports preserve the complete canonical contrac
   await failurePage.route("**/biopolitical-report.js", (route) => route.abort());
   await failurePage.goto("./");
   await failurePage.locator("#langEn").click();
+  await openStep(failurePage, "settings");
   await failurePage.locator("#analysisLang").selectOption("en");
+  await openStep(failurePage, "lens");
   await failurePage.locator('[data-lens="biopolitical"]').click();
   await failurePage.locator("#loadSampleBtn").click();
   await failurePage.locator('[data-bio-review="exports"]').click();

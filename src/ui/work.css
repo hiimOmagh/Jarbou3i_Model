@@ -1,0 +1,36 @@
+/* Jarbou3i work panel (ADR-0002): the save light, the lifecycle banners and
+   "Where your work is". Classes are .j-life-* and .j-save-light; the cards
+   and buttons are kernel controls. */
+
+/* The save light is the header status, pressable: it opens the work panel. */
+.j-save-light {
+  min-height: 32px; padding: 0 var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
+  background: var(--j-panel); cursor: pointer;
+}
+.j-save-light:hover { border-color: var(--j-signal); background: var(--j-raise); }
+.j-save-light:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+
+/* Lifecycle banners: above the flow and the case file. */
+.j-life-banners { display: grid; gap: var(--j-s-2); margin-bottom: var(--j-s-4); }
+.j-life-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-3);
+  padding: var(--j-s-3) var(--j-s-4); border: 1px solid var(--j-line); border-inline-start-width: 4px;
+  border-radius: var(--j-r-2); background: var(--j-panel); color: var(--j-fg);
+}
+.j-life-banner[data-tone="warn"] { border-inline-start-color: var(--j-warn); background: var(--j-warn-wash); }
+.j-life-banner[data-tone="crit"] { border-inline-start-color: var(--j-crit); background: var(--j-crit-wash); }
+.j-life-banner p { margin: 0; flex: 1 1 280px; }
+.j-life-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
+
+/* Where your work is: three places, side by side on wide screens. */
+.j-life { display: grid; gap: var(--j-s-3); margin-bottom: var(--j-s-4); }
+.j-life-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-3); }
+.j-life-card { display: grid; gap: var(--j-s-2); align-content: start; justify-items: start; min-width: 0; }
+.j-life-card > h4, .j-life-card > p, .j-life-card > ol { justify-self: stretch; margin: 0; }
+.j-life-help { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); }
+.j-life-revs { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--j-s-2); }
+.j-life-revs li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); }
+
+@media (max-width: 900px) {
+  .j-life-grid { grid-template-columns: 1fr; }
+}

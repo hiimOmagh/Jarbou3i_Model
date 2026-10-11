@@ -7,7 +7,7 @@ test.describe('RTL and mobile layout smoke', () => {
     await page.goto('./');
     await page.locator('#langAr').click();
     await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-    await expect(page.locator('.welcomeCard')).toBeVisible();
+    await expect(page.locator('.j-flow-guide')).toBeVisible();
     await page.locator('#loadSampleBtn').click();
     await expect(page.locator('#reviewPanel')).toBeVisible();
 

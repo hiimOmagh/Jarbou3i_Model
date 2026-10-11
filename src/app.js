@@ -12,6 +12,8 @@ import "./contract-repair.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { normalizeShellDensity } from "./core/shell-preferences.js";
 import { createApplicationShell } from "./features/application-shell.js";
+import { createCommandPalette } from "./features/command-palette.js";
+import { createGuidedFlow } from "./features/guided-flow.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
 import { createResultsExplanation } from "./core/results-explanation.js";
 import { createResultsInspectionIndex } from "./core/results-inspection.js";
@@ -52,14 +54,6 @@ const I18N = {
     appTitle: "مساحة عمل التحليل الاستراتيجي",
     appSubtitle:
       "مساحة تحليل استراتيجية منظّمة: برومبت ذكي، استيراد واضح، ومراجعة قابلة للتصفح.",
-    welcomeEyebrow: "دليل الأداة",
-    welcomeTitle: "مرحبًا بك في نموذج جربوعي",
-    welcomeBody:
-      "رفيق بصري لبدء التحليل المنظّم بوضوح: حدّد الموضوع، انسخ البرومبت، استورد نتيجة JSON، ثم راجع طبقات النموذج خطوة بخطوة.",
-    workflowTitle: "مركز قيادة التحليل",
-    workflowSubtitle:
-      "ابدأ بالموضوع، انسخ البرومبت، ثم استورد نتيجة JSON لمراجعة النموذج كاملًا.",
-    stages: ["الموضوع", "البرومبت", "الاستيراد", "المراجعة"],
     topicLabel: "موضوع التحليل",
     topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا 2022–2026",
     analysisLang: "لغة التحليل",
@@ -93,13 +87,17 @@ const I18N = {
     workspaceSectionReviewHint: "افحص النتيجة والأدلة",
     localProcessing: "المعالجة محليًا في المتصفح",
     nextActionLabel: "الإجراء التالي",
+    commandPalette: "الأوامر",
+    commandPalettePlaceholder: "اكتب أمرًا أو اسم قسم",
+    commandPaletteEmpty: "لا يوجد أمر مطابق",
+    commandGoTo: "انتقل إلى",
+    commandOpen: "افتح",
     shellActionTopic: "ابدأ بالموضوع",
     shellActionImport: "تابع إلى الاستيراد",
     shellActionReview: "راجع التحليل",
     shellMovedToSetup: "تم الانتقال إلى إعداد التحليل.",
     shellMovedToModel: "تم الانتقال إلى بنية النموذج.",
     shellMovedToReview: "تم الانتقال إلى مراجعة التحليل.",
-    workflowEyebrow: "01 / إعداد التحليل",
     engineEyebrow: "02 / بنية النموذج",
     reviewEyebrow: "03 / فحص النتيجة",
     severity: "الشدة",
@@ -111,6 +109,29 @@ const I18N = {
     copyPrompt: "انسخ البرومبت",
     previewPrompt: "معاينة البرومبت",
     editTopic: "تعديل الموضوع",
+    caseOutline: "المخطط",
+    flowStepTopic: "الموضوع",
+    flowStepLens: "العدسة",
+    flowStepSettings: "الإعدادات",
+    flowStepPrompt: "البرومبت",
+    flowStepAnswer: "الإجابة",
+    flowStepOf: "الخطوة {n} من {total}",
+    flowTitles: ["ما الذي تريد فهمه؟","أي عدسة تناسب سؤالك؟","كيف يجب أن يعمل الذكاء الاصطناعي؟","انسخ البرومبت إلى مساعدك الذكي","الصق إجابة الذكاء الاصطناعي"],
+    flowHints: ["جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.","لست متأكدًا؟ ابدأ بالعدسة الاستراتيجية، ويمكنك تشغيل الأخرى لاحقًا.","هذه الخيارات تشكّل البرومبت. الإعدادات الافتراضية تناسب معظم الأسئلة.","يعمل مع ChatGPT وClaude وGemini أو أي مساعد يكتب JSON.","الصق كل ما كتبه. لا بأس بوجود نص حول JSON، سأجده."],
+    flowSay: ["أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى برومبت دقيق لمساعدك الذكي.","الاستراتيجي يتتبع المصالح حتى النتائج. الحيوسياسي يتتبع كيف يُحكم الناس.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","الصق الإجابة كاملة. سأتحقق منها قبل استيراد أي شيء."],
+    flowSay_ok: "تبدو مكتملة. جاهز متى شئت.",
+    flowSay_warn: "أستطيع قراءتها مع بعض الملاحظات. راجعها أدناه قبل الاستيراد.",
+    flowSay_trunc: "انقطعت الإجابة. يحدث هذا مع الإجابات الطويلة.",
+    flowSay_crit: "هناك خلل في الصيغة. لنصلحه.",
+    flowBack: "رجوع",
+    flowContinue: "متابعة",
+    flowExamplesLabel: "جرّب مثالًا:",
+    flowExamples: [["ضوابط تصدير أشباه الموصلات","2022–2026، الولايات المتحدة، الاتحاد الأوروبي، الصين"],["صعود العمل عن بُعد","2020–2024، عالميًا"],["حقوق المياه في حوض النيل","2011–2025، إثيوبيا، السودان، مصر"]],
+    flowHowTo1: "افتح مساعدك الذكي في تبويب آخر.",
+    flowHowTo2: "الصق البرومبت وأرسله.",
+    flowHowTo3: "انتظر الإجابة كاملة ثم عد إلى هنا.",
+    lensStrategicDesc: "يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.",
+    lensBiopoliticalDesc: "يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.",
     topicStatusStart: "أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.",
     topicNeeded: "أدخل موضوع التحليل أولًا.",
     promptCopied:
@@ -120,9 +141,6 @@ const I18N = {
     copyShownText: "نسخ النص المعروض",
     copied: "تم النسخ.",
     copyFailed: "تعذّر النسخ تلقائيًا. انسخ النص من نافذة المعاينة.",
-    pasteTitle: "استيراد نتيجة الذكاء الاصطناعي",
-    pasteSubtitle:
-      "بعد استخدام البرومبت، الصق JSON هنا. زر الاستيراد يظهر فقط عندما تكون البنية صالحة.",
     jsonLabel: "نتيجة JSON",
     jsonPlaceholder: "الصق JSON هنا...",
     importAnalysis: "استيراد التحليل",
@@ -218,13 +236,6 @@ const I18N = {
     loadSample: "تحميل مثال",
     sampleLoaded:
       "تم تحميل مثال تجريبي. يمكنك مراجعة النتائج أو استبدالها بموضوعك.",
-    guideTitle: "طريقة الاستخدام",
-    guideSteps: [
-      "اكتب موضوع التحليل بوضوح.",
-      "انسخ البرومبت والصقه في مساعدك المفضل.",
-      "انسخ JSON الناتج فقط والصقه في خانة الاستيراد.",
-      "راجع جودة التحليل ثم صدّر تقرير HTML.",
-    ],
     schemaHealth: "صحة الاستيراد",
     completeness: "الاكتمال",
     missingItems: "النواقص",
@@ -269,8 +280,6 @@ const I18N = {
     appTitleBiopolitical: "مساحة عمل التحليل الحيوسياسي",
     appSubtitleBiopolitical:
       "مساحة تحليل لفهم كيف تُدار الأجساد والسكان والمعايير والمخاطر والسلوك.",
-    workflowSubtitleBiopolitical:
-      "اختر موضوعًا وعدسة حيوسياسية، انسخ البرومبت، ثم استورد JSON لمراجعة إدارة الحياة والسكان.",
     topicPlaceholderBiopolitical:
       "مثال: جوازات الصحة الرقمية وتصنيف مخاطر السكان 2020–2022",
     analysisLens: "عدسة التحليل",
@@ -341,14 +350,6 @@ const I18N = {
     appTitle: "Strategic Analysis Workbench",
     appSubtitle:
       "An intelligence-style workspace for structured prompts, clean import, and navigable analysis review.",
-    welcomeEyebrow: "Tool guide",
-    welcomeTitle: "Welcome to Jarbou3i Model",
-    welcomeBody:
-      "A friendly visual guide to start your structured analysis: define the topic, copy the prompt, import the JSON result, and review the full model with clarity.",
-    workflowTitle: "Analysis Command Center",
-    workflowSubtitle:
-      "Start with the topic, copy the prompt, then import JSON to review the full model.",
-    stages: ["Topic", "Prompt", "Import", "Review"],
     topicLabel: "Analysis topic",
     topicPlaceholder: "Example: Rise of the far right in Europe, 2022–2026",
     analysisLang: "Analysis language",
@@ -382,13 +383,17 @@ const I18N = {
     workspaceSectionReviewHint: "Inspect the result and evidence",
     localProcessing: "Processed locally in your browser",
     nextActionLabel: "Next action",
+    commandPalette: "Commands",
+    commandPalettePlaceholder: "Type a command or a section",
+    commandPaletteEmpty: "No matching command",
+    commandGoTo: "Go to",
+    commandOpen: "Open",
     shellActionTopic: "Start with a topic",
     shellActionImport: "Continue to import",
     shellActionReview: "Review analysis",
     shellMovedToSetup: "Moved to analysis setup.",
     shellMovedToModel: "Moved to model structure.",
     shellMovedToReview: "Moved to analysis review.",
-    workflowEyebrow: "01 / Configure analysis",
     engineEyebrow: "02 / Model structure",
     reviewEyebrow: "03 / Inspect outcome",
     severity: "Severity",
@@ -400,6 +405,29 @@ const I18N = {
     copyPrompt: "Copy prompt",
     previewPrompt: "Preview prompt",
     editTopic: "Edit topic",
+    caseOutline: "Outline",
+    flowStepTopic: "Topic",
+    flowStepLens: "Lens",
+    flowStepSettings: "Settings",
+    flowStepPrompt: "Prompt",
+    flowStepAnswer: "Answer",
+    flowStepOf: "Step {n} of {total}",
+    flowTitles: ["What do you want to understand?","Which lens fits your question?","How should the AI work?","Copy the prompt into your AI assistant","Paste the AI's answer"],
+    flowHints: ["One clear sentence is enough. Add a place and period if they matter.","Not sure? Start with Strategic. You can run the other lens later.","These choices shape the prompt. The defaults suit most questions.","Works with ChatGPT, Claude, Gemini or any assistant that can write JSON.","Paste everything the AI wrote. Text around the JSON is fine; I'll find it."],
+    flowSay: ["Tell me your topic in one sentence. I'll turn it into a precise prompt for your AI assistant.","Strategic follows interests to outcomes. Biopolitical follows how people are governed.","More depth means a longer answer. If you have sources, paste them: they make the result checkable.","I'll wait here. Come back when the AI has finished writing.","Paste the whole answer. I'll check it before anything is imported."],
+    flowSay_ok: "That looks complete. Ready when you are.",
+    flowSay_warn: "I can read it, with a few notes. Check them below before you import.",
+    flowSay_trunc: "It got cut off. That happens with long answers.",
+    flowSay_crit: "Something is off in the format. Let's fix it.",
+    flowBack: "Back",
+    flowContinue: "Continue",
+    flowExamplesLabel: "Try an example:",
+    flowExamples: [["Semiconductor export controls","2022–2026, United States, EU, China"],["The rise of remote work","2020–2024, global"],["Water rights in the Nile basin","2011–2025, Ethiopia, Sudan, Egypt"]],
+    flowHowTo1: "Open your AI assistant in another tab.",
+    flowHowTo2: "Paste the prompt and send it.",
+    flowHowTo3: "Wait for the full answer, then come back here.",
+    lensStrategicDesc: "Follows interests to results: who wants what, which tools they use, how it is justified, and what happened.",
+    lensBiopoliticalDesc: "Traces how bodies, institutions, data and classifications become governed, and who bears the costs.",
     topicStatusStart:
       "Enter a clear topic, then copy the prompt into your preferred assistant.",
     topicNeeded: "Enter an analysis topic first.",
@@ -410,9 +438,6 @@ const I18N = {
     copyShownText: "Copy shown text",
     copied: "Copied.",
     copyFailed: "Automatic copy failed. Copy the text from the preview window.",
-    pasteTitle: "Import AI Result",
-    pasteSubtitle:
-      "After using the prompt, paste JSON here. The import button becomes usable only when the structure is valid.",
     jsonLabel: "JSON result",
     jsonPlaceholder: "Paste JSON here...",
     importAnalysis: "Import analysis",
@@ -509,13 +534,6 @@ const I18N = {
     loadSample: "Load sample",
     sampleLoaded:
       "Sample analysis loaded. You can review it or replace it with your own topic.",
-    guideTitle: "How to use it",
-    guideSteps: [
-      "Write a clear analysis topic.",
-      "Copy the prompt and paste it into your preferred AI assistant.",
-      "Copy only the JSON result and paste it into the import box.",
-      "Review quality, inspect layers, then export the HTML report.",
-    ],
     schemaHealth: "Import health",
     completeness: "Completeness",
     missingItems: "Missing items",
@@ -565,8 +583,6 @@ const I18N = {
     appTitleBiopolitical: "Biopolitical Analysis Workbench",
     appSubtitleBiopolitical:
       "A lens-aware workspace for analyzing how power governs bodies, populations, norms, risks, and conduct.",
-    workflowSubtitleBiopolitical:
-      "Choose a topic, select the biopolitical lens, generate a prompt, then import JSON to inspect governance over life and populations.",
     topicPlaceholderBiopolitical:
       "Example: Digital health passports and population risk classification, 2020–2022",
     analysisLens: "Analysis lens",
@@ -640,14 +656,6 @@ const I18N = {
     appTitle: "Atelier d’analyse stratégique",
     appSubtitle:
       "Un espace d’analyse structuré : prompt clair, import propre et revue navigable.",
-    welcomeEyebrow: "Guide de l’outil",
-    welcomeTitle: "Bienvenue dans Jarbou3i Model",
-    welcomeBody:
-      "Un guide visuel convivial pour démarrer votre analyse structurée : définissez le sujet, copiez le prompt, importez le JSON, puis examinez clairement l’ensemble du modèle.",
-    workflowTitle: "Centre de commande de l’analyse",
-    workflowSubtitle:
-      "Commencez par le sujet, copiez le prompt, puis importez le JSON pour examiner le modèle complet.",
-    stages: ["Sujet", "Prompt", "Import", "Revue"],
     topicLabel: "Sujet d’analyse",
     topicPlaceholder:
       "Exemple : montée de l’extrême droite en Europe, 2022–2026",
@@ -682,13 +690,17 @@ const I18N = {
     workspaceSectionReviewHint: "Examiner le résultat et les preuves",
     localProcessing: "Traitement local dans votre navigateur",
     nextActionLabel: "Action suivante",
+    commandPalette: "Commandes",
+    commandPalettePlaceholder: "Tapez une commande ou une section",
+    commandPaletteEmpty: "Aucune commande correspondante",
+    commandGoTo: "Aller à",
+    commandOpen: "Ouvrir",
     shellActionTopic: "Commencer par un sujet",
     shellActionImport: "Continuer vers l’import",
     shellActionReview: "Examiner l’analyse",
     shellMovedToSetup: "Navigation vers la préparation de l’analyse.",
     shellMovedToModel: "Navigation vers la structure du modèle.",
     shellMovedToReview: "Navigation vers la revue de l’analyse.",
-    workflowEyebrow: "01 / Configurer l’analyse",
     engineEyebrow: "02 / Structure du modèle",
     reviewEyebrow: "03 / Examiner le résultat",
     severity: "Sévérité",
@@ -700,6 +712,29 @@ const I18N = {
     copyPrompt: "Copier le prompt",
     previewPrompt: "Aperçu du prompt",
     editTopic: "Modifier le sujet",
+    caseOutline: "Plan",
+    flowStepTopic: "Sujet",
+    flowStepLens: "Lentille",
+    flowStepSettings: "Réglages",
+    flowStepPrompt: "Prompt",
+    flowStepAnswer: "Réponse",
+    flowStepOf: "Étape {n} sur {total}",
+    flowTitles: ["Que voulez-vous comprendre ?","Quelle lentille convient à votre question ?","Comment l’IA doit-elle travailler ?","Copiez le prompt dans votre assistant IA","Collez la réponse de l’IA"],
+    flowHints: ["Une phrase claire suffit. Ajoutez un lieu et une période s’ils comptent.","Vous hésitez ? Commencez par Stratégique. Vous pourrez lancer l’autre ensuite.","Ces choix façonnent le prompt. Les valeurs par défaut conviennent à la plupart des questions.","Fonctionne avec ChatGPT, Claude, Gemini ou tout assistant capable d’écrire du JSON.","Collez tout ce que l’IA a écrit. Du texte autour du JSON ne pose pas de problème."],
+    flowSay: ["Décrivez votre sujet en une phrase. J’en ferai un prompt précis pour votre assistant IA.","Stratégique suit les intérêts jusqu’aux résultats. Biopolitique suit la façon dont on gouverne les personnes.","Plus de profondeur, c’est une réponse plus longue. Si vous avez des sources, collez-les : elles rendent le résultat vérifiable.","J’attends ici. Revenez quand l’IA a fini d’écrire.","Collez la réponse entière. Je la vérifie avant tout import."],
+    flowSay_ok: "Elle semble complète. Prêt quand vous l’êtes.",
+    flowSay_warn: "Je peux la lire, avec quelques remarques. Vérifiez-les ci-dessous avant d’importer.",
+    flowSay_trunc: "Elle a été coupée. Cela arrive avec les longues réponses.",
+    flowSay_crit: "Le format pose problème. Corrigeons-le.",
+    flowBack: "Retour",
+    flowContinue: "Continuer",
+    flowExamplesLabel: "Essayez un exemple :",
+    flowExamples: [["Contrôle des exportations de semi-conducteurs","2022–2026, États-Unis, UE, Chine"],["L’essor du télétravail","2020–2024, monde"],["Les droits sur l’eau dans le bassin du Nil","2011–2025, Éthiopie, Soudan, Égypte"]],
+    flowHowTo1: "Ouvrez votre assistant IA dans un autre onglet.",
+    flowHowTo2: "Collez le prompt et envoyez-le.",
+    flowHowTo3: "Attendez la réponse complète, puis revenez ici.",
+    lensStrategicDesc: "Suit les intérêts jusqu’aux résultats : qui veut quoi, avec quels outils, comment c’est justifié et ce qui s’est passé.",
+    lensBiopoliticalDesc: "Retrace comment corps, institutions, données et classifications deviennent gouvernés, et qui en supporte le coût.",
     topicStatusStart:
       "Saisissez un sujet clair, puis copiez le prompt dans votre assistant préféré.",
     topicNeeded: "Saisissez d’abord un sujet d’analyse.",
@@ -711,9 +746,6 @@ const I18N = {
     copied: "Copié.",
     copyFailed:
       "La copie automatique a échoué. Copiez le texte depuis la fenêtre d’aperçu.",
-    pasteTitle: "Importer le résultat IA",
-    pasteSubtitle:
-      "Après avoir utilisé le prompt, collez le JSON ici. Le bouton d’import devient actif uniquement lorsque la structure est valide.",
     jsonLabel: "Résultat JSON",
     jsonPlaceholder: "Collez le JSON ici...",
     importAnalysis: "Importer l’analyse",
@@ -814,13 +846,6 @@ const I18N = {
     loadSample: "Charger un exemple",
     sampleLoaded:
       "Exemple chargé. Vous pouvez l’examiner ou le remplacer par votre propre sujet.",
-    guideTitle: "Mode d’emploi",
-    guideSteps: [
-      "Rédigez un sujet d’analyse clair.",
-      "Copiez le prompt et collez-le dans votre assistant IA préféré.",
-      "Copiez uniquement le résultat JSON et collez-le dans la zone d’import.",
-      "Examinez la qualité, inspectez les couches, puis exportez le rapport HTML.",
-    ],
     schemaHealth: "Santé de l’import",
     completeness: "Complétude",
     missingItems: "Éléments manquants",
@@ -877,8 +902,6 @@ const I18N = {
     appTitleBiopolitical: "Atelier d’analyse biopolitique",
     appSubtitleBiopolitical:
       "Un espace d’analyse pour étudier comment le pouvoir gouverne les corps, les populations, les normes, les risques et les conduites.",
-    workflowSubtitleBiopolitical:
-      "Choisissez un sujet et la lentille biopolitique, copiez le prompt, puis importez le JSON pour examiner le gouvernement de la vie et des populations.",
     topicPlaceholderBiopolitical:
       "Exemple : passeports sanitaires numériques et classification des risques, 2020–2022",
     analysisLens: "Lentille d’analyse",
@@ -1110,7 +1133,6 @@ const SUPPORTED_LANGUAGES = ["ar", "en", "fr"];
 const LENS_KEY_ALIASES = {
   appTitle: "appTitleBiopolitical",
   appSubtitle: "appSubtitleBiopolitical",
-  workflowSubtitle: "workflowSubtitleBiopolitical",
   topicPlaceholder: "topicPlaceholderBiopolitical",
   engineTitle: "engineTitleBiopolitical",
   engineSubtitle: "engineSubtitleBiopolitical",
@@ -1192,6 +1214,9 @@ const PLATFORM = createPlatformRuntime({
       modalInvoker: null,
       activeWorkspaceId: null,
       workspaceSaveState: "idle",
+      workspaceLife: null,
+      // The workspace whose write another tab refused, until it is reopened.
+      workspaceConflict: null,
       editorSession: null,
       editorWorkspace: null,
       editorPath: null,
@@ -1211,6 +1236,8 @@ const PLATFORM = createPlatformRuntime({
       applyI18n();
       renderLensToggle();
       APPLICATION_SHELL.render();
+      renderLifeBanners();
+      renderWorkLife();
     },
     workflow() {
       $("analysisLang").value = state.analysisLang;
@@ -1219,8 +1246,7 @@ const PLATFORM = createPlatformRuntime({
       $("sourcesField").hidden = state.evidenceAccess !== "provided";
       $("timeframeInput").value = state.context;
       $("topicInput").value = state.topic;
-      renderGuide();
-      renderStages();
+      GUIDED_FLOW.render();
     },
     engine() {
       activeLensAdapter().renderEngineNav();
@@ -1245,6 +1271,19 @@ const APPLICATION_SHELL = createApplicationShell({
   translate: t,
   localize: labelText,
   renderRegion: (name) => PLATFORM_RENDERER.render(name),
+  reveal: (id) => GUIDED_FLOW.reveal(id),
+});
+// The setup phase, one step at a time (src/features/guided-flow.js).
+const GUIDED_FLOW = createGuidedFlow({
+  document,
+  translate: t,
+  canContinue: (step) => step !== "topic" || Boolean($("topicInput").value.trim()),
+  mood: (step) => {
+    if (step !== "answer" || !$("jsonInput").value.trim()) return "idle";
+    if (!$("continuationField").hidden) return "trunc";
+    const status = $("jsonStatus").classList;
+    return status.contains("good") ? "ok" : status.contains("bad") ? "crit" : "warn";
+  },
 });
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),
@@ -1463,6 +1502,7 @@ async function restoreTrip(untouched, record) {
     state.stage = "import";
     state.shellSection = "workflow";
     $("editTopicBtn").classList.remove("hide");
+    GUIDED_FLOW.go("answer");
   }
   // Taken over from a tab that was closed: now this tab's own. Its record is
   // removed once written here, unless that tab is back (a reload) and
@@ -1585,6 +1625,7 @@ function applyI18n() {
   if (seg) seg.setAttribute("aria-label", t("languageLabel"));
   const lens = $("analysisLens");
   if (lens) lens.setAttribute("aria-label", t("analysisLens"));
+  $("reviewNav")?.setAttribute("aria-label", t("caseOutline"));
 }
 
 function renderLensToggle() {
@@ -1687,6 +1728,7 @@ function setAnalysisLens(lens) {
     state.activePillar = null;
     state.jsonValid = true;
     state.activeWorkspaceId = kept.workspaceId;
+    refreshWorkspaceLife();
     if (kept.workspaceId) {
       writeSettings({ activeWorkspaceId: kept.workspaceId });
       // It may have been saved while the other lens was on screen.
@@ -1758,6 +1800,8 @@ function toast(msg, kind = "") {
 }
 function setTheme(isDark, persist = true) {
   document.body.classList.toggle("dark", !!isDark);
+  // The design-system kernel (src/ui/) reads the theme from the root.
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
   const btn = $("themeBtn");
   if (btn) btn.setAttribute("aria-pressed", isDark ? "true" : "false");
   if (persist) writeSettings({ theme: isDark ? "dark" : "light" });
@@ -1923,6 +1967,7 @@ function localizedImportIssueMessage(issue = {}, lang = state.lang) {
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "أزيلت علامات استشهاد خاصة بواجهة المساعد من النسخة المطبّعة.",
       DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف نظامي فريدًا في كامل التحليل.",
       UNSUPPORTED_CONTRACT: "إصدار عقد التحليل غير مدعوم في هذه النسخة من الأداة.",
+      LEGACY_CONTRACT: "تستخدم هذه الإجابة صيغة التحليل الحيوسياسي القديمة ذات الطبقات الست، ولم تعد تُستورد. أنشئ برومبتًا جديدًا واطلب من الذكاء الاصطناعي مجددًا.",
       VALIDATOR_UNAVAILABLE: "مدقق عقد التحليل غير متاح.",
       MIXED_LANGUAGE_TEXT: "جزء من هذا النص بلغة أخرى؛ أعد كتابته بلغة التحليل قبل النشر.",
     },
@@ -1942,6 +1987,7 @@ function localizedImportIssueMessage(issue = {}, lang = state.lang) {
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "Les marqueurs de citation propres à l’interface de l’assistant ont été retirés de la copie normalisée.",
       DUPLICATE_GLOBAL_ID: "Chaque identifiant canonique doit être unique dans l’ensemble de l’analyse.",
       UNSUPPORTED_CONTRACT: "Cette version du contrat d’analyse n’est pas prise en charge par cette version de l’outil.",
+      LEGACY_CONTRACT: "Cette réponse utilise l’ancien format biopolitique à six couches, qui n’est plus importé. Générez un nouveau prompt et redemandez à l’IA.",
       VALIDATOR_UNAVAILABLE: "Le validateur du contrat d’analyse n’est pas disponible.",
       MIXED_LANGUAGE_TEXT: "Une partie de ce texte est dans une autre langue ; réécrivez-la dans la langue de l’analyse avant publication.",
     },
@@ -2035,6 +2081,13 @@ function importErrorText(error) {
   }
   const first = error?.validation?.errors?.[0];
   if (!first) return t("jsonParseProblem");
+  if (first.code === "LEGACY_CONTRACT") {
+    return labelText(
+      "This answer uses an old analysis format that the app no longer imports. Generate a new prompt, paste it into your AI chat, then paste the new answer here.",
+      "تستخدم هذه الإجابة صيغة تحليل قديمة لم يعد التطبيق يستوردها. أنشئ برومبتًا جديدًا والصقه في محادثة الذكاء الاصطناعي، ثم الصق الإجابة الجديدة هنا.",
+      "Cette réponse utilise un ancien format d’analyse que l’application n’importe plus. Générez un nouveau prompt, collez-le dans votre conversation avec l’IA, puis collez ici la nouvelle réponse.",
+    );
+  }
   const prefix = labelText(
     "Contract validation failed",
     "فشل التحقق من العقد",
@@ -2335,6 +2388,7 @@ function validateJsonInput() {
   let compilerAudit = null;
   let completionDiagnostics = [];
   let completionCandidate = null;
+  let importErrors = [];
   try {
     state.importValidation = null;
     if (AI_INTERCHANGE.isCopiedPrompt(text)) {
@@ -2406,8 +2460,9 @@ function validateJsonInput() {
       ) {
         throw error;
       }
-      // Salvage instead of rejecting: format slips are coerced, judgment
-      // calls are quarantined, and whatever remains becomes listed gaps.
+      // The salvage is never imported: it lists the gaps the AI is asked to
+      // complete and keeps the rest of the answer to merge its reply into.
+      importErrors = error.validation.errors || [];
       const origin = fromInterchange ? "interchange" : "canonical";
       const salvage = CONTRACT_REPAIR.salvageBiopolitical(raw, {
         origin,
@@ -2526,6 +2581,7 @@ function validateJsonInput() {
       originalText: text,
       parsedSource: parsed.source,
       recovered: parsed.recovered,
+      errors: Object.freeze([...importErrors]),
       warnings: Object.freeze([...warnings]),
       contractRepairs: Object.freeze([...contractRepairs]),
       contractQuarantine: Object.freeze([...contractQuarantine]),
@@ -2554,11 +2610,8 @@ function validateJsonInput() {
     const problems = warnings.filter((warning) => !warning.review_only);
     // Values the contract does not allow are left out of the analysis; said, not hidden.
     const setAside = contractQuarantine.filter((item) => item.code === "INVALID_VALUE_QUARANTINED").length;
-    const draft = ["migrated_draft", "generated_draft"].includes(
-      state.importValidation?.state,
-    );
     $("jsonStatus").className =
-      problems.length || parsed.recovered || setAside || (needsIndependentReview && draft) || languageMismatch || otherLens
+      problems.length || parsed.recovered || setAside || languageMismatch || otherLens
         ? "status warn"
         : "status good";
     // A valid answer with nothing to ask the AI for gets no repair prompt.
@@ -2579,32 +2632,7 @@ function validateJsonInput() {
           `Cette réponse est rédigée en ${languageName(languageMismatch.writtenIn)}, mais votre langue d’analyse est : ${languageName(languageMismatch.requested)}. Vous pouvez l’importer quand même, ou demander à l’IA de répondre en ${languageName(languageMismatch.requested)}.`,
         )
       : "";
-    const strategicGaps = state.importValidation?.diagnostics?.length || 0;
-    const validationMessage = state.importValidation?.state === "strategic_draft"
-      ? labelText(
-          `AI result imported as a reviewable draft with ${strategicGaps} gap${strategicGaps === 1 ? "" : "s"} listed below. Nothing was invented; complete the gaps before relying on the analysis.`,
-          `استُوردت نتيجة الذكاء الاصطناعي كمسودة قابلة للمراجعة مع ${strategicGaps} ${strategicGaps === 1 ? "فجوة مدرجة" : "فجوات مدرجة"} أدناه. لم يُختلق أي محتوى؛ استكمل الفجوات قبل الاعتماد على التحليل.`,
-          `Le résultat IA est importé comme brouillon révisable avec ${strategicGaps} lacune${strategicGaps === 1 ? "" : "s"} listée${strategicGaps === 1 ? "" : "s"} ci-dessous. Rien n’a été inventé ; complétez les lacunes avant de vous fier à l’analyse.`,
-        )
-      : draft
-      ? state.importValidation?.state === "generated_draft"
-        ? completionDiagnostics.length
-          ? labelText(
-              `AI result preserved as a reviewable generated draft with ${completionDiagnostics.length} targeted completion gap${completionDiagnostics.length === 1 ? "" : "s"}. Import is allowed; publication remains blocked until canonical completion.`,
-              `حُفظت نتيجة الذكاء الاصطناعي كمسودة مولّدة قابلة للمراجعة مع ${completionDiagnostics.length} ${completionDiagnostics.length === 1 ? "فجوة استكمال موجّهة" : "فجوات استكمال موجّهة"}. الاستيراد مسموح، ويظل النشر محظورًا حتى الاستكمال النظامي.`,
-              `Le résultat IA est conservé comme brouillon généré révisable avec ${completionDiagnostics.length} lacune${completionDiagnostics.length === 1 ? "" : "s"} de complétion ciblée. L’import est permis ; la publication reste bloquée jusqu’à la complétion canonique.`,
-            )
-          : labelText(
-              "AI-generated material is valid as a reviewable generated draft; publication remains blocked until canonical completion.",
-              "المادة المولّدة بالذكاء الاصطناعي صالحة كمسودة مولّدة قابلة للمراجعة، ويظل النشر محظورًا حتى الاستكمال النظامي.",
-              "Le contenu généré par IA est valide comme brouillon généré révisable ; la publication reste bloquée jusqu’à la complétion canonique.",
-            )
-        : labelText(
-            "Legacy material is valid as a migrated draft; publication remains blocked until canonical completion.",
-            "المادة القديمة صالحة كمسودة مُرحّلة، ويظل النشر محظورًا حتى استكمال العقد النظامي.",
-            "Le contenu historique est valide comme brouillon migré ; la publication reste bloquée jusqu’à sa mise en conformité canonique.",
-          )
-      : needsIndependentReview && !problems.length
+    const validationMessage = needsIndependentReview && !problems.length
         ? labelText(
             `Valid analysis, ready to import. Before publishing, review its ${provenance.total - provenance.approved} evidence record${provenance.total - provenance.approved === 1 ? "" : "s"}: an AI cannot verify its own sources.`,
             `تحليل صالح وجاهز للاستيراد. قبل النشر، راجع سجلات الأدلة فيه (${provenance.total - provenance.approved})؛ فالذكاء الاصطناعي لا يستطيع التحقق من مصادره بنفسه.`,
@@ -2655,9 +2683,43 @@ function validateJsonInput() {
           `${unplaced} élément${unplaced === 1 ? "" : "s"} de la réponse ne correspond${unplaced === 1 ? "" : "ent"} à aucune partie manquante demandée et n’${unplaced === 1 ? "a" : "ont"} pas été ajouté${unplaced === 1 ? "" : "s"}.`,
         )
       : "";
-    $("jsonStatus").textContent = [completionMessage, unplacedMessage, lensNotice, languageNotice, validationMessage, citationNotice]
+    // An answer that is not a complete analysis yet is not imported: the AI is
+    // asked for what is missing or invalid, and its reply is checked again.
+    const incomplete = ["generated_draft", "migrated_draft", "strategic_draft"].includes(state.importValidation?.state);
+    const gaps = completionGaps.length;
+    const incompleteMessage = !incomplete
+      ? ""
+      : gaps
+        ? labelText(
+            `This answer is not imported yet: ${gaps} part${gaps === 1 ? " is" : "s are"} missing or invalid, listed below. Click “${t("completionPrompt")}”, paste it into the same AI chat, then paste the AI’s reply here; it is added to this answer and checked again.`,
+            `لم تُستورد هذه الإجابة بعد: ${gaps} ${gaps === 1 ? "جزء ناقص أو غير صالح" : "أجزاء ناقصة أو غير صالحة"}، مدرجة أدناه. انقر «${t("completionPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رد الذكاء الاصطناعي هنا؛ يُضاف إلى هذه الإجابة ويُفحص من جديد.`,
+            `Cette réponse n’est pas encore importée : ${gaps} partie${gaps === 1 ? " manque ou est invalide" : "s manquent ou sont invalides"}, listée${gaps === 1 ? "" : "s"} ci-dessous. Cliquez sur « ${t("completionPrompt")} », collez-le dans la même conversation avec l’IA, puis collez ici sa réponse ; elle est ajoutée à cette réponse et vérifiée à nouveau.`,
+          )
+        : importErrors.length
+          ? labelText(
+              `This answer does not match the analysis format yet, so it is not imported. Click “${t("repairPrompt")}”, paste it into the same AI chat, then paste the corrected answer here.`,
+              `لا تطابق هذه الإجابة صيغة التحليل بعد، لذا لم تُستورد. انقر «${t("repairPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق الإجابة المصحّحة هنا.`,
+              `Cette réponse ne correspond pas encore au format de l’analyse ; elle n’est donc pas importée. Cliquez sur « ${t("repairPrompt")} », collez-le dans la même conversation avec l’IA, puis collez ici la réponse corrigée.`,
+            )
+          : labelText(
+              "This is not a complete analysis, so it is not imported. Paste the AI’s full answer to the current prompt, or generate a new prompt.",
+              "هذا ليس تحليلًا مكتملًا، لذا لم يُستورد. الصق إجابة الذكاء الاصطناعي الكاملة على البرومبت الحالي، أو أنشئ برومبتًا جديدًا.",
+              "Ce n’est pas une analyse complète ; elle n’est donc pas importée. Collez la réponse complète de l’IA au prompt actuel, ou générez un nouveau prompt.",
+            );
+    $("jsonStatus").textContent = [completionMessage, unplacedMessage, lensNotice, languageNotice, incompleteMessage || validationMessage, citationNotice]
       .filter(Boolean)
       .join(" ");
+    if (incomplete) {
+      state.jsonValid = false;
+      $("importBtn").disabled = true;
+      // With nothing listed to complete, there is nothing to ask the AI for.
+      $("repairPromptBtn").disabled = !(gaps && completionCandidate) && !importErrors.length;
+      $("jsonStatus").className = "status bad";
+      $("pasteCard").classList.remove("ready");
+      $("pasteCard").classList.add("invalid");
+      $("continuationField").hidden = true;
+      return null;
+    }
     $("pasteCard").classList.add("ready");
     $("pasteCard").classList.remove("invalid");
     $("continuationField").hidden = true;
@@ -2701,7 +2763,9 @@ function validateJsonInput() {
     $("importBtn").textContent = t("importAnalysis");
     // A repair prompt built from the prompt itself, or from a list of missing
     // parts, would only confuse the AI.
-    $("repairPromptBtn").disabled = ["PROMPT_PASTED", "FILL_WITHOUT_BASE", "CUT_OFF_WITHOUT_BASE"].includes(e?.code);
+    $("repairPromptBtn").disabled =
+      ["PROMPT_PASTED", "FILL_WITHOUT_BASE", "CUT_OFF_WITHOUT_BASE"].includes(e?.code) ||
+      validationErrors[0]?.code === "LEGACY_CONTRACT";
     const truncated = e?.code === "TRUNCATED_JSON";
     $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
     $("continuationField").hidden = !truncated;
@@ -3952,24 +4016,7 @@ function safeFileSlug(s, fallback = "strategic-analysis") {
       .slice(0, 70) || fallback
   );
 }
-function renderGuide() {
-  const el = $("guideSteps");
-  if (!el) return;
-  const steps = t("guideSteps");
-  el.innerHTML = (Array.isArray(steps) ? steps : [])
-    .map((x) => `<li>${escapeHtml(x)}</li>`)
-    .join("");
-}
-function renderStages() {
-  const arr = t("stages");
-  const idx = { topic: 0, prompt: 1, import: 2, review: 3 }[state.stage] ?? 0;
-  $("stageBar").innerHTML = arr
-    .map(
-      (s, i) =>
-        `<div class="stageItem ${i < idx ? "done" : ""} ${i === idx ? "active" : ""}" ${i === idx ? 'aria-current="step"' : ""}><span class="num">${i + 1}</span><span>${s}</span></div>`,
-    )
-    .join("");
-}
+
 
 function sampleAnalysis(lang = state.lang) {
   return activeLensAdapter().createSample({
@@ -3997,9 +4044,10 @@ function renderEngineNav() {
         if (state.analysis) {
           state.activeReview = "pillars";
           renderReview();
-          document
-            .getElementById("reviewPanel")
-            .scrollIntoView({ behavior: "auto", block: "nearest" });
+          // The opened layer, in the case file.
+          const head = $(`acc-head-${btn.dataset.pillarCard}`);
+          head?.scrollIntoView({ block: "center" });
+          head?.focus({ preventScroll: true });
         }
         renderEngineNav();
       }),
@@ -5290,9 +5338,7 @@ function wireResultsExplanation(lens) {
           ? biopolitical
             ? `[data-bio-acc="${CSS.escape(pillar)}"]`
             : `[data-acc="${CSS.escape(pillar)}"]`
-          : biopolitical
-            ? `[data-bio-review="${CSS.escape(review)}"]`
-            : `[data-review="${CSS.escape(review)}"]`;
+          : `#case-${CSS.escape(review)}`;
         const target = document.querySelector(selector);
         target?.scrollIntoView({ behavior: "auto", block: "nearest" });
         target?.focus({ preventScroll: true });
@@ -6099,7 +6145,7 @@ function openStrategicInspectionRecord(node) {
   state.activeReview = reviewByType[node.type] || "pillars";
   state.activePillar = PILLARS.includes(node.pillar) ? node.pillar : null;
   renderReview();
-  focusInspectionRecord(node, `[data-review="${CSS.escape(state.activeReview)}"]`);
+  focusInspectionRecord(node, `#case-${CSS.escape(state.activeReview)}`);
 }
 function openInspectionOccurrence(lens, node, occurrence) {
   const index = currentResultsInspectionIndex(lens);
@@ -6138,7 +6184,52 @@ function openBiopoliticalRecord(node) {
 function showBiopoliticalNodeInMap(node) {
   state.activeReview = "connections";
   renderBiopoliticalReview();
-  RELATIONSHIP_EXPLORER.focusNode(node.id);
+  // Mounted here, not by the section coming into view: a second mount would
+  // re-render the map and drop the node's focus.
+  relationshipMountObserver?.disconnect();
+  relationshipMountObserver = null;
+  $("case-connections")?.scrollIntoView({ block: "start" });
+  mountRelationshipExplorer()?.then((explorer) => explorer?.focusNode(node.id));
+}
+// Set while the map waits for its section to come into view.
+let relationshipMountObserver = null;
+function mountPendingRelationshipExplorer() {
+  if (!relationshipMountObserver) return;
+  relationshipMountObserver.disconnect();
+  relationshipMountObserver = null;
+  mountRelationshipExplorer();
+}
+// Resolves with the mounted explorer, or nothing when it could not load.
+function mountRelationshipExplorer() {
+  const target = $("relationshipExplorerMount");
+  if (!target) return null;
+  return loadRelationshipExplorer()
+    .then((explorer) => {
+      const currentTarget = $("relationshipExplorerMount");
+      if (!currentTarget) return null;
+      explorer.mount(
+        currentTarget,
+        currentBiopoliticalGraph(),
+        {
+          lang: state.lang,
+          analysis: state.analysis,
+          analysisScope:
+            state.analysis?.analysis_id || state.analysis?.subject?.title,
+          mobileDefault: window.matchMedia("(max-width: 760px)").matches,
+          onOpenNode: (node, trigger) => REFERENCE_UI.open(node.id, trigger),
+        },
+      );
+      return explorer;
+    })
+    .catch(() => {
+      const currentTarget = $("relationshipExplorerMount");
+      if (!currentTarget) return null;
+      currentTarget.innerHTML = `<div class="warning" role="alert"><p>${escapeHtml(labelText("The relationship explorer could not be loaded.", "تعذّر تحميل مستكشف العلاقات.", "Impossible de charger l’explorateur de relations."))}</p><button type="button" class="secondary" data-retry-relationship-explorer>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
+      currentTarget
+        .querySelector("[data-retry-relationship-explorer]")
+        ?.addEventListener("click", mountRelationshipExplorer, { once: true });
+      return null;
+    });
 }
 function bioRecordHtml(item) {
   const graph = currentBiopoliticalGraph();
@@ -6233,9 +6324,10 @@ function renderBiopoliticalEngineNav() {
         if (state.analysis) {
           state.activeReview = "pillars";
           renderBiopoliticalReview();
-          document
-            .getElementById("reviewPanel")
-            .scrollIntoView({ behavior: "auto", block: "nearest" });
+          // The opened pillar, in the case file.
+          const head = document.querySelector(`[data-bio-acc="${CSS.escape(button.dataset.bioPillar)}"]`);
+          head?.scrollIntoView({ block: "center" });
+          head?.focus({ preventScroll: true });
         }
         renderBiopoliticalEngineNav();
       }),
@@ -6377,49 +6469,62 @@ function renderBiopoliticalReviewNav() {
   $("reviewNav").innerHTML = items
     .map(
       (key) =>
-        `<button id="bio-review-tab-${key}" class="navBtn ${state.activeReview === key ? "active" : ""}" data-bio-review="${key}" style="--navTone:${tones[key]}" type="button" role="tab" aria-controls="reviewContent" aria-selected="${state.activeReview === key ? "true" : "false"}" tabindex="${state.activeReview === key ? "0" : "-1"}"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${escapeHtml(key === "connections" ? connectionLabel : labels[key])}</span><span class="navHint">${escapeHtml(key === "connections" ? connectionHint : hints[key] || "")}</span></span>${counts[key] !== "" ? `<span class="badge">${counts[key]}</span>` : ""}</button>`,
+        `<button class="navBtn" data-bio-review="${key}" style="--navTone:${tones[key]}" type="button"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${escapeHtml(key === "connections" ? connectionLabel : labels[key])}</span><span class="navHint">${escapeHtml(key === "connections" ? connectionHint : hints[key] || "")}</span></span>${counts[key] !== "" ? `<span class="badge">${counts[key]}</span>` : ""}</button>`,
     )
     .join("");
-  wireReviewTabs(
-    "[data-bio-review]",
-    "bioReview",
-    renderBiopoliticalReview,
-  );
 }
 
-function wireReviewTabs(selector, datasetKey, render) {
-  const buttons = [...document.querySelectorAll(selector)];
-  const activate = (button, moveFocus = false) => {
-    const key = button?.dataset?.[datasetKey];
-    if (!key) return;
-    state.activeReview = key;
-    render();
-    if (moveFocus) {
-      document
-        .querySelector(`${selector}[data-${datasetKey.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}="${key}"]`)
-        ?.focus();
-    }
-  };
-  buttons.forEach((button, index) => {
-    button.onclick = () => activate(button);
-    button.onkeydown = (event) => {
-      let target = null;
-      if (["ArrowDown", "ArrowRight"].includes(event.key)) {
-        target = buttons[(index + 1) % buttons.length];
-      } else if (["ArrowUp", "ArrowLeft"].includes(event.key)) {
-        target = buttons[(index - 1 + buttons.length) % buttons.length];
-      } else if (event.key === "Home") {
-        target = buttons[0];
-      } else if (event.key === "End") {
-        target = buttons[buttons.length - 1];
-      }
-      if (target) {
-        event.preventDefault();
-        activate(target, true);
-      }
+// The review is one document in reading order, the case file (ADR-0002):
+// every section is rendered, and the outline jumps to one and names it.
+const caseSection = (key, html) =>
+  `<section class="j-case-sec" id="case-${key}" tabindex="-1">${html}</section>`;
+function wireCaseOutline(selector, datasetKey) {
+  document.querySelectorAll(`#reviewNav ${selector}`).forEach((button) => {
+    const key = button.dataset[datasetKey];
+    $(`case-${key}`)?.setAttribute(
+      "aria-label",
+      button.querySelector(".navTitle")?.textContent || key,
+    );
+    button.onclick = () => {
+      const section = $(`case-${key}`);
+      if (!section) return;
+      state.activeReview = key;
+      // An instant jump: the document is long.
+      section.scrollIntoView({ block: "start" });
+      section.focus({ preventScroll: true });
+      // Asked for by name: the map loads now, not on the next observer turn,
+      // which comes late in Firefox and WebKit.
+      if (section.contains($("relationshipExplorerMount"))) mountPendingRelationshipExplorer();
     };
   });
+  markCaseLocation();
 }
+// Where the reader is: the outline marks the section that last took focus (a
+// jump, an opened record) while the view stays put, else the section at the
+// top of the view (a short last section never reaches the top).
+let caseJump = null;
+function markCaseLocation() {
+  const sections = [...document.querySelectorAll(".j-case-sec")];
+  if (!sections.length) return;
+  if (caseJump && Math.abs(window.scrollY - caseJump.y) > 2) caseJump = null;
+  let current = sections[0];
+  for (const section of sections) {
+    if (section.getBoundingClientRect().top <= window.innerHeight * 0.3) current = section;
+  }
+  const key = caseJump?.key || current.id.slice("case-".length);
+  document.querySelectorAll("#reviewNav button").forEach((button) => {
+    if ((button.dataset.review || button.dataset.bioReview) === key) {
+      button.setAttribute("aria-current", "location");
+    } else button.removeAttribute("aria-current");
+  });
+}
+window.addEventListener("scroll", () => requestAnimationFrame(markCaseLocation), { passive: true });
+document.addEventListener("focusin", (event) => {
+  const section = event.target.closest?.(".j-case-sec");
+  if (!section) return;
+  caseJump = { key: section.id.slice("case-".length), y: window.scrollY };
+  markCaseLocation();
+});
 function renderBiopoliticalReview() {
   if (!state.analysis || state.analysis.analysis_lens !== "biopolitical") {
     $("reviewPanel").classList.add("hide");
@@ -6468,57 +6573,29 @@ function renderBiopoliticalReview() {
   if (!valid.includes(state.activeReview)) state.activeReview = "overview";
   $("reviewPanel").classList.remove("hide");
   renderBiopoliticalReviewNav();
-  let html = "";
-  if (state.activeReview === "overview") html = renderBiopoliticalOverview();
-  if (state.activeReview === "pillars") html = renderBiopoliticalPillars();
-  if (state.activeReview === "connections")
-    html = renderBiopoliticalConnections();
-  if (state.activeReview === "evidence") html = renderBiopoliticalEvidence();
-  if (state.activeReview === "conclusion")
-    html = renderBiopoliticalConclusion();
-  if (state.activeReview === "inspection")
-    html = renderInspectionDirectory(currentResultsInspectionIndex("biopolitical"));
-  if (state.activeReview === "exports") html = renderExports();
-  if (state.activeReview !== "connections")
-    window.Jarbou3iRelationshipExplorer?.deactivate?.();
-  $("reviewContent").innerHTML = html;
-  $("reviewContent").setAttribute(
-    "aria-labelledby",
-    `bio-review-tab-${state.activeReview}`,
-  );
+  const sections = {
+    overview: renderBiopoliticalOverview,
+    pillars: renderBiopoliticalPillars,
+    connections: renderBiopoliticalConnections,
+    evidence: renderBiopoliticalEvidence,
+    conclusion: renderBiopoliticalConclusion,
+    inspection: () => renderInspectionDirectory(currentResultsInspectionIndex("biopolitical")),
+    exports: renderExports,
+  };
+  $("reviewContent").innerHTML = valid
+    .map((key) => caseSection(key, sections[key]()))
+    .join("");
+  wireCaseOutline("[data-bio-review]", "bioReview");
   wireResultsExplanation("biopolitical");
   bindResultsInspection("biopolitical");
-  if (state.activeReview === "connections") {
-    const mountRelationshipExplorer = () => {
-      const target = $("relationshipExplorerMount");
-      if (!target || state.activeReview !== "connections") return;
-      loadRelationshipExplorer()
-        .then((explorer) => {
-          const currentTarget = $("relationshipExplorerMount");
-          if (!currentTarget || state.activeReview !== "connections") return;
-          explorer.mount(
-            currentTarget,
-            currentBiopoliticalGraph(),
-            {
-              lang: state.lang,
-              analysis: state.analysis,
-              analysisScope:
-                state.analysis?.analysis_id || state.analysis?.subject?.title,
-              mobileDefault: window.matchMedia("(max-width: 760px)").matches,
-              onOpenNode: (node, trigger) => REFERENCE_UI.open(node.id, trigger),
-            },
-          );
-        })
-        .catch(() => {
-          const currentTarget = $("relationshipExplorerMount");
-          if (!currentTarget || state.activeReview !== "connections") return;
-          currentTarget.innerHTML = `<div class="warning" role="alert"><p>${escapeHtml(labelText("The relationship explorer could not be loaded.", "تعذّر تحميل مستكشف العلاقات.", "Impossible de charger l’explorateur de relations."))}</p><button type="button" class="secondary" data-retry-relationship-explorer>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
-          currentTarget
-            .querySelector("[data-retry-relationship-explorer]")
-            ?.addEventListener("click", mountRelationshipExplorer, { once: true });
-        });
-    };
-    mountRelationshipExplorer();
+  // The explorer's code and styles load once its section is near the view.
+  relationshipMountObserver?.disconnect();
+  const explorerMount = $("relationshipExplorerMount");
+  if (explorerMount) {
+    relationshipMountObserver = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) mountPendingRelationshipExplorer();
+    }, { rootMargin: "200px 0px" });
+    relationshipMountObserver.observe(explorerMount);
   }
   document.querySelectorAll("[data-bio-acc]").forEach(
     (button) =>
@@ -6646,10 +6723,9 @@ function renderReviewNav() {
   $("reviewNav").innerHTML = items
     .map(
       (k) =>
-        `<button id="review-tab-${k}" class="navBtn ${state.activeReview === k ? "active" : ""}" data-review="${k}" style="--navTone:${tones[k]}" type="button" role="tab" aria-controls="reviewContent" aria-selected="${state.activeReview === k ? "true" : "false"}" tabindex="${state.activeReview === k ? "0" : "-1"}"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${t("nav")[k]}</span><span class="navHint">${t("navHints")?.[k] || ""}</span></span>${counts[k] !== "" ? `<span class="badge">${counts[k]}</span>` : ""}</button>`,
+        `<button class="navBtn" data-review="${k}" style="--navTone:${tones[k]}" type="button"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${t("nav")[k]}</span><span class="navHint">${t("navHints")?.[k] || ""}</span></span>${counts[k] !== "" ? `<span class="badge">${counts[k]}</span>` : ""}</button>`,
     )
     .join("");
-  wireReviewTabs("[data-review]", "review", renderReview);
 }
 function renderReview() {
   if (!state.analysis) {
@@ -6668,27 +6744,19 @@ function renderReview() {
   if (!validTabs.includes(state.activeReview)) state.activeReview = "overview";
   $("reviewPanel").classList.remove("hide");
   renderReviewNav();
-  let html = "";
-  if (state.activeReview === "overview") html = renderOverview();
-  if (state.activeReview === "pillars") html = renderPillars();
-  if (state.activeReview === "contradictions") html = renderContradictions();
-  if (state.activeReview === "scenarios") html = renderScenarios();
-  if (state.activeReview === "evidence") html = renderEvidence();
-  if (state.activeReview === "inspection")
-    html = renderInspectionDirectory(currentResultsInspectionIndex("strategic"));
-  if (state.activeReview === "exports") html = renderExports();
-  if (!html) {
-    state.activeReview = "overview";
-    html = renderOverview();
-  }
-  const reviewContent = $("reviewContent");
-  if (reviewContent) {
-    reviewContent.innerHTML = html;
-    reviewContent.setAttribute(
-      "aria-labelledby",
-      `review-tab-${state.activeReview}`,
-    );
-  }
+  const sections = {
+    overview: renderOverview,
+    pillars: renderPillars,
+    contradictions: renderContradictions,
+    scenarios: renderScenarios,
+    evidence: renderEvidence,
+    inspection: () => renderInspectionDirectory(currentResultsInspectionIndex("strategic")),
+    exports: renderExports,
+  };
+  $("reviewContent").innerHTML = validTabs
+    .map((key) => caseSection(key, sections[key]()))
+    .join("");
+  wireCaseOutline("[data-review]", "review");
   wireResultsExplanation("strategic");
   bindResultsInspection("strategic");
   document.querySelectorAll("[data-acc]").forEach(
@@ -6804,6 +6872,15 @@ function setWorkspaceStatus(kind, message) {
     target.textContent = message;
   }
   APPLICATION_SHELL.render();
+  refreshWorkspaceLife();
+}
+
+// Another tab changed the workspace first, so the write was refused: the
+// banner and the save light say so until the latest version is loaded.
+function noteWriteConflict(error, workspace) {
+  if (error?.code !== "WRITE_CONFLICT" || !workspace) return;
+  state.workspaceConflict = workspace.workspace_id;
+  refreshWorkspaceLife();
 }
 
 function workspaceFailureMessage(error) {
@@ -6983,6 +7060,7 @@ async function openCanonicalEditor(workspace = null) {
   state.editorWorkspace = loaded;
   state.editorSession = createCanonicalEditorSession({ payload: loaded.working_draft.canonical_payload, validate: validateEditorPayload });
   state.editorPath = null;
+  editorCapture = null;
   const recovery = await RECOVERY_JOURNAL.inspect(loaded);
   state.editorRecovery = recovery.status === "recoverable" ? recovery.record : null;
   $("editorBackdrop").classList.add("show");
@@ -6993,12 +7071,25 @@ async function openCanonicalEditor(workspace = null) {
 
 function closeCanonicalEditor() {
   if (!$("editorBackdrop").classList.contains("show")) return;
-  if ((editorHasPendingInput() || state.editorSession?.inspect().dirty) && !window.confirm(editorText("closeDirty"))) return;
+  const discarding = editorHasPendingInput() || state.editorSession?.inspect().dirty;
+  if (discarding && !window.confirm(editorText("closeDirty"))) return;
   $("editorBackdrop").classList.remove("show");
   $("editorBackdrop").setAttribute("aria-hidden", "true");
   clearTimeout(editorRecoveryTimer);
+  const workspaceId = state.editorWorkspace?.workspace_id;
+  const capture = editorCapture;
+  editorCapture = null;
   state.editorSession = null; state.editorWorkspace = null; state.editorPath = null; state.editorRecovery = null;
-  $("workspaceBtn").focus();
+  $("workspaceSaveState").focus();
+  if (!discarding || !capture) {
+    refreshWorkspaceLife();
+    return;
+  }
+  // The edits were thrown away on purpose, so their recovery snapshot goes too.
+  capture
+    .then(() => RECOVERY_JOURNAL.discard(workspaceId))
+    .catch((error) => console.error("Editor recovery discard failed", operationDiagnostic(error, "editor_recovery_discard")))
+    .finally(refreshWorkspaceLife);
 }
 
 function editorHasPendingInput() {
@@ -7023,22 +7114,26 @@ function applyEditorField() {
 }
 
 let editorRecoveryTimer = null;
+// Set once the recovery journal holds this editor's edits (or is writing them).
+let editorCapture = null;
 function scheduleEditorRecovery() {
   clearTimeout(editorRecoveryTimer);
   if (!state.editorWorkspace || !state.editorSession) return;
-  editorRecoveryTimer = setTimeout(async () => {
+  editorRecoveryTimer = setTimeout(() => {
     const field = $("editorField");
-    try {
-      await RECOVERY_JOURNAL.capture({
-        workspace: state.editorWorkspace,
-        payload: state.editorSession.inspect().payload,
-        activePath: state.editorPath,
-        rawValue: field?.value || "",
-      });
-      $("editorRecoveryState").textContent = editorText("recoverySaved");
-    } catch (error) {
-      console.error("Editor recovery capture failed", operationDiagnostic(error, "editor_recovery_capture"));
-    }
+    editorCapture = (async () => {
+      try {
+        await RECOVERY_JOURNAL.capture({
+          workspace: state.editorWorkspace,
+          payload: state.editorSession.inspect().payload,
+          activePath: state.editorPath,
+          rawValue: field?.value || "",
+        });
+        $("editorRecoveryState").textContent = editorText("recoverySaved");
+      } catch (error) {
+        console.error("Editor recovery capture failed", operationDiagnostic(error, "editor_recovery_capture"));
+      }
+    })();
   }, 500);
 }
 
@@ -7054,6 +7149,8 @@ function restoreEditorRecovery() {
   state.editorSession.replace("/", recovery.canonical_payload);
   state.editorPath = recovery.active_path;
   state.editorRecovery = null;
+  // The journal's edits are now this editor's.
+  editorCapture = Promise.resolve();
 
   renderCanonicalEditor();
   $("editorField").value = recovery.raw_value;
@@ -7094,6 +7191,7 @@ async function saveEditorDraft() {
     setWorkspaceStatus("good", editorText("saved"));
     renderCanonicalEditor();
   } catch (error) {
+    noteWriteConflict(error, state.editorWorkspace);
     const message = workspaceFailureMessage(error);
     setWorkspaceStatus("bad", message);
     // Said in the editor too: the Workspaces dialog may be closed.
@@ -7251,7 +7349,7 @@ async function prepareSelectedRevisionRestore() {
     state.revisionHistory = null;
     state.revisionSelectedId = null;
     revisionDialogInvoker = null;
-    await openResolutionTransaction(prepared.workspace, $("workspaceBtn"), prepared.proposal);
+    await openResolutionTransaction(prepared.workspace, $("workspaceSaveState"), prepared.proposal);
   } catch (error) {
     revisionRestorePending = false;
     $("revisionStatus").className = "status bad";
@@ -7417,6 +7515,7 @@ async function commitResolutionTransaction() {
     setWorkspaceStatus("good", message);
   } catch (error) {
     resolutionCommitPending = false;
+    noteWriteConflict(error, state.resolutionWorkspace);
     $("resolutionStatus").className = "status bad";
     $("resolutionStatus").textContent = workspaceFailureMessage(error);
     updateResolutionCommitState();
@@ -7604,6 +7703,7 @@ async function applyReviewLedgerEvent() {
     APPLICATION_SHELL.render();
   } catch (error) {
     ledgerEventPending = false;
+    noteWriteConflict(error, state.ledgerWorkspace);
     await renderReviewLedger();
     $("ledgerStatus").className = "status bad";
     $("ledgerStatus").textContent = workspaceFailureMessage(error);
@@ -7686,7 +7786,10 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   // The reply kept for a reload now belongs with the analysis on screen.
   if (keepReply) keepTrip();
   state.workspaceSaveState = "saved";
+  // The version on screen is now the stored one.
+  if (state.workspaceConflict === workspace.workspace_id) state.workspaceConflict = null;
   renderAll();
+  refreshWorkspaceLife();
 }
 
 async function openStoredWorkspace(id, { announce = true, canApply = () => true } = {}) {
@@ -7716,7 +7819,7 @@ async function renderWorkspaceList() {
           const active = entry.workspace_id === state.activeWorkspaceId;
           const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" })
             .format(new Date(entry.metadata.updated_at));
-          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="actions"><button class="btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}<button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
+          return `<article class="workspaceRow${active ? " active" : ""}" data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="workspaceRowTitle">${escapeHtml(entry.metadata.title)}</p><div class="workspaceRowMeta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div><div class="actions">${active ? "" : `<button class="btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}`}<button class="btn" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}"${active ? " disabled" : ""}>${escapeHtml(workspaceText("open"))}</button></div></article>`;
         }).join("")
       : `<div class="empty"><strong>${escapeHtml(workspaceText("empty"))}</strong></div>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
@@ -7732,7 +7835,7 @@ async function renderWorkspaceList() {
       };
     });
     target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceEdit); if (!workspace) return; closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
-    target.querySelectorAll("[data-workspace-history]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceHistory); if (!workspace) return; closeWorkspaceDialog(); await openRevisionHistory(workspace, $("workspaceBtn")); }; });
+    target.querySelectorAll("[data-workspace-history]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceHistory); if (!workspace) return; closeWorkspaceDialog(); await openRevisionHistory(workspace, $("workspaceSaveState")); }; });
     // A damaged workspace cannot be opened, only removed; a second click removes it.
     target.querySelectorAll("[data-workspace-remove-damaged]").forEach((button) => {
       button.onclick = async () => {
@@ -7757,7 +7860,7 @@ async function renderWorkspaceList() {
         await renderWorkspaceList();
       };
     });
-    target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceBtn")); }; });
+    target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceSaveState")); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
     $("workspaceResetCurrent").disabled = !state.activeWorkspaceId;
   } catch (error) {
@@ -7768,7 +7871,8 @@ async function renderWorkspaceList() {
 
 async function openWorkspaceDialog(invoker = document.activeElement) {
   workspaceDialogInvoker = invoker;
-  $("workspaceDialogTitle").textContent = workspaceText("title");
+  $("workspaceDialogTitle").textContent = lifeText("where");
+  $("workspaceListTitle").textContent = lifeText("workspaces");
   $("workspaceDialogHint").textContent = workspaceText("hint");
   $("workspaceClose").setAttribute("aria-label", labelText(
     "Close local workspaces", "إغلاق مساحات العمل المحلية", "Fermer les espaces de travail locaux",
@@ -7782,6 +7886,7 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   $("workspaceBackdrop").setAttribute("aria-hidden", "false");
   // A save that failed stays shown until another one succeeds.
   if (state.workspaceSaveState !== "error") setWorkspaceStatus("good", workspaceText("ready"));
+  await refreshWorkspaceLife();
   await renderWorkspaceList();
   await renderStorageHealth();
   $("workspaceDialog").focus();
@@ -7794,6 +7899,159 @@ function closeWorkspaceDialog() {
   backdrop.setAttribute("aria-hidden", "true");
   if (workspaceDialogInvoker?.isConnected) workspaceDialogInvoker.focus();
   workspaceDialogInvoker = null;
+}
+
+// The work panel (UX-0): where the open workspace's work is. Three places stay
+// apart: a recovery snapshot that a reload interrupted, the saved working
+// draft, and the immutable revisions.
+function lifeText(key, values = {}) {
+  const copy = {
+    where: ["Where your work is", "أين عملك", "Où en est votre travail"],
+    whereHint: ["Three separate places, so nothing is lost or silently overwritten: the recovery snapshot, the working draft and the immutable revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء أو يُستبدل بصمت: لقطة الاسترداد، ومسودة العمل، والنسخ غير القابلة للتغيير.", "Trois emplacements distincts, pour que rien ne soit perdu ni écrasé en silence : l’instantané de récupération, le brouillon et les révisions immuables."],
+    snapTitle: ["Recovery snapshot", "لقطة الاسترداد", "Instantané de récupération"],
+    snapshot: ["Recovery found", "استرداد متاح", "Récupération"],
+    snapNone: ["None. No unsaved work was interrupted.", "لا توجد. لم يُقاطَع أي عمل غير محفوظ.", "Aucun. Aucun travail non enregistré n’a été interrompu."],
+    draftTitle: ["Working draft", "مسودة العمل", "Brouillon de travail"],
+    notCommitted: ["Not committed", "غير معتمد", "Non validé"],
+    uncommitted: ["Draft saved locally, not committed yet. Revision {n} is the current head.", "المسودة محفوظة محليًا ولم تُعتمد بعد. النسخة {n} هي النسخة الحالية.", "Brouillon enregistré localement, pas encore validé. La révision {n} est la tête actuelle."],
+    matchesHead: ["Matches revision {n}, the current head.", "تطابق النسخة {n}، وهي النسخة الحالية.", "Identique à la révision {n}, la tête actuelle."],
+    reviewCommit: ["Review and commit", "مراجعة واعتماد", "Examiner et valider"],
+    damagedOne: ["One saved workspace failed its integrity check. Nothing was loaded from it.", "فشلت مساحة عمل محفوظة في فحص السلامة. لم يُحمَّل منها أي شيء.", "Un espace enregistré a échoué au contrôle d’intégrité. Rien n’en a été chargé."],
+    damagedMany: ["Saved workspaces that failed their integrity check: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة فشلت في فحص السلامة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés ayant échoué au contrôle d’intégrité : {n}. Rien n’en a été chargé."],
+    reviewWorkspaces: ["Review workspaces", "مراجعة مساحات العمل", "Examiner les espaces"],
+    offline: ["You are offline. Everything here runs on this device; only the AI chat you paste the prompt into needs a connection.", "أنت غير متصل. كل ما هنا يعمل على هذا الجهاز؛ وحدها محادثة الذكاء الاصطناعي التي تلصق فيها البرومبت تحتاج إلى اتصال.", "Vous êtes hors ligne. Tout fonctionne sur cet appareil ; seul le chat d’IA où vous collez le prompt a besoin d’une connexion."],
+    workspaces: ["Workspaces", "مساحات العمل", "Espaces de travail"],
+    conflict: ["Conflict", "تعارض", "Conflit"],
+    reopen: ["Reopen workspace", "إعادة فتح مساحة العمل", "Rouvrir l’espace"],
+  }[key] || [key, key, key];
+  const template = state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
+  return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
+}
+
+let workspaceLifeSeq = 0;
+// Reads where the open workspace's work is, for the save light, the banners
+// and the work panel. The newest read wins.
+async function refreshWorkspaceLife() {
+  const seq = ++workspaceLifeSeq;
+  const life = { workspaceId: state.activeWorkspaceId, workspace: null, history: null, head: 0, uncommitted: false, snapshot: false, conflict: false, damaged: 0 };
+  try {
+    const entries = await WORKSPACE_REPOSITORY.list();
+    life.damaged = entries.filter((entry) => entry.integrity_status !== "verified").length;
+    const workspace = life.workspaceId ? await WORKSPACE_REPOSITORY.get(life.workspaceId) : null;
+    if (workspace) {
+      life.workspace = workspace;
+      life.history = await projectRevisionHistory(workspace);
+      life.head = life.history.revisions.find((revision) => revision.is_head)?.sequence || 0;
+      life.uncommitted = Boolean(workspace.working_draft?.dirty);
+      life.conflict = state.workspaceConflict === workspace.workspace_id;
+      // Edits in an open editor were not interrupted: they are on screen.
+      life.snapshot = !state.editorSession && (await RECOVERY_JOURNAL.inspect(workspace)).status === "recoverable";
+    }
+  } catch {
+    // A failed read leaves the save light on its save state.
+  }
+  if (seq !== workspaceLifeSeq) return;
+  state.workspaceLife = life;
+  APPLICATION_SHELL.render();
+  renderLifeBanners();
+  renderWorkLife();
+}
+
+const currentLife = () => (state.workspaceLife?.workspaceId === state.activeWorkspaceId ? state.workspaceLife : null);
+const lifeButton = (action, label, variant = "") =>
+  `<button class="j-btn" type="button" data-life-action="${action}"${variant ? ` data-variant="${variant}"` : ""}>${escapeHtml(label)}</button>`;
+const lifeStatus = (tone, label) => `<span class="j-status" data-tone="${tone}">${escapeHtml(label)}</span>`;
+
+function renderLifeBanners() {
+  const target = $("lifeBanners");
+  if (!target) return;
+  const life = currentLife();
+  const banner = (tone, title, text, actions) =>
+    `<div class="j-life-banner" data-tone="${tone}"><p>${title ? `<b>${escapeHtml(title)}</b> ` : ""}${escapeHtml(text)}</p>${actions ? `<div class="j-life-acts">${actions}</div>` : ""}</div>`;
+  const banners = [];
+  if (life?.conflict) {
+    banners.push(banner("crit", "", workspaceText("conflict"), lifeButton("reopen", lifeText("reopen"), "primary")));
+  }
+  if (life?.snapshot) {
+    banners.push(banner("warn", editorText("recoveryTitle"), editorText("recoveryHint"),
+      lifeButton("restore", editorText("restore"), "primary") + lifeButton("discard", editorText("discard")) + lifeButton("panel", lifeText("where"), "ghost")));
+  }
+  const damaged = state.workspaceLife?.damaged || 0;
+  if (damaged) {
+    banners.push(banner("crit", "", damaged === 1 ? lifeText("damagedOne") : lifeText("damagedMany", { n: damaged }), lifeButton("panel", lifeText("reviewWorkspaces"))));
+  }
+  if (!navigator.onLine) banners.push(banner("idle", "", lifeText("offline"), ""));
+  target.innerHTML = banners.join("");
+  target.hidden = !banners.length;
+}
+
+function renderWorkLife() {
+  const target = $("workLife");
+  if (!target) return;
+  const life = currentLife();
+  target.hidden = !life?.workspace;
+  if (!life?.workspace) {
+    target.innerHTML = "";
+    return;
+  }
+  const card = (title, body) => `<section class="j-card j-life-card"><h4 class="j-label">${escapeHtml(title)}</h4>${body}</section>`;
+  const snapshot = life.snapshot
+    ? `${lifeStatus("warn", lifeText("snapshot"))}<p>${escapeHtml(editorText("recoveryHint"))}</p><div class="j-life-acts">${lifeButton("restore", editorText("restore"), "primary")}${lifeButton("discard", editorText("discard"))}</div>`
+    : `<p class="j-life-help">${escapeHtml(lifeText("snapNone"))}</p>`;
+  const draft = life.conflict
+    ? `${lifeStatus("crit", lifeText("conflict"))}<p>${escapeHtml(workspaceText("conflict"))}</p><div class="j-life-acts">${lifeButton("reopen", lifeText("reopen"), "primary")}</div>`
+    : life.uncommitted
+    ? `${lifeStatus("idle", lifeText("notCommitted"))}<p>${escapeHtml(lifeText("uncommitted", { n: life.head }))}</p><div class="j-life-acts">${lifeButton("commit", lifeText("reviewCommit"), "primary")}${lifeButton("edit", editorText("edit"))}</div>`
+    : `${lifeStatus("ok", editorText("clean"))}<p>${escapeHtml(lifeText("matchesHead", { n: life.head }))}</p><div class="j-life-acts">${lifeButton("edit", editorText("edit"))}</div>`;
+  const revisions = [...life.history.revisions].reverse().map((revision) =>
+    `<li><b>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</b><span class="j-chip">${escapeHtml(revisionKindText(revision.kind))}</span>${revision.is_head ? lifeStatus("ok", revisionText("head")) : ""}</li>`).join("");
+  target.innerHTML = `<p class="j-life-help">${escapeHtml(lifeText("whereHint"))}</p><div class="j-life-grid">${
+    card(lifeText("snapTitle"), snapshot)}${
+    card(lifeText("draftTitle"), draft)}${
+    card(revisionText("revisions"), `<p class="j-life-help">${escapeHtml(revisionText("trust"))}</p><ol class="j-life-revs">${revisions}</ol><div class="j-life-acts">${lifeButton("history", revisionText("title"))}</div>`)
+  }</div>`;
+}
+
+// Each place's actions go to the views that already do them.
+async function runLifeAction(button) {
+  const action = button.dataset.lifeAction;
+  if (action === "panel") {
+    await openWorkspaceDialog(button);
+    return;
+  }
+  const inPanel = Boolean(button.closest("#workspaceDialog"));
+  const workspace = await rowWorkspace(state.activeWorkspaceId);
+  if (!workspace) return;
+  if (action === "discard") {
+    try {
+      await RECOVERY_JOURNAL.discard(workspace.workspace_id);
+      setWorkspaceStatus("good", editorText("discarded"));
+    } catch (error) {
+      setWorkspaceStatus("bad", workspaceFailureMessage(error));
+    }
+    // The button goes with the snapshot; focus stays where the reader was.
+    (inPanel ? $("workspaceDialog") : $("workspaceSaveState")).focus();
+    return;
+  }
+  if (action === "reopen") {
+    // The stored version replaces the one on screen; a reply pasted but not
+    // imported stays.
+    applyWorkspaceAnalysis(workspace, { keepPendingReply: true });
+    setWorkspaceStatus("good", workspaceText("opened"));
+    (inPanel ? $("workspaceDialog") : $("workspaceSaveState")).focus();
+    return;
+  }
+  closeWorkspaceDialog();
+  if (action === "restore") {
+    await openCanonicalEditor(workspace);
+    restoreEditorRecovery();
+  } else if (action === "edit") {
+    await openCanonicalEditor(workspace);
+  } else if (action === "commit") {
+    await openResolutionTransaction(workspace, $("workspaceSaveState"));
+  } else if (action === "history") {
+    await openRevisionHistory(workspace, $("workspaceSaveState"));
+  }
 }
 
 function trapWorkspaceFocus(event) {
@@ -8079,6 +8337,8 @@ bindRadioGroupKeyboard("#analysisLens [role=radio]", (button) =>
 $("themeBtn").onclick = () =>
   setTheme(!document.body.classList.contains("dark"));
 APPLICATION_SHELL.bind();
+createCommandPalette({ document, translate: t }).bind();
+GUIDED_FLOW.bind();
 $("copyPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
   state.topic = $("topicInput").value.trim();
@@ -8123,6 +8383,7 @@ $("previewPromptBtn").onclick = (event) => {
 $("editTopicBtn").onclick = () => {
   state.stage = "topic";
   state.shellSection = "workflow";
+  GUIDED_FLOW.go("topic", { focus: true });
   renderAll();
 };
 $("jsonInput").addEventListener("input", () => {
@@ -8251,7 +8512,14 @@ $("loadSampleBtn").onclick = async (event) => {
   }
 };
 $("modalClose").onclick = closeModal;
-$("workspaceBtn").onclick = (event) => openWorkspaceDialog(event.currentTarget);
+$("workspaceSaveState").onclick = (event) => openWorkspaceDialog(event.currentTarget);
+["lifeBanners", "workLife"].forEach((id) => $(id).addEventListener("click", (event) => {
+  const button = event.target.closest("[data-life-action]");
+  if (button) runLifeAction(button);
+}));
+window.addEventListener("online", renderLifeBanners);
+window.addEventListener("offline", renderLifeBanners);
+refreshWorkspaceLife();
 $("workspaceClose").onclick = closeWorkspaceDialog;
 $("workspaceExport").onclick = exportActiveWorkspace;
 $("workspaceImport").onclick = () => {
@@ -8285,6 +8553,7 @@ $("workspaceResetCurrent").onclick = async () => {
     state.analysis = null;
     state.stage = "topic";
     state.shellSection = "workflow";
+    GUIDED_FLOW.go("topic");
     state.workspaceSaveState = "idle";
     writeSettings({ activeWorkspaceId: null });
     resetCurrentArmedUntil = 0;
@@ -8324,6 +8593,7 @@ $("workspaceResetAll").onclick = async () => {
     state.analysis = null;
     state.stage = "topic";
     state.shellSection = "workflow";
+    GUIDED_FLOW.go("topic");
     state.workspaceSaveState = "idle";
     resetAllArmedUntil = 0;
     button.dataset.armed = "false";
@@ -8356,7 +8626,7 @@ $("editorRecoveryDiscard").onclick = discardEditorRecovery;
 $("editorResolve").onclick = async (event) => {
   const workspace = state.editorWorkspace;
   closeCanonicalEditor();
-  await openResolutionTransaction(workspace, $("workspaceBtn"));
+  await openResolutionTransaction(workspace, $("workspaceSaveState"));
 };
 $("editorField").addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); applyEditorField(); }

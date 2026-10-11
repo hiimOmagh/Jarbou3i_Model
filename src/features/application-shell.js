@@ -31,6 +31,8 @@ export function createApplicationShell({
   translate,
   localize,
   renderRegion,
+  // Shows a control that sits in a hidden step before it is focused.
+  reveal = () => {},
   requestFrame = globalThis.requestAnimationFrame?.bind(globalThis),
   reducedMotion = () =>
     globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
@@ -115,26 +117,6 @@ export function createApplicationShell({
     if (byId("shellNextActionLabel")) {
       byId("shellNextActionLabel").textContent = commandLabel;
     }
-    const nextIcon = nextAction?.querySelector(".shellNextActionIcon");
-    if (nextIcon) nextIcon.textContent = state.lang === "ar" ? "←" : "→";
-    if (byId("workspaceButtonLabel")) {
-      byId("workspaceButtonLabel").textContent = localize(
-        "Workspaces",
-        "مساحات العمل",
-        "Espaces de travail",
-      );
-    }
-    if (byId("workspaceBtn")) {
-      byId("workspaceBtn").setAttribute(
-        "aria-label",
-        localize(
-          "Open local workspaces",
-          "فتح مساحات العمل المحلية",
-          "Ouvrir les espaces de travail locaux",
-        ),
-      );
-    }
-
     const saveLabels = {
       idle: localize(
         "No saved workspace",
@@ -156,14 +138,45 @@ export function createApplicationShell({
         "الحفظ المحلي يحتاج مراجعة",
         "L’enregistrement local exige une vérification",
       ),
+      // A saved workspace can still hold work that is not in a revision.
+      uncommitted: localize("Not committed", "غير معتمد", "Non validé"),
+      snapshot: localize("Recovery found", "استرداد متاح", "Récupération"),
+      // Another tab changed the workspace; a write was refused.
+      conflict: localize("Conflict", "تعارض", "Conflit"),
     };
+    // The save light: where the work is, and the way to the work panel.
     const workspaceSaveState = byId("workspaceSaveState");
     if (workspaceSaveState) {
       const currentSaveState = state.workspaceSaveState || "idle";
+      // Only what was read for the workspace open now.
+      const life = (state.workspaceLife?.workspaceId === state.activeWorkspaceId && state.workspaceLife) || {};
+      const lifeState = life.conflict ? "conflict" : currentSaveState !== "saved" ? "" : life.snapshot ? "snapshot" : life.uncommitted ? "uncommitted" : "";
       workspaceSaveState.textContent =
-        saveLabels[currentSaveState] || saveLabels.idle;
+        saveLabels[lifeState || currentSaveState] || saveLabels.idle;
       workspaceSaveState.dataset.state =
         currentSaveState === "idle" ? "empty" : currentSaveState;
+      if (lifeState) workspaceSaveState.dataset.life = lifeState;
+      else delete workspaceSaveState.dataset.life;
+      // The kernel status shows the state by shape and colour as well as text.
+      workspaceSaveState.dataset.tone = lifeState === "snapshot"
+        ? "warn"
+        : lifeState === "uncommitted"
+          ? "idle"
+          : lifeState === "conflict"
+            ? "crit"
+            : { saved: "ok", error: "crit" }[currentSaveState] || "idle";
+      workspaceSaveState.setAttribute(
+        "aria-label",
+        `${localize("Where your work is", "أين عملك", "Où en est votre travail")}: ${workspaceSaveState.textContent}`,
+      );
+    }
+    // Global context: the case open now.
+    const caseTitle = byId("shellCaseTitle");
+    if (caseTitle) {
+      const title = String(state.analysis?.subject?.title || "").trim();
+      caseTitle.textContent = title;
+      caseTitle.title = title;
+      caseTitle.hidden = !title;
     }
   }
 
@@ -189,7 +202,10 @@ export function createApplicationShell({
         behavior: reducedMotion() ? "auto" : "smooth",
         block: "start",
       });
-      if (focusTarget) byId(focusTarget)?.focus({ preventScroll: true });
+      if (focusTarget) {
+        reveal(focusTarget);
+        byId(focusTarget)?.focus({ preventScroll: true });
+      }
       if (announce && byId("shellAnnouncement")) {
         byId("shellAnnouncement").textContent = translate(
           SHELL_ANNOUNCEMENTS[section],

@@ -563,19 +563,20 @@
     limited_capture: ["استحواذ محدود", "Capture limitée"],
     mixed_capture: ["استحواذ مختلط", "Capture mixte"],
     substantial_capture: ["استحواذ جوهري", "Capture substantielle"],
-    knowledge_deficit: ["عجز معرفي", "Déficit de connaissance"],
-    consent_failure: ["فشل الموافقة", "Défaillance du consentement"],
-    vulnerability_exploitation: ["استغلال الهشاشة", "Exploitation de la vulnérabilité"],
-    unequal_distribution: ["توزيع غير متكافئ", "Distribution inégale"],
-    disproportionate_power_or_profit: ["قوة أو ربح غير متناسب", "Pouvoir ou profit disproportionné"],
-    dependency_or_costly_exit: ["تبعية أو خروج مكلف", "Dépendance ou sortie coûteuse"],
-    alternatives_suppressed: ["قمع البدائل", "Alternatives supprimées"],
-    behavior_optimized_without_oversight: ["تحسين السلوك دون رقابة", "Comportement optimisé sans contrôle"],
-    choice_architecture_constraint: ["تقييد بنية الاختيار", "Contrainte de l’architecture du choix"],
-    data_repurposing: ["إعادة توظيف البيانات", "Réutilisation des données"],
-    human_capacity_commercialized: ["تسليع القدرة الإنسانية", "Commercialisation d’une capacité humaine"],
-    classification_not_contestable: ["تصنيف غير قابل للطعن", "Classification non contestable"],
-    environmental_unavoidability: ["حتمية بيئية", "Inévitabilité environnementale"],
+    // Capture criteria carry an English label too: their keys are compressed phrases.
+    knowledge_deficit: ["عجز معرفي", "Déficit de connaissance", "Knowledge deficit"],
+    consent_failure: ["فشل الموافقة", "Défaillance du consentement", "Consent failure"],
+    vulnerability_exploitation: ["استغلال الهشاشة", "Exploitation de la vulnérabilité", "Exploitation of vulnerability"],
+    unequal_distribution: ["توزيع غير متكافئ", "Distribution inégale", "Unequal distribution"],
+    disproportionate_power_or_profit: ["قوة أو ربح غير متناسب", "Pouvoir ou profit disproportionné", "Disproportionate power or profit"],
+    dependency_or_costly_exit: ["تبعية أو خروج مكلف", "Dépendance ou sortie coûteuse", "Dependency or costly exit"],
+    alternatives_suppressed: ["قمع البدائل", "Alternatives supprimées", "Alternatives suppressed"],
+    behavior_optimized_without_oversight: ["تحسين السلوك دون رقابة", "Comportement optimisé sans contrôle", "Behavior optimized without oversight"],
+    choice_architecture_constraint: ["تقييد بنية الاختيار", "Contrainte de l’architecture du choix", "Constrained choice architecture"],
+    data_repurposing: ["إعادة توظيف البيانات", "Réutilisation des données", "Data repurposing"],
+    human_capacity_commercialized: ["تسليع القدرة الإنسانية", "Commercialisation d’une capacité humaine", "Human capacity commercialized"],
+    classification_not_contestable: ["تصنيف غير قابل للطعن", "Classification non contestable", "Classification not contestable"],
+    environmental_unavoidability: ["حتمية بيئية", "Inévitabilité environnementale", "Environmental unavoidability"],
     care_control_tension: ["توتر الرعاية والسيطرة", "Tension soin-contrôle"],
     consent: ["الموافقة", "Consentement"],
     distribution: ["توزيع", "Distribution"],
@@ -673,25 +674,26 @@
     alternative_institution: ["مؤسسة بديلة", "Institution alternative"],
   };
 
+  // [Arabic, French, English]: the keys are compressed sentences, so English needs its own label too.
   const AUDIT_LABELS = {
-    malicious_intent_without_evidence: ["نسبة نية خبيثة دون دليل", "Intention malveillante attribuée sans preuve"],
-    institutional_claims_uncritically: ["قبول الادعاءات المؤسسية بلا نقد", "Énoncés institutionnels acceptés sans critique"],
-    metaphor_as_mechanism: ["معاملة الاستعارة كآلية", "Métaphore traitée comme mécanisme"],
-    human_function_identified: ["تحديد الوظيفة الإنسانية", "Fonction humaine identifiée"],
-    mechanism_explained: ["شرح الآلية", "Mécanisme expliqué"],
-    care_control_overlap: ["فحص تداخل الرعاية والسيطرة", "Chevauchement soin-contrôle examiné"],
-    material_and_meaning: ["فحص المادة والمعنى", "Dimensions matérielle et symbolique examinées"],
-    history_included: ["إدراج التاريخ", "Histoire incluse"],
-    political_economy_included: ["إدراج الاقتصاد السياسي", "Économie politique incluse"],
-    inequality_dimensions: ["فحص أبعاد اللامساواة", "Dimensions d’inégalité examinées"],
-    agency_resistance: ["فحص الفاعلية والمقاومة", "Agentivité et résistance examinées"],
-    competing_explanations: ["فحص التفسيرات المتنافسة", "Explications concurrentes examinées"],
-    statistics_quotations_verified: ["التحقق من الإحصاءات والاقتباسات", "Statistiques et citations vérifiées"],
-    uncertainty_stated: ["بيان عدم اليقين", "Incertitude explicitée"],
-    benefits_costs_identified: ["تحديد المنافع والتكاليف", "Bénéfices et coûts identifiés"],
-    realistic_alternatives: ["تقديم بدائل واقعية", "Alternatives réalistes proposées"],
-    stigmatization_risk_checked: ["فحص خطر الوصم", "Risque de stigmatisation vérifié"],
-    falsifier_identified: ["تحديد شروط الإبطال", "Réfutateurs identifiés"],
+    malicious_intent_without_evidence: ["نسبة نية خبيثة دون دليل", "Intention malveillante attribuée sans preuve", "Malicious intent attributed without evidence"],
+    institutional_claims_uncritically: ["قبول الادعاءات المؤسسية بلا نقد", "Énoncés institutionnels acceptés sans critique", "Institutional claims accepted uncritically"],
+    metaphor_as_mechanism: ["معاملة الاستعارة كآلية", "Métaphore traitée comme mécanisme", "Metaphor treated as mechanism"],
+    human_function_identified: ["تحديد الوظيفة الإنسانية", "Fonction humaine identifiée", "Human function identified"],
+    mechanism_explained: ["شرح الآلية", "Mécanisme expliqué", "Mechanism explained"],
+    care_control_overlap: ["فحص تداخل الرعاية والسيطرة", "Chevauchement soin-contrôle examiné", "Care–control overlap examined"],
+    material_and_meaning: ["فحص المادة والمعنى", "Dimensions matérielle et symbolique examinées", "Material and symbolic dimensions examined"],
+    history_included: ["إدراج التاريخ", "Histoire incluse", "History included"],
+    political_economy_included: ["إدراج الاقتصاد السياسي", "Économie politique incluse", "Political economy included"],
+    inequality_dimensions: ["فحص أبعاد اللامساواة", "Dimensions d’inégalité examinées", "Inequality dimensions examined"],
+    agency_resistance: ["فحص الفاعلية والمقاومة", "Agentivité et résistance examinées", "Agency and resistance examined"],
+    competing_explanations: ["فحص التفسيرات المتنافسة", "Explications concurrentes examinées", "Competing explanations examined"],
+    statistics_quotations_verified: ["التحقق من الإحصاءات والاقتباسات", "Statistiques et citations vérifiées", "Statistics and quotations verified"],
+    uncertainty_stated: ["بيان عدم اليقين", "Incertitude explicitée", "Uncertainty stated"],
+    benefits_costs_identified: ["تحديد المنافع والتكاليف", "Bénéfices et coûts identifiés", "Benefits and costs identified"],
+    realistic_alternatives: ["تقديم بدائل واقعية", "Alternatives réalistes proposées", "Realistic alternatives proposed"],
+    stigmatization_risk_checked: ["فحص خطر الوصم", "Risque de stigmatisation vérifié", "Stigmatization risk checked"],
+    falsifier_identified: ["تحديد شروط الإبطال", "Réfutateurs identifiés", "Falsifiers identified"],
   };
 
   const arr = (value) => (Array.isArray(value) ? value : []);
@@ -770,6 +772,7 @@
     const translated = TOKEN_LABELS[token];
     if (lang === "ar" && translated) return translated[0];
     if (lang === "fr" && translated) return translated[1];
+    if (translated?.[2]) return translated[2];
     return humanizeToken(token);
   }
 
@@ -786,6 +789,7 @@
     const translated = AUDIT_LABELS[key];
     if (lang === "ar" && translated) return translated[0];
     if (lang === "fr" && translated) return translated[1];
+    if (translated) return translated[2];
     return humanizeToken(key);
   }
 
@@ -1052,182 +1056,6 @@
     return sanitizePortableValue(out);
   }
 
-  function migrateLegacy(raw) {
-    const source = object(raw);
-    const out = baseAnalysis(source);
-    out.schema_version = DRAFT_SCHEMA_VERSION;
-    out.analysis_contract = DRAFT_CONTRACT;
-    out.contract_status = "migrated_draft";
-    const subject = object(source.subject);
-    out.subject = {
-      title: str(subject.title),
-      context: str(subject.context),
-      research_question: str(subject.question),
-      executive_finding: str(subject.executive_thesis),
-    };
-    out.framing.official_problem_definition = arr(source.interests)
-      .map((item) => item.name || item.rationale)
-      .filter(Boolean)
-      .join(" · ");
-    out.framing.critical_problem_definition = str(subject.executive_thesis);
-    out.framing.historical_context.summary = str(subject.context);
-    out.human_functions = arr(source.interests).map((item, index) => ({
-      id: item.id || `HF${index + 1}`,
-      domain: item.type === "health" ? "biological" : "social_relational",
-      name: item.name || `Legacy function ${index + 1}`,
-      scientific_definition: "",
-      lived_context: item.rationale || "",
-      governed_variation: "",
-      authority_defining_normality: "",
-      refusal_conditions: "",
-      confidence: item.confidence || "low",
-      legacy_source: "interests",
-    }));
-    out.power_map.affected_populations = arr(source.actors).map(
-      (item, index) => ({
-        id: item.id || `POP${index + 1}`,
-        name: item.name || `Legacy population ${index + 1}`,
-        classification: item.rationale || "",
-        exposure: [],
-        benefits: [],
-        burdens: [],
-        agency: "",
-        missing_from_record: false,
-        confidence: item.confidence || "low",
-        legacy_source: "actors",
-      }),
-    );
-    out.mechanisms.instruments = arr(source.tools).map((item, index) => ({
-      id: item.id || `INS${index + 1}`,
-      name: item.name || `Legacy instrument ${index + 1}`,
-      type: item.type || "other",
-      mechanism: item.rationale || "",
-      scale: [],
-      stated_purpose: "",
-      ownership: "",
-      oversight: "",
-      confidence: item.confidence || "low",
-      legacy_source: "tools",
-    }));
-    out.meaning_systems.norms = arr(source.narrative).map((item, index) => ({
-      id: item.id || `NORM${index + 1}`,
-      name: item.name || `Legacy norm ${index + 1}`,
-      definition: item.rationale || "",
-      authority: "",
-      subject_position: "",
-      alternatives: [],
-      confidence: item.confidence || "low",
-      legacy_source: "narrative",
-    }));
-    out.distribution.items = arr(source.results).map((item, index) => ({
-      id: item.id || `DIST${index + 1}`,
-      population_id: "",
-      name: item.name || `Legacy outcome ${index + 1}`,
-      benefits: [],
-      burdens: [item.rationale || ""].filter(Boolean),
-      axes: [],
-      scale: [],
-      time_horizon: "",
-      confidence: item.confidence || "low",
-      legacy_source: "results",
-    }));
-    out.resistance_agency.items = arr(source.feedback).map((item, index) => ({
-      id: item.id || `RES${index + 1}`,
-      actor_or_population: "",
-      form: item.description || `Legacy feedback ${index + 1}`,
-      mechanism: item.rationale || "",
-      effect_on_system: item.adapts || "",
-      constraints: [],
-      confidence: item.confidence || "low",
-      legacy_source: "feedback",
-    }));
-    out.intervention_assessment.interventions = out.mechanisms.instruments.map(
-      (item, index) => ({
-        id: `IV${index + 1}`,
-        name: item.name,
-        target_function_ids: out.human_functions.map((x) => x.id),
-        actor_ids: [],
-        instrument_ids: [item.id],
-        modality: "undetermined",
-        stated_benefit: "",
-        evidence_of_benefit: [],
-        documented_harms: [],
-        necessity: "unknown",
-        proportionality: "unknown",
-        dependency_created: "unknown",
-        consent: "unknown",
-        exit: "unknown",
-        contestability: "unknown",
-        confidence: "low",
-      }),
-    );
-    const contradictions = arr(object(source.contradictions).items);
-    out.intervention_assessment.care_control_tensions = contradictions.map(
-      (item, index) => ({
-        id: item.id || `TENSION${index + 1}`,
-        care_claim: item.rhetoric || "",
-        control_effects: arr(item.actions),
-        interpretation: item.interpretation || "",
-        severity: item.severity || "",
-        confidence: item.confidence || "low",
-      }),
-    );
-    const scenarios = arr(object(source.scenarios).items);
-    out.scale_time.future_feedback_loops = scenarios.map((item, index) => ({
-      id: item.id || `LOOP${index + 1}`,
-      name: item.name || "",
-      timeframe: item.timeframe || "",
-      drivers: arr(item.drivers),
-      early_signals: arr(item.early_signals),
-      falsified_if: arr(item.disproven_if),
-      rationale: item.rationale || "",
-      probability: item.probability,
-    }));
-    out.evidence = {
-      items: arr(object(source.evidence).items).map((item, index) => ({
-        id: item.id || `E${index + 1}`,
-        claim: item.claim || "",
-        epistemic_type: item.basis || "source_based",
-        source_tier: item.source_type || "reputable_organization_report",
-        source_title: item.source_title || "",
-        source_url: item.source_url || "",
-        source_date: item.source_date || "",
-        geography: "",
-        population: "",
-        measurement_method: "",
-        denominator: "",
-        uncertainty: item.uncertainty || "",
-        limitations: item.source_note || "",
-        counter_evidence: item.counter_evidence || "",
-        confidence: item.confidence || "low",
-        legacy_source: "evidence",
-      })),
-    };
-    out.assumptions = { items: arr(object(source.assumptions).items) };
-    out.links = arr(source.links);
-    out.calibrated_conclusion.plausible_unconfirmed = [
-      out.subject.executive_finding,
-    ].filter(Boolean);
-    out.calibrated_conclusion.unknown = [
-      "Legacy data does not separate governing actors from affected populations.",
-      "Consent, exit, political economy, infrastructure, and competing explanations require new analysis.",
-    ];
-    out.calibrated_conclusion.evidence_that_would_change = out.assumptions.items
-      .map((item) => item.disproving_test)
-      .filter(Boolean);
-    out.migration = {
-      from_schema: str(source.schema_version || LEGACY_SCHEMA_VERSION),
-      adapter: "legacy-six-layer-to-biopolitical-draft-v1",
-      warnings: [
-        "Governing actors cannot be inferred from the legacy population field.",
-        "Intervention modality remains undetermined until evidence is supplied.",
-        "Missing v2.1 pillars are intentionally surfaced by the readiness gate.",
-      ],
-      canonical_target: `${APP_CONTRACT}@${SCHEMA_VERSION}`,
-    };
-    return sanitizePortableValue(out);
-  }
-
   function route(raw) {
     const source = object(raw);
     const lens = source.analysis_lens || source.analysisLens;
@@ -1259,8 +1087,10 @@
       Array.isArray(source.interests) ||
       Array.isArray(source.actors) ||
       Array.isArray(source.tools);
+    // The six-layer v1 format is recognised only to be refused: an answer in it
+    // comes from an old prompt and must be generated again.
     if (source.schema_version === LEGACY_SCHEMA_VERSION && legacyShape) {
-      return { kind: "legacy", supported: true };
+      return { kind: "legacy", supported: false, schema_version: str(source.schema_version), analysis_contract: str(source.analysis_contract) };
     }
     return {
       kind: "unsupported",
@@ -1273,7 +1103,6 @@
   function normalize(raw) {
     const source = object(raw);
     const routed = route(source);
-    if (routed.kind === "legacy") return migrateLegacy(source);
     if (["canonical", "migrated_draft", "generated_draft"].includes(routed.kind)) {
       return normalizeV2(source);
     }
@@ -3581,8 +3410,11 @@ ${schema}${interchangeGuide}`;
         ...a.links.map((item) =>
           record(
             // Both ends read in the analysis's direction; the marks keep IDs
-            // that name no record, left as Latin text, right to left.
-            `${item.from} ${lang === "ar" ? "\u200F←\u200F" : "→"} ${item.to}`,
+            // that name no record, left as Latin text, right to left. A missing
+            // end reads "—"; a link with no ends has no title, like any empty entry.
+            filled(item.from) || filled(item.to)
+              ? `${filled(item.from) ? item.from : "—"} ${lang === "ar" ? "\u200F←\u200F" : "→"} ${filled(item.to) ? item.to : "—"}`
+              : "",
             item.mechanism,
             ["causal_link", item.relation, item.confidence],
           ),
@@ -4927,7 +4759,6 @@ ${schema}${interchangeGuide}`;
     countNonPortableCitationMarkers,
     route,
     normalize,
-    migrateLegacy,
     hasSubstance,
     buildSchemaTemplate,
     unsourcedPlaceholder,

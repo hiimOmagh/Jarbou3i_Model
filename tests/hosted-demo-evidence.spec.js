@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
+import { openStep } from "./helpers/guided-flow.js";
 const EVIDENCE_DIR = process.env.HOSTED_DEMO_EVIDENCE_DIR || 'hosted-demo-evidence-local';
 const CAPTURE_TARGET = process.env.PLAYWRIGHT_BASE_URL?.trim() ? 'deployed' : 'local-test-server';
 const languageButtons = {
@@ -46,7 +47,7 @@ async function captureScreenshot(page, testInfo, fileName) {
 }
 
 async function waitForVisualAssets(page) {
-  const mascot = page.locator('.welcomeMascot');
+  const mascot = page.locator('.j-flow-mascot img');
   await expect.poll(() => mascot.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   await mascot.evaluate((image) => image.decode?.());
 }
@@ -77,9 +78,9 @@ test.describe('Hosted demo public UI evidence', () => {
   test('captures public UI evidence and visible text snapshots', async ({ page }, testInfo) => {
     await page.goto('./');
     await waitForVisualAssets(page);
-    await expect(page.locator('#copyPromptBtn')).toBeVisible();
+    await expect(page.locator('#loadSampleBtn')).toBeVisible();
     await expect(page.locator('meta[name="app-version"]')).toHaveAttribute('content', EXPECTED_VERSION);
-    await expect(page.locator('#analysisLens')).toBeVisible();
+    await expect(page.locator('[data-flow-step="lens"]')).toBeVisible();
     await expect(page.locator('[data-lens="strategic"]')).toHaveAttribute('aria-checked', 'true');
 
     if (testInfo.project.name === 'chromium') {
@@ -91,6 +92,7 @@ test.describe('Hosted demo public UI evidence', () => {
       await page.evaluate(() => window.scrollTo(0, 0));
       await captureScreenshot(page, testInfo, 'strategic-mode.png');
 
+      await openStep(page, "lens");
       await page.locator('[data-lens="biopolitical"]').click();
       await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute('aria-checked', 'true');
       await expect(page.locator('h1')).toContainText('Biopolitical');

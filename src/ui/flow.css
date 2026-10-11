@@ -1,0 +1,118 @@
+/* Jarbou3i guided flow (ADR-0002): the setup phase as the UX-0 prototype's
+   steps, one at a time, with the guide beside them. Classes are .j-flow-*,
+   layout and look only; the kernel contracts apply to every control inside. */
+
+.j-flow {
+  display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--j-s-5);
+  align-items: start; padding: var(--j-s-4); margin-bottom: var(--j-s-4);
+  border: 1px solid var(--j-line); border-radius: var(--j-r-3);
+}
+
+/* ---------- Guide: the mascot, the steps, a sample ---------- */
+.j-flow-guide { position: sticky; top: var(--j-s-4); display: grid; gap: var(--j-s-4); align-content: start; }
+.j-flow-mascot { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
+.j-flow-mascot img {
+  width: 72px; height: 72px; display: block; border-radius: var(--j-r-3);
+  border: 1px solid var(--j-line-strong); background: var(--j-panel-2);
+  /* No idle bob: an endless animation here cut WebKit to 2–6 frames a second. */
+}
+.j-flow-say {
+  padding: var(--j-s-3) var(--j-s-4); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-3);
+  border-start-start-radius: var(--j-r-1); background: var(--j-panel); font-size: var(--j-t-14);
+}
+/* Not colour alone: the bubble's edge changes and the mascot stops to react. */
+.j-flow-guide:not([data-mood="idle"]) .j-flow-mascot img { animation: j-flow-pop var(--j-dur-3) var(--j-ease-out); }
+.j-flow-guide[data-mood="ok"] .j-flow-say { border-color: var(--j-ok); }
+.j-flow-guide:is([data-mood="warn"], [data-mood="trunc"]) .j-flow-say { border-color: var(--j-warn); }
+.j-flow-guide[data-mood="crit"] .j-flow-say { border-color: var(--j-crit); border-width: 2px; }
+
+.j-flow-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.j-flow-step {
+  display: flex; align-items: center; gap: var(--j-s-3); width: 100%;
+  min-height: 40px; padding: 0 var(--j-s-2); border: 0; border-radius: var(--j-r-2);
+  background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-14); text-align: start;
+}
+.j-flow-step:hover { background: var(--j-raise); color: var(--j-fg); }
+.j-flow-step-n {
+  width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid var(--j-line-strong); font: 600 var(--j-t-12)/1 var(--j-font-data);
+}
+.j-flow-step[data-state="done"] .j-flow-step-n { background: var(--j-signal-wash); border-color: var(--j-signal); color: var(--j-signal); }
+.j-flow-step[aria-current="step"] { background: var(--j-panel); color: var(--j-fg); font-weight: 600; }
+.j-flow-step[aria-current="step"] .j-flow-step-n { background: var(--j-signal); border-color: var(--j-signal); color: var(--j-on-signal); }
+
+/* ---------- The step ---------- */
+.j-flow-card {
+  display: grid; gap: var(--j-s-5); min-width: 0; padding: var(--j-s-6);
+  background: var(--j-panel); border: 1px solid var(--j-line); border-radius: var(--j-r-3);
+}
+.j-flow-head { display: grid; gap: var(--j-s-2); }
+.j-flow-head .j-label { color: var(--j-signal); }
+.j-flow-head h2 { font-size: var(--j-t-28); line-height: 1.2; font-weight: 700; }
+.j-flow-head p { color: var(--j-fg-muted); font-size: var(--j-t-16); max-width: 60ch; }
+.j-flow-panel { display: grid; gap: var(--j-s-4); min-width: 0; animation: j-flow-in var(--j-dur-2) var(--j-ease-out); }
+.j-flow-topic { min-height: 96px; font-size: var(--j-t-16); }
+.j-flow-answer { min-height: 220px; font-family: var(--j-font-data); font-size: var(--j-t-13); }
+
+.j-flow-examples { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); color: var(--j-fg-muted); font-size: var(--j-t-13); }
+.j-flow-example-list { display: contents; }
+.j-flow-example {
+  min-height: 36px; padding: 0 var(--j-s-3); border: 1px dashed var(--j-line-strong); border-radius: 999px;
+  background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-13);
+}
+.j-flow-example:hover { border-style: solid; border-color: var(--j-signal); color: var(--j-fg); }
+
+.j-flow-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--j-s-3); }
+.j-flow-choice {
+  position: relative; display: grid; gap: var(--j-s-2); align-content: start; text-align: start;
+  padding: var(--j-s-5); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-3); background: var(--j-panel-2);
+  transition: border-color var(--j-dur-1) var(--j-ease-out), background-color var(--j-dur-1) var(--j-ease-out);
+}
+.j-flow-choice:hover { border-color: var(--j-signal); }
+.j-flow-choice b { font-size: var(--j-t-18); }
+.j-flow-choice span { color: var(--j-fg-muted); font-size: var(--j-t-13); }
+.j-flow-choice[aria-checked="true"] { border-color: var(--j-signal); background: var(--j-signal-wash); box-shadow: var(--j-glow); }
+.j-flow-choice[aria-checked="true"]::after {
+  content: ""; position: absolute; inset-inline-end: 14px; top: 14px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--j-signal);
+}
+.j-flow-note { color: var(--j-fg-muted); font-size: var(--j-t-13); }
+.j-flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--j-s-4); }
+
+.j-flow-howto { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-3); counter-reset: how; }
+.j-flow-howto li {
+  counter-increment: how; display: grid; gap: var(--j-s-2); padding: var(--j-s-4);
+  border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+  color: var(--j-fg-muted); font-size: var(--j-t-13);
+}
+.j-flow-howto li::before { content: counter(how, decimal-leading-zero); font: 700 var(--j-t-12) var(--j-font-data); color: var(--j-signal); letter-spacing: .08em; }
+
+.j-flow-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3); }
+.j-flow-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3);
+  padding-top: var(--j-s-3); border-top: 1px solid var(--j-line);
+}
+.j-flow-actions #flowNext { margin-inline-start: auto; }
+
+[data-density="compact"] .j-flow-card { padding: var(--j-s-4); gap: var(--j-s-3); }
+
+@keyframes j-flow-pop { 40% { transform: scale(1.08); } }
+@keyframes j-flow-in { from { opacity: 0; transform: translateY(6px); } }
+
+@media (max-width: 900px) {
+  .j-flow { grid-template-columns: minmax(0, 1fr); }
+  .j-flow-guide { position: static; }
+  .j-flow-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .j-flow-step { flex-direction: column; justify-content: center; gap: 2px; padding: var(--j-s-1); font-size: var(--j-t-12); text-align: center; }
+}
+@media (max-width: 720px) {
+  .j-flow { padding: var(--j-s-2); }
+  .j-flow-card { padding: var(--j-s-4); }
+  .j-flow-head h2 { font-size: var(--j-t-22); }
+  .j-flow-howto { grid-template-columns: minmax(0, 1fr); }
+}
+@media (forced-colors: active) {
+  .j-flow-step[aria-current="step"], .j-flow-choice[aria-checked="true"] { outline: 2px solid Highlight; }
+  /* A checked choice is painted in system colours; its description follows them. */
+  .j-flow-choice span { color: inherit; }
+}

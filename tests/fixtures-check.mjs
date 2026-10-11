@@ -83,20 +83,11 @@ if (!/[À-ÿ]/.test(JSON.stringify(french)) || !/[\u0600-\u06ff]/.test(JSON.stri
   fail("localized fixtures must contain substantive French and Arabic prose");
 }
 
+// The legacy fixture stays as the example of an old answer the app refuses.
 const legacy = readJson("fixtures/sample-analysis-bio-en.legacy-v1.json");
-const migrated = integrity.validateImport(legacy);
-if (!migrated.ok || migrated.canonical || migrated.state !== "migrated_draft") {
-  fail("legacy input must become a valid, explicitly non-canonical migrated draft");
-}
-if (
-  migrated.analysis.schema_version !== bio.DRAFT_SCHEMA_VERSION ||
-  migrated.analysis.analysis_contract !== bio.DRAFT_CONTRACT ||
-  migrated.analysis.contract_status !== "migrated_draft"
-) {
-  fail("legacy migration was falsely stamped with the canonical identity");
-}
-if (migrated.analysis.power_map.actors.length) {
-  fail("legacy migration must not invent governing actors");
+const refused = integrity.validateImport(legacy);
+if (refused.ok || refused.errors[0]?.code !== "LEGACY_CONTRACT") {
+  fail("legacy input must be refused, not migrated");
 }
 
 console.log("Fixture checks passed.");

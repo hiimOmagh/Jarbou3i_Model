@@ -174,6 +174,23 @@ export function readFirstWorkspace(page) {
   return workspaceDatabaseOperation(page, "first-workspace");
 }
 
+// Restores a workspace bundle whose analysis is a draft, as saved before pasted
+// drafts were held back: the app no longer imports a draft, but a saved one
+// still opens. The bundle is made by the app's own workspace contract.
+export async function restoreSavedDraft(page, analysis) {
+  const bundle = await page.evaluate(async (value) => {
+    const contract = await import(new URL("src/core/workspace-contract.js", document.baseURI).href);
+    return contract.createWorkspaceBundle(await contract.createWorkspace({ analysis: value }));
+  }, analysis);
+  await page.locator("#workspaceSaveState").click();
+  await page.locator("#workspaceImportFile").setInputFiles({
+    name: "saved-draft.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(bundle)),
+  });
+  await expect(page.locator("#workspaceStatus")).toContainText("restored locally");
+}
+
 // From the next page load on, storage opens report success late, as on a slow
 // phone, so a test can act while the startup restore is still reading. Finished
 // storage transactions are counted, so the test can then wait until it is done.

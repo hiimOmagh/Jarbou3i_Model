@@ -181,8 +181,9 @@ assert(
 for (const token of [
   'id="shellNextAction"',
   'id="shellAnnouncement"',
-  'class="commandPrimary"',
-  'class="commandSecondary"',
+  // The setup phase is the guided flow: one step and its Continue at a time.
+  'id="flowNext"',
+  'data-flow-panel="answer"',
 ]) {
   assert(index.includes(token), `shell markup is missing ${token}`);
 }

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { openStep } from "./helpers/guided-flow.js";
 
 async function startWithoutPersistedWorkspace(page) {
   await page.addInitScript(() => {
@@ -52,7 +53,9 @@ async function openExplorer(
       });
   }
   await page.locator(`#lang${lang[0].toUpperCase()}${lang.slice(1)}`).click();
+  await openStep(page, "settings");
   await page.locator("#analysisLang").selectOption(analysisLang);
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   if (expectColdStart) {
     await expect
@@ -64,7 +67,7 @@ async function openExplorer(
       .toBe(0);
   }
   await page.locator("#loadSampleBtn").click();
-  await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-current", "location");
   await expect
     .poll(() =>
       page.evaluate(() => ({
@@ -97,7 +100,7 @@ async function openExplorer(
   await connections.focus();
   await expect(connections).toBeFocused();
   await connections.press("Enter");
-  await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
   await expect(page.locator(".relationshipExplorer")).toBeVisible();
   await expect
@@ -186,7 +189,9 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
   await failurePage.route("**/relationship-explorer.js", (route) => route.abort());
   await failurePage.goto("./");
   await failurePage.locator("#langEn").click();
+  await openStep(failurePage, "settings");
   await failurePage.locator("#analysisLang").selectOption("en");
+  await openStep(failurePage, "lens");
   await failurePage.locator('[data-lens="biopolitical"]').click();
   await failurePage.locator("#loadSampleBtn").click();
   await failurePage.locator('[data-bio-review="connections"]').click();
@@ -219,7 +224,9 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
   );
   await styleFailurePage.goto("./");
   await styleFailurePage.locator("#langEn").click();
+  await openStep(styleFailurePage, "settings");
   await styleFailurePage.locator("#analysisLang").selectOption("en");
+  await openStep(styleFailurePage, "lens");
   await styleFailurePage.locator('[data-lens="biopolitical"]').click();
   await expect
     .poll(() =>
@@ -274,7 +281,9 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
   await graphFailurePage.route("**/biopolitics-graph.js", (route) => route.abort());
   await graphFailurePage.goto("./");
   await graphFailurePage.locator("#langEn").click();
+  await openStep(graphFailurePage, "settings");
   await graphFailurePage.locator("#analysisLang").selectOption("en");
+  await openStep(graphFailurePage, "lens");
   await graphFailurePage.locator('[data-lens="biopolitical"]').click();
   await expect
     .poll(() =>
@@ -296,10 +305,7 @@ test("Story, Evidence trail, and Network modes expose deterministic graph layers
     .toEqual({ attempts: 1, fulfilled: 0, failures: 1 });
   await graphFailurePage.unroute("**/biopolitics-graph.js");
   await graphFailurePage.locator("[data-retry-biopolitical-graph]").click();
-  await expect(graphFailurePage.locator('[data-bio-review="overview"]')).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
+  await expect(graphFailurePage.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-current", "location");
   await expect
     .poll(() =>
       graphFailurePage.evaluate(

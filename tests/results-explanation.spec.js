@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openStep } from "./helpers/guided-flow.js";
 
 test("shared explanation hierarchy drills into authored details across both lenses", async ({ page }) => {
   await page.goto("./");
@@ -21,7 +22,7 @@ test("shared explanation hierarchy drills into authored details across both lens
   const strategicEvidence = strategicEvidenceCard.locator("[data-explanation-open]");
   await strategicEvidence.focus();
   await strategicEvidence.press("Enter");
-  await expect(page.locator('[data-review="evidence"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-review="evidence"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator("#reviewContent")).toContainText(strategicEvidenceName);
 
   await page.locator('[data-review="overview"]').click();
@@ -31,11 +32,12 @@ test("shared explanation hierarchy drills into authored details across both lens
   await strategicMechanisms.focus();
   await expect(strategicMechanisms).toBeFocused();
   await strategicMechanisms.press("Enter");
-  await expect(page.locator('[data-review="pillars"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-review="pillars"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator('[data-acc="tools"]')).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator('[data-acc="tools"]')).toBeFocused();
 
   await page.locator('[data-review="overview"]').click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await expect(explanation).toHaveAttribute("data-analysis-lens", "biopolitical");
@@ -52,7 +54,7 @@ test("shared explanation hierarchy drills into authored details across both lens
   const biopoliticalEvidence = biopoliticalEvidenceCard.locator("[data-explanation-open]");
   await biopoliticalEvidence.focus();
   await biopoliticalEvidence.press("Enter");
-  await expect(page.locator('[data-bio-review="evidence"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-bio-review="evidence"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator("#reviewContent")).toContainText(biopoliticalEvidenceName);
 
   await page.locator('[data-bio-review="overview"]').click();
@@ -61,7 +63,7 @@ test("shared explanation hierarchy drills into authored details across both lens
     .locator('[data-explanation-section="effects"] [data-explanation-open]');
   await biopoliticalEffects.focus();
   await biopoliticalEffects.press("Enter");
-  await expect(page.locator('[data-bio-review="pillars"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-bio-review="pillars"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator('[data-bio-acc="distribution_effects"]')).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator('[data-bio-acc="distribution_effects"]')).toBeFocused();
 

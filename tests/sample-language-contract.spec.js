@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openStep } from "./helpers/guided-flow.js";
 
 const LOCALES = [
   {
@@ -44,6 +45,7 @@ test("sample topics follow the chosen interface language for both lenses", async
     await expect(page.locator("#analysisLang")).toHaveValue(locale.id);
 
     for (const lens of LENSES) {
+      await openStep(page, "lens");
       const lensButton = page.locator(`[data-lens="${lens}"]`);
       await lensButton.focus();
       await expect(lensButton).toBeFocused();
@@ -74,11 +76,13 @@ test("an explicit analysis-language override persists and can be relinked", asyn
   await page.locator("#langFr").click();
   await expect(page.locator("#analysisLang")).toHaveValue("fr");
 
+  await openStep(page, "settings");
   await page.locator("#analysisLang").selectOption("en");
   await page.locator("#langAr").click();
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("#analysisLang")).toHaveValue("en");
 
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   expect((await readLoadedSample(page)).language).toBe("en");
@@ -91,6 +95,7 @@ test("an explicit analysis-language override persists and can be relinked", asyn
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("#analysisLang")).toHaveValue("en");
 
+  await openStep(page, "settings");
   await page.locator("#analysisLang").selectOption("ar");
   await page.locator("#langFr").click();
   await expect(page.locator("#analysisLang")).toHaveValue("fr");

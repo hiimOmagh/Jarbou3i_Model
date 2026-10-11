@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { PRODUCT_VERSION as EXPECTED_VERSION } from "./helpers/product-version.mjs";
+import { openStep } from "./helpers/guided-flow.js";
 const EVIDENCE_DIR = process.env.VISUAL_AUDIT_EVIDENCE_DIR || "visual-audit-evidence-local";
 const LOCALES = [
   { id: "ar", dir: "rtl", button: "#langAr" },
@@ -39,7 +40,7 @@ async function saveScreenshot(page, testInfo, fileName) {
 }
 
 async function waitForVisualAssets(page) {
-  const mascot = page.locator(".welcomeMascot");
+  const mascot = page.locator(".j-flow-mascot img");
   await expect.poll(() => mascot.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   await mascot.evaluate((image) => image.decode?.());
 }
@@ -107,6 +108,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.evaluate(() => window.scrollTo(0, 0));
       await saveScreenshot(page, testInfo, `shell-${key}.png`);
 
+      await openStep(page, "lens");
       await page.locator('[data-lens="strategic"]').click();
       await page.locator("#loadSampleBtn").click();
       await expect(page.locator("#reviewPanel")).toBeVisible();
@@ -114,15 +116,16 @@ test.describe("Release Candidate visual audit evidence", () => {
       await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `strategic-results-${key}.png`);
 
-      await page.locator("#workspaceBtn").click();
+      await page.locator("#workspaceSaveState").click();
       await expect(page.locator("#workspaceDialog")).toBeVisible();
       await expect(page.locator("#storageHealth")).toHaveAttribute("data-state", "best_effort");
       await saveScreenshot(page, testInfo, `workspace-health-${key}.png`);
       await page.locator("#workspaceClose").click();
 
+      await openStep(page, "lens");
       await page.locator('[data-lens="biopolitical"]').click();
       await page.locator("#loadSampleBtn").click();
-      await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-current", "location");
       await clearTransientUi(page);
       await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `biopolitical-results-${key}.png`);
@@ -232,8 +235,8 @@ test.describe("Release Candidate visual audit evidence", () => {
       await saveScreenshot(page, testInfo, `review-ledger-${key}.png`);
       await page.locator("#ledgerClose").click();
 
-      await page.locator("#workspaceBtn").click();
-      await page.locator(".workspaceRow.active [data-workspace-edit]").click();
+      await page.locator("#workspaceSaveState").click();
+      await page.locator("#workLife [data-life-action=\"edit\"]").click();
       await page.locator('[data-editor-path="/subject"]').click();
       const editorField = page.locator("#editorField");
       const subject = JSON.parse(await editorField.inputValue());
@@ -250,9 +253,11 @@ test.describe("Release Candidate visual audit evidence", () => {
       const draft = await fixture(`sample-analysis-bio-${locale.id}.json`);
       draft.evidence.items[0].source_url = "not-a-url";
       draft.self_audit.statistics_quotations_verified = "pass";
+      await openStep(page, "answer");
       await page.locator("#jsonInput").fill(JSON.stringify(draft));
       await expect(page.locator("#importBtn")).toBeEnabled();
       await expect(page.locator("#importAuditDetails")).toBeVisible();
+      await openStep(page, "answer");
       await page.locator("#importAuditDetails").evaluate((details) => { details.open = true; });
       await anchorViewport(page, "#pasteCard", 12);
       await saveScreenshot(page, testInfo, `import-audit-${key}.png`);
@@ -266,7 +271,9 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto("./");
       await page.locator(locale.button).click();
+      await openStep(page, "settings");
       await page.locator("#analysisLang").selectOption(locale.id);
+      await openStep(page, "lens");
       await page.locator('[data-lens="biopolitical"]').click();
       await page.locator("#loadSampleBtn").click();
       await page.locator('[data-bio-review="exports"]').click();

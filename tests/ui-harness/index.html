@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Jarbou3i kernel harness</title>
+  <link rel="stylesheet" href="../../src/ui/kernel.css" />
+  <style>
+    /* Harness layout only; nothing here is part of the kernel. */
+    body { margin: 0; background: var(--j-bg); }
+    main { min-height: 100vh; padding: var(--j-s-5) var(--j-s-4) 120px; display: grid; gap: var(--j-s-5); max-width: 960px; margin-inline: auto; }
+    .row { display: flex; flex-wrap: wrap; gap: var(--j-s-3); align-items: center; }
+  </style>
+</head>
+<body>
+  <main class="j-root" id="harness"></main>
+  <script type="module" src="./harness.js"></script>
+</body>
+</html>

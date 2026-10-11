@@ -55,14 +55,20 @@ as uncited evidence.
 | State | Meaning | Import | Publication |
 |---|---|---:|---:|
 | Canonical | Compilation passes strict schema and semantic integrity | Allowed | Existing evidence/review gates decide |
-| `reviewable_generated_draft` | Recoverable analytical content remains incomplete or inconsistent | Allowed | Blocked |
-| Canonical-shaped AI result with defects | Format slips are normalized; invalid values are quarantined; the rest is reclassified as `reviewable_generated_draft` | Allowed | Blocked |
+| `reviewable_generated_draft` | Recoverable analytical content remains incomplete or inconsistent | Blocked; targeted completion prompt | Blocked |
+| Canonical-shaped AI result with defects | Format slips are normalized; invalid values are quarantined; the rest becomes completion gaps | Blocked; targeted completion prompt | Blocked |
+| Legacy six-layer Biopolitical (v1) | An answer to an old prompt (`LEGACY_CONTRACT`) | Blocked; generate a new prompt | Blocked |
 | Truncated | JSON structure ends before the opened object, array, or string closes | Continue prompt | Blocked |
 | Unsupported | Contract/lens identity is unknown | Blocked | Blocked |
 
 Canonical promotion is fail-closed. If the compiled candidate fails a strict
 structural or semantic requirement, the same content is reclassified as a
 generated draft. The fallback does not weaken the canonical schema.
+
+A pasted answer is imported only when it is canonical. A draft is never
+imported: the app keeps it to build the targeted completion prompt, merges the
+assistant's reply into it, and checks the result again. Drafts saved before
+this rule still open.
 
 ## Salvage instead of rejection
 
@@ -124,16 +130,17 @@ preserved in the import audit, so no record is hidden; any 1.x
 contract 1.1.0; missing record IDs are generated
 deterministically, top-level keys outside the contract are preserved in the
 import audit, out-of-range or invalid values are quarantined, and the result
-imports as a reviewable Strategic draft with its gaps listed.
+is held back as a Strategic draft with its gaps listed and a targeted
+completion prompt.
 The Strategic quality gate re-validates the analysis, so a draft can never
 show as publish-ready until its contract gaps are completed.
 
 What salvage still refuses, by design: a reply with no JSON object, an
 unsupported contract or schema version (for example Biopolitical `"99.0.0"`
 or Strategic `"2.0"`), a header identity field holding an object or list (a
-version written as a number is read as text), a legacy-shaped Biopolitical
-document whose header does not say legacy v1, and a cut-off answer until it
-is continued. Known limits: a
+version written as a number is read as text), any legacy six-layer
+Biopolitical document (it is no longer migrated: the user generates a new
+prompt), and a cut-off answer until it is continued. Known limits: a
 fixed-set entry supplied as a keyed map in a canonical-shaped answer keeps its
 content, but its key is preserved in the audit and the entry name becomes a
 gap; when a value is first reformatted and then quarantined, the audit shows

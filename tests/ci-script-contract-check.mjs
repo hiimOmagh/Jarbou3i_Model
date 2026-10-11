@@ -79,6 +79,11 @@ for (const spec of [
   "tests/cross-locale-export-contract.spec.js",
   "tests/sample-language-contract.spec.js",
   "tests/release-audit-matrix.spec.js",
+  "tests/ui-kernel.spec.js",
+  "tests/command-palette.spec.js",
+  "tests/guided-flow.spec.js",
+  "tests/case-file.spec.js",
+  "tests/work-panel.spec.js",
   "tests/reflow-audit.spec.js",
 ]) {
   if (!core.includes(spec)) fail(`browser core is missing ${spec}`);

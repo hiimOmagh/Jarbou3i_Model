@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openStep } from "./helpers/guided-flow.js";
 import {
   beginLongPersistenceWorkflow,
   clearWorkspaceStorage,
@@ -10,12 +11,15 @@ async function start(page, lens = "strategic") {
   await clearWorkspaceStorage(page);
   await page.reload();
   await page.locator("#langEn").click();
-  if (lens === "biopolitical") await page.locator('[data-lens="biopolitical"]').click();
+  if (lens === "biopolitical") {
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+  }
   await page.locator("#loadSampleBtn").click();
 }
 
 async function openEditor(page) {
-  await page.locator("#workspaceBtn").click();
+  await page.locator("#workspaceSaveState").click();
   await page.getByRole("button", { name: "Edit draft" }).click();
   await page.locator('[data-editor-path="/subject"]').click();
 }
@@ -56,7 +60,7 @@ test.describe("Revision history and safe restore", () => {
     const importedTitle = await page.locator("#topicInput").inputValue();
     await commitTitle(page, "Current head before safe restore");
 
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Revision history" }).click();
     await expect(page.locator("#revisionDialog")).toBeVisible();
     await expect(page.locator("#revisionTrust")).toContainText(/never overwrites|never.*backward/i);
@@ -98,7 +102,7 @@ test.describe("Revision history and safe restore", () => {
     await page.locator("#editorClose").click();
 
     await page.locator("#langAr").click();
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "سجل النسخ" }).click();
     await expect(page.locator("#revisionTitle")).toHaveText("سجل النسخ");
     await expect(page.locator("#revisionBlocked")).toContainText("مسودة العمل");
@@ -106,7 +110,7 @@ test.describe("Revision history and safe restore", () => {
 
     await page.locator("#revisionClose").click();
     await page.locator("#langFr").click();
-    await page.locator("#workspaceBtn").click();
+    await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Historique des révisions" }).click();
     await expect(page.locator("#revisionTitle")).toHaveText("Historique des révisions");
     await expect(page.locator("#revisionRestore")).toBeDisabled();

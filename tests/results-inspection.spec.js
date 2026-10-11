@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openStep } from "./helpers/guided-flow.js";
 async function loadStrategicSample(page) {
   await page.goto("./");
   await page.locator("#langEn").click();
@@ -9,7 +10,9 @@ for (const lens of ["strategic", "biopolitical"]) {
   test(`Arabic ${lens} inspection shows layer, confidence and evidence balance in Arabic`, async ({ page }) => {
     await page.goto("./");
     await page.locator("#langAr").click();
+    await openStep(page, "settings");
     await page.locator("#analysisLang").selectOption("ar");
+    await openStep(page, "lens");
     await page.locator(`[data-lens="${lens}"]`).click();
     await page.locator("#loadSampleBtn").click();
     await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
@@ -27,7 +30,9 @@ for (const lens of ["strategic", "biopolitical"]) {
     test(`the ${language} ${lens} record drawer names coded values in that language`, async ({ page }) => {
       await page.goto("./");
       await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
+      await openStep(page, "settings");
       await page.locator("#analysisLang").selectOption(language);
+      await openStep(page, "lens");
       await page.locator(`[data-lens="${lens}"]`).click();
       await page.locator("#loadSampleBtn").click();
       await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
@@ -55,7 +60,9 @@ for (const lens of ["strategic", "biopolitical"]) {
     test(`the ${language} ${lens} source clusters and reference summaries name coded values in that language`, async ({ page }) => {
       await page.goto("./");
       await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
+      await openStep(page, "settings");
       await page.locator("#analysisLang").selectOption(language);
+      await openStep(page, "lens");
       await page.locator(`[data-lens="${lens}"]`).click();
       await page.locator("#loadSampleBtn").click();
       await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
@@ -118,13 +125,14 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
 
   await inspector.locator("[data-reference-occurrence]").first().click();
   await expect(inspector).toBeHidden();
-  await expect(page.locator('[data-review="evidence"]')).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-review="evidence"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator('[data-inspection-id="E1"]')).toBeFocused();
 });
 
 test("biopolitical inspection traverses linked records without losing return focus", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langEn").click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="inspection"]').click();
@@ -159,6 +167,7 @@ test("biopolitical inspection traverses linked records without losing return foc
 test("evidence trails expose back-references and stable cross-lens deep links", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langEn").click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="inspection"]').click();
@@ -203,6 +212,7 @@ test("source clusters and evidence gaps remain authored, navigable, and lens-spe
   );
   await page.keyboard.press("Escape");
 
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="inspection"]').click();

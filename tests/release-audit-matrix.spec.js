@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { openStep } from "./helpers/guided-flow.js";
 
 const LOCALES = [
   { id: "ar", dir: "rtl", validationPrefix: "فشل التحقق من العقد" },
@@ -45,6 +46,7 @@ async function synchronizeAuditState(page, locale, theme) {
   }
   await expect(html).toHaveAttribute("lang", locale.id);
   if (await page.locator("#analysisLang").inputValue() !== locale.id) {
+    await openStep(page, "settings");
     await page.locator("#analysisLang").selectOption(locale.id);
   }
   const wantsDark = theme === "dark";
@@ -91,7 +93,9 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
         await expect(page.locator("#themeBtn")).toHaveAttribute("aria-label", /\S/);
         await expectNoPageOverflow(page);
 
+        await openStep(page, "lens");
         await page.locator('[data-lens="biopolitical"]').click();
+        await openStep(page, "answer");
         await page.locator("#jsonInput").fill(await malformedAnalysis());
         await expect(page.locator("#importBtn")).toBeDisabled();
         await expect(page.locator("#jsonStatus")).toContainText(locale.validationPrefix);
@@ -105,10 +109,7 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
         await connectionsTab.focus();
         await expect(connectionsTab).toBeFocused();
         await connectionsTab.press("Enter");
-        await expect(connectionsTab).toHaveAttribute(
-          "aria-selected",
-          "true",
-        );
+        await expect(connectionsTab).toHaveAttribute("aria-current", "location");
         await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
 
         const duplicateIds = await page.locator("[id]").evaluateAll((elements) => {
@@ -159,11 +160,13 @@ test("system-color resilience and keyboard focus remain perceivable", async ({ p
   });
   await page.goto("./");
   await page.locator("#langEn").click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').focus();
   await expect(page.locator('[data-lens="biopolitical"]')).toBeFocused();
   if (forcedColors) {
     await expect(page.locator('[data-lens="biopolitical"]')).toHaveCSS("outline-style", "solid");
   }
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').press("Enter");
   await expect(page.locator('[data-lens="biopolitical"]')).toHaveAttribute("aria-checked", "true");
   await expectNoSeriousViolations(page);

@@ -29,13 +29,25 @@ const contrastRatio = (foreground, background) => {
   return (lighter + 0.05) / (darker + 0.05);
 };
 
-const lightTheme = styles.match(/:root\s*\{([\s\S]*?)\}/)?.[1] || '';
-const muted = lightTheme.match(/--muted:\s*(#[a-f\d]{6})/i)?.[1];
-const softSurface = lightTheme.match(/--surface-soft:\s*(#[a-f\d]{6})/i)?.[1];
-if (!muted || !softSurface) fail('light-theme muted and soft-surface tokens must use explicit hex colors');
-const mutedOnSoftContrast = contrastRatio(muted, softSurface);
-if (mutedOnSoftContrast < 4.75) {
-  fail(`light-theme muted text needs a 4.75:1 safety margin on soft surfaces; found ${mutedOnSoftContrast.toFixed(2)}:1`);
+// The app's muted text and soft surfaces are the kernel's (ADR-0002); both
+// themes keep the 4.75:1 safety margin.
+const legacyTokens = styles.match(/:root\s*\{([\s\S]*?)\}/)?.[1] || '';
+if (!/--muted:\s*var\(--j-fg-muted\)/.test(legacyTokens) || !/--surface-soft:\s*var\(--j-panel-2\)/.test(legacyTokens)) {
+  fail('muted text and soft surfaces must follow the kernel tokens --j-fg-muted and --j-panel-2');
+}
+const kernel = fs.readFileSync('src/ui/kernel.css', 'utf8');
+const themes = {
+  dark: kernel.match(/:root\s*\{([\s\S]*?)\}/)?.[1] || '',
+  light: kernel.match(/:root\[data-theme="light"\]\s*\{([\s\S]*?)\}/)?.[1] || '',
+};
+for (const [theme, block] of Object.entries(themes)) {
+  const muted = block.match(/--j-fg-muted:\s*(#[a-f\d]{6})/i)?.[1];
+  const softSurface = block.match(/--j-panel-2:\s*(#[a-f\d]{6})/i)?.[1];
+  if (!muted || !softSurface) fail(`${theme}-theme muted and soft-surface kernel tokens must use explicit hex colors`);
+  const mutedOnSoftContrast = contrastRatio(muted, softSurface);
+  if (mutedOnSoftContrast < 4.75) {
+    fail(`${theme}-theme muted text needs a 4.75:1 safety margin on soft surfaces; found ${mutedOnSoftContrast.toFixed(2)}:1`);
+  }
 }
 
 if (!/<html[^>]+lang="ar"[^>]+dir="rtl"/.test(index)) fail('root html must define initial lang and dir');
@@ -44,16 +56,18 @@ if (!index.includes('aria-live="polite"')) fail('aria-live region missing');
 if (!index.includes('role="dialog"')) fail('modal dialog role missing');
 if (!index.includes('aria-modal="true"')) fail('modal aria-modal missing');
 if (!index.includes('aria-labelledby="modalTitle"')) fail('modal labelling missing');
-if (!index.includes('role="tablist"')) fail('tablist role missing');
-if (!app.includes('role="tab"')) fail('runtime tabs must use role tab');
-if (!app.includes('aria-selected')) fail('runtime tabs must set aria-selected');
+// The review is a case file: one document and an outline that marks where the reader is.
+if (!index.includes('j-case-outline')) fail('case-file outline missing');
+if (!app.includes('"aria-current", "location"')) fail('the outline must mark the current location');
 if (!app.includes('aria-controls')) fail('runtime tabs and accordions need aria-controls');
 if (!app.includes('aria-expanded')) fail('runtime accordions need aria-expanded');
 if (!app.includes('aria-labelledby')) fail('runtime panels need stable labels');
 if (!index.includes('role="radiogroup"') || !index.includes('role="radio"')) fail('segmented controls need radio semantics');
 if (!index.includes('aria-checked="true"')) fail('segmented controls need checked state');
 if (!index.includes('tabindex="-1"')) fail('segmented controls need roving tabindex');
-if (!app.includes('aria-current="step"')) fail('current stage marker missing');
+// The current setup step is marked by the guided flow (src/features/guided-flow.js).
+const flow = fs.readFileSync('src/features/guided-flow.js', 'utf8');
+if (!flow.includes('setAttribute("aria-current", "step")')) fail('current stage marker missing');
 if (!app.includes('function trapModalFocus(')) fail('modal focus trap missing');
 if (!app.includes('function bindRadioGroupKeyboard(')) fail('radio groups need arrow-key behavior');
 

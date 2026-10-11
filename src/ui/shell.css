@@ -1,0 +1,74 @@
+/* Jarbou3i modern shell (UIX-2, ADR-0002): the global header and the
+   workspace bar, built on the kernel (src/ui/kernel.css). The bar holds where
+   you are (the three phases), what is true now (local processing, save state)
+   and the single next action. Classes are .j-shell-*, layout only; the kernel
+   contracts apply to every control inside. */
+
+.j-shell { border: 1px solid var(--j-line); border-radius: var(--j-r-3); overflow: hidden; margin-bottom: var(--j-s-4); }
+.j-shell-top {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3);
+  min-height: 56px; padding: var(--j-s-2) var(--j-s-4);
+}
+.j-shell-brand { display: flex; align-items: center; gap: var(--j-s-2); min-width: 0; }
+.j-shell-brand img { width: 32px; height: 32px; border-radius: var(--j-r-2); flex: none; }
+.j-shell-brand-text { display: grid; gap: 2px; min-width: 0; }
+.j-shell-brand h1 { font: 700 var(--j-t-16)/1.2 var(--j-font-display); color: var(--j-fg); }
+/* Global context: the case open now, when there is one. */
+.j-shell-case {
+  min-width: 0; max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding-inline-start: var(--j-s-3); border-inline-start: 1px solid var(--j-line);
+  color: var(--j-fg-muted); font-size: var(--j-t-13);
+}
+.j-shell-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); margin-inline-start: auto; }
+
+.j-shell-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3);
+  padding: var(--j-s-2) var(--j-s-4);
+  border-top: 1px solid var(--j-line); background: var(--j-panel);
+}
+.j-shell-nav { display: flex; flex-wrap: wrap; gap: var(--j-s-1); min-width: 0; }
+.j-shell-phase {
+  display: inline-flex; align-items: center; gap: var(--j-s-2);
+  min-height: var(--j-control); padding: var(--j-s-1) var(--j-s-3);
+  border: 1px solid transparent; border-radius: var(--j-r-2);
+  background: transparent; color: var(--j-fg-muted); text-align: start;
+  transition: background-color var(--j-dur-1) var(--j-ease-out), color var(--j-dur-1) var(--j-ease-out);
+}
+.j-shell-phase:hover:not(:disabled) { background: var(--j-raise); color: var(--j-fg); }
+.j-shell-phase:disabled { opacity: .45; cursor: not-allowed; }
+/* The current phase: tinted, outlined and its number in the accent, not colour alone. */
+.j-shell-phase[aria-current="step"] {
+  color: var(--j-fg); background: var(--j-signal-wash);
+  border-color: color-mix(in srgb, var(--j-signal) 45%, transparent);
+}
+.j-shell-phase-index { font: 600 var(--j-t-12)/1 var(--j-font-data); color: var(--j-fg-faint); }
+.j-shell-phase[aria-current="step"] .j-shell-phase-index { color: var(--j-signal); }
+.j-shell-phase-copy { display: grid; gap: 2px; }
+.j-shell-phase-copy strong { font-size: var(--j-t-14); }
+.j-shell-phase-copy small { font-size: var(--j-t-12); color: var(--j-fg-faint); }
+/* Faint text fails contrast on the accent tint; the current phase uses muted. */
+.j-shell-phase[aria-current="step"] .j-shell-phase-copy small { color: var(--j-fg-muted); }
+.j-shell-trust { margin-inline-start: auto; }
+.j-shell-next { text-align: start; }
+.j-shell-next-copy { display: grid; gap: 1px; }
+.j-shell-next-copy small { font-size: var(--j-t-12); font-weight: 600; opacity: .85; }
+
+[data-density="compact"] .j-shell-top, [data-density="compact"] .j-shell-bar { padding-block: var(--j-s-1); }
+[data-density="compact"] .j-shell-phase-copy small { display: none; }
+
+@media (max-width: 1024px) {
+  .j-shell-case { order: 3; flex-basis: 100%; max-width: none; padding: 0; border: 0; }
+}
+@media (max-width: 720px) {
+  .j-shell-phase-copy small, .j-shell-trust { display: none; }
+  /* Icon-only on phones; these buttons carry an aria-label from the app. */
+  .j-shell-cluster .j-btn > span:not([aria-hidden]) { display: none; }
+  .j-shell-cluster .j-btn { min-width: var(--j-control); padding: 0; }
+  .j-shell-cluster .j-kbd { display: none; }
+  .j-shell-nav { flex: 1 1 100%; }
+  .j-shell-phase { flex: 1 1 0; justify-content: center; }
+  .j-shell-next { flex: 1 1 100%; }
+}
+@media (forced-colors: active) {
+  .j-shell-phase[aria-current="step"] { border: 2px solid Highlight; }
+}

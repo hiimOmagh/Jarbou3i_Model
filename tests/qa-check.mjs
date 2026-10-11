@@ -179,7 +179,6 @@ for (const token of [
   'const SCHEMA_VERSION = "2.1.0"',
   'const APP_CONTRACT = "biopolitical-training-map-v2"',
   "function route(",
-  "function migrateLegacy(",
   "function evidenceAssessment(",
   "function health(",
   "displayToken,",
@@ -193,7 +192,9 @@ for (const token of [
   "buildLosslessBiopoliticalReport",
   'id="canonical-analysis"',
   'id="exportJson"',
-  'aria-controls="reviewContent"',
+  // The review is one document (the case file) with an outline.
+  'class="j-case-sec"',
+  'function wireCaseOutline(',
   'aria-expanded="',
 ]) {
   if (!app.includes(token)) fail(`application integration token missing: ${token}`);

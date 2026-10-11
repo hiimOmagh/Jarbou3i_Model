@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openStep } from "./helpers/guided-flow.js";
 
 test('shared results orientation prioritizes decision context across both lenses', async ({ page }) => {
   await page.goto('./');
@@ -18,6 +19,7 @@ test('shared results orientation prioritizes decision context across both lenses
   expect(promotedNextAction).not.toBe('—');
   await expect(page.locator('.intelBrief .nextAction')).toContainText(promotedNextAction);
 
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator('#loadSampleBtn').click();
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'biopolitical');
@@ -50,6 +52,7 @@ test('an Arabic gate that is not approved says so, not banned', async ({ page })
 test('the Bio overview gives one gate verdict and lists every open item in it', async ({ page }) => {
   await page.goto('./');
   await page.locator('#langEn').click();
+  await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator('#loadSampleBtn').click();
   const gate = page.locator('.intelBrief .qualityGate');
@@ -64,7 +67,9 @@ for (const language of ["ar", "fr"]) {
   test(`the ${language} Strategic results name every coded value in that language`, async ({ page }) => {
     await page.goto("./");
     await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
+    await openStep(page, "settings");
     await page.locator("#analysisLang").selectOption(language);
+    await openStep(page, "lens");
     await page.locator('[data-lens="strategic"]').click();
     await page.locator("#loadSampleBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();

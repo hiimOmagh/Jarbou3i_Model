@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -17,155 +17,173 @@
 <meta name="twitter:card" content="summary" />
 <meta name="app-version" content="2.1.0-alpha.55" />
 <link rel="stylesheet" href="src/styles.css" />
-<link rel="preload" as="image" href="assets/jarbou3i-mascot-512.png" fetchpriority="high" />
+<link rel="stylesheet" href="src/ui/kernel.css" />
+<link rel="stylesheet" href="src/ui/shell.css" />
+<link rel="stylesheet" href="src/ui/flow.css" />
+<link rel="stylesheet" href="src/ui/case.css" />
+<link rel="stylesheet" href="src/ui/work.css" />
+<link rel="preload" as="image" href="assets/jarbou3i-mascot-192.png" fetchpriority="high" />
 </head>
 <body>
 <noscript><div style="margin:24px;padding:16px;border:1px solid #c8d4e5;border-radius:16px;background:#fff;color:#122033;font-family:system-ui,sans-serif">Jarbou3i Model requires JavaScript to run locally in your browser.</div></noscript>
 <div class="app">
   <a class="skipLink" href="#workflowPanel" data-i18n="skipToWorkspace">انتقل إلى مساحة العمل</a>
-  <header class="top" id="appHeader">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"><img src="assets/jarbou3i-mascot-192.png" width="54" height="54" decoding="async" alt=""></div>
-      <div class="brandCopy">
-        <div class="productEyebrow" data-i18n="productEyebrow">Jarbou3i / Research Intelligence</div>
+  <div class="j-root j-shell" id="appShell">
+  <header class="j-shell-top" id="appHeader">
+    <div class="j-shell-brand">
+      <img src="assets/jarbou3i-mascot-192.png" width="32" height="32" decoding="async" alt="">
+      <div class="j-shell-brand-text">
+        <span class="j-label" data-i18n="productEyebrow">Jarbou3i / Research Intelligence</span>
         <h1 data-i18n="appTitle">مساحة عمل التحليل الاستراتيجي</h1>
-        <p data-i18n="appSubtitle">مسار واضح مع بقاء نموذج التحليل الكامل مرئيًا وقابلًا للتصفح.</p>
       </div>
     </div>
-    <div class="topActions">
-      <div class="lensContext" id="lensContext" aria-live="polite">
-        <span class="lensContextSignal" aria-hidden="true"></span>
-        <span id="lensContextLabel">العدسة الاستراتيجية</span>
-      </div>
-      <button class="btn workspaceLibraryButton" id="workspaceBtn" type="button" aria-haspopup="dialog" aria-controls="workspaceDialog">
-        <span aria-hidden="true">▣</span><span id="workspaceButtonLabel">مساحات العمل</span>
+    <span class="j-shell-case" id="shellCaseTitle" hidden></span>
+    <div class="j-shell-cluster">
+      <span class="j-chip" id="lensContext" aria-live="polite"><span id="lensContextLabel">العدسة الاستراتيجية</span></span>
+      <button class="j-status j-save-light" id="workspaceSaveState" type="button" data-state="empty" data-tone="idle" aria-haspopup="dialog" aria-controls="workspaceDialog">لا توجد مساحة محفوظة</button>
+      <button class="j-btn" id="commandPaletteBtn" type="button" aria-haspopup="dialog" aria-controls="commandPalette" aria-keyshortcuts="Control+K Meta+K" data-i18n-title="commandPalette">
+        <svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg><span data-i18n="commandPalette">الأوامر</span><kbd class="j-kbd" aria-hidden="true">Ctrl K</kbd>
       </button>
-      <div class="segment" role="radiogroup" aria-label="Language selector" id="languageSegment">
-        <button class="segBtn active" id="langAr" type="button" role="radio" aria-checked="true" tabindex="0">عربي</button>
-        <button class="segBtn" id="langEn" type="button" role="radio" aria-checked="false" tabindex="-1">EN</button>
-        <button class="segBtn" id="langFr" type="button" role="radio" aria-checked="false" tabindex="-1">FR</button>
-      </div>
-      <button class="btn shellControl" id="densityBtn" type="button" aria-pressed="false" title="تبديل كثافة العرض">
-        <span class="shellControlIcon" aria-hidden="true">↕</span>
-        <span class="shellControlLabel" id="densityLabel">مريح</span>
+      <div class="j-seg" role="radiogroup" aria-label="Language selector" id="languageSegment"><button id="langAr" type="button" role="radio" aria-checked="true" tabindex="0">عربي</button><button id="langEn" type="button" role="radio" aria-checked="false" tabindex="-1">EN</button><button id="langFr" type="button" role="radio" aria-checked="false" tabindex="-1">FR</button></div>
+      <button class="j-btn" id="densityBtn" type="button" aria-pressed="false" title="تبديل كثافة العرض">
+        <span aria-hidden="true">↕</span><span id="densityLabel">مريح</span>
       </button>
-      <button class="btn iconBtn" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle">◐</button>
+      <button class="j-btn" data-size="icon" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle">◐</button>
     </div>
   </header>
 
-  <div class="workspaceBar" role="region" aria-label="التنقل في مساحة العمل" id="workspaceBar">
-    <nav class="workspaceNav" id="workspaceNav" aria-label="التنقل في مساحة العمل">
-      <button class="workspaceNavItem active" type="button" data-shell-nav="workflow" aria-current="step">
-        <span class="workspaceNavIndex" aria-hidden="true">01</span>
-        <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionSetup">الإعداد</strong><small data-i18n="workspaceSectionSetupHint">حدّد الموضوع واستورد التحليل</small></span>
+  <div class="j-shell-bar" role="region" aria-label="التنقل في مساحة العمل" id="workspaceBar">
+    <nav class="j-shell-nav" id="workspaceNav" aria-label="التنقل في مساحة العمل">
+      <button class="j-shell-phase" type="button" data-shell-nav="workflow" aria-current="step">
+        <span class="j-shell-phase-index" aria-hidden="true">01</span>
+        <span class="j-shell-phase-copy"><strong data-i18n="workspaceSectionSetup">الإعداد</strong><small data-i18n="workspaceSectionSetupHint">حدّد الموضوع واستورد التحليل</small></span>
       </button>
-      <button class="workspaceNavItem" type="button" data-shell-nav="engine">
-        <span class="workspaceNavIndex" aria-hidden="true">02</span>
-        <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionModel">النموذج</strong><small data-i18n="workspaceSectionModelHint">افهم البنية التحليلية</small></span>
+      <button class="j-shell-phase" type="button" data-shell-nav="engine">
+        <span class="j-shell-phase-index" aria-hidden="true">02</span>
+        <span class="j-shell-phase-copy"><strong data-i18n="workspaceSectionModel">النموذج</strong><small data-i18n="workspaceSectionModelHint">افهم البنية التحليلية</small></span>
       </button>
-      <button class="workspaceNavItem" id="reviewNavShortcut" type="button" data-shell-nav="review" disabled>
-        <span class="workspaceNavIndex" aria-hidden="true">03</span>
-        <span class="workspaceNavCopy"><strong data-i18n="workspaceSectionReview">المراجعة</strong><small data-i18n="workspaceSectionReviewHint">افحص النتيجة والأدلة</small></span>
+      <button class="j-shell-phase" id="reviewNavShortcut" type="button" data-shell-nav="review" disabled>
+        <span class="j-shell-phase-index" aria-hidden="true">03</span>
+        <span class="j-shell-phase-copy"><strong data-i18n="workspaceSectionReview">المراجعة</strong><small data-i18n="workspaceSectionReviewHint">افحص النتيجة والأدلة</small></span>
       </button>
     </nav>
-    <div class="workspaceCommands">
-      <div class="workspaceTrust"><span class="workspaceTrustDot" aria-hidden="true"></span><span data-i18n="localProcessing">المعالجة محليًا في المتصفح</span><span aria-hidden="true">·</span><span id="workspaceSaveState" data-state="empty">لا توجد مساحة محفوظة</span></div>
-      <button class="btn primary shellNextAction" id="shellNextAction" type="button">
-        <span class="shellNextActionCopy"><small data-i18n="nextActionLabel">الإجراء التالي</small><strong id="shellNextActionLabel">ابدأ بالموضوع</strong></span>
-        <span class="shellNextActionIcon" aria-hidden="true">←</span>
-      </button>
+    <span class="j-status j-shell-trust" data-tone="ok" data-i18n="localProcessing">المعالجة محليًا في المتصفح</span>
+    <button class="j-btn j-shell-next" data-variant="primary" id="shellNextAction" type="button">
+      <span class="j-shell-next-copy"><small data-i18n="nextActionLabel">الإجراء التالي</small><strong id="shellNextActionLabel">ابدأ بالموضوع</strong></span>
+      <svg class="j-icon" data-flip viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <div class="j-sr-only" id="shellAnnouncement" role="status" aria-live="polite" aria-atomic="true"></div>
+  </div>
+  <dialog class="j-dialog" id="commandPalette" aria-labelledby="commandPaletteTitle">
+    <div class="j-field">
+      <label for="commandPaletteInput" id="commandPaletteTitle" data-i18n="commandPalette">الأوامر</label>
+      <input class="j-input" id="commandPaletteInput" type="text" role="combobox" aria-expanded="true" aria-controls="commandPaletteList" aria-autocomplete="list" autocomplete="off" spellcheck="false" data-i18n-placeholder="commandPalettePlaceholder" placeholder="اكتب أمرًا أو اسم قسم">
     </div>
-    <div class="srOnly" id="shellAnnouncement" role="status" aria-live="polite" aria-atomic="true"></div>
+    <ul class="j-listbox" id="commandPaletteList" role="listbox" aria-labelledby="commandPaletteTitle"></ul>
+    <p id="commandPaletteEmpty" hidden data-i18n="commandPaletteEmpty">لا يوجد أمر مطابق</p>
+  </dialog>
   </div>
 
   <main class="shell">
-    <section class="panel commandPanel" id="workflowPanel">
-      <div class="panelHeader">
-        <div>
-          <div class="sectionEyebrow" data-i18n="workflowEyebrow">01 / إعداد التحليل</div>
-          <h2 data-i18n="workflowTitle">مسار التحليل</h2>
-          <p data-i18n="workflowSubtitle">اتبع الخطوات، لكن ابقَ قادرًا على رؤية بنية النموذج والتنقل بين طبقاته.</p>
+    <div class="j-root j-life-banners" id="lifeBanners" hidden></div>
+    <section class="j-root j-flow" id="workflowPanel" aria-labelledby="flowStepTitle">
+      <div class="j-flow-guide" id="flowGuide" data-mood="idle">
+        <div class="j-flow-mascot">
+          <img src="assets/jarbou3i-mascot-192.png" width="72" height="72" decoding="sync" fetchpriority="high" alt="">
+          <p class="j-flow-say" id="flowSay">أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى برومبت دقيق لمساعدك الذكي.</p>
         </div>
+        <ol class="j-flow-steps">
+          <li><button class="j-flow-step" type="button" data-flow-step="topic" aria-current="step"><span class="j-flow-step-n" aria-hidden="true">1</span><span data-i18n="flowStepTopic">الموضوع</span></button></li>
+          <li><button class="j-flow-step" type="button" data-flow-step="lens"><span class="j-flow-step-n" aria-hidden="true">2</span><span data-i18n="flowStepLens">العدسة</span></button></li>
+          <li><button class="j-flow-step" type="button" data-flow-step="settings"><span class="j-flow-step-n" aria-hidden="true">3</span><span data-i18n="flowStepSettings">الإعدادات</span></button></li>
+          <li><button class="j-flow-step" type="button" data-flow-step="prompt"><span class="j-flow-step-n" aria-hidden="true">4</span><span data-i18n="flowStepPrompt">البرومبت</span></button></li>
+          <li><button class="j-flow-step" type="button" data-flow-step="answer"><span class="j-flow-step-n" aria-hidden="true">5</span><span data-i18n="flowStepAnswer">الإجابة</span></button></li>
+        </ol>
+        <button class="j-btn" data-variant="ghost" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
       </div>
-      <div class="welcomeCard" id="welcomeCard">
-        <img class="welcomeMascot" src="assets/jarbou3i-mascot-512.png" width="118" height="118" decoding="sync" fetchpriority="high" alt="">
-        <div class="welcomeText">
-          <div class="welcomeEyebrow" data-i18n="welcomeEyebrow">Tool guide</div>
-          <h3 class="welcomeTitle" data-i18n="welcomeTitle">Welcome to Jarbou3i Model</h3>
-          <p class="welcomeBody" data-i18n="welcomeBody">A friendly visual guide to start your structured analysis: define the topic, copy the prompt, import the JSON result, and review the full model with clarity.</p>
+      <div class="j-flow-card">
+        <header class="j-flow-head">
+          <span class="j-label" id="flowStepOf">الخطوة 1 من 5</span>
+          <h2 id="flowStepTitle" tabindex="-1">ما الذي تريد فهمه؟</h2>
+          <p id="flowStepHint">جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.</p>
+        </header>
+        <div class="j-flow-panel" id="topicCard" data-flow-panel="topic">
+          <div class="j-field">
+            <label for="topicInput" data-i18n="topicLabel">موضوع التحليل</label>
+            <textarea id="topicInput" class="j-input j-flow-topic" data-i18n-placeholder="topicPlaceholder" placeholder="مثال: صعود اليمين المتطرف في أوروبا 2022–2026"></textarea>
+          </div>
+          <div class="j-flow-examples">
+            <span data-i18n="flowExamplesLabel">جرّب مثالًا:</span>
+            <span class="j-flow-example-list" id="flowExamples"></span>
+          </div>
+          <div class="j-field">
+            <label for="timeframeInput" data-i18n="timeframeLabel">السياق الزمني/الجغرافي</label>
+            <input id="timeframeInput" class="j-input" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: 2022–2026، أوروبا" />
+          </div>
         </div>
-      </div>
-      <div class="stage" id="stageBar"></div>
-      <div class="grid2">
-        <div class="card flat topicCommand" id="topicCard">
-          <div class="field">
-            <label class="label" for="topicInput" data-i18n="topicLabel">موضوع التحليل</label>
-            <textarea id="topicInput" class="topicInput" data-i18n-placeholder="topicPlaceholder" placeholder="مثال: صعود اليمين المتطرف في أوروبا 2022–2026"></textarea>
+        <div class="j-flow-panel" data-flow-panel="lens" hidden>
+          <div class="j-flow-choices" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
+            <button class="j-flow-choice active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0"><b data-i18n="lensStrategic">استراتيجي</b><span data-i18n="lensStrategicDesc">يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.</span></button>
+            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">حيوسياسي</b><span data-i18n="lensBiopoliticalDesc">يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.</span></button>
           </div>
-          <div class="detailsGrid">
-            <div class="field">
-              <label class="label" for="analysisLang" data-i18n="analysisLang">لغة التحليل</label>
-              <select id="analysisLang"><option value="ar" data-i18n-option="optionArabic">العربية</option><option value="en" data-i18n-option="optionEnglish">الإنجليزية</option><option value="fr" data-i18n-option="optionFrench">الفرنسية</option></select>
+          <p class="j-flow-note" id="analysisLensHint">مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.</p>
+        </div>
+        <div class="j-flow-panel" data-flow-panel="settings" hidden>
+          <div class="j-flow-grid">
+            <div class="j-field">
+              <label for="promptMode" data-i18n="promptMode">نمط البرومبت</label>
+              <select id="promptMode" class="j-input"><option value="simple" data-i18n-option="modeSimple">مركّز</option><option value="expert" data-i18n-option="modeExpert">خبير</option><option value="research" data-i18n-option="modeResearch">بحثي</option></select>
             </div>
-            <div class="field lensField">
-              <label class="label" for="analysisLens" data-i18n="analysisLens">عدسة التحليل</label>
-              <div class="lensToggle" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
-                <button class="lensBtn active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0" data-i18n="lensStrategic">استراتيجي</button>
-                <button class="lensBtn" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1" data-i18n="lensBiopolitical">حيوسياسي</button>
-              </div>
-              <div class="lensHint" id="analysisLensHint">مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.</div>
+            <div class="j-field">
+              <label for="evidenceAccess" data-i18n="evidenceAccess">الوصول إلى المصادر</label>
+              <select id="evidenceAccess" class="j-input"><option value="none" data-i18n-option="evidenceAccessNone">دون وصول — مسودة مفاهيمية</option><option value="provided" data-i18n-option="evidenceAccessProvided">مصادر مقدمة في السياق</option><option value="web" data-i18n-option="evidenceAccessWeb">بحث مباشر في الويب</option></select>
             </div>
-            <div class="field">
-              <label class="label" for="promptMode" data-i18n="promptMode">نمط البرومبت</label>
-              <select id="promptMode"><option value="simple" data-i18n-option="modeSimple">مركّز</option><option value="expert" data-i18n-option="modeExpert">خبير</option><option value="research" data-i18n-option="modeResearch">بحثي</option></select>
-            </div>
-            <div class="field">
-              <label class="label" for="evidenceAccess" data-i18n="evidenceAccess">الوصول إلى المصادر</label>
-              <select id="evidenceAccess"><option value="none" data-i18n-option="evidenceAccessNone">دون وصول — مسودة مفاهيمية</option><option value="provided" data-i18n-option="evidenceAccessProvided">مصادر مقدمة في السياق</option><option value="web" data-i18n-option="evidenceAccessWeb">بحث مباشر في الويب</option></select>
-            </div>
-            <div class="field">
-              <label class="label" for="timeframeInput" data-i18n="timeframeLabel">السياق الزمني/الجغرافي</label>
-              <input id="timeframeInput" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: 2022–2026، أوروبا" />
+            <div class="j-field">
+              <label for="analysisLang" data-i18n="analysisLang">لغة التحليل</label>
+              <select id="analysisLang" class="j-input"><option value="ar" data-i18n-option="optionArabic">العربية</option><option value="en" data-i18n-option="optionEnglish">الإنجليزية</option><option value="fr" data-i18n-option="optionFrench">الفرنسية</option></select>
             </div>
           </div>
-          <div class="field" id="sourcesField" hidden>
-            <label class="label" for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
-            <textarea id="sourcesInput" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات."></textarea>
+          <div class="j-field" id="sourcesField" hidden>
+            <label for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
+            <textarea id="sourcesInput" class="j-input" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات."></textarea>
           </div>
-          <div class="actions commandActions">
-            <div class="commandPrimary"><button class="btn primary" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button></div>
-            <div class="commandSecondary">
-              <button class="btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة البرومبت</button>
-              <button class="btn" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
-              <button class="btn ghost hide" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
-            </div>
+        </div>
+        <div class="j-flow-panel" data-flow-panel="prompt" hidden>
+          <ol class="j-flow-howto">
+            <li data-i18n="flowHowTo1">افتح مساعدك الذكي في تبويب آخر.</li>
+            <li data-i18n="flowHowTo2">الصق البرومبت وأرسله.</li>
+            <li data-i18n="flowHowTo3">انتظر الإجابة كاملة ثم عد إلى هنا.</li>
+          </ol>
+          <div class="j-flow-row">
+            <button class="j-btn" data-variant="primary" data-size="lg" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button>
+            <button class="j-btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة البرومبت</button>
+            <button class="j-btn hide" data-variant="ghost" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
           </div>
           <div class="status helper" id="topicStatus" role="status" aria-live="polite">أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.</div>
-          <div class="miniGuide" id="miniGuide"><h4 data-i18n="guideTitle">كيف تستخدم الأداة؟</h4><ol id="guideSteps"></ol></div>
         </div>
-        <div class="card importCommand" id="pasteCard">
-          <h3 data-i18n="pasteTitle">استيراد نتيجة الذكاء الاصطناعي</h3>
-          <p class="muted" data-i18n="pasteSubtitle">بعد استخدام البرومبت، الصق JSON هنا. زر الاستيراد يظهر فقط عندما تكون البنية صالحة.</p>
-          <div class="field">
-            <label class="label" for="jsonInput" data-i18n="jsonLabel">نتيجة JSON</label>
-            <textarea id="jsonInput" class="pasteArea" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
+        <div class="j-flow-panel" id="pasteCard" data-flow-panel="answer" hidden>
+          <div class="j-field">
+            <label for="jsonInput" data-i18n="jsonLabel">نتيجة JSON</label>
+            <textarea id="jsonInput" class="j-input j-flow-answer" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
           </div>
-          <div class="field" id="continuationField" hidden>
-            <label class="label" for="continuationInput" data-i18n="continuationLabel">تابع النتيجة المقطوعة</label>
-            <textarea id="continuationInput" class="pasteArea" data-i18n-placeholder="continuationPlaceholder"></textarea>
+          <div class="j-field" id="continuationField" hidden>
+            <label for="continuationInput" data-i18n="continuationLabel">تابع النتيجة المقطوعة</label>
+            <textarea id="continuationInput" class="j-input j-flow-answer" data-i18n-placeholder="continuationPlaceholder"></textarea>
           </div>
-          <div class="actions commandActions">
-            <div class="commandPrimary"><button class="btn primary" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button></div>
-            <div class="commandSecondary">
-              <button class="btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">برومبت إصلاح JSON</button>
-              <button class="btn ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
-            </div>
+          <div class="j-flow-row">
+            <button class="j-btn" data-variant="primary" data-size="lg" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button>
+            <button class="j-btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">برومبت إصلاح JSON</button>
+            <button class="j-btn" data-variant="ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
           </div>
           <div class="status" id="jsonStatus" role="status" aria-live="polite">الصق نتيجة JSON للتحقق.</div>
           <details class="importAudit" id="importAuditDetails" hidden>
             <summary id="importAuditSummary">Import review details</summary>
             <div class="importAuditBody" id="importAuditBody"></div>
           </details>
+        </div>
+        <div class="j-flow-actions">
+          <button class="j-btn" data-variant="ghost" id="flowBack" type="button" hidden><svg class="j-icon" data-flip viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span data-i18n="flowBack">رجوع</span></button>
+          <button class="j-btn" data-variant="primary" id="flowNext" type="button"><span data-i18n="flowContinue">متابعة</span><svg class="j-icon" data-flip viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         </div>
       </div>
     </section>
@@ -182,7 +200,7 @@
       <div class="engineNav" id="engineNav"></div>
     </section>
 
-    <section class="panel hide" id="reviewPanel">
+    <section class="panel hide j-case-panel" id="reviewPanel">
       <div class="panelHeader">
         <div>
           <div class="sectionEyebrow" data-i18n="reviewEyebrow">03 / فحص النتيجة</div>
@@ -190,9 +208,9 @@
           <p data-i18n="reviewSubtitle">تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.</p>
         </div>
       </div>
-      <div class="reviewShell">
-        <nav class="sideNav" id="reviewNav" role="tablist" aria-label="Analysis review sections"></nav>
-        <div class="contentPanel" id="reviewContent" role="tabpanel" tabindex="0" aria-live="polite"></div>
+      <div class="reviewShell j-case">
+        <nav class="sideNav j-case-outline" id="reviewNav" aria-label="المخطط"></nav>
+        <div class="contentPanel j-case-doc" id="reviewContent" tabindex="-1" aria-labelledby="reviewTitle"></div>
       </div>
     </section>
   </main>
@@ -216,13 +234,15 @@
       <div><h3 id="workspaceDialogTitle">مساحات العمل المحلية</h3><p class="muted" id="workspaceDialogHint">محفوظة على هذا الجهاز فقط.</p></div>
       <button class="btn iconBtn" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
     </header>
+    <div class="j-root j-life" id="workLife" hidden></div>
+    <h4 class="workspaceListTitle" id="workspaceListTitle">مساحات العمل</h4>
     <div class="workspaceDialogActions">
       <button class="btn" id="workspaceExport" type="button" disabled>تصدير مساحة العمل</button>
       <button class="btn" id="workspaceImport" type="button">استيراد حزمة</button>
       <button class="btn" id="workspaceProtectStorage" type="button">حماية التخزين</button>
       <button class="btn danger" id="workspaceResetCurrent" type="button" disabled>حذف الحالية</button>
       <button class="btn danger" id="workspaceResetAll" type="button">إعادة ضبط الكل</button>
-      <input class="srOnly" id="workspaceImportFile" type="file" accept="application/json,.json" />
+      <input class="srOnly" id="workspaceImportFile" type="file" accept="application/json,.json" aria-labelledby="workspaceImport" />
     </div>
     <div class="storageHealth" id="storageHealth" role="status" aria-live="polite"></div>
     <div class="status" id="workspaceStatus" role="status" aria-live="polite"></div>

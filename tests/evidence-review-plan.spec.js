@@ -1,11 +1,15 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import { PRODUCT_VERSION } from "./helpers/product-version.mjs";
+import { openStep } from "./helpers/guided-flow.js";
 
 async function openQueue(page, lens) {
   await page.goto("./");
   await page.locator("#langEn").click();
-  if (lens === "biopolitical") await page.locator('[data-lens="biopolitical"]').click();
+  if (lens === "biopolitical") {
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+  }
   await page.locator("#loadSampleBtn").click();
   await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
   const intelligence = page.locator("[data-evidence-intelligence]");

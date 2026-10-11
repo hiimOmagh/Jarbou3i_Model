@@ -17,6 +17,8 @@ const referenceUi = read("src/reference-ui.js");
 const explorer = read("src/relationship-explorer.js");
 const explorerStyles = read("src/relationship-explorer.css");
 const styles = read("src/styles.css");
+// The modern shell (UIX-2) is styled by the kernel and its own sheet.
+const shellStyles = read("src/ui/kernel.css") + read("src/ui/shell.css");
 const smokeBrowser = read("tests/smoke.spec.js");
 const applicationShellBrowser = read("tests/application-shell.spec.js");
 const resultsWorkspaceBrowser = read("tests/results-workspace.spec.js");
@@ -188,8 +190,9 @@ for (const token of [
   'role="radiogroup"',
   'role="radio"',
   'aria-checked="true"',
-  'role="tablist"',
-  'role="tabpanel"',
+  // The review is a case file: a labelled outline beside one document.
+  'class="sideNav j-case-outline" id="reviewNav"',
+  'id="reviewContent" tabindex="-1" aria-labelledby="reviewTitle"',
   'aria-modal="true"',
 ]) {
   if (!index.includes(token)) fail(`index accessibility token missing: ${token}`);
@@ -228,31 +231,40 @@ for (const token of [
 }
 for (const token of [
   'body[data-density="compact"]',
-  ".workspaceNavItem.active",
   ".sectionEyebrow",
-  ".shellNextAction",
   ".commandActions",
   ".skipLink:focus",
 ]) {
   if (!styles.includes(token)) fail(`Phase 2 shell stylesheet token missing: ${token}`);
 }
+// The current phase is marked by more than colour, controls keep a 44px
+// target (icon-only on phones too), and the next action is the one primary.
 for (const token of [
-  "body.dark .workspaceNavItem.active .workspaceNavIndex",
-  "background:#1d4ed8",
-  ".topActions .iconBtn,.topActions .shellControl",
-  "min-width:44px",
+  '.j-shell-phase[aria-current="step"] .j-shell-phase-index',
+  "--j-control: 44px",
+  ".j-shell-cluster .j-btn { min-width: var(--j-control)",
+  '[data-density="compact"] .j-shell-top',
+  ".j-shell-next",
 ]) {
-  if (!styles.includes(token)) fail(`Alpha.16 shell closure token missing: ${token}`);
+  if (!shellStyles.includes(token)) fail(`modern shell token missing: ${token}`);
 }
-if (!smokeBrowser.includes('.stageItem[aria-current="step"]')) {
+for (const token of [
+  'class="j-root j-shell" id="appShell"',
+  'id="shellNextAction"',
+  'data-variant="primary" id="shellNextAction"',
+  '<link rel="stylesheet" href="src/ui/shell.css" />',
+]) {
+  if (!index.includes(token)) fail(`modern shell markup token missing: ${token}`);
+}
+if (!smokeBrowser.includes('.j-shell-phase[aria-current="step"]')) {
   fail("workflow smoke assertion is not scoped to the workflow stage");
 }
 if (applicationShellBrowser.includes('"rgb(29, 78, 216)"')) {
   fail("responsive shell test must not require the desktop active-step fill at 320 px");
 }
 for (const token of [
-  'role="tab"',
-  "aria-selected",
+  // The case-file outline marks where the reader is.
+  '"aria-current", "location"',
   "aria-controls",
   "aria-expanded",
   "aria-labelledby",
@@ -551,7 +563,7 @@ for (const token of [
   "openInspectionOccurrence",
   "data-results-inspection",
   "data-inspection-id",
-  'state.activeReview === "inspection"',
+  'inspection: () => renderInspectionDirectory(',
 ]) {
   if (!app.includes(token)) fail(`Phase 3 inspection runtime token missing: ${token}`);
 }
@@ -606,7 +618,7 @@ if (explorer.includes('.addEventListener("click"')) {
 if (!releaseAudit.includes('connectionsTab.press("Enter")')) {
   fail("release audit connections activation contract missing");
 }
-for (const token of ['connections.press("Enter")', 'data-bio-review="connections"]\')).toHaveAttribute("aria-selected", "true")']) {
+for (const token of ['connections.press("Enter")', 'data-bio-review="connections"]\')).toHaveAttribute("aria-current", "location")']) {
   if (!relationshipBrowser.includes(token)) fail(`explorer tab synchronization contract missing: ${token}`);
 }
 const lensImportBrowser = read("tests/lens-import-contract.spec.js");
@@ -633,7 +645,7 @@ for (const token of ["minmax(132px,1fr)", "overflow-x:auto", "scrollbar-width:th
 for (const token of ["visual acceptance repair", ".navBtn.active .badge", "grid-template-columns:64px minmax(0,1fr)"]) {
   if (!styles.includes(token)) fail(`alpha.4 visual repair contract missing: ${token}`);
 }
-for (const token of ['rel="preload" as="image" href="assets/jarbou3i-mascot-512.png"', 'decoding="sync"']) {
+for (const token of ['rel="preload" as="image" href="assets/jarbou3i-mascot-192.png"', 'decoding="sync"']) {
   if (!index.includes(token)) fail(`critical visual asset contract missing: ${token}`);
 }
 

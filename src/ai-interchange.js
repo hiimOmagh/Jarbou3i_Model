@@ -1125,7 +1125,9 @@
       // Without source access the placeholder is not evidence; nothing cites it.
       evidenceAccess === "none"
         ? "interventions.evidence_of_benefit: always empty [] without source access, since the placeholder is not evidence; state the benefit itself in stated_benefit"
-        : "interventions.evidence_of_benefit: evidence IDs (E1, E2…), never descriptions; state the benefit itself in stated_benefit",
+        : "interventions.evidence_of_benefit: evidence IDs listed in this answer’s evidence items (E1, E2…), never descriptions or IDs that are not there; state the benefit itself in stated_benefit",
+      // An empty counter_evidence fails the import; the AI must say something checkable.
+      "evidence.items.counter_evidence: never empty; give the strongest point against the claim, or say why none was found",
       "power_asymmetries.between: refs of actors, affected_populations, or institutions in this answer, never names",
       "links.from, links.to: refs of records in this answer (an actor, intervention, evidence item…), never names or descriptions",
       // The importer rejects any other code or number; the AI must see them all.

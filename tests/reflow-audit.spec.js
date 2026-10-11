@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openStep } from "./helpers/guided-flow.js";
 
 const LOCALES = [
   { id: "ar", dir: "rtl", topic: "الوصول إلى الخدمات العامة والأدلة الصحية" },
@@ -61,8 +62,11 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await expect(page.locator("html")).toHaveAttribute("dir", locale.dir);
           await expectNoPageOverflow(page);
 
+          await openStep(page, "lens");
           await page.locator('[data-lens="biopolitical"]').click();
+          await openStep(page, "topic");
           await page.locator("#topicInput").fill(locale.topic);
+          await openStep(page, "prompt");
           const preview = page.locator("#previewPromptBtn");
           await preview.focus();
           await preview.press("Enter");
@@ -79,7 +83,7 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           const connectionsTab = page.locator('[data-bio-review="connections"]');
           await connectionsTab.focus();
           await connectionsTab.press("Enter");
-          await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-selected", "true");
+          await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-current", "location");
           await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-pressed", "true");
           await expect(page.locator('[data-map-view="spatial"]')).toBeDisabled();
           await expectNoPageOverflow(page);

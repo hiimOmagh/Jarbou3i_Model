@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openStep } from "./helpers/guided-flow.js";
 
 async function renderRegionCounts(page) {
   return page.evaluate(() =>
@@ -30,10 +31,12 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
   await page.setViewportSize({ width: 320, height: 800 });
   const themeBounds = await page.locator("#themeBtn").boundingBox();
   expect(themeBounds).not.toBeNull();
-  expect(themeBounds.width).toBeGreaterThanOrEqual(44);
+  // 44px target; the 0.01px allows float noise in the measured box (Firefox: 43.999996).
+  expect(themeBounds.width).toBeGreaterThanOrEqual(44 - 0.01);
   await page.locator("#themeBtn").click();
   await expect(page.locator("body")).toHaveClass(/dark/);
-  await expect(page.locator('.workspaceNavItem.active .workspaceNavIndex')).toBeVisible();
+  await expect(page.locator('.j-shell-phase[aria-current="step"] .j-shell-phase-index')).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
   const density = page.locator("#densityBtn");
   const beforeDensity = await renderRegionCounts(page);
@@ -53,6 +56,7 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
   await expect(page.locator('[data-shell-nav="engine"]')).toHaveAttribute("aria-current", "step");
   await page.locator("#enginePanel").scrollIntoViewIfNeeded();
 
+  await openStep(page, "lens");
   const biopoliticalLens = page.locator('[data-lens="biopolitical"]');
   await biopoliticalLens.click();
   await expect(biopoliticalLens).toHaveAttribute("aria-checked", "true");
@@ -88,7 +92,9 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   await expect(workflowNav).toBeFocused();
   await expect(page.locator("#reviewNavShortcut")).toHaveAttribute("tabindex", "-1");
 
+  await openStep(page, "topic");
   await page.locator("#topicInput").fill("Regional water governance, 2024–2026");
+  await openStep(page, "prompt");
   await page.locator("#copyPromptBtn").click();
   if (await page.locator("#modalBackdrop.show").isVisible()) {
     await page.locator("#modalClose").click();
@@ -115,6 +121,8 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   expect(shellBounds).not.toBeNull();
   expect(shellBounds.x).toBeGreaterThanOrEqual(0);
   expect(shellBounds.x + shellBounds.width).toBeLessThanOrEqual(320);
-  await expect(page.locator(".topicCommand .commandPrimary")).toBeVisible();
-  await expect(page.locator(".topicCommand .commandSecondary")).toBeVisible();
+  // The guided flow fits a phone: its steps and the open step's actions stay in reach.
+  await expect(page.locator('[data-flow-step="answer"][aria-current="step"]')).toBeVisible();
+  await expect(page.locator("#importBtn")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });

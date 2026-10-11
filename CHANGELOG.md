@@ -2,13 +2,89 @@
 
 ## Unreleased
 
+### Product decisions
+
+- ADR-0002 selects UX-0 concept B (case file) as the target experience, waives
+  the Gate 0 human benchmark and authorizes UIX-1 and UIX-2. The app's screens
+  are rebuilt to the prototype's structure, one at a time.
+
+### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file and work panel
+
+- Rebuilds the global header and workspace bar on the kernel, in the case-file
+  direction:
+  - the open case's title as global context;
+  - the save state as a status with shape, colour and text;
+  - the current phase marked by more than colour;
+  - one primary next action whose arrow mirrors itself in Arabic;
+  - 44px icon buttons on phones.
+  All existing IDs and behaviour are kept. The rest of the app keeps its
+  styling for now.
+- Rebuilds setup as the prototype's guided flow, one step at a time:
+  - topic, lens, settings, prompt, answer, with the mascot guide beside them;
+  - the guide explains each step and reacts to the pasted answer;
+  - a step list to jump to any step, three example topics, Back and Continue;
+  - the welcome card, stage bar and how-to list it replaces are removed.
+  Every control keeps its ID and behaviour; a saved import step reopens on
+  the answer. Unlike the prototype, the mascot does not bob while idle: that
+  endless animation cut WebKit to 2–6 frames a second.
+- Rebuilds the review as the prototype's case file (UIX-3):
+  - one document in reading order, every section in place, instead of tabs;
+  - an outline beside it jumps to a section, focuses it and marks where the
+    reader is (the section in focus, else the one at the top of the view);
+  - the Model map's cards open the chosen layer or pillar in the document;
+  - the relationship map still loads only when its section comes into view,
+    or at once when its outline entry is chosen.
+  "Show in map" on a biopolitical record works again (it called an undefined
+  helper).
+- Rebuilds work saving as the prototype's work panel (UIX-4):
+  - the header save state is now the save light: a button that also says when
+    a saved draft is not committed or a recovery snapshot was found, and opens
+    the work panel; the separate Workspaces button is removed;
+  - the panel, "Where your work is", shows the open workspace's recovery
+    snapshot, working draft and immutable revisions, each with its actions
+    (restore, discard, edit, review and commit, revision history), above the
+    list of workspaces;
+  - banners above the flow and the case file raise a save that another tab
+    got to first (with a way to reopen the latest version), a recovery
+    snapshot, a damaged workspace and being offline.
+  The open workspace's row no longer repeats the actions its cards hold.
+  Edits discarded when closing the editor no longer leave a recovery snapshot
+  behind, and the hidden file input of "restore a workspace file" is named by
+  its button.
+- Adds a command palette (Ctrl/⌘ K, or Commands in the header):
+  - it lists every enabled control of the shell and of the open review by its
+    own label, and runs one by clicking it;
+  - focus lands on the control used, and Escape gives focus back;
+  - it works in AR, EN and FR.
+- Gives the whole app the case-file look in both themes before each view is
+  rebuilt:
+  - the legacy colour and font tokens follow the kernel;
+  - text on accent fills stays readable in the dark theme;
+  - the old shell's styles, which no longer matched anything, are removed.
+- Adds the kernel of the new interface
+  (`src/ui/`, see `docs/features/design-system-kernel.md`):
+  - j-prefixed tokens, dark and light themes, and two densities;
+  - scoped accessibility foundations and base controls;
+  - a DOM-contract registry and a component harness checked in AR, EN and FR.
+- Guards that the kernel cannot restyle the current app: every token, class
+  and selector is namespaced, and the app's computed styles are compared with
+  and without it.
+
 ### AI answer import
 
+- Imports a pasted answer only when it is a complete, canonical analysis, in
+  both lenses. An answer with gaps is held back with a targeted completion
+  prompt, and the merged reply is checked again; drafts saved earlier still
+  open.
+- Refuses the old six-layer Biopolitical format instead of migrating it; the
+  user generates a new prompt.
+- The Biopolitical prompt now asks for a non-empty `counter_evidence` and for
+  `evidence_of_benefit` IDs that exist in the answer's evidence.
 - Adds AI Interchange v1, a compact Biopolitical generation contract with a
-  deterministic compiler and a reviewable generated-draft fallback.
-- Salvages AI answers instead of rejecting them, in both lenses: unambiguous
-  format slips are normalized, invalid values are quarantined in the import
-  audit, and the remaining gaps become exact-path completion work.
+  deterministic compiler.
+- Salvages AI answers to find their gaps, in both lenses: unambiguous format
+  slips are normalized, invalid values are quarantined in the import audit,
+  and the remaining gaps become exact-path completion work.
 - Completes cut-off answers with a continue prompt whose reply is joined to the
   first part automatically.
 - Merges the reply to a targeted completion prompt (the missing parts) into the
@@ -55,6 +131,13 @@
   record refs, not names.
 - Stops counting the compilation of a Biopolitical answer as repairs. Every
   answer in the requested form showed about 28 repairs.
+- Gives the 18 Biopolitical self-audit checks and the 13 capture criteria
+  English labels in the app and the report ("Statistics and quotations
+  verified", not the raw key "Statistics Quotations Verified"); Arabic and
+  French already had theirs.
+- Shows a Biopolitical link that is missing an end as "— → MEC1" in the app
+  and the report, not "undefined → MEC1", and no longer counts a link with
+  neither end toward the Mechanisms pillar, in all three languages.
 - Offers no repair prompt for a valid answer with nothing to fix. The button
   stayed active, and its prompt told the AI that JSON parsing had failed.
 - Offers the continue prompt for an answer cut off after a wrong closing

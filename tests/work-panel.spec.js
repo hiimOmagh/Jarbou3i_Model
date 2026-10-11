@@ -1,0 +1,180 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { clearWorkspaceStorage, damageFirstWorkspace } from "./helpers/browser-persistence.js";
+
+// The work panel (UX-0, ADR-0002): the save light says where the work is and
+// opens "Where your work is"; banners raise what needs a decision.
+const light = (page) => page.locator("#workspaceSaveState");
+
+async function openEditor(page) {
+  await light(page).click();
+  await page.locator("#workLife").getByRole("button", { name: "Edit draft" }).click();
+}
+
+async function setTitle(page, title) {
+  await page.locator('[data-editor-path="/subject"]').click();
+  const field = page.locator("#editorField");
+  const subject = JSON.parse(await field.inputValue());
+  subject.title = title;
+  await field.fill(JSON.stringify(subject, null, 2));
+  await field.press("Control+Enter");
+  await expect(page.locator("#editorDirty")).toContainText("Unsaved");
+}
+
+async function editTitle(page, title) {
+  await openEditor(page);
+  await setTitle(page, title);
+}
+
+// Unsaved editor edits, caught by the recovery journal and cut off by a reload.
+async function interruptEdit(page, title) {
+  await editTitle(page, title);
+  await page.waitForTimeout(700);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.reload();
+}
+
+test.describe("Work panel", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("./");
+    await clearWorkspaceStorage(page);
+    await page.reload();
+    await page.locator("#langEn").click();
+  });
+
+  test("the save light opens where the work is", async ({ page }) => {
+    await expect(light(page)).toHaveText("No saved workspace");
+    await page.locator("#loadSampleBtn").click();
+    await expect(light(page)).toHaveText("Saved locally");
+    await expect(light(page)).toHaveAttribute("aria-label", "Where your work is: Saved locally");
+    await light(page).click();
+    await expect(page.locator("#workspaceDialogTitle")).toHaveText("Where your work is");
+    const panel = page.locator("#workLife");
+    await expect(panel.locator(".j-life-card")).toHaveCount(3);
+    await expect(panel).toContainText("None. No unsaved work was interrupted.");
+    await expect(panel).toContainText("Matches revision 1, the current head.");
+    await expect(panel.locator(".j-life-revs li")).toHaveCount(1);
+    await expect(panel.locator(".j-life-revs li")).toContainText("Current head");
+    await panel.getByRole("button", { name: "Revision history" }).click();
+    await expect(page.locator("#revisionDialog")).toBeVisible();
+  });
+
+  test("a saved draft that is not committed says so and leads to the commit", async ({ page }) => {
+    await page.locator("#loadSampleBtn").click();
+    await editTitle(page, "Work panel proof");
+    await page.locator("#editorSave").click();
+    await expect(page.locator("#editorDirty")).toContainText("No unsaved");
+    await page.locator("#editorClose").click();
+    await expect(light(page)).toHaveText("Not committed");
+    await expect(light(page)).toHaveAttribute("data-life", "uncommitted");
+    await light(page).click();
+    await expect(page.locator("#workLife")).toContainText("Draft saved locally, not committed yet. Revision 1 is the current head.");
+    await page.locator("#workLife").getByRole("button", { name: "Review and commit" }).click();
+    await expect(page.locator("#resolutionDialog")).toBeVisible();
+  });
+
+  test("a recovery snapshot cut off by a reload is raised and restored in the editor", async ({ page }) => {
+    await page.locator("#loadSampleBtn").click();
+    await interruptEdit(page, "Recovered from the banner");
+    const banner = page.locator('#lifeBanners [data-tone="warn"]');
+    await expect(banner).toContainText("Unsaved recovery snapshot found");
+    await expect(light(page)).toHaveText("Recovery found");
+    await expect(light(page)).toHaveAttribute("data-life", "snapshot");
+    await banner.getByRole("button", { name: "Restore snapshot" }).click();
+    await expect(page.locator("#editorField")).toHaveValue(/"title": "Recovered from the banner"/);
+    await expect(page.locator("#editorDirty")).toContainText("Unsaved");
+  });
+
+  test("discarding the recovery snapshot clears the banner and the light", async ({ page }) => {
+    await page.locator("#loadSampleBtn").click();
+    await interruptEdit(page, "Left behind");
+    await light(page).click();
+    await expect(page.locator("#workLife")).toContainText("Recovery found");
+    await page.locator("#workLife").getByRole("button", { name: "Discard snapshot" }).click();
+    await expect(page.locator("#workLife")).toContainText("None. No unsaved work was interrupted.");
+    await expect(page.locator("#workspaceDialog")).toBeFocused();
+    await expect(page.locator("#lifeBanners")).toBeHidden();
+    await expect(light(page)).toHaveText("Saved locally");
+  });
+
+  test("edits discarded in the editor leave no recovery snapshot behind", async ({ page }) => {
+    await page.locator("#loadSampleBtn").click();
+    await editTitle(page, "Thrown away");
+    await page.waitForTimeout(700);
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.locator("#editorClose").click();
+    await light(page).click();
+    await page.locator("#workLife").getByRole("button", { name: "Edit draft" }).click();
+    await expect(page.locator("#editorDialog")).toBeFocused();
+    await expect(page.locator("#editorRecovery")).toBeHidden();
+    await page.locator("#editorClose").click();
+    await expect(light(page)).toHaveText("Saved locally");
+  });
+
+  test("a save another tab got to first is raised until the workspace is reopened", async ({ page, context }) => {
+    await page.locator("#loadSampleBtn").click();
+    await expect(light(page)).toHaveText("Saved locally");
+    // Opened before the other tab saves, edited after: the recovery journal is
+    // shared, so earlier edits here would reach the other tab as a snapshot.
+    await openEditor(page);
+    const other = await context.newPage();
+    await other.goto("./");
+    await other.locator("#langEn").click();
+    await editTitle(other, "Saved in the other tab");
+    await other.locator("#editorSave").click();
+    await expect(other.locator("#editorDirty")).toContainText("No unsaved");
+    await other.close();
+
+    await setTitle(page, "Edited in this tab");
+    await page.locator("#editorSave").click();
+    await expect(page.locator("#editorFieldStatus")).toContainText("changed in another tab");
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.locator("#editorClose").click();
+    await expect(light(page)).toHaveText("Conflict");
+    await expect(light(page)).toHaveAttribute("data-life", "conflict");
+    const banner = page.locator('#lifeBanners [data-tone="crit"]');
+    await expect(banner).toContainText("This workspace changed in another tab or window.");
+    await banner.getByRole("button", { name: "Reopen workspace" }).click();
+    await expect(page.locator("#topicInput")).toHaveValue("Saved in the other tab");
+    await expect(light(page)).toHaveText("Not committed");
+    await expect(page.locator("#lifeBanners")).toBeHidden();
+    await expect(light(page)).toBeFocused();
+  });
+
+  test("a damaged workspace is raised with a way to review it", async ({ page }) => {
+    await page.locator("#loadSampleBtn").click();
+    await expect(light(page)).toHaveText("Saved locally");
+    await damageFirstWorkspace(page);
+    await page.reload();
+    const banner = page.locator('#lifeBanners [data-tone="crit"]');
+    await expect(banner).toContainText("One saved workspace failed its integrity check.");
+    await banner.getByRole("button", { name: "Review workspaces" }).click();
+    await expect(page.locator("#workspaceDialog")).toBeFocused();
+    await expect(page.locator(".workspaceRow.corrupt")).toHaveCount(1);
+  });
+
+  test("says when the device is offline", async ({ page, context }) => {
+    await context.setOffline(true);
+    await expect(page.locator("#lifeBanners")).toContainText("You are offline.");
+    await context.setOffline(false);
+    await expect(page.locator("#lifeBanners")).toBeHidden();
+  });
+
+  test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
+    await page.locator("#langAr").click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(light(page)).toHaveAttribute("aria-label", "أين عملك: محفوظ محليًا");
+    await light(page).click();
+    await expect(page.locator("#workspaceDialogTitle")).toHaveText("أين عملك");
+    await expect(page.locator("#workLife")).toContainText("تطابق النسخة 1، وهي النسخة الحالية.");
+    const problems = await page.evaluate(async () => {
+      const { checkContracts } = await import("./src/ui/contracts.js");
+      return [document.getElementById("workLife"), document.querySelector(".j-shell-cluster")].flatMap((root) => checkContracts(root));
+    });
+    expect(problems).toEqual([]);
+    // The whole panel, its restore-file input included.
+    const { violations } = await new AxeBuilder({ page }).include("#workspaceDialog").include("#workspaceSaveState").analyze();
+    const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
+    expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
+  });
+});
