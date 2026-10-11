@@ -1792,11 +1792,15 @@ function refreshDynamicMessages() {
     status.textContent = t("analysisImported");
   }
 }
-function toast(msg, kind = "") {
+let toastTimer = 0;
+// announce:false when an on-screen status region already announces the same message.
+function toast(msg, kind = "", { announce = true } = {}) {
   const el = $("toast");
+  el.setAttribute("aria-live", announce ? "polite" : "off");
   el.textContent = msg;
-  el.className = "toast show";
-  setTimeout(() => el.classList.remove("show"), 2600);
+  el.className = kind ? `toast show ${kind}` : "toast show";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
 }
 function setTheme(isDark, persist = true) {
   document.body.classList.toggle("dark", !!isDark);
@@ -2045,9 +2049,9 @@ function importErrorText(error) {
   }
   if (error?.code === "TRUNCATED_JSON" && error.fromReply) {
     return labelText(
-      `The AI says this answer is cut off, so it could not repair it. The answer is back in the box: click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears below.`,
-      `يقول الذكاء الاصطناعي إن هذه الإجابة مقطوعة، لذا لم يستطع إصلاحها. أُعيدت الإجابة إلى المربع: انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أدناه.`,
-      `L’IA indique que cette réponse est coupée et qu’elle ne peut donc pas la réparer. La réponse a été remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessous.`,
+      `The AI says this answer is cut off, so it could not repair it. The answer is back in the box: click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears above.`,
+      `يقول الذكاء الاصطناعي إن هذه الإجابة مقطوعة، لذا لم يستطع إصلاحها. أُعيدت الإجابة إلى المربع: انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أعلاه.`,
+      `L’IA indique que cette réponse est coupée et qu’elle ne peut donc pas la réparer. La réponse a été remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessus.`,
     );
   }
   if (error?.code === "INVALID_JSON" && error.fromReply) {
@@ -2059,9 +2063,9 @@ function importErrorText(error) {
   }
   if (error?.code === "TRUNCATED_JSON") {
     return labelText(
-      `The AI’s answer stops in the middle. Click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears below.`,
-      `تتوقف إجابة الذكاء الاصطناعي في منتصفها. انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أدناه.`,
-      `La réponse de l’IA s’arrête au milieu. Cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessous.`,
+      `The AI’s answer stops in the middle. Click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears above.`,
+      `تتوقف إجابة الذكاء الاصطناعي في منتصفها. انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أعلاه.`,
+      `La réponse de l’IA s’arrête au milieu. Cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessus.`,
     );
   }
   if (error?.code === "CUT_OFF_CLAIM_ON_COMPLETE") {
@@ -6917,7 +6921,7 @@ function showOperationFailure(error, operation, invoker) {
     `L’opération s’est arrêtée sans altérer les données. ${diagnostic.code} à ${diagnostic.path}. Diagnostic ${diagnostic.id}.`,
   );
   setWorkspaceStatus("bad", summary);
-  toast(summary);
+  toast(summary, "bad");
   showModal(labelText("Operation diagnostics", "تشخيص العملية", "Diagnostic de l’opération"), JSON.stringify(diagnostic, null, 2), invoker);
   return diagnostic;
 }
@@ -8344,7 +8348,7 @@ $("copyPromptBtn").onclick = async (event) => {
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
-    toast(t("topicNeeded"));
+    toast(t("topicNeeded"), "bad", { announce: false });
     $("topicStatus").className = "status bad";
     $("topicStatus").textContent = t("topicNeeded");
     return;
@@ -8368,7 +8372,7 @@ $("previewPromptBtn").onclick = (event) => {
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
-    toast(t("topicNeeded"));
+    toast(t("topicNeeded"), "bad");
     return;
   }
   if (state.evidenceAccess === "provided" && !$("sourcesInput").value.trim()) {
@@ -8440,8 +8444,9 @@ $("importBtn").onclick = async () => {
   $("importBtn").disabled = true;
   $("topicStatus").className = "status good";
   $("topicStatus").textContent = t("analysisImported");
-  toast(t("analysisImported"));
+  toast(t("analysisImported"), "", { announce: false });
   renderAll();
+  $("reviewTitle").focus({ preventScroll: true });
   if (await persistImportedAnalysis(a)) discardTrip();
   document
     .getElementById("reviewPanel")
@@ -8462,7 +8467,7 @@ $("repairPromptBtn").onclick = async (event) => {
         "Prompt copié. Collez-le dans la même conversation avec l’IA.",
       )
     : t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied");
-  toast(ok ? copied : t("copyFailed"));
+  toast(ok ? copied : t("copyFailed"), ok ? "" : "bad");
   if (!ok)
     showModal(
       language ? invoker.textContent : t(truncated ? "continuePrompt" : completion ? "completionPrompt" : "repairPrompt"),
@@ -8480,7 +8485,7 @@ $("loadSampleBtn").onclick = async (event) => {
   if (a.analysis_lens === "biopolitical") {
     const validation = BIO_INTEGRITY.validateImport(a);
     if (!validation.ok) {
-      toast(importErrorText({ validation }));
+      toast(importErrorText({ validation }), "bad");
       return;
     }
     state.importValidation = validation;
@@ -8503,6 +8508,7 @@ $("loadSampleBtn").onclick = async (event) => {
   $("importBtn").disabled = true;
   toast(t("sampleLoaded"));
   renderAll();
+  $("reviewTitle").focus({ preventScroll: true });
   if (await persistImportedAnalysis(a)) discardTrip();
   document
     .getElementById("reviewPanel")
@@ -8677,7 +8683,7 @@ window.addEventListener("beforeunload", (event) => {
 });
 $("modalCopy").onclick = async () => {
   const ok = await copyText($("modalContent").textContent);
-  toast(ok ? t("copied") : t("copyFailed"));
+  toast(ok ? t("copied") : t("copyFailed"), ok ? "" : "bad");
 };
 [
   "analysisLang",

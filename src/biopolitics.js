@@ -175,6 +175,7 @@
         pillars: "Protocol",
         evidence: "Evidence test",
         conclusion: "Judgment",
+        inspection: "Inspection",
         exports: "Export",
       },
       navHints: {
@@ -182,6 +183,7 @@
         pillars: "Nine analytical pillars",
         evidence: "Sources and rival explanations",
         conclusion: "Calibrated conclusion and audit",
+        inspection: "Identifiers, provenance, and audit trail",
         exports: "Standalone report",
       },
       pillars: {
@@ -286,6 +288,7 @@
         pillars: "البروتوكول",
         evidence: "اختبار الأدلة",
         conclusion: "الحكم",
+        inspection: "الفحص",
         exports: "التصدير",
       },
       navHints: {
@@ -293,6 +296,7 @@
         pillars: "الركائز التحليلية التسع",
         evidence: "المصادر والتفسيرات المنافسة",
         conclusion: "الخلاصة المُعايرة والتدقيق",
+        inspection: "المعرّفات والمصادر وسجل التدقيق",
         exports: "تقرير مستقل",
       },
       pillars: {
@@ -398,6 +402,7 @@
         pillars: "Protocole",
         evidence: "Test des preuves",
         conclusion: "Jugement",
+        inspection: "Inspection",
         exports: "Export",
       },
       navHints: {
@@ -405,6 +410,7 @@
         pillars: "Neuf piliers analytiques",
         evidence: "Sources et explications rivales",
         conclusion: "Conclusion calibrée et audit",
+        inspection: "Identifiants, provenance et piste d’audit",
         exports: "Rapport autonome",
       },
       pillars: {

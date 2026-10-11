@@ -7,6 +7,19 @@
 - ADR-0002 selects UX-0 concept B (case file) as the target experience, waives
   the Gate 0 human benchmark and authorizes UIX-1 and UIX-2. The app's screens
   are rebuilt to the prototype's structure, one at a time.
+- `docs/model-alignment-review.md` keeps the 2026-10-05 proposal comparing both
+  lenses with their reference models. Nothing in it is implemented yet.
+
+### Accessibility
+
+- Loading or importing an analysis moves focus to the review heading.
+- A newer toast is no longer hidden by an older toast's timer. Failure toasts
+  are shown as failures, and a toast that repeats an on-screen status message
+  is not announced twice.
+- Every Biopolitical review section, inspection included, has a title and a
+  hint in Arabic, English and French.
+- A cut-off answer's message points up to the box for the rest of the answer,
+  where it now appears.
 
 ### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file and work panel
 

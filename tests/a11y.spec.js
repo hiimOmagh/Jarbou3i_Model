@@ -78,3 +78,92 @@ test("runtime accessibility and keyboard contract", async ({ page }) => {
 
   await expectNoSeriousViolations(page);
 });
+
+// Lowest WCAG contrast between each visible text element and every opaque stop of its own fill.
+function auditFilledText(selector) {
+  const channels = (value) => value.match(/[\d.]+/g).slice(0, 4).map(Number);
+  const luminance = ([r, g, b]) => {
+    const linear = (c) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+  };
+  const contrast = (a, b) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+  return [...document.querySelectorAll(selector)].flatMap((element) => {
+    const style = getComputedStyle(element);
+    if (!element.getClientRects().length || !(element.innerText || "").trim()) return [];
+    if (!style.color.startsWith("rgb") || (!style.backgroundImage.includes("gradient") && !style.backgroundColor.startsWith("rgb"))) return [];
+    const fills = style.backgroundImage.includes("gradient")
+      ? [...style.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map((match) => channels(match[0]))
+      : [channels(style.backgroundColor)];
+    if (fills.some((fill) => fill.length === 4 && fill[3] < 1)) return [];
+    const text = channels(style.color);
+    const ratio = Math.min(...fills.map((fill) => contrast(text, fill)));
+    return [{ id: element.id || element.className, ratio: Number(ratio.toFixed(2)) }];
+  });
+}
+
+// Measure settled colors, not values midway through a CSS transition.
+const settleTransitions = (page) =>
+  page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {}))));
+
+for (const colorScheme of ["light", "dark"]) {
+  test(`an error toast keeps readable text in ${colorScheme} theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "prompt");
+    await page.locator("#copyPromptBtn").click();
+    await expect(page.locator("#toast")).toHaveClass(/\bbad\b/);
+    await settleTransitions(page);
+    const audited = await page.evaluate(auditFilledText, "#toast.show");
+    expect(audited.map((entry) => entry.id)).toEqual(["toast"]);
+    expect(audited.filter((entry) => entry.ratio < 4.5)).toEqual([]);
+  });
+}
+
+test("every review section is titled and described in every language and lens", async ({ page }) => {
+  await page.goto("./");
+  for (const lens of ["strategic", "biopolitical"]) {
+    for (const lang of ["Ar", "En", "Fr"]) {
+      await page.locator(`#lang${lang}`).click();
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      await expect(page.locator("#reviewNav button").first()).toBeVisible();
+      const untitled = await page.locator("#reviewNav button").evaluateAll((entries) =>
+        entries
+          .filter((entry) => !entry.querySelector(".navTitle")?.textContent.trim() || !entry.querySelector(".navHint")?.textContent.trim())
+          .map((entry) => entry.dataset.review || entry.dataset.bioReview),
+      );
+      expect(untitled, `${lens}/${lang}`).toEqual([]);
+    }
+  }
+});
+
+test("loading or importing an analysis moves focus to the review heading", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#loadSampleBtn").click();
+  await expect(page.locator("#reviewTitle")).toBeFocused();
+
+  await openStep(page, "answer");
+  const analysis = JSON.parse(await page.locator("#jsonInput").inputValue());
+  analysis.subject.title = `${analysis.subject.title} (again)`;
+  await page.locator("#jsonInput").fill(JSON.stringify(analysis));
+  await expect(page.locator("#importBtn")).toBeEnabled();
+  await page.locator("#importBtn").click();
+  await expect(page.locator("#reviewTitle")).toBeFocused();
+});
+
+test("a newer toast is not dismissed by an older toast's timer, and duplicated status toasts stay silent", async ({ page }) => {
+  await page.goto("./");
+  await openStep(page, "prompt");
+  await page.locator("#copyPromptBtn").click();
+  await expect(page.locator("#toast")).toHaveAttribute("aria-live", "off");
+  await page.waitForTimeout(2000);
+  await page.locator("#previewPromptBtn").click();
+  await expect(page.locator("#toast")).toHaveAttribute("aria-live", "polite");
+  await page.waitForTimeout(900);
+  await expect(page.locator("#toast")).toHaveClass(/\bshow\b/);
+});
