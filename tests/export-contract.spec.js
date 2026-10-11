@@ -252,6 +252,9 @@ test.describe('Strategic HTML report content', () => {
       const lines = bio.recordsFor('mechanisms_infrastructure', analysis, 'ar').map((record) => record.title);
       return lines.find((title) => title.includes('ZZ1'));
     });
+    // A fresh page: in Firefox, content written over the app while its startup
+    // is still reading storage can wait for a load event that never comes.
+    await page.goto('about:blank');
     await page.setContent(`<!doctype html><html lang="ar" dir="rtl"><body><h3 id="link">${unresolved}</h3></body></html>`);
     const forward = await page.evaluate(() => {
       const node = document.getElementById('link').firstChild;

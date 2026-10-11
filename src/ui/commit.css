@@ -1,27 +1,16 @@
 /* Jarbou3i commit and revision history dialogs (UIX-4, ADR-0002): the exact
    diff, its approval and the immutable revisions. Classes are .j-commit-*,
-   .j-diff-* and .j-rev-*; the buttons, fields and chips are kernel controls. */
+   .j-diff-* and .j-rev-*; the shell, trust line, section heads, actions and
+   revision list are dialog.css, the buttons, fields and chips kernel controls. */
 
 /* Inside the dialog panel, so it takes the panel's colour. */
 .j-commit { display: grid; gap: var(--j-s-3); margin-top: var(--j-s-3); background: transparent; }
-.j-commit-trust {
-  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-inline-start: 4px solid var(--j-signal);
-  border-radius: var(--j-r-2); background: var(--j-signal-wash); color: var(--j-fg); font-size: var(--j-t-13);
-}
 
 /* Base, source, validation and integrity: label above value. */
 .j-commit-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--j-s-2); margin: 0; }
 .j-commit-facts > div { min-width: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); }
 .j-commit-facts dt { color: var(--j-fg-muted); font-size: var(--j-t-12); }
 .j-commit-facts dd { margin: var(--j-s-1) 0 0; color: var(--j-fg); font-weight: 600; overflow-wrap: anywhere; }
-
-.j-commit-head { display: flex; align-items: center; justify-content: space-between; gap: var(--j-s-2); }
-.j-commit-head h4 { margin: 0; font-size: var(--j-t-14); }
-/* A count or a plain tag; the kernel chip is kept for a tone. */
-.j-commit-tag {
-  flex: none; padding: 1px var(--j-s-2); border: 1px solid var(--j-line); border-radius: 999px;
-  background: var(--j-panel); color: var(--j-fg-muted); font-size: var(--j-t-12);
-}
 
 /* Not scroll boxes of their own: they have nothing to focus, so a keyboard
    could not scroll them. The dialog scrolls instead. */
@@ -45,31 +34,10 @@
 .j-commit-confirm { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: var(--j-s-2); min-height: 44px; padding-block: var(--j-s-2); color: var(--j-fg); cursor: pointer; }
 .j-commit-confirm input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--j-signal); }
 
-.j-commit-acts { display: flex; justify-content: flex-end; gap: var(--j-s-2); }
-
 /* Revisions beside the comparison with the current head. */
 .j-rev-grid { display: grid; grid-template-columns: minmax(260px, .8fr) minmax(0, 1.4fr); gap: var(--j-s-4); align-items: start; }
 .j-rev-list, .j-rev-compare { display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; }
-/* Its buttons take focus, so the keyboard can scroll it. */
-.j-rev-items { display: grid; gap: var(--j-s-1); max-height: 56vh; overflow-y: auto; padding: var(--j-s-1); }
-.j-rev-item {
-  display: grid; gap: var(--j-s-1); min-height: 44px; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line);
-  border-radius: var(--j-r-2); background: transparent; color: var(--j-fg); text-align: start; cursor: pointer;
-}
-.j-rev-item:hover { background: var(--j-raise); }
-.j-rev-item:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
-/* Selected by a thicker leading edge too, not by colour alone. */
-.j-rev-item[aria-pressed="true"] { background: var(--j-signal-wash); border-color: var(--j-signal); border-inline-start-width: 4px; }
-.j-rev-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); }
-.j-rev-item .j-chip { background: var(--j-panel); }
-.j-rev-item code { overflow-wrap: anywhere; font-size: var(--j-t-12); }
-.j-rev-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--j-s-2); font-size: var(--j-t-12); }
 
 @media (max-width: 720px) {
   .j-commit-approve, .j-diff-vals, .j-rev-grid { grid-template-columns: 1fr; }
-  .j-rev-items { max-height: 250px; }
-}
-
-@media (forced-colors: active) {
-  .j-rev-item[aria-pressed="true"] { outline: 2px solid Highlight; }
 }

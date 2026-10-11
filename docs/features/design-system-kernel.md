@@ -212,8 +212,8 @@ kernel controls.
   right in monospace.
 - **Approval:** the approver and rationale are kernel fields; the
   confirmation is a 44px label.
-- **Revisions:** each is a button with `aria-pressed`; the current head
-  carries an `ok` chip, imported and restored a plain tag.
+- **Revisions:** a pick list (see Dialogs); the current head carries an `ok`
+  chip, imported and restored a plain chip.
 - **Status:** `#resolutionStatus`, `#revisionStatus` and `#revisionBlocked`
   are kernel notes.
 - **Counts:** `pluralText` uses the language's plural forms (Arabic has six).
@@ -224,26 +224,47 @@ kernel controls.
 
 ## Import and export
 
-`src/ui/exchange.css` (`.j-export*`, `.j-audit*`): the case file's exports
+`src/ui/exchange.css` (`.j-export*`, `.j-audit-*`): the case file's exports
 and the import's review details under the answer.
 
 - **Exports:** the HTML report and the canonical JSON are kernel cards with
   kernel buttons; the report's failure is a `warn` note with a retry. "Inspect
-  the complete canonical contract" is a disclosure whose code block takes
-  focus, so it can be scrolled from the keyboard.
-- **Import review details:** `#importAuditDetails` keeps its groups
+  the complete canonical contract" is a kernel disclosure whose code block
+  takes focus, so it can be scrolled from the keyboard.
+- **Import review details:** `#importAuditDetails`, a kernel disclosure, keeps its groups
   (publication blockers, review required, repairs, preserved extensions);
   paths are monospace.
 - **Tests:** `tests/import-validation.spec.js` (contracts and axe in both
   themes for both), with `expectKernel` from `tests/helpers/kernel-check.js`,
   which the history and work-panel tests use too.
 
+## Dialogs
+
+`src/ui/dialog.css` (`.j-modal-*`, `.j-pick*`, `.j-ledger-*`): the frame all
+six dialogs share (prompt preview, workspaces, editor, review ledger,
+revision history, commit), the parts their bodies share, and the review
+ledger.
+
+- **Frame:** `.j-modal-back` shows when the app sets `aria-hidden="false"` on
+  it; `.j-modal` (`data-size="wide"` for the four working dialogs) has the
+  contract `role="dialog"`, `aria-modal="true"` and a name. IDs, the `show`
+  class and the focus traps are unchanged. The close button is a ghost icon
+  `j-btn` named in the page language.
+- **Shared parts:** the trust line (`.j-modal-trust`), section heads, actions,
+  and the prompt's code block, which takes focus so the keyboard can scroll it.
+- **Pick list:** `.j-pick-list` of `.j-pick` buttons, contract `aria-pressed`;
+  the pressed one is marked by a thicker leading edge as well as colour. The
+  revisions and the ledger's tasks use it.
+- **Review ledger:** statuses are chips (`data-ledger-status`; in review and
+  waived `warn`, completed `ok`, stale `crit`); a task's reason and phase use
+  the review queue's names; the reviewer, decision and waiver are kernel
+  fields; the status line is a kernel note; the history is a disclosure.
+- **Disclosure:** `.j-disclosure`, a `<details>` with a 44px `<summary>`.
+- **Tests:** contracts are checked from each backdrop, so the frame is
+  included; `tests/review-ledger.spec.js` (Arabic names, contracts and axe in
+  both themes) and `tests/a11y.spec.js` (the prompt preview).
+
 ## Not in the kernel yet
-
-These controls come with the views that first need them, each with a
-contract:
-
-- disclosure.
 
 The outline is the case file's review nav, and the save light is the header
 status as a button; neither has a kernel contract of its own yet.

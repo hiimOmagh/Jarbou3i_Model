@@ -6690,7 +6690,7 @@ function renderExports() {
     fr: "Un rapport HTML autonome pour la revue humaine et un JSON canonique qui préserve l’intégralité du contrat sans perte de champ.",
   };
   const canonicalInspector = state.analysis
-    ? `<details class="j-export-raw"><summary>${escapeHtml(labelText("Inspect the complete canonical contract", "افحص العقد النظامي الكامل", "Inspecter le contrat canonique complet"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
+    ? `<details class="j-disclosure j-export-raw"><summary>${escapeHtml(labelText("Inspect the complete canonical contract", "افحص العقد النظامي الكامل", "Inspecter le contrat canonique complet"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
     : "";
   return `<h3>${t("exports")}</h3><div class="j-root j-export"><div class="j-card"><h4>${t("downloadHtml")}</h4><p>${d[state.lang] || d.en}</p><button class="j-btn" data-variant="primary" id="exportHtml" type="button" aria-describedby="exportHtmlStatus">${t("downloadHtml")}</button><div id="exportHtmlStatus" class="j-note" data-tone="idle" aria-live="polite"></div></div><div class="j-card"><h4>${t("downloadJson")}</h4><p>${escapeHtml(labelText("Lossless machine-readable analysis for verification, re-import, and archival.", "تحليل آلي كامل للتحقق وإعادة الاستيراد والأرشفة.", "Analyse lisible par machine, sans perte, pour vérification, réimport et archivage."))}</p><button class="j-btn" id="exportJson" type="button">${t("downloadJson")}</button></div></div>${canonicalInspector}`;
 }
@@ -7296,10 +7296,10 @@ async function renderRevisionHistory() {
   $("revisionList").innerHTML = [...history.revisions].reverse().map((revision) => {
     const badges = [
       revision.is_head ? `<span class="j-chip" data-tone="ok">${escapeHtml(revisionText("head"))}</span>` : "",
-      revision.is_imported ? `<span class="j-commit-tag">${escapeHtml(revisionText("imported"))}</span>` : "",
-      revision.kind === "restored_revision" ? `<span class="j-commit-tag">${escapeHtml(revisionText("restored"))}</span>` : "",
+      revision.is_imported ? `<span class="j-chip">${escapeHtml(revisionText("imported"))}</span>` : "",
+      revision.kind === "restored_revision" ? `<span class="j-chip">${escapeHtml(revisionText("restored"))}</span>` : "",
     ].join("");
-    return `<button class="j-rev-item" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="j-rev-top"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><code class="j-mono" dir="ltr">${escapeHtml(revision.revision_id)}</code><span class="j-rev-meta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
+    return `<button class="j-pick" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="j-pick-top"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><code class="j-mono" dir="ltr">${escapeHtml(revision.revision_id)}</code><span class="j-pick-meta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
   }).join("");
   $("revisionList").querySelectorAll("[data-revision-id]").forEach((button) => {
     button.onclick = async () => {
@@ -7666,8 +7666,8 @@ async function renderReviewLedger() {
     result[row.current.status] = (result[row.current.status] || 0) + 1;
     return result;
   }, { pending: 0, in_review: 0, completed: 0, waived: 0 });
-  $("ledgerCounts").innerHTML = Object.entries(counts).map(([status, count]) => `<span class="ledgerCount ${status}"><b>${count}</b>${escapeHtml(ledgerText(status))}</span>`).join("");
-  $("ledgerTaskList").innerHTML = rows.map((row) => `<button type="button" class="ledgerTask${row.task.id === selected?.task.id ? " active" : ""}" data-ledger-task="${escapeHtml(row.task.id)}"><span class="ledgerTaskTop"><code>${escapeHtml(row.task.id)}</code><span class="ledgerStatus ${escapeHtml(row.current.is_stale ? "stale" : row.current.status)}">${escapeHtml(row.current.is_stale ? ledgerText("stale") : ledgerText(row.current.status))}</span></span><strong>${escapeHtml(String(row.task.reasonCode).replaceAll("_", " "))}</strong><small>${escapeHtml(row.task.targetId)} · ${escapeHtml(row.task.phase.replaceAll("_", " "))}</small></button>`).join("");
+  $("ledgerCounts").innerHTML = Object.entries(counts).map(([status, count]) => ledgerChip(status, `${count} ${ledgerText(status)}`)).join("");
+  $("ledgerTaskList").innerHTML = rows.map((row) => `<button type="button" class="j-pick" aria-pressed="${row.task.id === selected?.task.id}" data-ledger-task="${escapeHtml(row.task.id)}"><span class="j-pick-top"><code>${escapeHtml(row.task.id)}</code>${row.current.is_stale ? ledgerChip("stale", ledgerText("stale")) : ledgerChip(row.current.status, ledgerText(row.current.status))}</span><strong>${escapeHtml(ledgerTaskLabels(row.task).reason)}</strong><small class="j-pick-meta"><span dir="ltr">${escapeHtml(row.task.targetId)}</span><span>${escapeHtml(ledgerTaskLabels(row.task).phase)}</span></small></button>`).join("");
   $("ledgerTaskList").querySelectorAll("[data-ledger-task]").forEach((button) => {
     button.onclick = async () => { state.ledgerSelectedTaskId = button.dataset.ledgerTask; await renderReviewLedger(); };
   });
@@ -7677,7 +7677,7 @@ async function renderReviewLedger() {
     return;
   }
   $("ledgerApply").disabled = ledgerEventPending;
-  $("ledgerSelectedTask").innerHTML = `<span class="ledgerStatus ${escapeHtml(selected.current.status)}">${escapeHtml(ledgerText(selected.current.status))}</span><strong>${escapeHtml(String(selected.task.reasonCode).replaceAll("_", " "))}</strong><code>${escapeHtml(selected.task.targetId)}</code><small dir="ltr">${escapeHtml(selected.key)}</small>`;
+  $("ledgerSelectedTask").innerHTML = `${ledgerChip(selected.current.status, ledgerText(selected.current.status))}<strong>${escapeHtml(ledgerTaskLabels(selected.task).reason)}</strong><code dir="ltr">${escapeHtml(selected.task.targetId)}</code><small dir="ltr">${escapeHtml(selected.key)}</small>`;
   const previousAction = $("ledgerAction").value;
   const actions = ledgerActionsFor(selected.current.status);
   $("ledgerAction").innerHTML = actions.map((action) => `<option value="${action}">${escapeHtml(ledgerText(action))}</option>`).join("");
@@ -7685,6 +7685,22 @@ async function renderReviewLedger() {
   toggleLedgerWaiver();
   const history = state.ledgerWorkspace.review_ledger.events.filter((event) => event.task_key === selected.key).reverse();
   $("ledgerHistory").innerHTML = history.length ? history.map((event) => `<li><div><strong>${escapeHtml(ledgerText(event.type))}</strong><span>${escapeHtml(event.reviewer.display_name)}</span><time datetime="${escapeHtml(event.occurred_at)}">${escapeHtml(new Date(event.occurred_at).toLocaleString(state.lang))}</time></div>${event.rationale ? `<p>${escapeHtml(event.rationale)}</p>` : ""}${event.note ? `<p>${escapeHtml(event.note)}</p>` : ""}<code>${escapeHtml(event.event_hash.slice(0, 16))}…</code></li>`).join("") : `<li>${escapeHtml(ledgerText("choose"))}</li>`;
+}
+
+// A task's status as a chip: its tone and the status it stands for.
+function ledgerChip(status, text) {
+  const tone = { in_review: "warn", completed: "ok", waived: "warn", stale: "crit" }[status];
+  return `<span class="j-chip" data-ledger-status="${escapeHtml(status)}"${tone ? ` data-tone="${tone}"` : ""}>${escapeHtml(text)}</span>`;
+}
+
+// A task's reason and phase, named as the review queue names them.
+function ledgerTaskLabels(task) {
+  const copy = evidenceIntelligenceCopy();
+  const phases = { resolve_references: copy.resolveReferences, verify_provenance: copy.verifyProvenance, strengthen_coverage: copy.strengthenCoverage };
+  return {
+    reason: copy.reasonLabels[task.reasonCode] || String(task.reasonCode).replaceAll("_", " "),
+    phase: phases[task.phase] || String(task.phase).replaceAll("_", " "),
+  };
 }
 
 function toggleLedgerWaiver() {
@@ -7697,6 +7713,9 @@ async function openReviewLedger(tasks, invoker = document.activeElement) {
     const workspace = await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
     if (!workspace) throw new Error("Workspace was not found on this device.");
     ledgerDialogInvoker = invoker;
+    $("ledgerClose").setAttribute("aria-label", labelText(
+      "Close review ledger", "إغلاق سجل المراجعة", "Fermer le registre de revue",
+    ));
     state.ledgerWorkspace = workspace;
     state.ledgerTasks = [...tasks];
     state.ledgerSelectedTaskId = tasks[0]?.id || null;
@@ -7730,7 +7749,7 @@ async function applyReviewLedgerEvent() {
   if (!task || !state.ledgerWorkspace) return;
   const reviewerName = $("ledgerReviewer").value.trim();
   if (!reviewerName) {
-    $("ledgerStatus").className = "status bad";
+    $("ledgerStatus").dataset.tone = "crit";
     $("ledgerStatus").textContent = ledgerText("identityRequired");
     $("ledgerReviewer").focus();
     return;
@@ -7742,7 +7761,7 @@ async function applyReviewLedgerEvent() {
   const text = $("ledgerRationale").value.trim();
   ledgerEventPending = true;
   $("ledgerApply").disabled = true;
-  $("ledgerStatus").className = "status";
+  $("ledgerStatus").dataset.tone = "idle";
   $("ledgerStatus").textContent = ledgerText("saving");
   try {
     const expectedRevision = state.ledgerWorkspace.repository_revision;
@@ -7765,14 +7784,14 @@ async function applyReviewLedgerEvent() {
     $("ledgerWaiverExpiry").value = "";
     ledgerEventPending = false;
     await renderReviewLedger();
-    $("ledgerStatus").className = "status good";
+    $("ledgerStatus").dataset.tone = "ok";
     $("ledgerStatus").textContent = ledgerText("saved");
     APPLICATION_SHELL.render();
   } catch (error) {
     ledgerEventPending = false;
     noteWriteConflict(error, state.ledgerWorkspace);
     await renderReviewLedger();
-    $("ledgerStatus").className = "status bad";
+    $("ledgerStatus").dataset.tone = "crit";
     $("ledgerStatus").textContent = workspaceFailureMessage(error);
   }
 }
@@ -8260,11 +8279,12 @@ function renderAll() {
 function showModal(title, content, invoker = document.activeElement) {
   state.modalInvoker = invoker;
   $("modalTitle").textContent = title;
+  $("modalClose").setAttribute("aria-label", labelText("Close preview", "إغلاق المعاينة", "Fermer l’aperçu"));
   $("modalContent").textContent = content;
   const back = $("modalBackdrop");
   back.classList.add("show");
   back.setAttribute("aria-hidden", "false");
-  setTimeout(() => document.querySelector(".modal")?.focus(), 0);
+  setTimeout(() => $("modalDialog")?.focus(), 0);
 }
 function closeModal() {
   const back = $("modalBackdrop");

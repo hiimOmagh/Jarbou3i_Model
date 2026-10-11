@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="src/ui/editor.css" />
   <link rel="stylesheet" href="src/ui/commit.css" />
   <link rel="stylesheet" href="src/ui/exchange.css" />
+  <link rel="stylesheet" href="src/ui/dialog.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-192.png" fetchpriority="high" />
 </head>
 <body>
@@ -179,7 +180,7 @@
             <button class="j-btn" data-variant="ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
           </div>
           <div class="status" id="jsonStatus" role="status" aria-live="polite">الصق نتيجة JSON للتحقق.</div>
-          <details class="j-audit" id="importAuditDetails" hidden>
+          <details class="j-disclosure" id="importAuditDetails" hidden>
             <summary id="importAuditSummary">Import review details</summary>
             <div class="j-audit-body" id="importAuditBody"></div>
           </details>
@@ -219,23 +220,23 @@
   </main>
 </div>
 
-<div class="modalBackdrop" id="modalBackdrop" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
-    <div class="modalHead">
+<div class="j-modal-back" id="modalBackdrop" aria-hidden="true">
+  <div class="j-root j-modal" id="modalDialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+    <div class="j-modal-head">
       <h3 id="modalTitle">Preview</h3>
-      <button class="btn iconBtn" id="modalClose" type="button" aria-label="Close preview">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="modalClose" type="button" aria-label="Close preview">×</button>
     </div>
-    <pre id="modalContent" tabindex="0"></pre>
-    <div class="actions">
-      <button class="btn primary" id="modalCopy" type="button" data-i18n="copyShownText">نسخ النص المعروض</button>
+    <pre class="j-modal-pre" id="modalContent" tabindex="0"></pre>
+    <div class="j-modal-acts">
+      <button class="j-btn" data-variant="primary" id="modalCopy" type="button" data-i18n="copyShownText">نسخ النص المعروض</button>
     </div>
   </div>
 </div>
-<div class="workspaceBackdrop" id="workspaceBackdrop" aria-hidden="true">
-  <section class="workspaceDialog" id="workspaceDialog" role="dialog" aria-modal="true" aria-labelledby="workspaceDialogTitle" tabindex="-1">
-    <header class="modalHead">
-      <div><h3 id="workspaceDialogTitle">مساحات العمل المحلية</h3><p class="muted" id="workspaceDialogHint">محفوظة على هذا الجهاز فقط.</p></div>
-      <button class="btn iconBtn" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
+<div class="j-modal-back" id="workspaceBackdrop" aria-hidden="true">
+  <section class="j-root j-modal" id="workspaceDialog" role="dialog" aria-modal="true" aria-labelledby="workspaceDialogTitle" tabindex="-1">
+    <header class="j-modal-head">
+      <div><h3 id="workspaceDialogTitle">مساحات العمل المحلية</h3><p class="j-modal-hint" id="workspaceDialogHint">محفوظة على هذا الجهاز فقط.</p></div>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
     </header>
     <div class="j-root j-life" id="workLife" hidden></div>
     <div class="j-root j-ws">
@@ -254,11 +255,11 @@
     </div>
   </section>
 </div>
-<div class="workspaceBackdrop" id="editorBackdrop" aria-hidden="true">
-  <section class="workspaceDialog editorDialog" id="editorDialog" role="dialog" aria-modal="true" aria-labelledby="editorTitle" tabindex="-1">
-    <header class="modalHead">
-      <div><h3 id="editorTitle">Structured canonical editor</h3><p class="muted" id="editorHint"></p></div>
-      <button class="btn iconBtn" id="editorClose" type="button" aria-label="Close editor">×</button>
+<div class="j-modal-back" id="editorBackdrop" aria-hidden="true">
+  <section class="j-root j-modal" data-size="wide" id="editorDialog" role="dialog" aria-modal="true" aria-labelledby="editorTitle" tabindex="-1">
+    <header class="j-modal-head">
+      <div><h3 id="editorTitle">Structured canonical editor</h3><p class="j-modal-hint" id="editorHint"></p></div>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="editorClose" type="button" aria-label="Close editor">×</button>
     </header>
     <div class="j-root j-editor">
       <section class="j-life-banner" data-tone="warn" id="editorRecovery" aria-labelledby="editorRecoveryTitle" hidden>
@@ -291,81 +292,78 @@
     </div>
   </section>
 </div>
-<div class="workspaceBackdrop" id="ledgerBackdrop" aria-hidden="true">
-  <section class="workspaceDialog ledgerDialog" id="ledgerDialog" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle" tabindex="-1">
-    <header class="modalHead">
-      <div><h3 id="ledgerTitle">Operational review ledger</h3><p class="muted" id="ledgerHint"></p></div>
-      <button class="btn iconBtn" id="ledgerClose" type="button" aria-label="Close review ledger">×</button>
+<div class="j-modal-back" id="ledgerBackdrop" aria-hidden="true">
+  <section class="j-root j-modal" data-size="wide" id="ledgerDialog" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle" tabindex="-1">
+    <header class="j-modal-head">
+      <div><h3 id="ledgerTitle">Operational review ledger</h3><p class="j-modal-hint" id="ledgerHint"></p></div>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="ledgerClose" type="button" aria-label="Close review ledger">×</button>
     </header>
-    <div class="ledgerTrust" id="ledgerTrust"></div>
-    <div class="ledgerIdentity">
-      <label class="label" id="ledgerReviewerLabel" for="ledgerReviewer"></label>
-      <input id="ledgerReviewer" type="text" maxlength="120" autocomplete="name" />
-      <small id="ledgerIdentityHint"></small>
-    </div>
-    <div class="ledgerLayout">
-      <section class="ledgerTaskPanel" aria-labelledby="ledgerTasksTitle">
-        <div class="ledgerSectionHead"><h4 id="ledgerTasksTitle"></h4><div id="ledgerCounts"></div></div>
-        <div class="ledgerTaskList" id="ledgerTaskList"></div>
-      </section>
-      <section class="ledgerDecisionPanel" id="ledgerDecisionPanel" aria-labelledby="ledgerDecisionTitle">
-        <h4 id="ledgerDecisionTitle"></h4>
-        <div id="ledgerSelectedTask" class="ledgerSelectedTask"></div>
-        <label class="label" id="ledgerActionLabel" for="ledgerAction"></label>
-        <select id="ledgerAction"></select>
-        <label class="label" id="ledgerRationaleLabel" for="ledgerRationale"></label>
-        <textarea id="ledgerRationale" rows="4"></textarea>
-        <div class="ledgerWaiverFields" id="ledgerWaiverFields" hidden>
-          <label class="label" id="ledgerWaiverScopeLabel" for="ledgerWaiverScope"></label>
-          <input id="ledgerWaiverScope" type="text" maxlength="240" />
-          <label class="label" id="ledgerWaiverRiskLabel" for="ledgerWaiverRisk"></label>
-          <textarea id="ledgerWaiverRisk" rows="3"></textarea>
-          <label class="label" id="ledgerWaiverExpiryLabel" for="ledgerWaiverExpiry"></label>
-          <input id="ledgerWaiverExpiry" type="datetime-local" />
-        </div>
-        <div class="status" id="ledgerStatus" role="status" aria-live="polite"></div>
-        <div class="actions"><button class="btn primary" id="ledgerApply" type="button"></button><button class="btn" id="ledgerExport" type="button"></button></div>
-        <details class="ledgerHistory"><summary id="ledgerHistorySummary"></summary><ol id="ledgerHistory"></ol></details>
-      </section>
-    </div>
-  </section>
-</div>
-<div class="workspaceBackdrop" id="revisionBackdrop" aria-hidden="true">
-  <section class="workspaceDialog revisionDialog" id="revisionDialog" role="dialog" aria-modal="true" aria-labelledby="revisionTitle" tabindex="-1">
-    <header class="modalHead">
-      <div><h3 id="revisionTitle">Revision history</h3><p class="muted" id="revisionHint"></p></div>
-      <button class="btn iconBtn" id="revisionClose" type="button" aria-label="Close revision history">×</button>
-    </header>
-    <div class="j-root j-commit">
-      <p class="j-commit-trust" id="revisionTrust"></p>
-      <div class="j-rev-grid">
-        <section class="j-rev-list" aria-labelledby="revisionListTitle">
-          <div class="j-commit-head"><h4 id="revisionListTitle"></h4><span class="j-commit-tag" id="revisionCount"></span></div>
-          <div class="j-rev-items" id="revisionList"></div>
+    <div class="j-ledger">
+      <p class="j-modal-trust" id="ledgerTrust"></p>
+      <div class="j-field">
+        <label id="ledgerReviewerLabel" for="ledgerReviewer"></label>
+        <input class="j-input" id="ledgerReviewer" type="text" maxlength="120" autocomplete="name" aria-describedby="ledgerIdentityHint" />
+        <p class="j-help" id="ledgerIdentityHint"></p>
+      </div>
+      <div class="j-ledger-grid">
+        <section aria-labelledby="ledgerTasksTitle">
+          <div class="j-modal-sechead"><h4 id="ledgerTasksTitle"></h4><div class="j-ledger-counts" id="ledgerCounts"></div></div>
+          <div class="j-pick-list" id="ledgerTaskList"></div>
         </section>
-        <section class="j-rev-compare" aria-labelledby="revisionCompareTitle">
-          <div class="j-commit-head"><h4 id="revisionCompareTitle"></h4><span class="j-commit-tag" id="revisionChangeCount"></span></div>
-          <dl class="j-commit-facts" id="revisionMetadata"></dl>
-          <ol class="j-diff" id="revisionDiff"></ol>
-          <p class="j-note" data-tone="warn" id="revisionBlocked" role="status" aria-live="polite" hidden></p>
-          <p class="j-note" data-tone="idle" id="revisionStatus" role="status" aria-live="polite"></p>
-          <div class="j-commit-acts"><button class="j-btn" data-variant="primary" id="revisionRestore" type="button" disabled></button></div>
+        <section id="ledgerDecisionPanel" aria-labelledby="ledgerDecisionTitle">
+          <h4 id="ledgerDecisionTitle"></h4>
+          <div class="j-ledger-selected" id="ledgerSelectedTask"></div>
+          <div class="j-field"><label id="ledgerActionLabel" for="ledgerAction"></label><select class="j-input" id="ledgerAction"></select></div>
+          <div class="j-field"><label id="ledgerRationaleLabel" for="ledgerRationale"></label><textarea class="j-input" id="ledgerRationale" rows="4"></textarea></div>
+          <div class="j-ledger-waiver" id="ledgerWaiverFields" hidden>
+            <div class="j-field"><label id="ledgerWaiverScopeLabel" for="ledgerWaiverScope"></label><input class="j-input" id="ledgerWaiverScope" type="text" maxlength="240" /></div>
+            <div class="j-field"><label id="ledgerWaiverRiskLabel" for="ledgerWaiverRisk"></label><textarea class="j-input" id="ledgerWaiverRisk" rows="3"></textarea></div>
+            <div class="j-field"><label id="ledgerWaiverExpiryLabel" for="ledgerWaiverExpiry"></label><input class="j-input" id="ledgerWaiverExpiry" type="datetime-local" /></div>
+          </div>
+          <p class="j-note" data-tone="idle" id="ledgerStatus" role="status" aria-live="polite"></p>
+          <div class="j-modal-acts"><button class="j-btn" data-variant="primary" id="ledgerApply" type="button"></button><button class="j-btn" id="ledgerExport" type="button"></button></div>
+          <details class="j-disclosure j-ledger-history"><summary id="ledgerHistorySummary"></summary><ol id="ledgerHistory"></ol></details>
         </section>
       </div>
     </div>
   </section>
 </div>
-<div class="workspaceBackdrop" id="resolutionBackdrop" aria-hidden="true">
-  <section class="workspaceDialog resolutionDialog" id="resolutionDialog" role="dialog" aria-modal="true" aria-labelledby="resolutionTitle" tabindex="-1">
-    <header class="modalHead">
-      <div><h3 id="resolutionTitle">Resolution transaction</h3><p class="muted" id="resolutionHint"></p></div>
-      <button class="btn iconBtn" id="resolutionClose" type="button" aria-label="Close resolution transaction">×</button>
+<div class="j-modal-back" id="revisionBackdrop" aria-hidden="true">
+  <section class="j-root j-modal" data-size="wide" id="revisionDialog" role="dialog" aria-modal="true" aria-labelledby="revisionTitle" tabindex="-1">
+    <header class="j-modal-head">
+      <div><h3 id="revisionTitle">Revision history</h3><p class="j-modal-hint" id="revisionHint"></p></div>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="revisionClose" type="button" aria-label="Close revision history">×</button>
     </header>
     <div class="j-root j-commit">
-      <p class="j-commit-trust" id="resolutionTrust"></p>
+      <p class="j-modal-trust" id="revisionTrust"></p>
+      <div class="j-rev-grid">
+        <section class="j-rev-list" aria-labelledby="revisionListTitle">
+          <div class="j-modal-sechead"><h4 id="revisionListTitle"></h4><span class="j-chip" id="revisionCount"></span></div>
+          <div class="j-pick-list" id="revisionList"></div>
+        </section>
+        <section class="j-rev-compare" aria-labelledby="revisionCompareTitle">
+          <div class="j-modal-sechead"><h4 id="revisionCompareTitle"></h4><span class="j-chip" id="revisionChangeCount"></span></div>
+          <dl class="j-commit-facts" id="revisionMetadata"></dl>
+          <ol class="j-diff" id="revisionDiff"></ol>
+          <p class="j-note" data-tone="warn" id="revisionBlocked" role="status" aria-live="polite" hidden></p>
+          <p class="j-note" data-tone="idle" id="revisionStatus" role="status" aria-live="polite"></p>
+          <div class="j-modal-acts"><button class="j-btn" data-variant="primary" id="revisionRestore" type="button" disabled></button></div>
+        </section>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="j-modal-back" id="resolutionBackdrop" aria-hidden="true">
+  <section class="j-root j-modal" data-size="wide" id="resolutionDialog" role="dialog" aria-modal="true" aria-labelledby="resolutionTitle" tabindex="-1">
+    <header class="j-modal-head">
+      <div><h3 id="resolutionTitle">Resolution transaction</h3><p class="j-modal-hint" id="resolutionHint"></p></div>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="resolutionClose" type="button" aria-label="Close resolution transaction">×</button>
+    </header>
+    <div class="j-root j-commit">
+      <p class="j-modal-trust" id="resolutionTrust"></p>
       <dl class="j-commit-facts" id="resolutionSummary"></dl>
       <section class="j-rev-compare" aria-labelledby="resolutionDiffTitle">
-        <div class="j-commit-head"><h4 id="resolutionDiffTitle"></h4><span class="j-commit-tag" id="resolutionChangeCount"></span></div>
+        <div class="j-modal-sechead"><h4 id="resolutionDiffTitle"></h4><span class="j-chip" id="resolutionChangeCount"></span></div>
         <ol class="j-diff" id="resolutionDiff"></ol>
       </section>
       <div class="j-commit-approve">
@@ -374,7 +372,7 @@
         <label class="j-commit-confirm"><input id="resolutionConfirm" type="checkbox" /><span id="resolutionConfirmLabel"></span></label>
       </div>
       <p class="j-note" data-tone="idle" id="resolutionStatus" role="status" aria-live="polite"></p>
-      <div class="j-commit-acts"><button class="j-btn" data-variant="primary" id="resolutionCommit" type="button" disabled></button></div>
+      <div class="j-modal-acts"><button class="j-btn" data-variant="primary" id="resolutionCommit" type="button" disabled></button></div>
     </div>
   </section>
 </div>

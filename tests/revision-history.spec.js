@@ -136,13 +136,13 @@ test.describe("Revision history and safe restore", () => {
     // Operations are named in the page language, not as codes.
     await expect(page.locator("#revisionDiff")).toContainText("عُدِّل");
     await expect(page.locator("#revisionDiff")).not.toContainText("replace");
-    await expectKernel(page, "#revisionDialog .j-commit", "#revisionDialog");
+    await expectKernel(page, "#revisionBackdrop", "#revisionDialog");
 
     await page.locator("#revisionRestore").click();
     await expect(page.locator("#resolutionDialog")).toBeVisible();
     await expect(page.locator("#resolutionClose")).toHaveAttribute("aria-label", "إغلاق معاملة الاعتماد");
     await expect(page.locator("#resolutionDiff")).toContainText("عُدِّل");
     await expect(page.locator("#resolutionSummary dd[dir=ltr]")).toHaveCount(2);
-    await expectKernel(page, "#resolutionDialog .j-commit", "#resolutionDialog");
+    await expectKernel(page, "#resolutionBackdrop", "#resolutionDialog");
   });
 });

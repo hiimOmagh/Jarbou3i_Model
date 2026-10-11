@@ -11,14 +11,9 @@
   .j-export { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
 }
 
-/* Disclosures: the whole canonical contract, and the import's review details. */
-.j-export-raw, .j-audit { border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel); color: var(--j-fg); }
+/* The whole canonical contract and the import's review details are kernel
+   disclosures (.j-disclosure). */
 .j-export-raw { margin-top: var(--j-s-3); }
-.j-export-raw > summary, .j-audit > summary {
-  display: flex; align-items: center; min-height: 44px; padding: 0 var(--j-s-3);
-  font-weight: 600; font-size: var(--j-t-13); cursor: pointer;
-}
-.j-export-raw > summary:focus-visible, .j-audit > summary:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
 /* It takes focus, so the keyboard can scroll it. */
 .j-export-raw pre {
   max-height: 50vh; overflow: auto; margin: 0; padding: var(--j-s-3); border-top: 1px solid var(--j-line);

@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
 async function expectNoSeriousViolations(page) {
   const results = await new AxeBuilder({ page }).analyze();
@@ -56,7 +57,9 @@ test("runtime accessibility and keyboard contract", async ({ page }) => {
   await openStep(page, "prompt");
   const previewButton = page.locator("#previewPromptBtn");
   await previewButton.click();
-  await expect(page.locator(".modal")).toBeFocused();
+  await expect(page.locator("#modalDialog")).toBeFocused();
+  await expect(page.locator("#modalClose")).toHaveAttribute("aria-label", "Close preview");
+  await expectKernel(page, "#modalBackdrop", "#modalDialog");
   await page.keyboard.press("Escape");
   await expect(previewButton).toBeFocused();
 

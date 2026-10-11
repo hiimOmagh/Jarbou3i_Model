@@ -4,12 +4,13 @@ import {
   beginLongPersistenceWorkflow,
   clearWorkspaceStorage,
 } from "./helpers/browser-persistence.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
-async function openLedger(page) {
+async function openLedger(page, lang = "En") {
   await page.goto("./");
   await clearWorkspaceStorage(page);
   await page.reload();
-  await page.locator("#langEn").click();
+  await page.locator(`#lang${lang}`).click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-review="inspection"]').click();
   const intelligence = page.locator("[data-evidence-intelligence]");
@@ -67,7 +68,7 @@ test.describe("Operational review ledger", () => {
     await page.locator("[data-evidence-intelligence] summary").click();
     await page.locator("#openReviewLedger").click();
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
-    await expect(page.locator("#ledgerTaskList .ledgerStatus.stale").first()).toContainText(/Stale after draft change/i);
+    await expect(page.locator("#ledgerTaskList [data-ledger-status=stale]").first()).toContainText(/Stale after draft change/i);
     await finishLongWorkflow();
   });
 
@@ -98,5 +99,19 @@ test.describe("Operational review ledger", () => {
     }));
     expect(manifest.events[1].previous_event_hash).toBe(manifest.events[0].event_hash);
     expect(manifest.head_event_hash).toBe(manifest.events[1].event_hash);
+  });
+
+  test("speaks the page language, keeps its contracts and reads in both themes", async ({ page }) => {
+    await openLedger(page, "Ar");
+    await expect(page.locator("#ledgerClose")).toHaveAttribute("aria-label", "إغلاق سجل المراجعة");
+    await expect(page.locator("#ledgerTaskList .j-pick").first()).toHaveAttribute("aria-pressed", "true");
+    // The list is too long to fit, so it scrolls; no task is cut to fit it.
+    const clipped = await page.locator("#ledgerTaskList .j-pick").evaluateAll((picks) => picks.filter((pick) => pick.scrollHeight > pick.clientHeight + 1).length);
+    expect(clipped).toBe(0);
+    // Reasons and phases are named as the review queue names them, not as codes.
+    const labels = await page.locator("#ledgerTaskList strong, #ledgerTaskList .j-pick-meta span:last-child, #ledgerSelectedTask strong").allTextContents();
+    expect(labels.length).toBeGreaterThan(2);
+    for (const label of labels) expect(label).toMatch(/[؀-ۿ]/);
+    await expectKernel(page, "#ledgerBackdrop", "#ledgerDialog");
   });
 });

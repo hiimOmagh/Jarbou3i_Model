@@ -38,6 +38,15 @@ export const CONTRACTS = Object.freeze({
     oneOf("data-tone", ["ok", "warn", "crit", "idle"], { required: true }),
     (el) => (text(el) ? null : "needs text: colour and shape alone do not say the state"),
   ],
+  "j-disclosure": [(el) => (el.tagName === "DETAILS" && el.querySelector(":scope > summary") ? null : "must be a <details> with a <summary>")],
+  "j-modal": [
+    (el) => (el.getAttribute("role") === "dialog" && el.getAttribute("aria-modal") === "true" ? null : 'needs role="dialog" and aria-modal="true"'),
+    (el) => (named(el) ? null : "needs aria-labelledby or aria-label"),
+  ],
+  "j-pick": [
+    (el) => (el.tagName === "BUTTON" && el.hasAttribute("type") ? null : "must be a <button> with a type"),
+    oneOf("aria-pressed", ["true", "false"], { required: true }),
+  ],
   "j-note": [oneOf("data-tone", ["ok", "warn", "crit", "idle"], { required: true })],
   "j-chip": [oneOf("data-tone", ["ok", "warn", "crit"]), (el) => (text(el) ? null : "needs text")],
   "j-field": [
@@ -94,11 +103,14 @@ const FREE_CLASSES = [
   "j-save-light", "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
   "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-errors",
-  "j-commit", "j-commit-trust", "j-commit-facts", "j-commit-head", "j-commit-tag", "j-commit-approve", "j-commit-confirm",
-  "j-commit-acts", "j-diff", "j-diff-item", "j-diff-path", "j-diff-vals", "j-diff-val",
-  "j-rev-grid", "j-rev-list", "j-rev-compare", "j-rev-items", "j-rev-item", "j-rev-top", "j-rev-meta",
+  "j-commit", "j-commit-facts", "j-commit-approve", "j-commit-confirm",
+  "j-diff", "j-diff-item", "j-diff-path", "j-diff-vals", "j-diff-val",
+  "j-rev-grid", "j-rev-list", "j-rev-compare",
+  "j-modal-back", "j-modal-head", "j-modal-hint", "j-modal-trust", "j-modal-sechead", "j-modal-acts", "j-modal-pre",
+  "j-pick-list", "j-pick-top", "j-pick-meta",
+  "j-ledger", "j-ledger-grid", "j-ledger-counts", "j-ledger-selected", "j-ledger-waiver", "j-ledger-history",
   "j-ws", "j-ws-title", "j-ws-acts", "j-ws-list", "j-ws-row", "j-ws-name", "j-ws-meta", "j-ws-row-acts", "j-ws-empty",
-  "j-export", "j-export-raw", "j-audit", "j-audit-body", "j-audit-group", "j-audit-path",
+  "j-export", "j-export-raw", "j-audit-body", "j-audit-group", "j-audit-path",
 ];
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());
 

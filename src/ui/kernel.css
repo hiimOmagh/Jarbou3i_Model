@@ -185,6 +185,11 @@
 .j-note[data-tone="warn"] { border-inline-start-color: var(--j-warn); background: var(--j-warn-wash); }
 .j-note[data-tone="crit"] { border-inline-start-color: var(--j-crit); background: var(--j-crit-wash); }
 
+/* A disclosure: a <details> whose summary is a 44px control. */
+.j-disclosure { border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel); color: var(--j-fg); }
+.j-disclosure > summary { display: flex; align-items: center; min-height: 44px; padding: 0 var(--j-s-3); font-weight: 600; font-size: var(--j-t-13); cursor: pointer; }
+.j-disclosure > summary:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+
 /* ---------- Card ---------- */
 .j-card {
   background: var(--j-panel); border: 1px solid var(--j-line); border-radius: var(--j-r-3);

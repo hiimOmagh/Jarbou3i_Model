@@ -275,6 +275,6 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(field).toHaveAttribute("aria-invalid", "true");
     await expect(page.locator('[data-editor-path="/subject"] .j-chip')).toContainText("للإصلاح");
-    await expectKernel(page, ".j-editor", "#editorDialog");
+    await expectKernel(page, "#editorBackdrop", "#editorDialog");
   });
 });

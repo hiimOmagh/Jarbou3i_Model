@@ -35,6 +35,9 @@
   transition: background-color var(--j-dur-1) var(--j-ease-out), color var(--j-dur-1) var(--j-ease-out);
 }
 .j-shell-phase:hover:not(:disabled) { background: var(--j-raise); color: var(--j-fg); }
+/* The faint parts would fall under 4.5:1 on the raised background; a tapped
+   phase stays hovered on a touch screen. */
+.j-shell-phase:hover:not(:disabled, [aria-current="step"]) :is(.j-shell-phase-index, .j-shell-phase-copy small) { color: var(--j-fg-muted); }
 .j-shell-phase:disabled { opacity: .45; cursor: not-allowed; }
 /* The current phase: tinted, outlined and its number in the accent, not colour alone. */
 .j-shell-phase[aria-current="step"] {

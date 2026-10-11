@@ -71,8 +71,8 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await preview.focus();
           await preview.press("Enter");
           await expect(page.locator("#modalBackdrop")).toHaveClass(/show/);
-          await expect(page.locator(".modal")).toBeFocused();
-          const modalBounds = await page.locator(".modal").boundingBox();
+          await expect(page.locator("#modalDialog")).toBeFocused();
+          const modalBounds = await page.locator("#modalDialog").boundingBox();
           expect(modalBounds).not.toBeNull();
           expect(modalBounds.width).toBeLessThanOrEqual(viewport.width);
           expect(modalBounds.height).toBeLessThanOrEqual(viewport.height);

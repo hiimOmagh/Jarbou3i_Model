@@ -208,6 +208,6 @@ test.describe("Work panel", () => {
     await expect(page.locator("[data-workspace-row]")).toHaveCount(2);
     await expect(page.locator("[data-workspace-row][aria-current=true]")).toHaveCount(1);
     await expect(page.locator("#workspaceResetAll")).toHaveAttribute("data-variant", "danger");
-    await expectKernel(page, "#workspaceDialog .j-ws", "#workspaceDialog");
+    await expectKernel(page, "#workspaceBackdrop", "#workspaceDialog");
   });
 });

@@ -92,6 +92,16 @@
   - the case file's exports (HTML report, canonical JSON, the full contract)
     and the import's review details under the answer.
   The editor's and commit dialogs' status lines become one kernel note.
+- Rebuilds the dialogs on the kernel:
+  - all six share one frame: backdrop, panel, header and a 44px close button;
+  - the review ledger: its tasks are a list of pressed buttons, statuses are
+    chips, and each task's reason and phase are named in the page language
+    instead of as codes;
+  - the prompt preview, and the ledger's close button, are named in AR, EN
+    and FR;
+  - a disclosure joins the kernel.
+- On a touch screen, a tapped phase in the header keeps its number and
+  caption readable in the dark theme.
 - Adds a command palette (Ctrl/⌘ K, or Commands in the header):
   - it lists every enabled control of the shell and of the open review by its
     own label, and runs one by clicking it;
