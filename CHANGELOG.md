@@ -426,6 +426,9 @@
 - Runs the WebKit core suite in four CI shards instead of two. With the tests
   added in this release, the second shard needed about 18 minutes and was
   stopped at the 15-minute job limit; no test failed.
+- Adds regression tests for removing the open damaged workspace, an older save
+  finishing after a newer import, parser positions after prose, and a restart
+  shorter than the answer.
 
 ### Repository cleanup
 

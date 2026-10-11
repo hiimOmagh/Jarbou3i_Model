@@ -16,7 +16,7 @@ const files = [
 const directories = ["src"];
 // Cloudflare Pages branch previews (any branch but main) also carry the UX-0 prototype, so it can be
 // tried against the real app and shared for feedback. Production and GitHub Pages never include it.
-// Only the preview branch commits the prototype; other branches build without it.
+// Branch previews carry the prototype when the branch has it; production never does.
 const previewBranch = process.env.CF_PAGES_BRANCH;
 if (previewBranch && previewBranch !== "main" && fs.existsSync(path.join(root, "prototypes/ux-0"))) {
   directories.push("prototypes/ux-0");

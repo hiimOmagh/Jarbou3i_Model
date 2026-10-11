@@ -43,7 +43,7 @@ Cloudflare must publish the same curated artifact as GitHub Pages, not the repos
 - Build command: `node scripts/build-pages-artifact.mjs`
 - Build output directory: `build/pages`
 
-Branch preview builds (Cloudflare sets `CF_PAGES_BRANCH` to a branch other than `main`) also include the UX-0 prototype at `/prototypes/ux-0/` when the branch has it (only the preview branch commits it), so it can be tried against the real app on the preview origin. Production and GitHub Pages builds never include it.
+Branch preview builds (Cloudflare sets `CF_PAGES_BRANCH` to a branch other than `main`) also include the UX-0 prototype at `/prototypes/ux-0/` when the branch has it, so it can be tried against the real app on the preview origin. Production and GitHub Pages builds never include it.
 
 The artifact includes `_headers`, so the response-header policy is preserved. Serving the repository root would publish `tests/`, `docs/`, `package.json`, and every other repository file on the production origin. Verify after each settings change that `https://jarbou3i-model.pages.dev/package.json` returns the application HTML fallback rather than the package manifest, and that the `content-security-policy` response header is still present.
 
