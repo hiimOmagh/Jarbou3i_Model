@@ -111,6 +111,22 @@ test.describe("Work panel", () => {
     await expect(light(page)).toHaveText("Saved locally");
   });
 
+  test("an edit still open in another tab is not offered as a recovery snapshot", async ({ page, context }) => {
+    await page.locator("#loadSampleBtn").click();
+    await editTitle(page, "Typed in the first tab");
+    await page.waitForTimeout(700);
+    const other = await context.newPage();
+    await other.goto("./");
+    await openEditor(other);
+    await expect(other.locator("#editorRecovery")).toBeHidden();
+    await expect(other.locator('[data-editor-path="/subject"]')).toBeEnabled();
+    await other.locator("#editorClose").click();
+    // Once that tab has closed, what it left is offered.
+    await page.close();
+    await other.reload();
+    await expect(light(other)).toHaveAttribute("data-life", "snapshot");
+  });
+
   test("a save another tab got to first is raised until the workspace is reopened", async ({ page, context }) => {
     await page.locator("#loadSampleBtn").click();
     await expect(light(page)).toHaveText("Saved locally");

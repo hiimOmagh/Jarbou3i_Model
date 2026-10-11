@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="src/ui/flow.css" />
 <link rel="stylesheet" href="src/ui/case.css" />
 <link rel="stylesheet" href="src/ui/work.css" />
+<link rel="stylesheet" href="src/ui/editor.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-192.png" fetchpriority="high" />
 </head>
 <body>
@@ -255,32 +256,33 @@
       <div><h3 id="editorTitle">Structured canonical editor</h3><p class="muted" id="editorHint"></p></div>
       <button class="btn iconBtn" id="editorClose" type="button" aria-label="Close editor">×</button>
     </header>
-    <section class="editorRecovery" id="editorRecovery" aria-labelledby="editorRecoveryTitle" hidden>
-      <div>
-        <strong id="editorRecoveryTitle">Unsaved recovery snapshot found</strong>
-        <p id="editorRecoveryHint">It matches this exact saved draft.</p>
+    <div class="j-root j-editor">
+      <section class="j-life-banner" data-tone="warn" id="editorRecovery" aria-labelledby="editorRecoveryTitle" hidden>
+        <p><strong id="editorRecoveryTitle">Unsaved recovery snapshot found</strong> <span id="editorRecoveryHint">It matches this exact saved draft.</span></p>
+        <div class="j-life-acts">
+          <button class="j-btn" data-variant="primary" id="editorRecoveryRestore" type="button">Restore snapshot</button>
+          <button class="j-btn" id="editorRecoveryDiscard" type="button">Discard snapshot</button>
+        </div>
+      </section>
+      <p class="j-editor-note" id="editorRecoveryState" role="status" aria-live="polite"></p>
+      <div class="j-editor-bar">
+        <button class="j-btn" data-variant="ghost" id="editorUndo" type="button" disabled>Undo</button>
+        <button class="j-btn" data-variant="ghost" id="editorRedo" type="button" disabled>Redo</button>
+        <span class="j-status" data-tone="idle" id="editorDirty" role="status" aria-live="polite">No unsaved changes</span>
+        <button class="j-btn" id="editorResolve" type="button" disabled>Review &amp; commit</button>
+        <button class="j-btn" data-variant="primary" id="editorSave" type="button" disabled>Save draft</button>
       </div>
-      <div class="editorRecoveryActions">
-        <button class="btn primary" id="editorRecoveryRestore" type="button">Restore snapshot</button>
-        <button class="btn" id="editorRecoveryDiscard" type="button">Discard snapshot</button>
-      </div>
-    </section>
-    <div class="editorRecoveryState" id="editorRecoveryState" role="status" aria-live="polite"></div>
-    <div class="editorToolbar">
-      <button class="btn" id="editorUndo" type="button" disabled>Undo</button>
-      <button class="btn" id="editorRedo" type="button" disabled>Redo</button>
-      <span class="editorDirty" id="editorDirty" role="status" aria-live="polite"></span>
-      <button class="btn" id="editorResolve" type="button" disabled>Review &amp; commit</button>
-      <button class="btn primary" id="editorSave" type="button" disabled>Save draft</button>
-    </div>
-    <div class="editorLayout">
-      <nav class="editorSections" id="editorSections" aria-label="Canonical sections"></nav>
-      <div class="editorFieldPanel">
-        <label class="label" id="editorFieldLabel" for="editorField"></label>
-        <p class="muted editorPath" id="editorPath" dir="ltr"></p>
-        <textarea id="editorField" class="pasteArea editorField" spellcheck="true"></textarea>
-        <div class="status" id="editorFieldStatus" role="status" aria-live="polite"></div>
-        <div class="editorErrors" id="editorErrors" aria-live="polite"></div>
+      <div class="j-editor-grid">
+        <nav class="j-editor-nav" id="editorSections" aria-label="Canonical sections"></nav>
+        <div class="j-editor-main">
+          <div class="j-field">
+            <label class="j-label" id="editorFieldLabel" for="editorField"></label>
+            <p class="j-help j-mono" id="editorPath" dir="ltr"></p>
+            <textarea id="editorField" class="j-input j-mono j-editor-json" spellcheck="true" dir="ltr" aria-describedby="editorPath"></textarea>
+          </div>
+          <p class="j-editor-check" data-tone="ok" id="editorFieldStatus" role="status" aria-live="polite"></p>
+          <div class="j-editor-errors" id="editorErrors" aria-live="polite"></div>
+        </div>
       </div>
     </div>
   </section>

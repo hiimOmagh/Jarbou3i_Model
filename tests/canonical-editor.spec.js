@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { clearWorkspaceStorage, restoreSavedDraft } from "./helpers/browser-persistence.js";
@@ -69,7 +70,7 @@ test.describe("Structured canonical editor", () => {
       };
     });
     await page.locator("#editorSave").click();
-    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(page.locator("#editorFieldStatus")).not.toContainText("validation passed");
     await expect(page.locator("#editorDirty")).toContainText("Unsaved");
   });
@@ -80,7 +81,7 @@ test.describe("Structured canonical editor", () => {
     await page.locator('[data-editor-path="/subject"]').click();
     await page.locator("#editorField").fill("{");
     await page.locator("#editorField").press("Control+Enter");
-    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(page.locator("#editorSave")).toBeDisabled();
   });
 
@@ -153,7 +154,7 @@ test.describe("Structured canonical editor", () => {
     actors[0].financial = 99;
     await field.fill(JSON.stringify(actors, null, 2));
     await field.press("Control+Enter");
-    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(page.locator("#editorSave")).toBeDisabled();
     await expect(page.locator("#editorResolve")).toBeDisabled();
 
@@ -165,7 +166,7 @@ test.describe("Structured canonical editor", () => {
     evidence.items[0].source_url = "javascript:alert(1)";
     await field.fill(JSON.stringify(evidence, null, 2));
     await field.press("Control+Enter");
-    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(page.locator("#editorSave")).toBeDisabled();
     await expect(page.locator("#editorResolve")).toBeDisabled();
   });
@@ -253,7 +254,37 @@ test.describe("Structured canonical editor", () => {
     await page.locator("#editorRecoveryRestore").click();
     await expect(field).toHaveValue('{"title":"Interrupted');
     await field.press("Control+Enter");
-    await expect(page.locator("#editorFieldStatus")).toHaveClass(/bad/);
+    await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(page.locator("#editorSave")).toBeDisabled();
+  });
+
+  test("speaks the page language, opens on the content and marks what needs fixing", async ({ page }) => {
+    await page.locator("#langAr").click();
+    await page.locator("#workspaceSaveState").click();
+    await page.locator("#workLife").getByRole("button", { name: "تعديل المسودة" }).click();
+    await expect(page.locator("#editorTitle")).toHaveText("محرر التحليل النظامي");
+    await expect(page.locator("#editorResolve")).toHaveText("مراجعة واعتماد");
+    await expect(page.locator("#editorSections")).toHaveAttribute("aria-label", "أقسام التحليل");
+    await expect(page.locator("#editorClose")).toHaveAttribute("aria-label", "إغلاق المحرر");
+    // Content first; identity and metadata after it.
+    await expect(page.locator("#editorPath")).toHaveText("/subject");
+    await expect(page.locator(".j-editor-nav > .j-label")).toHaveText("الهوية والبيانات الوصفية");
+    const field = page.locator("#editorField");
+    await field.fill("{}");
+    await field.press("Control+Enter");
+    await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
+    await expect(field).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator('[data-editor-path="/subject"] .j-chip')).toContainText("للإصلاح");
+    const problems = await page.evaluate(async () => {
+      const { checkContracts } = await import("./src/ui/contracts.js");
+      return checkContracts(document.querySelector(".j-editor"));
+    });
+    expect(problems).toEqual([]);
+    for (const theme of ["light", "dark"]) {
+      await page.evaluate((value) => { document.documentElement.dataset.theme = value; }, theme);
+      const { violations } = await new AxeBuilder({ page }).include("#editorDialog").analyze();
+      const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
+      expect(serious, `${theme}: ${JSON.stringify(serious, null, 2)}`).toEqual([]);
+    }
   });
 });

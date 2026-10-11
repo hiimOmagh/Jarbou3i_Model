@@ -160,11 +160,34 @@ UX-0 work panel, built on the app's own workspace model.
   banner and the draft card offer "Reopen workspace", which loads the stored
   version and keeps a reply pasted but not imported.
 - **Discarding:** closing the editor and discarding its edits also discards
-  their recovery snapshot.
+  their recovery snapshot, unless another tab has captured its own edit since.
+- **Whose snapshot:** each snapshot names the tab that captured it. A snapshot
+  whose tab is still open (its tab lock is held) is that tab's live edit, so
+  other tabs neither count nor offer it until that tab closes.
 - **What it reads:** one read of the repository and the recovery journal
   after each save, open, commit, reset and editor close. Edits in an open
   editor are not counted as a snapshot.
 - **Tests:** `tests/work-panel.spec.js`.
+
+## Canonical editor
+
+`src/ui/editor.css` (`.j-editor-*`) and `renderCanonicalEditor` in
+`src/app.js`: the editor dialog on kernel controls, one canonical field at a
+time.
+
+- **The bar:** Undo, Redo and the unsaved state (`#editorDirty`, a `j-status`
+  that turns `warn`) on one side; "Review & commit" and Save on the other.
+- **Sections:** the content first, then "Identity and metadata"
+  (`EDITOR_META_KEYS`). The open section has `aria-current="true"`; a section
+  with problems carries a "{n} to fix" chip. The dialog opens on the first
+  content section.
+- **The field:** a kernel field whose help is the JSON path. Its check
+  (`#editorFieldStatus`) sets `data-tone` `ok`, `warn` (valid only as a
+  draft) or `crit`, and the field gets `aria-invalid`.
+- **Recovery:** the snapshot banner is the work panel's `j-life-banner`.
+- Labels, the sections' and the close button's names are in AR, EN and FR.
+- **Tests:** `tests/canonical-editor.spec.js` (contracts and axe in both
+  themes), and the cross-tab snapshot case in `tests/work-panel.spec.js`.
 
 ## Not in the kernel yet
 

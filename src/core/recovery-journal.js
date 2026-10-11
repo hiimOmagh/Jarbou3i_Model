@@ -39,6 +39,7 @@ export async function createRecoveryRecord({
   payload,
   activePath,
   rawValue,
+  owner,
   clock = () => new Date().toISOString(),
   ttlMs = RECOVERY_JOURNAL_TTL_MS,
   cryptoImpl,
@@ -61,6 +62,9 @@ export async function createRecoveryRecord({
     expires_at: new Date(Date.parse(capturedAt) + ttlMs).toISOString(),
     active_path: typeof activePath === "string" && activePath.startsWith("/") ? activePath : "/",
     raw_value: String(rawValue ?? ""),
+    // The tab that captured it, so another tab can tell a live edit from one a
+    // crash or a closed tab left behind.
+    owner: String(owner ?? ""),
     canonical_payload: clone(payload),
   };
   record.integrity_checksum = await sha256(integrityPayload(record), cryptoImpl);

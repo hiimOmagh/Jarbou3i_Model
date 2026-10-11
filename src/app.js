@@ -6926,6 +6926,8 @@ function showOperationFailure(error, operation, invoker) {
   return diagnostic;
 }
 
+// The analysis's identity and metadata, listed after its content in the editor.
+const EDITOR_META_KEYS = new Set(["schema_version", "analysis_contract", "contract_status", "analysis_id", "generated_at", "language", "model_mode", "analysis_lens"]);
 function editorText(key) {
   const copy = {
     title: ["Structured canonical editor", "محرر التحليل النظامي", "Éditeur canonique structuré"],
@@ -6951,6 +6953,11 @@ function editorText(key) {
     discard: ["Discard snapshot", "تجاهل اللقطة", "Supprimer l’instantané"],
     recovered: ["Unsaved editor state restored.", "تمت استعادة حالة المحرر غير المحفوظة.", "L’état non enregistré de l’éditeur a été restauré."],
     discarded: ["Recovery snapshot discarded.", "تم تجاهل لقطة الاسترداد.", "L’instantané de récupération a été supprimé."],
+    review: ["Review & commit", "مراجعة واعتماد", "Vérifier et valider"],
+    sections: ["Canonical sections", "أقسام التحليل", "Sections canoniques"],
+    close: ["Close editor", "إغلاق المحرر", "Fermer l’éditeur"],
+    metadata: ["Identity and metadata", "الهوية والبيانات الوصفية", "Identité et métadonnées"],
+    toFix: ["{n} to fix", "{n} للإصلاح", "{n} à corriger"],
     recoverySaved: ["Crash recovery active", "الاسترداد من الأعطال نشط", "Récupération après incident active"],
   }[key] || [key, key, key];
   return state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
@@ -7002,12 +7009,18 @@ function renderCanonicalEditor() {
   const snapshot = state.editorSession?.inspect();
   if (!snapshot) return;
   const keys = Object.keys(snapshot.payload);
-  if (!state.editorPath || !keys.includes(state.editorPath.slice(1))) state.editorPath = `/${keys[0]}`;
+  // Content first; the identity and metadata come after it.
+  const content = keys.filter((key) => !EDITOR_META_KEYS.has(key));
+  const meta = keys.filter((key) => EDITOR_META_KEYS.has(key));
+  if (!state.editorPath || !keys.includes(state.editorPath.slice(1))) state.editorPath = `/${content[0] || keys[0]}`;
   $("editorTitle").textContent = editorText("title");
   $("editorHint").textContent = editorText("hint");
   $("editorUndo").textContent = editorText("undo");
   $("editorRedo").textContent = editorText("redo");
   $("editorSave").textContent = editorText("save");
+  $("editorResolve").textContent = editorText("review");
+  $("editorSections").setAttribute("aria-label", editorText("sections"));
+  $("editorClose").setAttribute("aria-label", editorText("close"));
   $("editorRecoveryTitle").textContent = editorText("recoveryTitle");
   $("editorRecoveryHint").textContent = editorText("recoveryHint");
   $("editorRecoveryRestore").textContent = editorText("restore");
@@ -7024,7 +7037,14 @@ function renderCanonicalEditor() {
     $("editorResolve").disabled = true;
   }
   $("editorDirty").textContent = editorText(snapshot.dirty ? "dirty" : "clean");
-  $("editorSections").innerHTML = keys.map((key) => `<button class="btn editorSection${state.editorPath === `/${key}` ? " active" : ""}" type="button" data-editor-path="/${escapeHtml(key)}"${state.editorRecovery ? " disabled" : ""}>${escapeHtml(key)}</button>`).join("");
+  $("editorDirty").dataset.tone = snapshot.dirty ? "warn" : "idle";
+  const issues = snapshot.validation.errors || [];
+  const section = (key) => {
+    const count = issues.filter((issue) => String(issue.path || "/").split("/")[1] === key).length;
+    return `<button class="j-editor-sec" type="button" data-editor-path="/${escapeHtml(key)}"${state.editorPath === `/${key}` ? ' aria-current="true"' : ""}${state.editorRecovery ? " disabled" : ""}><span class="j-mono" dir="ltr">${escapeHtml(key)}</span>${count ? `<span class="j-chip" data-tone="crit">${escapeHtml(editorText("toFix").replace("{n}", count))}</span>` : ""}</button>`;
+  };
+  $("editorSections").innerHTML = content.map(section).join("")
+    + (meta.length ? `<p class="j-label">${escapeHtml(editorText("metadata"))}</p>${meta.map(section).join("")}` : "");
   $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => {
     button.onclick = () => {
       if (!applyEditorField()) return;
@@ -7042,7 +7062,8 @@ function renderCanonicalEditor() {
   const relevant = (snapshot.validation.errors || []).filter((issue) => String(issue.path || "/").startsWith(state.editorPath));
   $("editorErrors").innerHTML = relevant.length ? `<ul>${relevant.map((issue) => `<li><span dir="ltr">${escapeHtml(issue.path || "/")}</span> — ${escapeHtml(localizedImportIssueMessage(issue))}</li>`).join("")}</ul>` : "";
   const fieldState = !snapshot.validation.valid ? "invalid" : snapshot.validation.canonical ? "valid" : "draftValid";
-  $("editorFieldStatus").className = `status ${{ valid: "good", draftValid: "warn", invalid: "bad" }[fieldState]}`;
+  $("editorFieldStatus").dataset.tone = { valid: "ok", draftValid: "warn", invalid: "crit" }[fieldState];
+  editorField.setAttribute("aria-invalid", relevant.length ? "true" : "false");
   $("editorFieldStatus").textContent = editorText(fieldState);
 }
 
@@ -7066,11 +7087,19 @@ async function openCanonicalEditor(workspace = null) {
   state.editorPath = null;
   editorCapture = null;
   const recovery = await RECOVERY_JOURNAL.inspect(loaded);
-  state.editorRecovery = recovery.status === "recoverable" ? recovery.record : null;
+  state.editorRecovery = recovery.status === "recoverable" && !(await heldElsewhere(recovery.record)) ? recovery.record : null;
   $("editorBackdrop").classList.add("show");
   $("editorBackdrop").setAttribute("aria-hidden", "false");
   renderCanonicalEditor();
   $("editorDialog").focus();
+}
+
+// A snapshot a still-open tab is writing is that tab's live edit, not one a
+// crash left behind: it is offered only once that tab has closed.
+async function heldElsewhere(record) {
+  if (!record?.owner || record.owner === tripKey || !navigator.locks) return false;
+  const held = (await navigator.locks.query()).held || [];
+  return held.some((lock) => lock.name === record.owner);
 }
 
 function closeCanonicalEditor() {
@@ -7091,7 +7120,11 @@ function closeCanonicalEditor() {
   }
   // The edits were thrown away on purpose, so their recovery snapshot goes too.
   capture
-    .then(() => RECOVERY_JOURNAL.discard(workspaceId))
+    .then(async () => {
+      // Only this tab's: another tab may have captured its own edit since.
+      const stored = await RECOVERY_BACKEND.get(workspaceId);
+      if (!stored?.owner || stored.owner === tripKey) await RECOVERY_JOURNAL.discard(workspaceId);
+    })
     .catch((error) => console.error("Editor recovery discard failed", operationDiagnostic(error, "editor_recovery_discard")))
     .finally(refreshWorkspaceLife);
 }
@@ -7111,8 +7144,9 @@ function applyEditorField() {
     scheduleEditorRecovery();
     return true;
   } catch (error) {
-    $("editorFieldStatus").className = "status bad";
+    $("editorFieldStatus").dataset.tone = "crit";
     $("editorFieldStatus").textContent = `${editorText("parse")} ${error.message}`;
+    $("editorField").setAttribute("aria-invalid", "true");
     return false;
   }
 }
@@ -7132,6 +7166,7 @@ function scheduleEditorRecovery() {
           payload: state.editorSession.inspect().payload,
           activePath: state.editorPath,
           rawValue: field?.value || "",
+          owner: tripKey,
         });
         $("editorRecoveryState").textContent = editorText("recoverySaved");
       } catch (error) {
@@ -7199,7 +7234,7 @@ async function saveEditorDraft() {
     const message = workspaceFailureMessage(error);
     setWorkspaceStatus("bad", message);
     // Said in the editor too: the Workspaces dialog may be closed.
-    $("editorFieldStatus").className = "status bad";
+    $("editorFieldStatus").dataset.tone = "crit";
     $("editorFieldStatus").textContent = message;
     scheduleEditorRecovery();
   } finally {
@@ -7950,7 +7985,8 @@ async function refreshWorkspaceLife() {
       life.uncommitted = Boolean(workspace.working_draft?.dirty);
       life.conflict = state.workspaceConflict === workspace.workspace_id;
       // Edits in an open editor were not interrupted: they are on screen.
-      life.snapshot = !state.editorSession && (await RECOVERY_JOURNAL.inspect(workspace)).status === "recoverable";
+      const recovery = !state.editorSession && await RECOVERY_JOURNAL.inspect(workspace);
+      life.snapshot = recovery?.status === "recoverable" && !(await heldElsewhere(recovery.record));
     }
   } catch {
     // A failed read leaves the save light on its save state.

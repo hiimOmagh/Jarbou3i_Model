@@ -21,7 +21,7 @@
 - A cut-off answer's message points up to the box for the rest of the answer,
   where it now appears.
 
-### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file and work panel
+### Design-system kernel (UIX-1), modern shell (UIX-2), guided flow, case file, work panel and editor
 
 - Rebuilds the global header and workspace bar on the kernel, in the case-file
   direction:
@@ -64,6 +64,15 @@
   Edits discarded when closing the editor no longer leave a recovery snapshot
   behind, and the hidden file input of "restore a workspace file" is named by
   its button.
+- Rebuilds the canonical editor on the kernel:
+  - Undo, Redo and the unsaved state beside "Review & commit" and Save;
+  - the analysis's content first, its identity and metadata after it, and a
+    "to fix" count on each section with problems;
+  - the field's check in shape, colour and text, with the field marked
+    invalid when it is;
+  - its labels and button names in AR, EN and FR (some were English only).
+  An edit still open in another tab is no longer offered as a recovery
+  snapshot, and discarding edits no longer deletes another tab's snapshot.
 - Adds a command palette (Ctrl/⌘ K, or Commands in the header):
   - it lists every enabled control of the shell and of the open review by its
     own label, and runs one by clicking it;
