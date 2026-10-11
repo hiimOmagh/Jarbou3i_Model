@@ -7886,13 +7886,14 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   $("workspaceProtectStorage").textContent = workspaceText("protect");
   $("workspaceResetAll").textContent = workspaceText("resetAll");
   $("workspaceResetCurrent").textContent = workspaceText("resetCurrent");
-  $("workspaceBackdrop").classList.add("show");
-  $("workspaceBackdrop").setAttribute("aria-hidden", "false");
   // A save that failed stays shown until another one succeeds.
   if (state.workspaceSaveState !== "error") setWorkspaceStatus("good", workspaceText("ready"));
   await refreshWorkspaceLife();
   await renderWorkspaceList();
   await renderStorageHealth();
+  // Shown only once current, so a click never lands on a button about to move.
+  $("workspaceBackdrop").classList.add("show");
+  $("workspaceBackdrop").setAttribute("aria-hidden", "false");
   $("workspaceDialog").focus();
 }
 
