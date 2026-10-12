@@ -191,7 +191,7 @@ for (const token of [
   'role="radio"',
   'aria-checked="true"',
   // The review is a case file: a labelled outline beside one document.
-  'class="sideNav j-case-outline" id="reviewNav"',
+  'class="j-case-outline" id="reviewNav"',
   'id="reviewContent" tabindex="-1" aria-labelledby="reviewTitle"',
   'aria-modal="true"',
 ]) {
@@ -232,7 +232,6 @@ for (const token of [
 for (const token of [
   'body[data-density="compact"]',
   ".sectionEyebrow",
-  ".commandActions",
   ".skipLink:focus",
 ]) {
   if (!styles.includes(token)) fail(`Phase 2 shell stylesheet token missing: ${token}`);

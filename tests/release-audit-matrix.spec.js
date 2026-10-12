@@ -99,7 +99,7 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
         await page.locator("#jsonInput").fill(await malformedAnalysis());
         await expect(page.locator("#importBtn")).toBeDisabled();
         await expect(page.locator("#jsonStatus")).toContainText(locale.validationPrefix);
-        await expect(page.locator("#jsonStatus")).toHaveClass(/bad/);
+        await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "crit");
 
         // The pasted reply is not imported, so it is replaced on a second click.
         await page.locator("#loadSampleBtn").click();

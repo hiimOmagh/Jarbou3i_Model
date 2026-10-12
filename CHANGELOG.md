@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Design-system kernel
+
+- Moves the case file's layout onto the kernel: the outline beside the
+  document, and below 1120px one column with the outline in three columns,
+  then two. Both are flat kernel panels instead of the legacy gradient frames;
+  headings keep their sizes.
+- The prompt and answer steps' status lines are kernel notes, their tone a
+  `data-tone`, like every other status line.
+- Retires the 80 legacy selectors this leaves unused, including dead ones in
+  media queries the alpha.56 cleanup did not read.
+
+### Accessibility
+
+- At 400% zoom (320px) the case file no longer clips what does not fit: the
+  legacy document frame hid its overflow. Record cards, their chips and the
+  relationship filters now wrap to the width instead, in all three languages.
+
+### Tests
+
+- The crash-recovery tests wait for the recovery snapshot to be stored before
+  they reload, instead of a fixed 700ms that a loaded machine could outrun.
+
 ## 2.1.0-alpha.56 — Case File Interface (UX-0)
 
 ### Product decisions

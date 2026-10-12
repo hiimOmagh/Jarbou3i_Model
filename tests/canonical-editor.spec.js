@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { clearWorkspaceStorage, restoreSavedDraft } from "./helpers/browser-persistence.js";
+import { clearWorkspaceStorage, countRecoverySnapshots, restoreSavedDraft } from "./helpers/browser-persistence.js";
 import { expectKernel } from "./helpers/kernel-check.js";
 
 test.describe("Structured canonical editor", () => {
@@ -179,7 +179,7 @@ test.describe("Structured canonical editor", () => {
     const subject = JSON.parse(await field.inputValue());
     subject.title = "Typed before the crash";
     await field.fill(JSON.stringify(subject, null, 2));
-    await page.waitForTimeout(700);
+    await expect.poll(() => countRecoverySnapshots(page)).toBe(1);
 
     page.once("dialog", async (dialog) => dialog.accept());
     await page.reload();
@@ -201,7 +201,7 @@ test.describe("Structured canonical editor", () => {
     await field.fill(JSON.stringify(subject, null, 2));
     await field.press("Control+Enter");
     await expect(page.locator("#editorDirty")).toContainText("Unsaved");
-    await page.waitForTimeout(700);
+    await expect.poll(() => countRecoverySnapshots(page)).toBe(1);
 
     page.once("dialog", async (dialog) => dialog.accept());
     await page.reload();
@@ -245,7 +245,7 @@ test.describe("Structured canonical editor", () => {
     await page.locator('[data-editor-path="/subject"]').click();
     const field = page.locator("#editorField");
     await field.fill('{"title":"Interrupted');
-    await page.waitForTimeout(700);
+    await expect.poll(() => countRecoverySnapshots(page)).toBe(1);
 
     page.once("dialog", async (dialog) => dialog.accept());
     await page.reload();

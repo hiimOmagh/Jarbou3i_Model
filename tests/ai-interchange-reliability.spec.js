@@ -282,7 +282,7 @@ test.describe("AI interchange reliability", () => {
     reply.actors[0].confidence = "very high";
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(reply));
-    await expect(page.locator("#jsonStatus")).toHaveClass(/warn/);
+    await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "warn");
     await expect(page.locator("#jsonStatus")).toContainText("1 value the contract does not allow was set aside");
   });
 
@@ -1335,17 +1335,17 @@ test.describe("AI interchange reliability", () => {
           expect(skeleton, `${variant} prompt has no JSON skeleton`).toBeTruthy();
           await openStep(page, "answer");
           await page.locator("#jsonInput").fill("");
-          await expect(page.locator("#jsonStatus")).toHaveClass("status");
+          await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "idle");
           await openStep(page, "answer");
           await page.locator("#jsonInput").fill(JSON.stringify(fill(skeleton)));
-          await expect(page.locator("#jsonStatus")).toHaveClass(/status (good|warn|bad)/);
+          await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", /^(ok|warn|crit)$/);
           results[variant] = await page.evaluate(() => ({
-            status: document.getElementById("jsonStatus").className,
+            status: document.getElementById("jsonStatus").dataset.tone,
             gaps: [...document.querySelectorAll("#importAuditDetails .j-audit-path")].map(
               (path) => path.textContent,
             ),
           }));
-          expected[variant] = { status: "status good", gaps: [] };
+          expected[variant] = { status: "ok", gaps: [] };
         }
       }
     }
@@ -1368,7 +1368,7 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#jsonStatus")).toContainText("Valid analysis, ready to import");
-    await expect(page.locator("#jsonStatus")).toHaveClass(/status good/);
+    await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "ok");
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     await expect(audit).toContainText(/Publication blockers/i);
@@ -1377,7 +1377,7 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#jsonStatus")).toContainText("Reviewable draft");
-    await expect(page.locator("#jsonStatus")).toHaveClass(/status warn/);
+    await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "warn");
   });
 
   test("flags answer text that slips into another language", async ({ page }) => {
@@ -1391,13 +1391,13 @@ test.describe("AI interchange reliability", () => {
     const audit = page.locator("#importAuditDetails");
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#jsonStatus")).toHaveClass(/status (good|warn)/);
+    await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", /^(ok|warn)$/);
     await expect(audit).not.toContainText("another language");
 
     data.subject.executive_finding += " relocation of carbon-intensive production";
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(data));
-    await expect(page.locator("#jsonStatus")).toHaveClass(/status warn/);
+    await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "warn");
     await audit.locator("summary").click();
     await expect(audit).toContainText("/subject/executive_finding");
     await expect(audit).toContainText("another language");

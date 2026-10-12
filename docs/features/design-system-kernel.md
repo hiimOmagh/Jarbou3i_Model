@@ -134,6 +134,10 @@ document in reading order instead of tabs.
   location with `aria-current="location"`: the section that last took focus
   while the view stays put, else the one at the top of the view. It stays
   pinned beside the document on wide screens.
+- **Layout:** the outline (292px) beside the document, both kernel panels; at
+  1120px and below one column, the outline above the document in three
+  columns, then two at 760px. Headings in the document keep their size unless
+  a view styles its own (`:where(.j-case-doc) h3`, so any view's rule wins).
 - **Heavy parts stay lazy:** the relationship map loads when its section
   comes near the view, or at once when its outline entry is chosen (the
   observer's turn comes late in Firefox and WebKit).
@@ -223,6 +227,10 @@ kernel controls.
   themes, Arabic labels, plurals) and `tests/resolution-transaction.spec.js`.
 
 ## Import and export
+
+The setup flow's status lines (`#topicStatus` under the prompt, `#jsonStatus`
+under the answer) are kernel notes; their tone is `data-tone`.
+
 
 `src/ui/exchange.css` (`.j-export*`, `.j-audit-*`): the case file's exports
 and the import's review details under the answer.

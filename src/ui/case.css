@@ -4,25 +4,48 @@
 
 /* The legacy panel clips its overflow, which would unpin the outline. */
 .j-case-panel { overflow: visible; }
-.j-case { align-items: start; }
+/* The outline beside the document; one column at 1120px and below. */
+.j-case { display: grid; grid-template-columns: 292px minmax(0, 1fr); gap: var(--j-card-gap); align-items: start; }
 /* The outline stays in reach while the document scrolls. */
-.j-case-outline { position: sticky; top: var(--j-s-4); max-height: calc(100vh - var(--j-s-6)); overflow-y: auto; }
+.j-case-outline {
+  position: sticky; top: var(--j-s-4); max-height: calc(100vh - var(--j-s-6)); overflow-y: auto;
+  padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
+}
 /* Where the reader is: tinted, barred and bold, not colour alone. */
 .j-case-outline [aria-current="location"] {
   background: var(--j-signal-wash); color: var(--j-fg); font-weight: 700;
   box-shadow: inset 3px 0 0 var(--j-signal);
 }
 :root[dir="rtl"] .j-case-outline [aria-current="location"] { box-shadow: inset -3px 0 0 var(--j-signal); }
-.j-case-doc { display: grid; gap: var(--j-s-6); }
+.j-case-doc {
+  display: grid; gap: var(--j-s-6); min-width: 0; min-height: 440px; padding: var(--j-card-pad);
+  border: 1px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
+}
+/* Headings in the document, unless a view styles its own. */
+:where(.j-case-doc) h3 { margin: 0 0 15px; color: var(--j-fg); font-size: 20px; font-weight: 1000; letter-spacing: -.025em; }
 .j-case-sec { min-width: 0; scroll-margin-top: var(--j-s-4); }
 .j-case-sec + .j-case-sec { padding-top: var(--j-s-6); border-top: 1px solid var(--j-line); }
 .j-case-sec:focus { outline: none; }
 .j-case-sec:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 6px; border-radius: var(--j-r-2); }
 
-/* One column below 940px (src/styles.css): the outline sits above the document. */
 @media (forced-colors: active) {
+  .j-case-outline, .j-case-doc { border-color: CanvasText; }
   .j-case-outline [aria-current="location"] { outline: 2px solid Highlight; }
 }
-@media (max-width: 940px) {
+/* One column: the outline sits above the document, in three columns, then two. */
+@media (max-width: 1120px) {
+  .j-case { grid-template-columns: minmax(0, 1fr); }
   .j-case-outline { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 940px) {
+  .j-case-outline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-2); }
+}
+@media (max-width: 760px) {
+  .j-case-outline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-2); padding: var(--j-s-2); }
+  .j-case-doc { padding: var(--j-s-4); }
+}
+@media print {
+  .j-case { display: block; }
+  .j-case-outline { display: none !important; }
+  .j-case-doc { border-color: #bbb; background: #fff; }
 }

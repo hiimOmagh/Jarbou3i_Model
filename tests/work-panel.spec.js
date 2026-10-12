@@ -31,7 +31,7 @@ async function editTitle(page, title) {
 // Unsaved editor edits, caught by the recovery journal and cut off by a reload.
 async function interruptEdit(page, title) {
   await editTitle(page, title);
-  await page.waitForTimeout(700);
+  await expect.poll(() => countRecoverySnapshots(page)).toBe(1);
   page.once("dialog", (dialog) => dialog.accept());
   await page.reload();
 }
@@ -102,7 +102,7 @@ test.describe("Work panel", () => {
   test("edits discarded in the editor leave no recovery snapshot behind", async ({ page }) => {
     await page.locator("#loadSampleBtn").click();
     await editTitle(page, "Thrown away");
-    await page.waitForTimeout(700);
+    await expect.poll(() => countRecoverySnapshots(page)).toBe(1);
     page.once("dialog", (dialog) => dialog.accept());
     await page.locator("#editorClose").click();
     await light(page).click();

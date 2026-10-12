@@ -1281,8 +1281,8 @@ const GUIDED_FLOW = createGuidedFlow({
   mood: (step) => {
     if (step !== "answer" || !$("jsonInput").value.trim()) return "idle";
     if (!$("continuationField").hidden) return "trunc";
-    const status = $("jsonStatus").classList;
-    return status.contains("good") ? "ok" : status.contains("bad") ? "crit" : "warn";
+    const tone = $("jsonStatus").dataset.tone;
+    return tone === "ok" ? "ok" : tone === "crit" ? "crit" : "warn";
   },
 });
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
@@ -1519,7 +1519,7 @@ async function restoreTrip(untouched, record) {
   }
   renderAll();
   validateJsonInput();
-  $("topicStatus").className = "status good";
+  $("topicStatus").dataset.tone = "ok";
   $("topicStatus").textContent = t("tripRestored");
 }
 const isSupportedLanguage = LOCALIZATION.isSupported;
@@ -1780,15 +1780,15 @@ function refreshDynamicMessages() {
   const status = $("topicStatus");
   if (!status) return;
   if (state.stage === "topic") {
-    status.className = "status warn";
+    status.dataset.tone = "warn";
     status.textContent = t("topicStatusStart");
   } else if (state.stage === "import") {
-    status.className = state.lastPrompt ? "status good" : "status warn";
+    status.dataset.tone = state.lastPrompt ? "ok" : "warn";
     status.textContent = state.lastPrompt
       ? t("promptCopied")
       : t("topicStatusStart");
   } else if (state.stage === "review") {
-    status.className = "status good";
+    status.dataset.tone = "ok";
     status.textContent = t("analysisImported");
   }
 }
@@ -2380,7 +2380,7 @@ function validateJsonInput() {
     $("repairPromptBtn").disabled = true;
     $("repairPromptBtn").textContent = t("repairPrompt");
     $("continuationField").hidden = true;
-    $("jsonStatus").className = "status";
+    $("jsonStatus").dataset.tone = "idle";
     $("jsonStatus").textContent = t("jsonWaiting");
     $("pasteCard").classList.remove("ready", "invalid");
     renderImportAuditDetails();
@@ -2614,10 +2614,10 @@ function validateJsonInput() {
     const problems = warnings.filter((warning) => !warning.review_only);
     // Values the contract does not allow are left out of the analysis; said, not hidden.
     const setAside = contractQuarantine.filter((item) => item.code === "INVALID_VALUE_QUARANTINED").length;
-    $("jsonStatus").className =
+    $("jsonStatus").dataset.tone =
       problems.length || parsed.recovered || setAside || languageMismatch || otherLens
-        ? "status warn"
-        : "status good";
+        ? "warn"
+        : "ok";
     // A valid answer with nothing to ask the AI for gets no repair prompt.
     $("repairPromptBtn").disabled = !languageMismatch && !completionCandidate;
     $("repairPromptBtn").textContent = languageMismatch
@@ -2718,7 +2718,7 @@ function validateJsonInput() {
       $("importBtn").disabled = true;
       // With nothing listed to complete, there is nothing to ask the AI for.
       $("repairPromptBtn").disabled = !(gaps && completionCandidate) && !importErrors.length;
-      $("jsonStatus").className = "status bad";
+      $("jsonStatus").dataset.tone = "crit";
       $("pasteCard").classList.remove("ready");
       $("pasteCard").classList.add("invalid");
       $("continuationField").hidden = true;
@@ -2773,7 +2773,7 @@ function validateJsonInput() {
     const truncated = e?.code === "TRUNCATED_JSON";
     $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
     $("continuationField").hidden = !truncated;
-    $("jsonStatus").className = "status bad";
+    $("jsonStatus").dataset.tone = "crit";
     $("jsonStatus").textContent = importErrorText(e);
     $("pasteCard").classList.remove("ready");
     $("pasteCard").classList.add("invalid");
@@ -8434,7 +8434,7 @@ $("copyPromptBtn").onclick = async (event) => {
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
     toast(t("topicNeeded"), "bad", { announce: false });
-    $("topicStatus").className = "status bad";
+    $("topicStatus").dataset.tone = "crit";
     $("topicStatus").textContent = t("topicNeeded");
     return;
   }
@@ -8448,7 +8448,7 @@ $("copyPromptBtn").onclick = async (event) => {
   state.stage = "import";
   keepTrip();
   $("editTopicBtn").classList.remove("hide");
-  $("topicStatus").className = ok ? "status good" : "status warn";
+  $("topicStatus").dataset.tone = ok ? "ok" : "warn";
   $("topicStatus").textContent = `${ok ? t("promptCopied") : t("copyFailed")} ${promptBudgetText(p)}`;
   if (!ok) showModal(t("promptPreview"), p, invoker);
   renderAll();
@@ -8465,7 +8465,7 @@ $("previewPromptBtn").onclick = (event) => {
     return;
   }
   state.lastPrompt = buildPrompt();
-  $("topicStatus").className = "status warn";
+  $("topicStatus").dataset.tone = "warn";
   $("topicStatus").textContent = promptBudgetText(state.lastPrompt);
   showModal(t("promptPreview"), state.lastPrompt, event.currentTarget);
 };
@@ -8527,7 +8527,7 @@ $("importBtn").onclick = async () => {
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
   $("importBtn").disabled = true;
-  $("topicStatus").className = "status good";
+  $("topicStatus").dataset.tone = "ok";
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"), "", { announce: false });
   renderAll();
