@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.1.0-alpha.56 — Case File Interface (UX-0)
 
 ### Product decisions
 
@@ -102,6 +102,11 @@
   - a disclosure joins the kernel.
 - On a touch screen, a tapped phase in the header keeps its number and
   caption readable in the dark theme.
+- Retires the legacy styles the rebuilt screens no longer use: 191 selectors
+  in `src/styles.css`, for classes the app no longer renders and for the
+  global `pre` and `textarea` rules and the ledger counts' ID rule, which only
+  reached kernel controls. The prompt preview follows the prompt's direction,
+  so an Arabic prompt reads right to left.
 - Adds a command palette (Ctrl/⌘ K, or Commands in the header):
   - it lists every enabled control of the shell and of the open review by its
     own label, and runs one by clicking it;

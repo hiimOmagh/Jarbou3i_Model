@@ -2,7 +2,7 @@
 
 ## Shared guarantees
 
-Every HTML report carries app and lens metadata, and every analysis can also be downloaded as lossless JSON. `app-version` is the product version from `package.json` (for example `2.1.0-alpha.55`). The imported analysis language—not the current interface language—sets the report root language and direction.
+Every HTML report carries app and lens metadata, and every analysis can also be downloaded as lossless JSON. `app-version` is the product version from `package.json` (for example `2.1.0-alpha.56`). The imported analysis language—not the current interface language—sets the report root language and direction.
 
 ```html
 <meta name="app-version" content="{product version}">
