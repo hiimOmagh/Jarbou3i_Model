@@ -73,6 +73,11 @@ export const CONTRACTS = Object.freeze({
   "j-toast": [(el) => (el.getAttribute("role") === "status" ? null : 'needs role="status" so it is announced without taking focus')],
   "j-kbd": [(el) => (el.tagName === "KBD" ? null : "must be a <kbd>")],
   "j-help": [(el) => (el.closest(".j-field") ? null : "must be inside a .j-field")],
+  "j-ref": [
+    (el) => (el.tagName === "BUTTON" && el.getAttribute("type") === "button" ? null : 'must be a <button type="button">'),
+    (el) => (el.dataset.referenceId ? null : "needs data-reference-id: the record it opens"),
+    (el) => (named(el) ? null : "needs an accessible name"),
+  ],
   "j-dialog": [
     (el) => (el.tagName === "DIALOG" ? null : "must be a <dialog>, opened with showModal()"),
     (el) => (named(el) ? null : "needs aria-labelledby or aria-label"),
@@ -111,6 +116,9 @@ const FREE_CLASSES = [
   "j-ledger", "j-ledger-grid", "j-ledger-counts", "j-ledger-selected", "j-ledger-waiver", "j-ledger-history",
   "j-ws", "j-ws-title", "j-ws-acts", "j-ws-list", "j-ws-row", "j-ws-name", "j-ws-meta", "j-ws-row-acts", "j-ws-empty",
   "j-export", "j-export-raw", "j-audit-body", "j-audit-group", "j-audit-path",
+  "j-ref-label", "j-ref-id",
+  "j-insp-head", "j-insp-body", "j-insp-summary", "j-insp-sec", "j-insp-facts", "j-insp-pair", "j-insp-sub",
+  "j-insp-list", "j-insp-rec", "j-insp-occ", "j-insp-foot",
 ];
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());
 

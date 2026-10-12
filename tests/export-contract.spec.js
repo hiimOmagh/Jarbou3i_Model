@@ -198,7 +198,8 @@ test.describe('Strategic HTML report content', () => {
     const linkDirections = (selector) => page.evaluate((rowSelector) => {
       const found = [];
       for (const row of document.querySelectorAll(rowSelector)) {
-        const chips = [...row.children].filter((child) => child.matches('.referenceChip'));
+        // The app's references, or the exported report's own.
+        const chips = [...row.children].filter((child) => child.matches('.j-ref, .referenceChip'));
         const glyph = row.textContent.includes('←') ? -1 : row.textContent.includes('→') ? 1 : 0;
         if (chips.length !== 2 || !glyph) continue;
         const [from, to] = chips.map((chip) => chip.getBoundingClientRect());

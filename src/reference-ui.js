@@ -153,7 +153,7 @@
       if (!node) return escapeHtml(chunk);
       const type = activeGraph.typeLabel(node.type);
       const accessible = `${node.label}; ${type}; ${node.id}`;
-      return `<button class="referenceChip" type="button" data-reference-id="${escapeHtml(node.id)}" data-reference-type="${escapeHtml(node.type)}" aria-label="${escapeHtml(accessible)}"><span class="referenceChipLabel">${escapeHtml(node.label)}</span><span class="referenceChipId" aria-hidden="true">${escapeHtml(node.id)}</span></button>`;
+      return `<button class="j-ref" type="button" data-reference-id="${escapeHtml(node.id)}" data-reference-type="${escapeHtml(node.type)}" aria-label="${escapeHtml(accessible)}"><span class="j-ref-label">${escapeHtml(node.label)}</span><span class="j-ref-id" aria-hidden="true">${escapeHtml(node.id)}</span></button>`;
     });
   }
 
@@ -162,33 +162,35 @@
     if (rootElement) return rootElement;
     rootElement = document.createElement("div");
     rootElement.id = "referenceInspectorRoot";
-    rootElement.className = "referenceInspectorRoot";
-    rootElement.hidden = true;
-    rootElement.innerHTML = `<div class="referenceInspectorBackdrop" data-reference-close></div><aside class="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><header class="referenceInspectorHead"><div><span class="referenceInspectorType" id="referenceInspectorType"></span><h2 id="referenceInspectorTitle"></h2></div><button class="referenceInspectorClose" type="button" data-reference-close></button></header><div class="referenceInspectorBody" id="referenceInspectorBody"></div><footer class="referenceInspectorFooter"><button class="btn" id="referenceShowMap" type="button"></button><button class="btn primary" id="referenceOpenRecord" type="button"></button></footer></aside>`;
+    rootElement.className = "j-modal-back";
+    rootElement.dataset.variant = "sheet";
+    rootElement.setAttribute("aria-hidden", "true");
+    rootElement.innerHTML = `<aside class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><header class="j-insp-head"><div><p class="j-label" id="referenceInspectorType"></p><h2 id="referenceInspectorTitle"></h2></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close></button></header><div class="j-insp-body" id="referenceInspectorBody"></div><footer class="j-insp-foot"><button class="j-btn" id="referenceShowMap" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></footer></aside>`;
     document.body.append(rootElement);
     return rootElement;
   }
+  const isOpen = (rootElement) => rootElement?.getAttribute("aria-hidden") === "false";
 
   function fact(label, value, options = {}) {
     if (value === "" || value === null || value === undefined || (Array.isArray(value) && !value.length)) return "";
     const content = options.link && validHttpUrl(value)
       ? `<a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">${escapeHtml(options.linkLabel || value)}</a>`
       : escapeHtml(Array.isArray(value) ? value.join(" · ") : options.raw ? value : options.code ? codeLabel(value) : humanize(value));
-    return `<div><dt>${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
+    return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
   }
 
   function relationHtml(edge, direction) {
     const otherId = direction === "incoming" ? edge.source : edge.target;
     const other = graph.resolve(otherId);
     const relation = codeLabel(edge.relation || "related_to");
-    return `<li><button type="button" data-reference-id="${escapeHtml(otherId)}"><span>${escapeHtml(other?.label || otherId)}</span><small>${escapeHtml(otherId)} · ${escapeHtml(relation)}</small></button></li>`;
+    return `<li><button class="j-insp-rec" type="button" data-reference-id="${escapeHtml(otherId)}"><span>${escapeHtml(other?.label || otherId)}</span><small>${escapeHtml(otherId)} · ${escapeHtml(relation)}</small></button></li>`;
   }
 
   function referenceList(ids, emptyCopy) {
-    if (!ids?.length) return `<p class="referenceEmpty compact">${escapeHtml(emptyCopy)}</p>`;
-    return `<ul class="referenceRecordList">${ids.map((id) => {
+    if (!ids?.length) return `<p class="j-note" data-tone="idle">${escapeHtml(emptyCopy)}</p>`;
+    return `<ul class="j-insp-list">${ids.map((id) => {
       const node = graph.resolve(id);
-      return `<li>${node ? `<button type="button" data-reference-id="${escapeHtml(id)}"><span>${escapeHtml(node.label)}</span><small>${escapeHtml(id)}</small></button>` : `<span>${escapeHtml(id)}</span>`}</li>`;
+      return `<li>${node ? `<button class="j-insp-rec" type="button" data-reference-id="${escapeHtml(id)}"><span>${escapeHtml(node.label)}</span><small>${escapeHtml(id)}</small></button>` : `<span>${escapeHtml(id)}</span>`}</li>`;
     }).join("")}</ul>`;
   }
 
@@ -204,15 +206,15 @@
       fact(copy.claimStatus, provenance.claimStatus, { code: true }), fact(copy.reviewStatus, provenance.reviewStatus, { code: true }),
       provenance.sourceStatus ? fact(copy.approvalEligible, provenance.approvalEligible ? copy.yes : copy.no) : "",
     ].filter(Boolean).join("");
-    return `<section class="referenceInspectorSection" data-inspection-section="provenance"><h3>${escapeHtml(copy.provenance)}</h3>${facts ? `<dl class="referenceInspectorFacts">${facts}</dl>` : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`}</section>`;
+    return `<section class="j-insp-sec" data-inspection-section="provenance"><h3>${escapeHtml(copy.provenance)}</h3>${facts ? `<dl class="j-insp-facts">${facts}</dl>` : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`}</section>`;
   }
 
   function evidenceHtml(inspection, copy) {
     const evidence = inspection?.evidence || {};
     const counterText = evidence.counterEvidence?.length
-      ? `<div class="referenceEvidenceText"><h4>${escapeHtml(copy.counterText)}</h4><ul>${evidence.counterEvidence.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div>`
+      ? `<div class="j-note" data-tone="warn"><h4 class="j-label">${escapeHtml(copy.counterText)}</h4><ul>${evidence.counterEvidence.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div>`
       : "";
-    return `<section class="referenceInspectorSection" data-inspection-section="evidence"><h3>${escapeHtml(copy.evidence)}</h3><div class="referenceEvidenceGrid"><div><h4>${escapeHtml(copy.supporting)}</h4>${referenceList(evidence.supportingIds, copy.unavailable)}</div><div><h4>${escapeHtml(copy.counter)}</h4>${referenceList(evidence.counterIds, copy.unavailable)}</div></div>${counterText}</section>`;
+    return `<section class="j-insp-sec" data-inspection-section="evidence"><h3>${escapeHtml(copy.evidence)}</h3><div class="j-insp-pair"><div><h4 class="j-label">${escapeHtml(copy.supporting)}</h4>${referenceList(evidence.supportingIds, copy.unavailable)}</div><div><h4 class="j-label">${escapeHtml(copy.counter)}</h4>${referenceList(evidence.counterIds, copy.unavailable)}</div></div>${counterText}</section>`;
   }
 
   function relationshipEvidenceHtml(inspection, copy) {
@@ -227,7 +229,7 @@
     const counterBacklinks = backlinks
       .filter((item) => item.role === "counter")
       .map((item) => item.ownerId);
-    return `<section class="referenceInspectorSection" data-inspection-section="evidence-trail"><h3>${escapeHtml(copy.evidenceTrail)}</h3><div class="referenceEvidenceGrid"><div><h4>${escapeHtml(copy.trailSupporting)}</h4>${referenceList(supporting, copy.unavailable)}</div><div><h4>${escapeHtml(copy.trailCounter)}</h4>${referenceList(counter, copy.unavailable)}</div></div>${backlinks.length ? `<div class="referenceEvidenceBacklinks"><h4>${escapeHtml(copy.backReferences)}</h4><div class="referenceEvidenceGrid"><div><h5>${escapeHtml(copy.citedAsSupport)}</h5>${referenceList(supportBacklinks, copy.unavailable)}</div><div><h5>${escapeHtml(copy.citedAsCounter)}</h5>${referenceList(counterBacklinks, copy.unavailable)}</div></div></div>` : ""}</section>`;
+    return `<section class="j-insp-sec" data-inspection-section="evidence-trail"><h3>${escapeHtml(copy.evidenceTrail)}</h3><div class="j-insp-pair"><div><h4 class="j-label">${escapeHtml(copy.trailSupporting)}</h4>${referenceList(supporting, copy.unavailable)}</div><div><h4 class="j-label">${escapeHtml(copy.trailCounter)}</h4>${referenceList(counter, copy.unavailable)}</div></div>${backlinks.length ? `<div class="j-insp-sub"><h4>${escapeHtml(copy.backReferences)}</h4><div class="j-insp-pair"><div><h5 class="j-label">${escapeHtml(copy.citedAsSupport)}</h5>${referenceList(supportBacklinks, copy.unavailable)}</div><div><h5 class="j-label">${escapeHtml(copy.citedAsCounter)}</h5>${referenceList(counterBacklinks, copy.unavailable)}</div></div></div>` : ""}</section>`;
   }
 
   function auditHtml(inspection, copy) {
@@ -238,7 +240,7 @@
       fact(copy.uncertainty, audit.uncertainty), fact(copy.limitations, audit.limitations),
       fact(copy.evidenceStrength, audit.evidenceStrength), fact(copy.unresolvedLinks, audit.unresolvedLinks),
     ].filter(Boolean).join("");
-    return `<section class="referenceInspectorSection" data-inspection-section="audit"><h3>${escapeHtml(copy.audit)}</h3>${facts ? `<dl class="referenceInspectorFacts auditFacts">${facts}</dl>` : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`}</section>`;
+    return `<section class="j-insp-sec" data-inspection-section="audit"><h3>${escapeHtml(copy.audit)}</h3>${facts ? `<dl class="j-insp-facts">${facts}</dl>` : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`}</section>`;
   }
 
   function occurrencesHtml(inspection, copy) {
@@ -249,9 +251,9 @@
     };
     const occurrences = inspection?.occurrences || [];
     const content = occurrences.length
-      ? `<ol class="referenceOccurrences">${occurrences.map((occurrence, index) => `<li><button type="button" data-reference-occurrence="${index}" aria-label="${escapeHtml(`${copy.occurrenceOpen}: ${occurrence.path}`)}"><span>${escapeHtml(kindLabel[occurrence.kind] || copy.occurrenceReference)}</span><code>${escapeHtml(occurrence.path)}</code></button></li>`).join("")}</ol>`
-      : `<p class="referenceEmpty compact">${escapeHtml(copy.unavailable)}</p>`;
-    return `<section class="referenceInspectorSection" data-inspection-section="occurrences"><h3>${escapeHtml(copy.occurrences)} <span class="referenceSectionCount">${occurrences.length}</span></h3>${content}</section>`;
+      ? `<ol class="j-insp-list j-insp-occ">${occurrences.map((occurrence, index) => `<li><button class="j-insp-rec" type="button" data-reference-occurrence="${index}" aria-label="${escapeHtml(`${copy.occurrenceOpen}: ${occurrence.path}`)}"><span>${escapeHtml(kindLabel[occurrence.kind] || copy.occurrenceReference)}</span><code>${escapeHtml(occurrence.path)}</code></button></li>`).join("")}</ol>`
+      : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`;
+    return `<section class="j-insp-sec" data-inspection-section="occurrences"><h3>${escapeHtml(copy.occurrences)} <span class="j-chip">${occurrences.length}</span></h3>${content}</section>`;
   }
 
   function populate(node) {
@@ -265,20 +267,20 @@
     activeNode = node;
     activeInspection = inspection;
     rootElement.dir = lang === "ar" ? "rtl" : "ltr";
-    rootElement.querySelector(".referenceInspectorClose").setAttribute("aria-label", copy.close);
-    rootElement.querySelector(".referenceInspectorClose").textContent = "×";
+    rootElement.querySelector("#referenceInspectorClose").setAttribute("aria-label", copy.close);
+    rootElement.querySelector("#referenceInspectorClose").textContent = "×";
     rootElement.querySelector("#referenceInspectorType").textContent = `${graph.typeLabel(node.type)} · ${node.id}`;
     rootElement.querySelector("#referenceInspectorTitle").textContent = node.label;
     const incoming = graph.incoming(node.id);
     const outgoing = graph.outgoing(node.id);
     const connections = incoming.length + outgoing.length
-      ? `<section class="referenceConnections" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4>${escapeHtml(copy.incoming)}</h4><ul>${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4>${escapeHtml(copy.outgoing)}</h4><ul>${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
-      : `<section class="referenceConnections" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3><p class="referenceEmpty compact">${escapeHtml(copy.none)}</p></section>`;
+      ? `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4 class="j-label">${escapeHtml(copy.incoming)}</h4><ul class="j-insp-list">${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4 class="j-label">${escapeHtml(copy.outgoing)}</h4><ul class="j-insp-list">${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
+      : `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3><p class="j-note" data-tone="idle">${escapeHtml(copy.none)}</p></section>`;
     const permanentLink = inspection.relationship?.deepLink
-      ? `<div><dt>${escapeHtml(copy.permanentLink)}</dt><dd><a class="referencePermanentLink" href="${escapeHtml(inspection.relationship.deepLink)}"><code>${escapeHtml(inspection.relationship.deepLink)}</code></a></dd></div>`
+      ? `<div><dt>${escapeHtml(copy.permanentLink)}</dt><dd><a data-permanent-link href="${escapeHtml(inspection.relationship.deepLink)}"><code>${escapeHtml(inspection.relationship.deepLink)}</code></a></dd></div>`
       : "";
-    const identity = `<section class="referenceInspectorSection" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="referenceInspectorFacts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar, { code: true })}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence, { code: true })}${permanentLink}</dl></section>`;
-    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="referenceInspectorSummary">${escapeHtml(root.Jarbou3iBiopolitics?.displayCode?.(lang, inspection.summary) ?? inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
+    const identity = `<section class="j-insp-sec" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="j-insp-facts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar, { code: true })}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence, { code: true })}${permanentLink}</dl></section>`;
+    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="j-insp-summary">${escapeHtml(root.Jarbou3iBiopolitics?.displayCode?.(lang, inspection.summary) ?? inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
     const openButton = rootElement.querySelector("#referenceOpenRecord");
     openButton.textContent = copy.open;
     openButton.dataset.referenceOpenRecord = node.id;
@@ -287,31 +289,33 @@
     mapButton.textContent = copy.showMap;
     mapButton.dataset.referenceShowMap = node.id;
     mapButton.hidden = typeof onShowInMap !== "function";
-    rootElement.querySelector(".referenceInspectorFooter").classList.toggle("single", openButton.hidden || mapButton.hidden);
   }
 
   function open(id, trigger) {
     const node = graph?.resolve(id);
     if (!node) return;
     const rootElement = ensureInspector();
-    if (rootElement.hidden) returnFocus = trigger || document.activeElement;
+    if (!isOpen(rootElement)) returnFocus = trigger || document.activeElement;
     populate(node);
-    rootElement.hidden = false;
-    document.documentElement.classList.add("referenceInspectorOpen");
+    rootElement.setAttribute("aria-hidden", "false");
     document.querySelector("main")?.setAttribute("inert", "");
-    requestAnimationFrame(() => rootElement.querySelector(".referenceInspector").focus());
+    requestAnimationFrame(() => rootElement.querySelector("#referenceInspector").focus());
   }
 
   function close({ restoreFocus = true } = {}) {
     const rootElement = document.getElementById("referenceInspectorRoot");
-    if (!rootElement || rootElement.hidden) return;
+    if (!isOpen(rootElement)) return;
     const closingId = activeNode?.id;
     document.querySelector("main")?.removeAttribute("inert");
-    // Focus goes back before the inspector hides, so the element holding focus
-    // is never hidden under it: WebKit can otherwise clear the restored focus.
-    if (restoreFocus && returnFocus?.isConnected) returnFocus.focus();
-    rootElement.hidden = true;
-    document.documentElement.classList.remove("referenceInspectorOpen");
+    // Focus goes back before the sheet hides, so the element holding focus is
+    // never hidden under it. Reading its box first applies the removed inert:
+    // WebKit's focus() skips that while a stylesheet is still loading (the
+    // relationship map's, say), finds the element inert and drops the focus.
+    if (restoreFocus && returnFocus?.isConnected) {
+      returnFocus.getBoundingClientRect();
+      returnFocus.focus();
+    }
+    rootElement.setAttribute("aria-hidden", "true");
     returnFocus = null;
     activeNode = null;
     activeInspection = null;
@@ -323,7 +327,7 @@
 
   function handleKeydown(event) {
     const rootElement = document.getElementById("referenceInspectorRoot");
-    if (!rootElement || rootElement.hidden) return;
+    if (!isOpen(rootElement)) return;
     if (event.key === "Escape") {
       event.preventDefault();
       close();
@@ -344,6 +348,11 @@
   function wire() {
     if (wired) return;
     document.addEventListener("click", (event) => {
+      // A click on the scrim beside the sheet closes it.
+      if (event.target.id === "referenceInspectorRoot") {
+        close();
+        return;
+      }
       const occurrenceButton = event.target.closest?.("[data-reference-occurrence]");
       if (occurrenceButton) {
         event.preventDefault();

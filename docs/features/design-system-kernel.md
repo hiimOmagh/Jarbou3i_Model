@@ -271,6 +271,32 @@ ledger.
 - **Tests:** contracts are checked from each backdrop, so the frame is
   included; `tests/review-ledger.spec.js` (Arabic names, contracts and axe in
   both themes) and `tests/a11y.spec.js` (the prompt preview).
+- **Side sheet:** `.j-modal-back[data-variant="sheet"]` with
+  `.j-modal[data-size="sheet"]` is the same frame at the inline end, full
+  height, its header and footer fixed and its body scrolling; on a phone it is
+  a bottom sheet. The page behind it does not scroll.
+
+## References
+
+`src/ui/reference.css` (`.j-ref*`, `.j-insp-*`): a record named inside a text,
+and the sheet that inspects it (`src/reference-ui.js`).
+
+- **Reference:** `.j-ref`, contract `<button type="button">` with
+  `data-reference-id` and a name; its label, then its ID (`.j-ref-id`, hidden
+  from screen readers, which hear the name). Evidence also takes the `ok` tone.
+- **Inspector:** the side sheet above. Its sections are `.j-insp-sec`; facts a
+  two-column `.j-insp-facts` list; support beside counter-evidence
+  `.j-insp-pair`; linked records and occurrences 44px `.j-insp-rec` buttons,
+  occurrences numbered. Escape, the close button or the scrim closes it, and
+  focus goes back to the reference that opened it.
+- **Focus:** closing reads the reference's box before focusing it. WebKit's
+  `focus()` does not apply the page's removed `inert` while a stylesheet is
+  still loading, and would drop the focus.
+- **Not here:** the exported HTML report keeps its own `.referenceChip`
+  styles, because it is a standalone file.
+- **Tests:** `tests/reference-resolution.spec.js` (contracts, focus return, and
+  focus return while the relationship map's stylesheet is held back),
+  `tests/results-inspection.spec.js`.
 
 ## Not in the kernel yet
 

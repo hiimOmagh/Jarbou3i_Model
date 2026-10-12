@@ -38,11 +38,11 @@ for (const lens of ["strategic", "biopolitical"]) {
       await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
       const directory = page.locator("[data-results-inspection]");
       await directory.locator('[data-inspection-directory-item] [data-reference-id="E1"]').click();
-      const inspector = page.locator(".referenceInspector");
+      const inspector = page.locator("#referenceInspector");
       await expect(inspector).toBeVisible();
       // A coded value shown as its English code: lowercase words such as
       // "high" or "primary legal policy".
-      const facts = await inspector.locator(".referenceInspectorFacts > div").evaluateAll((rows) =>
+      const facts = await inspector.locator(".j-insp-facts > div").evaluateAll((rows) =>
         rows.map((row) => [row.querySelector("dt")?.textContent, row.querySelector("dd")?.textContent]),
       );
       const relations = await inspector.locator('[data-inspection-section="linked"] small').allTextContents();
@@ -73,10 +73,10 @@ for (const lens of ["strategic", "biopolitical"]) {
       // A record named by a coded field ("infrastructure", "litigation").
       for (const id of ["ASYM1", "RES1"]) {
         await page.locator(`[data-results-inspection] [data-inspection-directory-item] [data-reference-id="${id}"]`).click();
-        const summary = page.locator(".referenceInspector .referenceInspectorSummary");
+        const summary = page.locator("#referenceInspector .j-insp-summary");
         await expect(summary).toBeVisible();
         expect(await summary.textContent()).not.toMatch(/^[a-z][a-z_ ]*$/);
-        await page.locator(".referenceInspectorClose").click();
+        await page.locator("#referenceInspectorClose").click();
       }
     });
   }
@@ -105,7 +105,7 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
 
   await evidenceRecord.focus();
   await evidenceRecord.press("Enter");
-  const inspector = page.locator(".referenceInspector");
+  const inspector = page.locator("#referenceInspector");
   await expect(inspector).toBeVisible();
   await expect(inspector).toBeFocused();
   await expect(page.locator("#referenceInspectorTitle")).toHaveText(
@@ -146,7 +146,7 @@ test("biopolitical inspection traverses linked records without losing return foc
   await evidenceRecord.focus();
   await evidenceRecord.press("Enter");
 
-  const inspector = page.locator(".referenceInspector");
+  const inspector = page.locator("#referenceInspector");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("primary legal policy");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("unverified");
   await expect(inspector.locator('[data-inspection-section="evidence"]')).toContainText("sunset clauses");
@@ -176,16 +176,16 @@ test("evidence trails expose back-references and stable cross-lens deep links", 
     '[data-inspection-directory-item] [data-reference-id="IV1"]',
   );
   await intervention.click();
-  const inspector = page.locator(".referenceInspector");
+  const inspector = page.locator("#referenceInspector");
   const trail = inspector.locator('[data-inspection-section="evidence-trail"]');
   await expect(trail).toContainText("Rules linked defined health credentials");
   await expect(trail).toContainText("E1");
 
-  const permanent = inspector.locator('.referencePermanentLink[href="#record=biopolitical:IV1"]');
+  const permanent = inspector.locator('[data-permanent-link][href="#record=biopolitical:IV1"]');
   await expect(permanent).toBeVisible();
   await permanent.click();
   await expect(page).toHaveURL(/#record=biopolitical:IV1$/);
-  await inspector.locator(".referenceInspectorClose").click();
+  await inspector.locator("#referenceInspectorClose").click();
   await expect(page).not.toHaveURL(/#record=/);
 
   await page.evaluate(() => { window.location.hash = "record=biopolitical:E1"; });

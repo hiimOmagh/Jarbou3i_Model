@@ -572,18 +572,16 @@ for (const token of [
   "data-inspection-section=\"audit\"",
   "data-reference-occurrence",
   "onOpenOccurrence",
-  "if (rootElement.hidden) returnFocus",
+  "if (!isOpen(rootElement)) returnFocus",
 ]) {
   if (!referenceUi.includes(token)) fail(`Phase 3 inspector interaction token missing: ${token}`);
 }
-for (const token of [
-  ".inspectionDirectory",
-  ".inspectionDirectoryMetrics",
-  ".referenceInspectorSection",
-  ".referenceOccurrences",
-  ".referenceEvidenceGrid",
-]) {
+for (const token of [".inspectionDirectory", ".inspectionDirectoryMetrics"]) {
   if (!styles.includes(token)) fail(`Phase 3 inspection style token missing: ${token}`);
+}
+const referenceStyles = read("src/ui/reference.css");
+for (const token of [".j-insp-sec", ".j-insp-occ", ".j-insp-pair", ".j-ref"]) {
+  if (!referenceStyles.includes(token)) fail(`Phase 3 inspection style token missing: ${token}`);
 }
 for (const token of [
   'data-review="inspection"',
@@ -724,7 +722,7 @@ for (const token of ["renderEvidenceIntelligence", "data-evidence-intelligence",
 }
 for (const token of [
   'data-inspection-section="evidence-trail"',
-  "referencePermanentLink",
+  "data-permanent-link",
   'window.addEventListener("hashchange"',
 ]) {
   if (!referenceUi.includes(token)) fail(`Phase 4 evidence UI contract missing: ${token}`);

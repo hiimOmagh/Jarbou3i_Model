@@ -96,7 +96,7 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await visibleRecord.focus();
           await visibleRecord.press("Enter");
           await expect(page.locator("#referenceInspectorTitle")).toBeVisible();
-          const inspectorBounds = await page.locator(".referenceInspector").boundingBox();
+          const inspectorBounds = await page.locator("#referenceInspector").boundingBox();
           expect(inspectorBounds).not.toBeNull();
           expect(inspectorBounds.x).toBeGreaterThanOrEqual(0);
           expect(inspectorBounds.width).toBeLessThanOrEqual(viewport.width + 1);

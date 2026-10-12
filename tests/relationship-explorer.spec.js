@@ -621,9 +621,9 @@ test("map controls and nodes support keyboard-only use", async ({ page }) => {
   const node = page.locator('[data-map-node="ACT1"]');
   await node.press("Space");
   await expect(page.locator('[data-map-node="ACT1"]')).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".referenceInspector")).toHaveCount(0);
+  await expect(page.locator("#referenceInspector")).toHaveCount(0);
   await page.locator('[data-map-node="ACT1"]').press("Enter");
-  await expect(page.locator(".referenceInspector")).toBeVisible();
+  await expect(page.locator("#referenceInspector")).toBeVisible();
   await page.keyboard.press("Escape");
 });
 

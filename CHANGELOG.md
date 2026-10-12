@@ -12,17 +12,31 @@
   `data-tone`, like every other status line.
 - Retires the 80 legacy selectors this leaves unused, including dead ones in
   media queries the alpha.56 cleanup did not read.
+- Moves references and their inspector onto the kernel (`src/ui/reference.css`).
+  A reference is a `.j-ref` button with a DOM contract; the inspector is the
+  kernel dialog frame as a side sheet (a bottom sheet on a phone), and its
+  scrim closes it. Retires the 74 legacy selectors they used.
+- The relationship map's focus mode sits on the kernel's drawer layer, so the
+  inspector, a dialog, opens above it.
 
 ### Accessibility
 
 - At 400% zoom (320px) the case file no longer clips what does not fit: the
   legacy document frame hid its overflow. Record cards, their chips and the
   relationship filters now wrap to the width instead, in all three languages.
+- In Safari, closing the inspector gives focus back to the reference that
+  opened it while the relationship map's stylesheet is still loading. WebKit's
+  `focus()` did not apply the page's removed `inert` before that stylesheet
+  arrived, so focus fell to the page; this was the WebKit test that failed CI
+  intermittently.
 
 ### Tests
 
 - The crash-recovery tests wait for the recovery snapshot to be stored before
   they reload, instead of a fixed 700ms that a loaded machine could outrun.
+- A regression test holds the relationship map's stylesheet back and checks
+  that closing the inspector still returns focus; it fails in WebKit without
+  the fix.
 
 ## 2.1.0-alpha.56 — Case File Interface (UX-0)
 
