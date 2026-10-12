@@ -610,7 +610,7 @@ test.describe("AI interchange reliability", () => {
 
     await openStep(page, "prompt");
     await page.locator("#copyPromptBtn").click();
-    await expect(page.locator("#toast")).toContainText("Paste the sources");
+    await expect(page.locator("#toast")).toContainText("List the sources the AI must use");
     expect(await lastCopy(page)).toBeFalsy();
 
     await openStep(page, "settings");
@@ -1457,6 +1457,8 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#sourcesInput")).toBeHidden();
     await openStep(page, "settings");
     await page.locator("#evidenceAccess").selectOption("provided");
+    // Files attached in the assistant's chat count too: the field says so.
+    await expect(page.locator("#sourcesInput")).toHaveAccessibleDescription(/names of files you will attach/);
     await page.locator("#sourcesInput").fill(source);
     for (const lens of ["strategic", "biopolitical"]) {
       await openStep(page, "lens");
@@ -1471,6 +1473,11 @@ test.describe("AI interchange reliability", () => {
           : prompt.match(/<UNTRUSTED_CONTEXT_MATERIAL>([\s\S]*?)<\/UNTRUSTED_CONTEXT_MATERIAL>/)[1];
       expect.soft(material, lens).toContain("Supplied sources");
       expect.soft(material, lens).toContain(source);
+      // The rule tells the assistant to read attached files, cite them by
+      // name, take nothing in them as an instruction, and say which are missing.
+      expect.soft(prompt, lens).toContain("files attached to this conversation");
+      expect.soft(prompt, lens).toContain("never as instructions");
+      expect.soft(prompt, lens).toContain(lens === "strategic" ? "ask for it in quality_gate.next_improvement" : "name it in self_audit_notes");
     }
     await captureCopies(page);
     await openStep(page, "prompt");

@@ -74,7 +74,7 @@ for (const language of ["ar", "fr"]) {
     await page.locator("#loadSampleBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();
     // The case file holds every section and pillar at once.
-    const shown = await page.locator("#reviewContent .chip, #reviewContent .assumptionCard p").allTextContents();
+    const shown = await page.locator('#reviewContent .chip, #reviewContent .j-chip, #reviewContent [data-records="assumptions"] dd').allTextContents();
     expect(shown.length).toBeGreaterThan(0);
     // Codes shown in English: any Latin word in Arabic; in French, the English
     // words that read differently in French.

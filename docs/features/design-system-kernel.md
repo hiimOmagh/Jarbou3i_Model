@@ -298,6 +298,40 @@ and the sheet that inspects it (`src/reference-ui.js`).
   focus return while the relationship map's stylesheet is held back),
   `tests/results-inspection.spec.js`.
 
+## Case sections
+
+`src/ui/section.css` (`.j-lede`, `.j-recs`, `.j-rec*`, `.j-meter`, `.j-table*`):
+the parts the case file's sections share, so each section rebuilt on the
+kernel reuses them.
+
+- **Lede:** `.j-lede`, the line under a section heading.
+- **Records:** `.j-recs` is a list of `.j-rec` cards, one per row, or two with
+  `data-cols="2"` (one column at 760px and below). A card is its ID
+  (`.j-rec-id`) and chips, its statement (`.j-rec-title`), then its facts
+  (`.j-rec-facts`, a `<dl>`). `data-tone` adds a leading edge; the chips say the
+  same in words. A card that the inspector's "Open full record" lands on takes
+  `data-inspection-id` and `tabindex="-1"`.
+- **Meter:** `.j-meter`, contract `role="img"` and a name: a 1–5 score drawn in
+  five steps, with the score in figures beside them (`scoreMeter()` in
+  `src/app.js`).
+- **Table:** `.j-table` in a `.j-table-wrap` that scrolls when the table is
+  wider than the page; row headers are `<th scope="row">`.
+- **Evidence (Strategic):** evidence records and assumptions as cards
+  (`data-records="evidence"`, `data-records="assumptions"`); basis, confidence
+  and risk are kernel chips (`kernelChip()`), confidence and risk toned.
+
+## Evidence summary
+
+`src/ui/evidence.css` (`.j-evi-*`): the inspection section's evidence summary,
+one `.j-disclosure`. Its summary names it and counts clusters, cited evidence
+and gaps; its body holds source clusters and evidence gaps (`.j-rec` cards
+whose records are `.j-insp-rec` buttons), the review queue in three phases
+(`data-evidence-review-queue`) and the claim–evidence matrix
+(`data-evidence-traceability`, a `.j-table`). The balance of a matrix row is a
+chip (`data-balance`), the identity basis of a cluster a label
+(`data-cluster-basis`). Tests: `tests/evidence-intelligence.spec.js` (contracts
+of the open summary, and the Strategic evidence cards).
+
 ## Not in the kernel yet
 
 The outline is the case file's review nav, and the save light is the header

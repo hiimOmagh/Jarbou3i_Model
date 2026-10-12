@@ -331,7 +331,7 @@ test.describe('Strategic HTML report content', () => {
     expect(body).not.toMatch(/ · none\b/);
 
     await page.locator('[data-review="evidence"]').click();
-    const ledger = page.locator('.evidenceLedger');
+    const ledger = page.locator('[data-records="evidence"]');
     await expect(ledger).toBeVisible();
     await expect(ledger).not.toContainText('internal_sample');
     await expect(ledger).not.toContainText(/ · none\b/);

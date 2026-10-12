@@ -27,6 +27,8 @@
   <link rel="stylesheet" href="src/ui/exchange.css" />
   <link rel="stylesheet" href="src/ui/dialog.css" />
   <link rel="stylesheet" href="src/ui/reference.css" />
+  <link rel="stylesheet" href="src/ui/section.css" />
+  <link rel="stylesheet" href="src/ui/evidence.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-192.png" fetchpriority="high" />
 </head>
 <body>
@@ -150,7 +152,8 @@
           </div>
           <div class="j-field" id="sourcesField" hidden>
             <label for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
-            <textarea id="sourcesInput" class="j-input" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات."></textarea>
+            <textarea id="sourcesInput" class="j-input" rows="4" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها." aria-describedby="sourcesHelp"></textarea>
+            <p class="j-help" id="sourcesHelp" data-i18n="sourcesHelp">الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب البرومبت من المساعد قراءتها والاستشهاد بكل ملف باسمه.</p>
           </div>
         </div>
         <div class="j-flow-panel" data-flow-panel="prompt" hidden>

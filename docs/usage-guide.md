@@ -15,7 +15,7 @@ Switching lenses hides an imported analysis from the other contract, so its fiel
 3. Enter a specific topic.
 4. Add a time and geographic context where possible.
 5. Choose Focused, Expert, or Research.
-6. Choose the source access: no access (a conceptual draft), sources supplied in context, or live web research. With supplied sources, paste them into the **Supplied sources** box; they are added to the prompt.
+6. Choose the source access: no access (a conceptual draft), sources supplied in context, or live web research. With supplied sources, paste text or links into the **Supplied sources** box, and list there the names of any files you will attach in your AI assistant's chat; the box is added to the prompt, which tells the assistant to read the attached files and cite each by its file name. Evidence from a file has no web link. In the Biopolitical lens its page or section (`source_locator`) makes it traceable, and like every source it is verified by a reviewer before publication; in the Strategic lens the evidence summary lists it as a source that is not traceable, for review.
 7. Preview or copy the prompt.
 8. Run it in the AI assistant of your choice.
 9. Copy the returned JSON.

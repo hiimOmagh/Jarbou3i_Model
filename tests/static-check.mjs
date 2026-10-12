@@ -687,7 +687,7 @@ for (const token of [
 ]) {
   if (!evidenceTraceability.includes(token)) fail(`Phase 4 traceability contract missing: ${token}`);
 }
-for (const token of ["evidenceTraceability", "exportIntelligence", "evidence-intelligence.json"]) {
+for (const token of ["data-evidence-traceability", "exportIntelligence", "evidence-intelligence.json"]) {
   if (!app.includes(token)) fail(`Phase 4 traceability UI/export contract missing: ${token}`);
 }
 for (const token of [
@@ -700,7 +700,7 @@ for (const token of [
 ]) {
   if (!evidenceReviewPlan.includes(token)) fail(`Phase 4 review-plan contract missing: ${token}`);
 }
-for (const token of ["evidenceReviewQueue", "exportReviewPlan", "evidence-review-plan.json"]) {
+for (const token of ["data-evidence-review-queue", "exportReviewPlan", "evidence-review-plan.json"]) {
   if (!app.includes(token)) fail(`Phase 4 review-plan UI/export contract missing: ${token}`);
 }
 for (const token of [

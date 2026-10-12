@@ -78,6 +78,10 @@ export const CONTRACTS = Object.freeze({
     (el) => (el.dataset.referenceId ? null : "needs data-reference-id: the record it opens"),
     (el) => (named(el) ? null : "needs an accessible name"),
   ],
+  "j-meter": [
+    (el) => (el.getAttribute("role") === "img" ? null : 'needs role="img": its steps are drawn'),
+    (el) => (named(el) ? null : "needs an accessible name: the score"),
+  ],
   "j-dialog": [
     (el) => (el.tagName === "DIALOG" ? null : "must be a <dialog>, opened with showModal()"),
     (el) => (named(el) ? null : "needs aria-labelledby or aria-label"),
@@ -119,6 +123,9 @@ const FREE_CLASSES = [
   "j-ref-label", "j-ref-id",
   "j-insp-head", "j-insp-body", "j-insp-summary", "j-insp-sec", "j-insp-facts", "j-insp-pair", "j-insp-sub",
   "j-insp-list", "j-insp-rec", "j-insp-occ", "j-insp-foot",
+  "j-lede", "j-recs", "j-rec", "j-rec-head", "j-rec-id", "j-rec-title", "j-rec-facts", "j-table-wrap", "j-table",
+  "j-evi", "j-evi-title", "j-evi-stats", "j-evi-body", "j-evi-sec", "j-evi-head", "j-evi-acts", "j-evi-counts",
+  "j-evi-phases", "j-evi-tasks", "j-evi-seq", "j-evi-target",
 ];
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());
 

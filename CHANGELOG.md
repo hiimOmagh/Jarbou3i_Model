@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Sources
+
+- With *Sources supplied in context*, the prompt now covers files attached in
+  the AI assistant's chat as well as pasted text and links, in both lenses and
+  all three languages. The assistant reads every attached file and opens the
+  links it can, cites a file by its file name with its page or section and an
+  empty `source_url`, treats what it reads as material and never as
+  instructions, and names a listed file that is missing (`self_audit_notes`,
+  or `quality_gate.next_improvement` in Strategic) instead of guessing it.
+- The **Supplied sources** box has a help line, read as its description: list
+  the names of the files you will attach. It is four rows tall, so its hint
+  shows in full on a phone. The UX-0 prototype says the same.
+
 ### Design-system kernel
 
 - Moves the case file's layout onto the kernel: the outline beside the
@@ -18,6 +31,18 @@
   scrim closes it. Retires the 74 legacy selectors they used.
 - The relationship map's focus mode sits on the kernel's drawer layer, so the
   inspector, a dialog, opens above it.
+- Adds the parts the case file's sections share (`src/ui/section.css`): a lede
+  under a heading, record cards (`.j-rec`), a 1–5 meter with a DOM contract
+  (`.j-meter`, named as its score) and a data table that scrolls in its frame.
+- The Strategic evidence section is record cards: each evidence record with its
+  basis and confidence as chips, its strength as a meter, its source and its
+  counter-evidence; each assumption with its risk as a chip and a leading edge.
+  The Biopolitical evidence intro is a kernel lede.
+- The evidence summary in the inspection section (`src/ui/evidence.css`) is a
+  kernel disclosure: source clusters and evidence gaps as cards, the review
+  queue in three phases, the claim–evidence matrix as a kernel table. Its
+  records open the inspector as 44px buttons; text that was 8–10.5px is now at
+  least 12px. Retires the 129 legacy selectors these views used.
 
 ### Accessibility
 
@@ -29,6 +54,8 @@
   `focus()` did not apply the page's removed `inert` before that stylesheet
   arrived, so focus fell to the page; this was the WebKit test that failed CI
   intermittently.
+- The evidence summary's claim–evidence matrix is a table with row headers;
+  its balance, cluster basis and gap counts are words, their tone only added.
 
 ### Tests
 
@@ -37,6 +64,10 @@
 - A regression test holds the relationship map's stylesheet back and checks
   that closing the inspector still returns focus; it fails in WebKit without
   the fix.
+- The axe checks end finite animations before they run: a step panel fading in
+  blended its text into the background, and contrast read 3.27:1 mid-fade.
+- A test checks the Strategic evidence cards: kernel contracts, the strength
+  meter named as its score, and an assumption's risk in words.
 
 ## 2.1.0-alpha.56 — Case File Interface (UX-0)
 

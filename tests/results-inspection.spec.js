@@ -19,7 +19,7 @@ for (const lens of ["strategic", "biopolitical"]) {
     const directory = page.locator("[data-results-inspection]");
     await expect(directory.locator("[data-inspection-directory-item]").first()).toBeVisible();
 
-    const labels = await directory.locator(".inspectionDirectoryMeta > span, .traceabilityBalance").allTextContents();
+    const labels = await directory.locator(".inspectionDirectoryMeta > span, [data-balance]").allTextContents();
     expect(labels.length).toBeGreaterThan(0);
     expect(labels.filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
   });
@@ -66,7 +66,7 @@ for (const lens of ["strategic", "biopolitical"]) {
       await page.locator(`[data-lens="${lens}"]`).click();
       await page.locator("#loadSampleBtn").click();
       await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
-      const bases = await page.locator(".sourceClusterBasis").allTextContents();
+      const bases = await page.locator("[data-cluster-basis]").allTextContents();
       expect(bases.length).toBeGreaterThan(0);
       expect(bases.filter((text) => /· (?:url|title locator|title|missing)$/.test(text.trim()))).toEqual([]);
       if (lens !== "biopolitical") return;
@@ -220,5 +220,5 @@ test("source clusters and evidence gaps remain authored, navigable, and lens-spe
   await biopolitical.locator("summary").click();
   await expect(biopolitical.locator("[data-source-cluster]")).toHaveCount(2);
   await expect(biopolitical.locator('[data-evidence-gap="untraceableEvidence"] [data-reference-id]')).toHaveCount(2);
-  await expect(biopolitical.locator(".evidenceIntelligenceMetrics")).toContainText("2/2");
+  await expect(biopolitical.locator(".j-evi-stats")).toContainText("2/2");
 });

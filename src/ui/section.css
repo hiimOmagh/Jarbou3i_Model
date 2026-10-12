@@ -1,0 +1,68 @@
+/* Jarbou3i case sections (UIX-3, ADR-0002): the parts the case file's sections
+   share. A lede under a heading, record cards in a list, a 1–5 meter and a
+   data table. Classes are .j-lede, .j-recs, .j-rec*, .j-meter and .j-table*. */
+
+/* The line under a section heading that says what the section holds. */
+.j-lede { max-width: 72ch; margin: calc(-1 * var(--j-s-2)) 0 var(--j-s-4); color: var(--j-fg-muted); line-height: 1.6; }
+
+/* Records, one per row; two at a time when they are short (data-cols="2"). */
+.j-recs { display: grid; gap: var(--j-s-3); margin: 0; padding: 0; list-style: none; }
+.j-recs[data-cols="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.j-recs > li { display: grid; min-width: 0; }
+:is(.j-recs, .j-note) + h3 { margin-top: var(--j-s-5); }
+
+/* A record: its ID and qualifiers, its statement, then its facts. A tone is a
+   leading edge; its chips say it in words. */
+.j-rec {
+  display: grid; gap: var(--j-s-3); align-content: start; min-width: 0; padding: var(--j-s-4);
+  border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+}
+.j-rec[data-tone] { border-inline-start-width: 4px; }
+.j-rec[data-tone="ok"] { border-inline-start-color: var(--j-ok); }
+.j-rec[data-tone="warn"] { border-inline-start-color: var(--j-warn); }
+.j-rec[data-tone="crit"] { border-inline-start-color: var(--j-crit); }
+/* The inspector's "Open full record" lands on the card. */
+.j-rec:focus { outline: none; }
+.j-rec:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-rec-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); min-width: 0; }
+.j-rec-head > .j-rec-title { flex: 1 1 12ch; }
+.j-rec-id { color: var(--j-signal); font: 600 var(--j-t-12)/1.3 var(--j-font-data); }
+.j-rec-title { margin: 0; color: var(--j-fg); font-size: var(--j-t-16); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
+.j-rec-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: var(--j-s-3) var(--j-s-4); margin: 0; }
+.j-rec-facts > div { display: grid; gap: var(--j-s-1); align-content: start; min-width: 0; }
+.j-rec-facts dd { margin: 0; color: var(--j-fg); font-size: var(--j-t-13); line-height: 1.55; overflow-wrap: anywhere; }
+
+/* A 1–5 score in five steps, the score beside them in figures. */
+.j-meter { display: inline-flex; align-items: center; gap: 3px; }
+.j-meter > i { width: 14px; height: 6px; border-radius: 3px; background: var(--j-line-strong); }
+.j-meter > i[data-on] { background: var(--j-signal); }
+.j-meter > span { margin-inline-start: var(--j-s-1); color: var(--j-fg-muted); font: 600 var(--j-t-12)/1 var(--j-font-data); }
+
+/* A data table; wider than the page, it scrolls inside its frame. */
+.j-table-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--j-line); border-radius: var(--j-r-2); }
+.j-table { width: 100%; border-collapse: collapse; background: var(--j-panel); font-size: var(--j-t-13); }
+.j-table :is(th, td) { padding: var(--j-s-2) var(--j-s-3); border-bottom: 1px solid var(--j-line); text-align: start; vertical-align: top; }
+.j-table thead th {
+  background: var(--j-panel-2); color: var(--j-fg-muted); font: 600 var(--j-t-12)/1.3 var(--j-font-data);
+  letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+}
+:root[dir="rtl"] .j-table thead th { letter-spacing: 0; text-transform: none; font-family: var(--j-font-ui); }
+.j-table tbody tr:last-child > * { border-bottom: 0; }
+.j-table tbody th { min-width: 200px; font-weight: 400; }
+.j-table td code {
+  display: inline-block; margin: 1px; padding: 2px 5px; border-radius: var(--j-r-1);
+  background: var(--j-panel-2); color: var(--j-signal); font: 600 var(--j-t-12)/1.3 var(--j-font-data);
+}
+
+@media (max-width: 760px) {
+  .j-recs[data-cols="2"] { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .j-rec { padding: var(--j-s-3); }
+}
+@media (forced-colors: active) {
+  .j-rec, .j-table-wrap { border-color: CanvasText; }
+  .j-meter > i { border: 1px solid CanvasText; }
+  .j-meter > i[data-on] { background: CanvasText; }
+}

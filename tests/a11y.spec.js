@@ -4,6 +4,13 @@ import { openStep } from "./helpers/guided-flow.js";
 import { expectKernel } from "./helpers/kernel-check.js";
 
 async function expectNoSeriousViolations(page) {
+  // A panel fading in blends its text into the background: end finite
+  // animations first, so axe reads the colours that stay on screen.
+  await page.evaluate(() => {
+    for (const animation of document.getAnimations()) {
+      if (animation.effect?.getComputedTiming().iterations !== Infinity) animation.finish();
+    }
+  });
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((violation) =>
     ["serious", "critical"].includes(violation.impact),

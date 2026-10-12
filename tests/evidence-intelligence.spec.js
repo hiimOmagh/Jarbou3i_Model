@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import { PRODUCT_VERSION } from "./helpers/product-version.mjs";
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
 async function openInspection(page, lens) {
   await page.goto("./");
@@ -15,6 +16,7 @@ async function openInspection(page, lens) {
   const intelligence = page.locator("[data-evidence-intelligence]");
   await intelligence.locator("summary").click();
   await expect(intelligence).toHaveAttribute("open", "");
+  await expectKernel(page, "[data-evidence-intelligence]");
   return intelligence;
 }
 
@@ -29,9 +31,25 @@ async function downloadManifest(page, intelligence) {
   return JSON.parse(await fs.readFile(path, "utf8"));
 }
 
+test("strategic evidence reads as record cards with their strength and risk", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator("#loadSampleBtn").click();
+  await page.locator('[data-review="evidence"]').click();
+  const evidence = page.locator('#case-evidence [data-records="evidence"] > li');
+  await expect(evidence.first()).toBeVisible();
+  await expectKernel(page, "#case-evidence");
+  // The strength is drawn in steps and named as a score.
+  await expect(evidence.first().getByRole("img")).toHaveAccessibleName(/^[1-5]\/5$/);
+  // An assumption's risk is a chip in words; its tone is only an edge.
+  const assumption = page.locator('#case-evidence [data-records="assumptions"] > li').first();
+  await expect(assumption.locator(".j-chip").first()).toHaveText(/risk/i);
+  await expect(assumption.locator("dt")).toHaveText(["Risk", "Disproving test"]);
+});
+
 test("strategic claim–evidence matrix exports an explicitly derived audit artifact", async ({ page }) => {
   const intelligence = await openInspection(page, "strategic");
-  const matrix = intelligence.locator(".evidenceTraceability");
+  const matrix = intelligence.locator("[data-evidence-traceability]");
   await expect(matrix).toBeVisible();
   await expect(matrix.locator("[data-traceability-record]")).toHaveCount(13);
   await expect(matrix.locator('[data-traceability-record="I1"]')).toContainText("unreferenced");
