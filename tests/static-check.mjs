@@ -578,11 +578,7 @@ for (const token of [
 ]) {
   if (!referenceUi.includes(token)) fail(`Phase 4 evidence UI contract missing: ${token}`);
 }
-for (const token of [
-  'class="scoreMetricCard',
-  'class="metricHead"',
-  'class="metricHint"',
-]) {
+for (const token of ['<div data-metric="', 'class="j-brief-figures" data-layout="grid" data-diagnostic="scores"']) {
   if (!app.includes(token)) fail(`shared score-card markup missing: ${token}`);
 }
 for (const obsolete of ['class="metricCard ', 'class="metricTop"']) {

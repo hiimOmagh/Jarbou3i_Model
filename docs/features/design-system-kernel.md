@@ -314,8 +314,9 @@ kernel reuses them.
   `.j-rec-text`; facts written as prose take `data-prose` for a wider column,
   and a fact may hold a list. A card that opens the inspector is a
   `button.j-rec`; a record a search filters out is a `hidden` list item.
-- **Counts:** `.j-stats`, figures over their names in three columns, or one
-  count per row at 620px and below; `data-tone` on a count colours its figure.
+- **Counts:** `.j-stats`, figures over their names in three columns (four with
+  `data-cols="4"`), or one count per row at 620px and below; `data-tone` (`ok`,
+  `warn`, `crit`) on a count colours its figure.
 - **Meter:** `.j-meter`, contract `role="img"` and a name: a 1–5 score drawn in
   five steps, with the score in figures beside them (`scoreMeter()` in
   `src/app.js`).
@@ -367,10 +368,11 @@ its number and name say which it is.
 Tests: `tests/evidence-intelligence.spec.js` (contracts of the map and the
 layers, a record card, opening and closing a layer).
 
-## Overview brief
+## Overview
 
-`src/ui/brief.css` (`.j-brief*`): the overview's first two parts, each a
-`section.j-brief` with a `.j-brief-head` (label, `h4`, a line under it).
+`src/ui/brief.css` (`.j-brief*`, `.j-diag*`): the overview's brief, two parts,
+each a `section.j-brief` with a `.j-brief-head` (label, `h4`, a line under it),
+then its detailed diagnostics.
 
 - **What matters first** (`data-results-orientation`): the publication gate, a
   `.j-status` in `.j-brief-gate`; the conclusion (`.j-brief-claim`); readiness
@@ -385,9 +387,21 @@ layers, a record card, opening and closing a layer).
   chips in `.j-brief-tags`) and a `.j-btn.j-brief-open` to the full record.
 - `.j-brief-divider` starts the detailed diagnostics; print hides it and the
   links.
+- **Diagnostics** (`.j-diag`): the quality gate, a `.j-note` toned by its
+  verdict (`data-diagnostic="gate"`: an `h4`, why, what blocks it); the six
+  scores, a `dl.j-brief-figures[data-layout="grid"]` (`data-diagnostic="scores"`) of figures out of 100 with
+  their bars and what they measure (`metricCard()`), three to a row; the score
+  rule, a `.j-rec` with the weights as `.j-stats` (Strategic) and the legend of
+  the bars' colours (`.j-brief-bands`, `scoreBandsHtml()`); the caps on
+  readiness and the missing count, `.j-stats[data-cols="4"]`; the next action, a
+  `.j-brief-signal` (`data-diagnostic="next"`); the open items, `.j-note` rows in
+  a `.j-diag-notes` list (`data-diagnostic="warnings"`), and in Strategic the
+  import health under its own `h4`. A Biopolitical import migrated from v1 says
+  so in a `.j-note.j-brief-alert` above the brief.
 
-Tests: `tests/results-workspace.spec.js` (contracts and axe of both parts, the
-gate verdict), `tests/results-explanation.spec.js` (the links and their focus).
+Tests: `tests/results-workspace.spec.js` (contracts and axe of the brief and the
+diagnostics, the gate verdict and its open items), `tests/results-explanation.spec.js`
+(the links and their focus).
 
 ## Evidence summary
 

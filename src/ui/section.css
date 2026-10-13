@@ -61,6 +61,9 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
 .j-stats b { color: var(--j-fg); font: 700 var(--j-t-18)/1.2 var(--j-font-data); }
 .j-stats > [data-tone="ok"] b { color: var(--j-ok); }
 .j-stats > [data-tone="warn"] b { color: var(--j-warn); }
+.j-stats > [data-tone="crit"] b { color: var(--j-crit); }
+/* Four counts in a row. */
+.j-stats[data-cols="4"] { grid-template-columns: repeat(4, minmax(88px, 1fr)); }
 
 /* A 1–5 score in five steps, the score beside them in figures. */
 .j-meter { display: inline-flex; align-items: center; gap: 3px; }
@@ -91,7 +94,7 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
   .j-rec { padding: var(--j-s-3); }
   /* A count per row, its figure before its name: three columns would split a
      name such as “Occurrences”. */
-  .j-stats { grid-template-columns: minmax(0, 1fr); }
+  .j-stats, .j-stats[data-cols] { grid-template-columns: minmax(0, 1fr); }
   .j-stats > span { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: var(--j-s-2); }
 }
 @media (forced-colors: active) {

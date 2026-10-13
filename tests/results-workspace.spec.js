@@ -18,7 +18,7 @@ test('shared results orientation prioritizes decision context across both lenses
   const promotedNextAction = (await orientation.locator('[data-orientation="action"] p').textContent())?.trim();
   expect(promotedNextAction).toBeTruthy();
   expect(promotedNextAction).not.toBe('—');
-  await expect(page.locator('.intelBrief .nextAction')).toContainText(promotedNextAction);
+  await expect(page.locator('[data-diagnostic="next"]')).toContainText(promotedNextAction);
   await expectKernel(page, '[data-results-orientation]');
   await expectKernel(page, '[data-results-explanation]');
 
@@ -58,12 +58,13 @@ test('the Bio overview gives one gate verdict and lists every open item in it', 
   await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator('#loadSampleBtn').click();
-  const gate = page.locator('.intelBrief .qualityGate');
+  const gate = page.locator('[data-diagnostic="gate"]');
   await expect(gate.locator('h4')).toHaveText('Quality gate: Review needed');
   await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('Review needed');
-  const listed = await page.locator('.intelBrief .list .warning').count();
+  const listed = await page.locator('[data-diagnostic="warnings"] li').count();
   expect(listed).toBeGreaterThan(4);
   await expect(gate.locator('li')).toHaveCount(listed);
+  await expectKernel(page, '.j-diag');
 });
 
 for (const language of ["ar", "fr"]) {

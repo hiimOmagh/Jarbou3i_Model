@@ -212,7 +212,6 @@ const I18N = {
       good: "البنية الأساسية للتحليل مكتملة.",
     },
     thesis: "الأطروحة التنفيذية",
-    topic: "الموضوع",
     context: "السياق",
     actions: "الإجراءات",
     downloadHtml: "تصدير تقرير HTML",
@@ -253,8 +252,6 @@ const I18N = {
       "تقرير قابل للمشاركة مبني على نموذج المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة.",
     itemsWord: "عناصر",
     scoreSystem: "نظام التقييم",
-    scoreGuide:
-      "الدرجة المركّبة توازن بين الاكتمال، التماسك، التناقضات، قابلية اختبار السيناريوهات، والارتكاز على الأدلة.",
     scoreCompleteness: "اكتمال الطبقات",
     scoreCompletenessHint: "مدى امتلاء الطبقات الست والبنية الأساسية.",
     scoreCoherence: "التماسك السببي",
@@ -299,8 +296,6 @@ const I18N = {
     generatedReportBiopolitical: "تقرير تحليل حيوسياسي",
     reportSubtitleBiopolitical:
       "تقرير قابل للمشاركة مبني على نموذج الإشكلة ← السكان ← التقنيات ← المعايير/تكوين الذات ← الآثار ← المقاومة/التغذية الراجعة.",
-    scoreGuideBiopolitical:
-      "الدرجة المركّبة توازن بين اكتمال الطبقات، تماسك الحكم، جودة التناقضات، قابلية الاختبار، الارتكاز على الأدلة، وجاهزية النشر.",
     scoreCoherenceBiopolitical: "تماسك الحكم",
     scoreCoherenceHintBiopolitical:
       "مدى اتصال الإشكلة والسكان والتقنيات والمعايير والآثار الجسدية والتغذية الراجعة.",
@@ -511,7 +506,6 @@ const I18N = {
       good: "The core analysis structure is complete.",
     },
     thesis: "Executive thesis",
-    topic: "Topic",
     context: "Context",
     actions: "Actions",
     downloadHtml: "Export HTML report",
@@ -553,8 +547,6 @@ const I18N = {
       "A shareable report built on the Interests → Actors → Tools → Narrative → Results → Feedback model.",
     itemsWord: "items",
     scoreSystem: "Scoring system",
-    scoreGuide:
-      "The composite score balances completeness, coherence, contradiction quality, scenario testability, and evidence grounding.",
     scoreCompleteness: "Layer completeness",
     scoreCompletenessHint:
       "How much of the six-layer model and core structure is populated.",
@@ -604,8 +596,6 @@ const I18N = {
     generatedReportBiopolitical: "Biopolitical Analysis Report",
     reportSubtitleBiopolitical:
       "Shareable report built on Problematization → Populations → Techniques → Norms/Subjectivation → Outcomes → Resistance/Feedback.",
-    scoreGuideBiopolitical:
-      "The composite score balances layer completeness, governance coherence, contradiction quality, falsifiability, evidence grounding, and publication readiness.",
     scoreCoherenceBiopolitical: "Governance coherence",
     scoreCoherenceHintBiopolitical:
       "How clearly the analysis connects problematization, populations, techniques, norms, embodied outcomes, and feedback.",
@@ -824,7 +814,6 @@ const I18N = {
       good: "La structure centrale de l’analyse est complète.",
     },
     thesis: "Thèse exécutive",
-    topic: "Sujet",
     context: "Contexte",
     actions: "Actions",
     downloadHtml: "Exporter le rapport HTML",
@@ -871,8 +860,6 @@ const I18N = {
       "Rapport partageable fondé sur le modèle Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.",
     itemsWord: "éléments",
     scoreSystem: "Système de score",
-    scoreGuide:
-      "Le score composite équilibre la complétude, la cohérence, la qualité des contradictions, la testabilité des scénarios et l’ancrage probatoire.",
     scoreCompleteness: "Complétude des couches",
     scoreCompletenessHint:
       "Degré de remplissage des six couches et de la structure centrale.",
@@ -924,8 +911,6 @@ const I18N = {
     generatedReportBiopolitical: "Rapport d’analyse biopolitique",
     reportSubtitleBiopolitical:
       "Rapport partageable fondé sur Problématisation → Populations → Techniques → Normes/Subjectivation → Effets → Résistance/Rétroaction.",
-    scoreGuideBiopolitical:
-      "Le score composite équilibre complétude des couches, cohérence du gouvernement, qualité des contradictions, réfutabilité, ancrage probatoire et préparation à la publication.",
     scoreCoherenceBiopolitical: "Cohérence du gouvernement",
     scoreCoherenceHintBiopolitical:
       "Clarté du lien entre problématisation, populations, techniques, normes, effets incarnés et rétroaction.",
@@ -1144,7 +1129,6 @@ const LENS_KEY_ALIASES = {
   engine: "engineBiopolitical",
   generatedReport: "generatedReportBiopolitical",
   reportSubtitle: "reportSubtitleBiopolitical",
-  scoreGuide: "scoreGuideBiopolitical",
   scoreCoherence: "scoreCoherenceBiopolitical",
   scoreCoherenceHint: "scoreCoherenceHintBiopolitical",
   scoreContradictionsHint: "scoreContradictionsHintBiopolitical",
@@ -3898,8 +3882,7 @@ function qualityGate(a = state.analysis) {
   if (b.provenance.publicationApproved && !hard.length)
     return {
       status: t("publishReady"),
-      cls: "pct-excellent",
-      tone: "var(--success)",
+      tone: "ok",
       summary: labelText(
         "Structural and independent evidence-review gates passed; final editorial verification remains required.",
         "اجتاز التحليل بوابة البنية ومراجعة الأدلة المستقلة؛ وتبقى المراجعة التحريرية النهائية مطلوبة.",
@@ -3910,8 +3893,7 @@ function qualityGate(a = state.analysis) {
   if (!hard.length)
     return {
       status: t("reviewNeeded"),
-      cls: "pct-mid",
-      tone: "var(--warn)",
+      tone: "warn",
       summary: labelText(
         "Structurally reviewable, but publication is blocked until every evidence record receives independent human approval.",
         "المسودة قابلة للمراجعة بنيويًا، لكن النشر محظور حتى يعتمد مراجع بشري مستقل كل سجل دليل.",
@@ -3921,8 +3903,7 @@ function qualityGate(a = state.analysis) {
     };
   return {
     status: t("doNotPublish"),
-    cls: "pct-low",
-    tone: "var(--danger)",
+    tone: "crit",
     summary: labelText(
       "The analysis is structurally weak. Strengthen missing pillars, evidence, scenarios, and contradictions first.",
       "التحليل ضعيف بنيويًا. قوِّ الطبقات الناقصة والأدلة والسيناريوهات والتناقضات أولًا.",
@@ -3933,10 +3914,11 @@ function qualityGate(a = state.analysis) {
 }
 function qualityGateHtml(a = state.analysis) {
   const g = qualityGate(a);
-  const issues = g.issues?.length
-    ? `<ul>${g.issues.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
-    : "";
-  return `<div class="qualityGate ${g.cls}" style="--gateTone:${g.tone}"><h4>${escapeHtml(t("qualityGate"))}: ${escapeHtml(g.status)}</h4><p>${escapeHtml(g.summary)}</p>${issues}</div>`;
+  return gateNoteHtml(g.tone, g.status, g.summary, g.issues || []);
+}
+// The gate's verdict as a heading, why, then what blocks it.
+function gateNoteHtml(tone, status, summary, issues) {
+  return `<div class="j-note" data-tone="${tone}" data-diagnostic="gate"><h4>${escapeHtml(t("qualityGate"))}: ${escapeHtml(status)}</h4><p>${escapeHtml(summary)}</p>${issues.length ? `<ul>${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>` : ""}</div>`;
 }
 function schemaHealth(a = state.analysis) {
   if (!a) return { pct: 0, missing: [], next: t("healthMissingPillars") };
@@ -4553,12 +4535,6 @@ function scoreMeter(value, label = "") {
 function itemsWord() {
   return t("itemsWord") || (state.lang === "ar" ? "عناصر" : "items");
 }
-function ringMetric(value, size = "sm", suffix = "%", toneClass = "") {
-  const pct = valuePct(value);
-  const dash = pct.toFixed(1);
-  const cls = toneClass || pctClass(pct);
-  return `<div class="metricRing ${size} ${cls}" aria-label="${Math.round(pct)}${suffix}"><svg class="metricSvg" viewBox="0 0 64 64" aria-hidden="true"><circle class="metricTrackSvg" cx="32" cy="32" r="24"></circle><circle class="metricBarSvg" cx="32" cy="32" r="24" pathLength="100" stroke-dasharray="${dash} 100"></circle></svg><div class="metricRingInner"><strong>${Math.round(pct)}</strong><span>${suffix}</span></div></div>`;
-}
 function contradictionTypeLabel(v) {
   return displayEnum(v || "") || labelText("Contradiction", "تناقض");
 }
@@ -5086,31 +5062,37 @@ function metricCard(kind, label, value, hint) {
   const safeValue = Number.isFinite(Number(value))
     ? Math.max(0, Math.min(100, Math.round(Number(value))))
     : 0;
-  const title = label || kind;
-  const help = hint || "";
-  return `<div class="scoreMetricCard ${pctClass(safeValue)}" data-metric="${escapeHtml(kind)}"><div class="metricHead"><strong>${escapeHtml(title)}</strong><b>${safeValue}${t("outOfHundred")}</b></div>${ringMetric(safeValue, "sm")}<p class="metricHint">${escapeHtml(help)}</p></div>`;
+  return `<div data-metric="${escapeHtml(kind)}"><dt class="j-label">${escapeHtml(label || kind)}</dt><dd><b>${safeValue}${t("outOfHundred")}</b>${briefBar(safeValue)}</dd>${hint ? `<dd class="j-brief-desc">${escapeHtml(hint)}</dd>` : ""}</div>`;
 }
 function scoreFormulaHtml() {
   const weights = scoreWeights();
   const entries = Object.keys(weights)
-    .map(
-      (k) =>
-        `<div class="formulaWeight"><span>${escapeHtml(scoreWeightLabel(k))}</span><b>${weights[k]}%</b></div>`,
-    )
+    .map((k) => `<span><b>${weights[k]}%</b>${escapeHtml(scoreWeightLabel(k))}</span>`)
     .join("");
-  const bands = [
-    ["pct-low", "0–34"],
-    ["pct-warn", "35–55"],
-    ["pct-mid", "56–75"],
-    ["pct-good", "76–89"],
-    ["pct-excellent", "90–100"],
-  ]
-    .map(
-      ([cls, label]) =>
-        `<span class="bandChip ${cls}"><span class="bandDot"></span>${label}</span>`,
-    )
-    .join("");
-  return `<div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p>${escapeHtml(scoreFormulaText())}</p><div class="formulaGrid">${entries}</div><div class="scoreBandLegend" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands}</div></div>`;
+  return `<div class="j-rec"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p class="j-brief-desc">${escapeHtml(scoreFormulaText())}</p><span class="j-stats">${entries}</span>${scoreBandsHtml()}</div>`;
+}
+// What the colour of a score's bar says: the bands of pctTone(). A range reads
+// left to right in Arabic too; the dash between its numbers would reverse it.
+function scoreBandsHtml() {
+  const bands = [["crit", "0–34"], ["warn", "35–55"], ["", "56–75"], ["ok", "76–100"]];
+  return `<ul class="j-brief-bands" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands
+    .map(([tone, range]) => `<li><span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:100%" aria-hidden="true"></span><span dir="ltr">${range}</span></li>`)
+    .join("")}</ul>`;
+}
+// The caps on decision readiness, and how many items are still missing.
+function healthStatsHtml(structural, provenance, missing) {
+  const stat = (value, label, tone) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`;
+  return `<span class="j-stats" data-cols="4">${stat(`${structural}%`, labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"), pctTone(structural))}${stat(`${provenance.sourceTraceability}%`, labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"), pctTone(provenance.sourceTraceability))}${stat(`${provenance.humanReview}%`, labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"), pctTone(provenance.humanReview))}${stat(missing, t("missingItems"), missing ? "warn" : "ok")}</span>`;
+}
+function nextActionHtml(text) {
+  return `<div class="j-brief-signal" data-diagnostic="next"><span class="j-label">${escapeHtml(t("nextBestAction"))}</span><p>${escapeHtml(text)}</p></div>`;
+}
+// Open items as notes; one "ok" note when there are none.
+function diagNotesHtml(items, good, hook = "") {
+  const notes = items.length
+    ? items.map((item) => `<li class="j-note" data-tone="warn">${escapeHtml(item)}</li>`).join("")
+    : `<li class="j-note" data-tone="ok">${escapeHtml(good)}</li>`;
+  return `<ul class="j-diag-notes"${hook ? ` data-diagnostic="${hook}"` : ""}>${notes}</ul>`;
 }
 // A Strategic layer's record: its ID and codes, its statement and rationale,
 // then its model score as a fact.
@@ -5123,15 +5105,18 @@ function itemCard(obj, metric = "") {
   const head = `${recordIdCode(obj)}${chip(obj.type || obj.category || obj.frame || obj.basis)}${confidence}${chip(obj.horizon || obj.timeframe)}${chip(obj.stakes)}`;
   return `<li><article class="j-rec"${recordAnchor(obj)}>${head ? `<header class="j-rec-head">${head}</header>` : ""}<p class="j-rec-title">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</p>${obj.rationale ? `<p class="j-rec-text">${escapeHtml(obj.rationale)}</p>` : ""}${metric ? `<dl class="j-rec-facts">${metric}</dl>` : ""}</article></li>`;
 }
-// A share of 100 as a tone: the bands of the score legend, from its colours.
+// A share of 100 as a tone; scoreBandsHtml() is its legend.
 function pctTone(value) {
   const n = valuePct(value);
   return n >= 76 ? "ok" : n >= 56 ? "" : n >= 35 ? "warn" : "crit";
 }
-// A figure out of 100 with its bar; the bar repeats the figure, so it is hidden.
-function briefFigure(label, value) {
+// A bar of a figure out of 100; it repeats the figure, so it is hidden.
+function briefBar(value) {
   const tone = pctTone(value);
-  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${value}%</b><span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:${valuePct(value)}%" aria-hidden="true"></span></dd></div>`;
+  return `<span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:${valuePct(value)}%" aria-hidden="true"></span>`;
+}
+function briefFigure(label, value) {
+  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${value}%</b>${briefBar(value)}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.approved ? "ok" : "crit";
@@ -5388,12 +5373,6 @@ function renderOverview() {
   const warnings = getWarnings(a);
   const h = schemaHealth(a);
   const b = scoreBreakdown(a);
-  const missing = h.missing.length
-    ? h.missing
-        .map((w) => `<div class="warning">${escapeHtml(w)}</div>`)
-        .join("")
-    : `<div class="warning good">${escapeHtml(t("healthGood"))}</div>`;
-  const gate = qualityGate(a);
   const authoredUncertainty = arr(a.evidence?.items).find((item) => String(item.uncertainty || "").trim())?.uncertainty;
   const orientation = createResultsOrientation({
     lens: "strategic",
@@ -5406,7 +5385,7 @@ function renderOverview() {
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: a.quality_gate?.next_improvement || h.next,
   });
-  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="summaryGrid"><div class="intelBrief">${qualityGateHtml(a)}<div class="briefHero"><div class="itemTitle">${t("thesis")}</div><div class="itemText">${escapeHtml(a.subject.executive_thesis || a.subject.question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</div>${scoreFormulaHtml()}<div class="healthGrid"><div class="healthCard ${pctClass(h.pct)}"><div class="healthCardValue">${h.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(b.provenance.sourceTraceability)}"><div class="healthCardValue">${b.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(b.provenance.humanReview)}"><div class="healthCardValue">${b.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${h.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${h.missing.length}</div><span>${t("missingItems")}</span></div></div><div class="nextAction"><strong>${t("nextBestAction")}:</strong> ${escapeHtml(h.next)}</div><div class="list">${warnings.map((w) => `<div class="warning">${escapeHtml(w)}</div>`).join("") || `<div class="warning good">${t("warnings").good}</div>`}</div></div><aside class="scoreBox ${gate.cls}"><div class="sectionKicker">${t("qualityGate")}</div><div class="publicationState ${b.provenance.publicationApproved ? "approved" : "blocked"}">${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "محظور", "Bloqué"))}</div><div class="decisionMetric"><strong>${b.overall}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="decisionMetric"><strong>${b.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</div><div class="scoreTopicBox"><span>${t("topic")}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div><div class="card flat schemaCard"><h3>${t("schemaHealth")}</h3><div class="list">${missing}</div></div>`;
+  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${nextActionHtml(h.next)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}<section aria-labelledby="schemaHealthTitle"><h4 id="schemaHealthTitle">${t("schemaHealth")}</h4>${diagNotesHtml(h.missing, t("healthGood"))}</section></div>`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -6298,12 +6277,7 @@ function bioGateHtml(a) {
     : review
       ? t("reviewNeeded")
       : t("doNotPublish");
-  const cls = ready ? "pct-excellent" : review ? "pct-mid" : "pct-low";
-  const tone = ready
-    ? "var(--success)"
-    : review
-      ? "var(--warn)"
-      : "var(--danger)";
+  const tone = ready ? "ok" : review ? "warn" : "crit";
   const summary = ready
     ? labelText(
         "The analysis satisfies the canonical, semantic, and evidence-verification gates.",
@@ -6321,13 +6295,7 @@ function bioGateHtml(a) {
           "هذا التحليل غير جاهز للنشر؛ عالج عوائق العقد والأدلة أولًا.",
           "Cette analyse n’est pas publiable ; corrigez d’abord les blocages contractuels et probatoires.",
         );
-  return `<div class="qualityGate ${cls}" style="--gateTone:${tone}"><h4>${escapeHtml(t("qualityGate"))}: ${escapeHtml(status)}</h4><p>${escapeHtml(summary)}</p>${
-    health.missing.length
-      ? `<ul>${health.missing
-          .map((value) => `<li>${escapeHtml(value)}</li>`)
-          .join("")}</ul>`
-      : ""
-  }</div>`;
+  return gateNoteHtml(tone, status, summary, health.missing);
 }
 function renderBiopoliticalEngineNav() {
   const labels = t("pillars");
@@ -6375,13 +6343,8 @@ function renderBiopoliticalOverview() {
     .map((key) => metricCard(key, labels[key], scores[key], hints[key]))
     .join("");
   const migration = a.migration
-    ? `<div class="bioMigration"><strong>${escapeHtml(BIO.ui(state.lang, "migration"))}</strong><p>${escapeHtml(arr(a.migration.warnings).join(" · "))}</p></div>`
+    ? `<p class="j-note j-brief-alert" data-tone="warn"><strong>${escapeHtml(BIO.ui(state.lang, "migration"))}</strong> ${escapeHtml(arr(a.migration.warnings).join(" · "))}</p>`
     : "";
-  const missing = health.missing.length
-    ? health.missing
-        .map((value) => `<div class="warning">${escapeHtml(value)}</div>`)
-        .join("")
-    : `<div class="warning good">${escapeHtml(health.next)}</div>`;
   const gateLabel = health.publishable
     ? labelText("Approved", "معتمد", "Approuvé")
     : bioGateReview(a, scores)
@@ -6400,7 +6363,7 @@ function renderBiopoliticalOverview() {
     uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: health.next,
   });
-  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="summaryGrid"><div class="intelBrief">${bioGateHtml(a)}<div class="briefHero"><div class="itemTitle">${escapeHtml(BIO.ui(state.lang, "conclusion"))}</div><div class="itemText">${escapeHtml(a.subject.executive_finding || a.subject.research_question || a.subject.title || "—")}</div></div><div class="scoreSystemGrid">${metrics}</div><div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p>${escapeHtml(BIO.ui(state.lang, "formula"))}</p></div><div class="healthGrid"><div class="healthCard ${pctClass(health.pct)}"><div class="healthCardValue">${health.pct}%</div><span>${escapeHtml(labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"))}</span></div><div class="healthCard ${pctClass(scores.provenance.sourceTraceability)}"><div class="healthCardValue">${scores.provenance.sourceTraceability}%</div><span>${escapeHtml(labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"))}</span></div><div class="healthCard ${pctClass(scores.provenance.humanReview)}"><div class="healthCardValue">${scores.provenance.humanReview}%</div><span>${escapeHtml(labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"))}</span></div><div class="healthCard ${health.missing.length ? "pct-warn" : "pct-good"}"><div class="healthCardValue">${health.missing.length}</div><span>${escapeHtml(t("missingItems"))}</span></div></div><div class="nextAction"><strong>${escapeHtml(t("nextBestAction"))}:</strong> ${escapeHtml(health.next)}</div><div class="list">${missing}</div></div><aside class="scoreBox ${health.publishable ? "pct-excellent" : "pct-low"}"><div class="sectionKicker">${escapeHtml(t("qualityGate"))}</div><div class="publicationState ${health.publishable ? "approved" : "blocked"}">${escapeHtml(gateLabel)}</div><div class="decisionMetric"><strong>${scores.overall}%</strong><span>${escapeHtml(t("scoreSystem"))}</span></div><div class="decisionMetric"><strong>${scores.analyticalCoverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div><div class="scoreHelp">${escapeHtml(t("scoreGuide"))}</div><div class="scoreTopicBox"><span>${escapeHtml(t("topic"))}</span><strong>${escapeHtml(a.subject.title || state.topic || "—")}</strong></div></aside></div>`;
+  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="j-diag">${bioGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metrics}</dl><div class="j-rec"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p class="j-brief-desc">${escapeHtml(BIO.ui(state.lang, "formula"))}</p>${scoreBandsHtml()}</div>${healthStatsHtml(health.pct, scores.provenance, health.missing.length)}${nextActionHtml(health.next)}${diagNotesHtml(health.missing, health.next, "warnings")}</div>`;
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");

@@ -113,7 +113,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.locator("#loadSampleBtn").click();
       await expect(page.locator("#reviewPanel")).toBeVisible();
       await clearTransientUi(page);
-      await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
+      await anchorViewport(page, viewport.id === "phone" ? '[data-diagnostic="scores"]' : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `strategic-results-${key}.png`);
 
       await page.locator("#workspaceSaveState").click();
@@ -127,7 +127,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.locator("#loadSampleBtn").click();
       await expect(page.locator('[data-bio-review="overview"]')).toHaveAttribute("aria-current", "location");
       await clearTransientUi(page);
-      await anchorViewport(page, viewport.id === "phone" ? ".scoreSystemGrid" : "#reviewPanel", 12);
+      await anchorViewport(page, viewport.id === "phone" ? '[data-diagnostic="scores"]' : "#reviewPanel", 12);
       await saveScreenshot(page, testInfo, `biopolitical-results-${key}.png`);
 
       await page.locator('[data-bio-review="connections"]').click();

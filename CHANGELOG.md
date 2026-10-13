@@ -86,6 +86,17 @@
   and whose links are 44px buttons. Their headings sit one level under the
   overview's (`h4`, then `h5`), and a step's count is read as "2 items" rather
   than an unnamed figure. Retires 88 legacy selectors.
+- The overview's detailed diagnostics are on the kernel too. The six scores are
+  figures out of 100 over bars, three to a row, in place of percentage rings
+  that drew an empty grey circle; the score rule ends on a legend of the bars'
+  colours, its ranges read left to right in Arabic as well. The quality gate is
+  a kernel note toned by its verdict, the caps on readiness are kernel counts,
+  and the open items are kernel notes. The executive thesis block and the score
+  box beside the diagnostics are gone: they repeated the brief's conclusion,
+  gate, figures and topic word for word (the Strategic score box also said
+  "محظور", banned, where the brief says "غير معتمد", not approved). Import
+  health is a heading under the overview, not a second section heading.
+  Retires 140 legacy selectors (15 KB of `styles.css`).
 
 ### Accessibility
 
