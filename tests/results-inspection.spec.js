@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 async function loadStrategicSample(page) {
   await page.goto("./");
   await page.locator("#langEn").click();
@@ -19,7 +20,7 @@ for (const lens of ["strategic", "biopolitical"]) {
     const directory = page.locator("[data-results-inspection]");
     await expect(directory.locator("[data-inspection-directory-item]").first()).toBeVisible();
 
-    const labels = await directory.locator(".inspectionDirectoryMeta > span, [data-balance]").allTextContents();
+    const labels = await directory.locator("[data-inspection-directory-item] .j-chip, [data-balance]").allTextContents();
     expect(labels.length).toBeGreaterThan(0);
     expect(labels.filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
   });
@@ -90,6 +91,7 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
   await expect(directory).toBeVisible();
   await expect(directory).toHaveAttribute("data-analysis-lens", "strategic");
   await expect(directory.locator("[data-inspection-directory-item]")).toHaveCount(14);
+  await expectKernel(page, "[data-results-inspection]");
 
   const evidenceRecord = directory.locator(
     '[data-inspection-directory-item] [data-reference-id="E1"]',
@@ -101,6 +103,10 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
   await evidenceRecord.evaluate((element) => { element.dataset.identityProbe = "preserved"; });
   await search.fill("historical power");
   await expect(directory.locator("[data-inspection-directory-item]:visible")).toHaveCount(1);
+  await search.fill("no record has this name");
+  await expect(directory.locator("[data-inspection-directory-item]:visible")).toHaveCount(0);
+  await expect(directory.locator("#inspectionDirectoryNoMatch")).toBeVisible();
+  await search.fill("historical power");
   await expect(evidenceRecord).toHaveAttribute("data-identity-probe", "preserved");
 
   await evidenceRecord.focus();
@@ -220,5 +226,5 @@ test("source clusters and evidence gaps remain authored, navigable, and lens-spe
   await biopolitical.locator("summary").click();
   await expect(biopolitical.locator("[data-source-cluster]")).toHaveCount(2);
   await expect(biopolitical.locator('[data-evidence-gap="untraceableEvidence"] [data-reference-id]')).toHaveCount(2);
-  await expect(biopolitical.locator(".j-evi-stats")).toContainText("2/2");
+  await expect(biopolitical.locator(".j-stats")).toContainText("2/2");
 });

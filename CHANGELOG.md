@@ -50,6 +50,12 @@
   confidence or a relevance, so its colour could mislead. A long code wraps
   inside its chip, so the cards keep to a 320px page (400% zoom). Retires the
   17 legacy selectors they used.
+- The inspection directory is on the kernel: its heading beside its counts, a
+  kernel search field, and every record as a card that opens the inspector, with
+  its ID, type, layer and confidence. The counts are a shared part
+  (`.j-stats`); on a page 620px wide or narrower each count is a row, so long
+  names such as "Occurrences indexées" no longer spill out of their boxes, in
+  the evidence summary too. Retires the 30 legacy selectors the directory used.
 
 ### Accessibility
 

@@ -123,8 +123,9 @@ const FREE_CLASSES = [
   "j-ref-label", "j-ref-id",
   "j-insp-head", "j-insp-body", "j-insp-summary", "j-insp-sec", "j-insp-facts", "j-insp-pair", "j-insp-sub",
   "j-insp-list", "j-insp-rec", "j-insp-occ", "j-insp-foot",
-  "j-lede", "j-recs", "j-rec", "j-rec-head", "j-rec-id", "j-rec-title", "j-rec-text", "j-rec-facts", "j-table-wrap", "j-table",
-  "j-evi", "j-evi-title", "j-evi-stats", "j-evi-body", "j-evi-sec", "j-evi-head", "j-evi-acts", "j-evi-counts",
+  "j-lede", "j-recs", "j-rec", "j-rec-head", "j-rec-id", "j-rec-title", "j-rec-text", "j-rec-facts", "j-stats", "j-table-wrap", "j-table",
+  "j-idir", "j-idir-head",
+  "j-evi", "j-evi-title", "j-evi-body", "j-evi-sec", "j-evi-head", "j-evi-acts", "j-evi-counts",
   "j-evi-phases", "j-evi-tasks", "j-evi-seq", "j-evi-target",
 ];
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());

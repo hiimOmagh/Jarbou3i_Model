@@ -312,7 +312,10 @@ kernel reuses them.
   same in words. A card that the inspector's "Open full record" lands on takes
   `data-inspection-id` and `tabindex="-1"`. A summary under the statement is
   `.j-rec-text`; facts written as prose take `data-prose` for a wider column,
-  and a fact may hold a list.
+  and a fact may hold a list. A card that opens the inspector is a
+  `button.j-rec`; a record a search filters out is a `hidden` list item.
+- **Counts:** `.j-stats`, figures over their names in three columns, or one
+  count per row at 620px and below; `data-tone` on a count colours its figure.
 - **Meter:** `.j-meter`, contract `role="img"` and a name: a 1–5 score drawn in
   five steps, with the score in figures beside them (`scoreMeter()` in
   `src/app.js`).
@@ -326,6 +329,15 @@ kernel reuses them.
   codes as chips in words, untoned, since a code alone does not say whether it
   is a confidence or a relevance; then its statement and summary; its details
   and lists as one `data-prose` description list.
+
+## Inspection directory
+
+`src/ui/evidence.css` (`.j-idir`, `.j-idir-head`): the inspection section's
+record directory (`data-results-inspection`). Its heading and lede sit beside
+its counts (`.j-stats`); below them come the evidence summary, a `.j-field`
+search over the records, and the records as `button.j-rec` cards in a
+two-column `.j-recs` list (`data-inspection-directory-item`), each with its ID,
+type, layer and confidence. Tests: `tests/results-inspection.spec.js`.
 
 ## Evidence summary
 

@@ -576,8 +576,9 @@ for (const token of [
 ]) {
   if (!referenceUi.includes(token)) fail(`Phase 3 inspector interaction token missing: ${token}`);
 }
-for (const token of [".inspectionDirectory", ".inspectionDirectoryMetrics"]) {
-  if (!styles.includes(token)) fail(`Phase 3 inspection style token missing: ${token}`);
+const inspectionStyles = read("src/ui/evidence.css") + read("src/ui/section.css");
+for (const token of [".j-idir", ".j-idir-head", ".j-stats"]) {
+  if (!inspectionStyles.includes(token)) fail(`Phase 3 inspection style token missing: ${token}`);
 }
 const referenceStyles = read("src/ui/reference.css");
 for (const token of [".j-insp-sec", ".j-insp-occ", ".j-insp-pair", ".j-ref"]) {

@@ -6100,7 +6100,7 @@ function renderEvidenceIntelligence(index) {
     [`${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}`, copy.cited],
     [intelligence.stats.gapCount, copy.gaps],
   ].map(([value, label]) => `<span><b>${value}</b>${escapeHtml(label)}</span>`).join("");
-  return `<details class="j-disclosure j-evi" data-evidence-intelligence><summary><span class="j-evi-title"><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="j-evi-stats">${stats}</span></summary><div class="j-evi-body"><section class="j-evi-sec"><h4>${escapeHtml(copy.clusters)}</h4>${clusterCards ? `<ul class="j-recs">${clusterCards}</ul>` : none(copy.empty)}</section><section class="j-evi-sec"><h4>${escapeHtml(copy.gaps)}</h4>${gapGroups ? `<ul class="j-recs">${gapGroups}</ul>` : none("0")}</section>${reviewQueue}${matrix}</div></details>`;
+  return `<details class="j-disclosure j-evi" data-evidence-intelligence><summary><span class="j-evi-title"><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="j-stats">${stats}</span></summary><div class="j-evi-body"><section class="j-evi-sec"><h4>${escapeHtml(copy.clusters)}</h4>${clusterCards ? `<ul class="j-recs">${clusterCards}</ul>` : none(copy.empty)}</section><section class="j-evi-sec"><h4>${escapeHtml(copy.gaps)}</h4>${gapGroups ? `<ul class="j-recs">${gapGroups}</ul>` : none("0")}</section>${reviewQueue}${matrix}</div></details>`;
 }
 // The layer a record belongs to, named in the interface language.
 function inspectionPillarLabel(lens, pillar) {
@@ -6116,17 +6116,21 @@ function renderInspectionDirectory(index) {
     return inspection?.provenance?.sourceStatus === "missing"
       || inspection?.provenance?.claimStatus === "mismatched";
   }).length + (index.diagnostics?.unresolved?.length || 0);
-  const cards = index.nodes.length
-    ? index.nodes.map((node) => {
-        const inspection = index.inspect(node.id);
-        const pillar = inspectionPillarLabel(index.lens, node.pillar);
-        const search = [node.label, node.id, index.typeLabel(node.type), node.pillar, pillar]
-          .join(" ")
-          .toLocaleLowerCase(state.lang);
-        return `<li class="inspectionDirectoryItem" data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="inspectionDirectoryType">${escapeHtml(index.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><span class="inspectionDirectoryMeta"><code>${escapeHtml(node.id)}</code><span>${escapeHtml(pillar)}</span>${inspection?.confidence ? `<span>${escapeHtml(confidenceInfo(inspection.confidence).label)}</span>` : ""}</span></button></li>`;
-      }).join("")
-    : `<li class="inspectionDirectoryEmpty">${escapeHtml(copy.empty)}</li>`;
-  return `<section class="inspectionDirectory" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="inspectionDirectoryHeader"><div><div class="sectionKicker">${escapeHtml(t("nav").inspection)}</div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p>${escapeHtml(copy.intro)}</p></div><div class="inspectionDirectoryMetrics"><div><strong>${index.nodes.length}</strong><span>${escapeHtml(copy.records)}</span></div><div><strong>${index.occurrenceCount}</strong><span>${escapeHtml(copy.occurrences)}</span></div><div class="${concerns ? "concern" : "clear"}"><strong>${concerns}</strong><span>${escapeHtml(copy.concerns)}</span></div></div></header>${renderEvidenceIntelligence(index)}<div class="inspectionSearch"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="srOnly" role="status" aria-live="polite"></span></div><ul class="inspectionDirectoryList" id="inspectionDirectoryList">${cards}</ul><p class="inspectionDirectoryNoMatch" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
+  const cards = index.nodes.map((node) => {
+    const inspection = index.inspect(node.id);
+    const pillar = inspectionPillarLabel(index.lens, node.pillar);
+    const search = [node.label, node.id, index.typeLabel(node.type), node.pillar, pillar]
+      .join(" ")
+      .toLocaleLowerCase(state.lang);
+    const confidence = inspection?.confidence;
+    return `<li data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button class="j-rec" type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="j-rec-head"><code class="j-rec-id">${escapeHtml(node.id)}</code><span class="j-label">${escapeHtml(index.typeLabel(node.type))}</span>${kernelChip(pillar)}${confidence ? kernelChip(confidenceInfo(confidence).label, confidenceTone(confidence)) : ""}</span><span class="j-rec-title">${escapeHtml(node.label)}</span></button></li>`;
+  }).join("");
+  const stats = [
+    [index.nodes.length, copy.records, ""],
+    [index.occurrenceCount, copy.occurrences, ""],
+    [concerns, copy.concerns, concerns ? "warn" : "ok"],
+  ].map(([value, label, tone]) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`).join("");
+  return `<section class="j-idir" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="j-idir-head"><div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p class="j-lede">${escapeHtml(copy.intro)}</p></div><span class="j-stats">${stats}</span></header>${renderEvidenceIntelligence(index)}<div class="j-field"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" class="j-input" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="j-sr-only" role="status" aria-live="polite"></span></div><ol class="j-recs" data-cols="2" id="inspectionDirectoryList">${cards}</ol>${cards ? "" : `<p class="j-note" data-tone="idle">${escapeHtml(copy.empty)}</p>`}<p class="j-note" data-tone="idle" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
 }
 function wireInspectionDirectory() {
   const input = $("inspectionSearch");
