@@ -47,6 +47,27 @@ test("strategic evidence reads as record cards with their strength and risk", as
   await expect(assumption.locator("dt")).toHaveText(["Risk", "Disproving test"]);
 });
 
+test("strategic contradictions and scenarios read as record cards", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator("#loadSampleBtn").click();
+  await page.locator('[data-review="contradictions"]').click();
+  const contradiction = page.locator('#case-contradictions [data-records="contradictions"] > li').first();
+  await expect(contradiction).toBeVisible();
+  await expectKernel(page, "#case-contradictions");
+  // Its severity says its scale; the layers it touches are chips in words.
+  await expect(contradiction.locator(".j-rec-head .j-chip")).toHaveText(["Rhetoric vs action", "High confidence", "Severity 4/10"]);
+  await expect(contradiction.locator("dt")).toHaveText(["Actions/results", "Interpretation", "Strategic signal", "Impact", "Affected layers"]);
+  await expect(contradiction.locator("dd .j-chip")).toHaveText(["Actors", "Tools", "Narrative"]);
+
+  await page.locator('[data-review="scenarios"]').click();
+  const scenario = page.locator('#case-scenarios [data-records="scenarios"] > li').first();
+  await expectKernel(page, "#case-scenarios");
+  await expect(scenario.locator(".j-chip")).toHaveText(["Probability 70%", "Timeframe: 1947–1955"]);
+  await expect(scenario.locator("dt")).toHaveText(["Drivers", "Early signals", "Disproven if"]);
+  await expect(scenario.locator("dd li").first()).toHaveText("Ideological polarization");
+});
+
 test("biopolitical records read as record cards in each pillar and the evidence section", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langEn").click();

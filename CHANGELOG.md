@@ -56,6 +56,14 @@
   (`.j-stats`); on a page 620px wide or narrower each count is a row, so long
   names such as "Occurrences indexées" no longer spill out of their boxes, in
   the evidence summary too. Retires the 30 legacy selectors the directory used.
+- The Strategic contradictions and scenarios are record cards. A contradiction
+  shows its type, confidence and severity as chips, then its actions, its
+  interpretation, its signal, its impact and the layers it touches. Its
+  severity reads "Severity 4/10" instead of "S 4", and from 6/10 it gives the
+  card a leading edge. A scenario shows its probability and timeframe as chips,
+  then its drivers, early signals and disproving conditions. The "Type" line
+  that repeated the type chip is gone. Retires 71 legacy selectors, among them
+  the probability ring only scenarios used.
 
 ### Accessibility
 

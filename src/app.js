@@ -4557,19 +4557,6 @@ function ringMetric(value, size = "sm", suffix = "%", toneClass = "") {
   const cls = toneClass || pctClass(pct);
   return `<div class="metricRing ${size} ${cls}" aria-label="${Math.round(pct)}${suffix}"><svg class="metricSvg" viewBox="0 0 64 64" aria-hidden="true"><circle class="metricTrackSvg" cx="32" cy="32" r="24"></circle><circle class="metricBarSvg" cx="32" cy="32" r="24" pathLength="100" stroke-dasharray="${dash} 100"></circle></svg><div class="metricRingInner"><strong>${Math.round(pct)}</strong><span>${suffix}</span></div></div>`;
 }
-function probabilityClass(v) {
-  const n = valuePct(v);
-  return n >= 70
-    ? "prob-high"
-    : n >= 45
-      ? "prob-mid"
-      : n >= 25
-        ? "prob-lowmid"
-        : "prob-low";
-}
-function probabilityMetric(value, size = "md") {
-  return ringMetric(value, size, "%", probabilityClass(value));
-}
 function contradictionTypeLabel(v) {
   return displayEnum(v || "") || labelText("Contradiction", "تناقض");
 }
@@ -5410,76 +5397,48 @@ function renderPillars() {
     },
   ).join("")}</div>`;
 }
+// A Strategic record card's anchor for the inspector's "Open full record", and
+// its ID.
+function recordAnchor(item) {
+  return item?.id ? ` data-inspection-id="${escapeHtml(item.id)}" tabindex="-1"` : "";
+}
+function recordIdCode(item) {
+  return item?.id ? `<code class="j-rec-id">${escapeHtml(item.id)}</code>` : "";
+}
+// A list of strings as a fact's content.
+function factList(items) {
+  const values = arr(items);
+  return values.length ? `<ul>${values.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : "—";
+}
 function renderContradictions() {
   const items = state.analysis.contradictions.items;
-  return `<h3>${t("contradictions")}</h3><div class="conflictGrid">${
-    items.length
-      ? items
-          .map((c) => {
-            const layers = affectedLayers(c);
-            const inspectionAnchor = c?.id
-              ? ` data-inspection-id="${escapeHtml(c.id)}" tabindex="-1"`
-              : "";
-            return `<article class="conflictCard premiumConflict"${inspectionAnchor}><div class="conflictTop"><div><div class="conflictLabel">${t("contradictions")}</div><div class="conflictTitle">${escapeHtml(c.rhetoric || c.name || c.title || "—")}</div></div><div class="chips conflictMeta">${pill(c.contradiction_type || c.type)}${pill(c.confidence, "confidence")}${c.severity !== undefined && c.severity !== null && c.severity !== "" ? pill(`${t("severityShort")} ${c.severity}`, "severity") : ""}</div></div><div class="conflictBodyGrid"><div class="conflictMain"><div class="miniBlock actionBox"><b>${t("actionsResults")}</b><ul class="actionList">${
-              arr(c.actions).length
-                ? arr(c.actions)
-                    .map((x) => `<li>${escapeHtml(x)}</li>`)
-                    .join("")
-                : "<li>—</li>"
-            }</ul></div><div class="interpretBox"><b>${t("interpretation")}:</b> ${escapeHtml(c.interpretation || "—")}</div></div><aside class="conflictInsight"><div class="insightLabel">${analysisSignalLabel()}</div><div class="insightTitle">${escapeHtml(contradictionMeaning(c))}</div><div class="insightList"><div><span>${labelText("Type", "النوع")}</span><strong>${escapeHtml(contradictionTypeLabel(c.contradiction_type || c.type))}</strong></div><div><span>${labelText("Impact", "الأثر")}</span><strong>${escapeHtml(impactScope(c))}</strong></div><div><span>${labelText("Affected layers", "الطبقات المتأثرة")}</span><div class="layerMiniChips">${
-              layers.length
-                ? layers
-                    .map(
-                      (p) =>
-                        `<em style="--pc:${COLORS[p]}">${escapeHtml(
-                          t("pillars")
-                            [p][0].replace(/[🔴🟠🟡🔵🟣⚫]/g, "")
-                            .trim(),
-                        )}</em>`,
-                    )
-                    .join("")
-                : `<em>${labelText("Cross-layer", "عابر للطبقات")}</em>`
-            }</div></div></div></aside></div></article>`;
-          })
-          .join("")
-      : `<div class="empty"><strong>${t("noItems")}</strong></div>`
-  }</div>`;
+  const contradictionRecord = (c) => {
+    const hasSeverity = c.severity !== undefined && c.severity !== null && c.severity !== "";
+    const score = severityScore(c.severity);
+    const tone = hasSeverity ? (score >= 80 ? "crit" : score >= 60 ? "warn" : "") : "";
+    const severity = hasSeverity
+      ? `${t("severity")} ${c.severity}${Number.isFinite(Number(c.severity)) ? "/10" : ""}`
+      : "";
+    const layers = affectedLayers(c);
+    const layerChips = layers.length
+      ? layers.map((p) => kernelChip(t("pillars")[p][0].replace(/[🔴🟠🟡🔵🟣⚫]/g, "").trim())).join("")
+      : kernelChip(labelText("Cross-layer", "عابر للطبقات"));
+    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(c)}><header class="j-rec-head">${recordIdCode(c)}${kernelChip(contradictionTypeLabel(c.contradiction_type || c.type))}${kernelChip(c.confidence ? confidenceInfo(c.confidence).label : "", confidenceTone(c.confidence))}${kernelChip(severity, tone)}</header><p class="j-rec-title">${escapeHtml(c.rhetoric || c.name || c.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("actionsResults"), factList(c.actions))}${recordFact(t("interpretation"), escapeHtml(c.interpretation || "—"))}</dl><dl class="j-rec-facts">${recordFact(analysisSignalLabel(), escapeHtml(contradictionMeaning(c)))}${recordFact(labelText("Impact", "الأثر"), escapeHtml(impactScope(c)))}${recordFact(labelText("Affected layers", "الطبقات المتأثرة"), layerChips)}</dl></article></li>`;
+  };
+  return `<h3>${t("contradictions")}</h3>${items.length ? `<ol class="j-recs" data-records="contradictions">${items.map(contradictionRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
 function renderScenarios() {
   const items = state.analysis.scenarios.items;
-  return `<h3>${t("scenarios")}</h3><div class="scenarioGrid">${
-    items.length
-      ? items
-          .map((s) => {
-            const pct = valuePct(Number(s.probability));
-            const inspectionAnchor = s?.id
-              ? ` data-inspection-id="${escapeHtml(s.id)}" tabindex="-1"`
-              : "";
-            return `<article class="forecastCard ${pctClass(pct)}"${inspectionAnchor}><div class="forecastHead"><div><div class="sectionKicker">${t("scenarios")}</div><div class="conflictTitle">${escapeHtml(s.name || s.title || "—")}</div><div class="muted">${escapeHtml(s.timeframe || "—")}</div></div><div class="forecastProbWrap">${probabilityMetric(pct, "md")}</div></div><div class="forecastCols"><div class="miniBlock"><b>${t("drivers")}</b>${
-              arr(s.drivers)
-                .map((x) => "• " + escapeHtml(x))
-                .join("<br>") || "—"
-            }</div><div class="miniBlock"><b>${t("earlySignals")}</b>${
-              arr(s.early_signals)
-                .map((x) => "• " + escapeHtml(x))
-                .join("<br>") || "—"
-            }</div><div class="miniBlock"><b>${t("disprovenIf")}</b>${
-              arr(s.disproven_if)
-                .map((x) => "• " + escapeHtml(x))
-                .join("<br>") || "—"
-            }</div></div></article>`;
-          })
-          .join("")
-      : `<div class="empty"><strong>${t("noItems")}</strong></div>`
-  }</div>`;
+  const scenarioRecord = (s) => {
+    const pct = Math.round(valuePct(Number(s.probability)));
+    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}${kernelChip(`${t("probability")} ${pct}%`)}${kernelChip(s.timeframe ? `${t("timeframe")}: ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
+  };
+  return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
 function renderEvidence() {
   const ev = normalizeArray(state.analysis.evidence.items),
     as = normalizeArray(state.analysis.assumptions.items);
   const empty = `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`;
-  // The inspector's "Open full record" lands on the card.
-  const anchor = (item) => (item?.id ? ` data-inspection-id="${escapeHtml(item.id)}" tabindex="-1"` : "");
-  const recordId = (item) => (item?.id ? `<code class="j-rec-id">${escapeHtml(item.id)}</code>` : "");
   const evidenceRecord = (e) => {
     const source = [e.source_title, sourceTypeLabel(e.source_type), e.source_date]
       .filter(Boolean)
@@ -5491,7 +5450,7 @@ function renderEvidence() {
       recordFact(t("sourceNote"), `${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}`),
       counter ? recordFact(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"), escapeHtml(counter)) : "",
     ].join("");
-    return `<li><article class="j-rec"${anchor(e)}><header class="j-rec-head">${recordId(e)}${kernelChip(e.basis ? basisInfo(e.basis).label : "")}${kernelChip(e.confidence ? confidenceInfo(e.confidence).label : "", confidenceTone(e.confidence))}</header><p class="j-rec-title">${escapeHtml(e.claim || e.name || "—")}</p><dl class="j-rec-facts">${facts}</dl></article></li>`;
+    return `<li><article class="j-rec"${recordAnchor(e)}><header class="j-rec-head">${recordIdCode(e)}${kernelChip(e.basis ? basisInfo(e.basis).label : "")}${kernelChip(e.confidence ? confidenceInfo(e.confidence).label : "", confidenceTone(e.confidence))}</header><p class="j-rec-title">${escapeHtml(e.claim || e.name || "—")}</p><dl class="j-rec-facts">${facts}</dl></article></li>`;
   };
   const assumptionRecord = (a) => {
     const riskText = a.risk || a.risk_level || "";
@@ -5500,7 +5459,7 @@ function renderEvidence() {
     const riskDetail = ["low", "medium", "high"].includes(normalizeToken(riskText))
       ? risk.label
       : riskText || labelText("No explicit risk stated.", "لا توجد مخاطر مصرح بها.");
-    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${anchor(a)}><header class="j-rec-head">${recordId(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${recordFact(t("risk"), escapeHtml(riskDetail))}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}</dl></article></li>`;
+    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${recordFact(t("risk"), escapeHtml(riskDetail))}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}</dl></article></li>`;
   };
   return `<h3>${t("evidence")}</h3>${ev.length ? `<ol class="j-recs" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" data-records="assumptions" data-cols="2">${as.map(assumptionRecord).join("")}</ol>` : empty}`;
 }

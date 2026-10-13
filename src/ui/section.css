@@ -49,6 +49,8 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
 .j-rec-facts[data-prose] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
 .j-rec-facts dd > ul { margin: 0; padding-inline-start: var(--j-s-4); }
 .j-rec-facts dd li + li { margin-top: var(--j-s-1); }
+/* A fact that is a set of qualifiers, such as the layers a record touches. */
+.j-rec-facts dd:has(> .j-chip) { display: flex; flex-wrap: wrap; gap: var(--j-s-1); }
 
 /* Counts, each a figure over its name; a tone colours the figure only. */
 .j-stats { display: grid; grid-template-columns: repeat(3, minmax(88px, 1fr)); gap: var(--j-s-2); }

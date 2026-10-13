@@ -324,6 +324,12 @@ kernel reuses them.
 - **Evidence (Strategic):** evidence records and assumptions as cards
   (`data-records="evidence"`, `data-records="assumptions"`); basis, confidence
   and risk are kernel chips (`kernelChip()`), confidence and risk toned.
+- **Contradictions and scenarios (Strategic):** cards in
+  `data-records="contradictions"` and `data-records="scenarios"`. A
+  contradiction's severity (1–10) is a chip, toned from 6 and echoed by the
+  card's edge; the layers it touches are chips in a fact. A scenario's
+  probability and timeframe are chips; its drivers, early signals and
+  disproving conditions are lists in `data-prose` facts.
 - **Records (Biopolitical):** `bioRecordHtml()` draws every pillar's records
   and the evidence section's as cards (`data-records="bio"`): the record's
   codes as chips in words, untoned, since a code alone does not say whether it
