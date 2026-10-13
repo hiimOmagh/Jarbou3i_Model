@@ -47,8 +47,9 @@
   record cards: their qualifiers as chips, then the statement, its summary, and
   its facts and lists as one description list at a reading width. The chips
   are no longer coloured: a code such as "Low" does not say whether it is a
-  confidence or a relevance, so its colour could mislead. Retires the 17
-  legacy selectors they used.
+  confidence or a relevance, so its colour could mislead. A long code wraps
+  inside its chip, so the cards keep to a 320px page (400% zoom). Retires the
+  17 legacy selectors they used.
 
 ### Accessibility
 
