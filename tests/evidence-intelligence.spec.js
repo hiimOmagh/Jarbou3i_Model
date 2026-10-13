@@ -68,6 +68,36 @@ test("strategic contradictions and scenarios read as record cards", async ({ pag
   await expect(scenario.locator("dd li").first()).toHaveText("Ideological polarization");
 });
 
+test("the engine map and the strategic layers read as steps and record cards", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator("#loadSampleBtn").click();
+  // Going to the map redraws only the shell; its state still says imported.
+  await page.locator('[data-shell-nav="engine"]').click();
+  await expect(page.locator("#analysisStateChip")).toHaveText("Analysis imported");
+  // Each layer is a numbered step; one opens its layer in the case file.
+  await expect(page.locator("#engineNav > li")).toHaveCount(6);
+  const step = page.locator('[data-pillar-card="actors"]');
+  await step.click();
+  await expect(step).toHaveAttribute("aria-current", "true");
+  const head = page.locator('h4 > [data-acc="actors"]');
+  await expect(head).toHaveAttribute("aria-expanded", "true");
+  await expect(head).toBeFocused();
+  await expectKernel(page, "#enginePanel");
+  await expectKernel(page, "#case-pillars");
+  // A record's codes are chips in words; its model score is a fact.
+  const record = page.locator('#acc-panel-actors [data-records="layer"] > li').first();
+  await expect(record.locator(".j-chip")).toHaveText(["State", "High confidence"]);
+  await expect(record.locator(".j-rec-title")).toHaveText("United States");
+  await expect(record.locator("dt")).toHaveText("Actor Power Index (API)");
+  await expect(record.locator("dd")).toHaveText("18/20");
+  // Its head closes it, and the map no longer marks it.
+  await head.click();
+  await expect(head).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#acc-panel-actors")).toBeHidden();
+  await expect(step).not.toHaveAttribute("aria-current");
+});
+
 test("biopolitical records read as record cards in each pillar and the evidence section", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langEn").click();

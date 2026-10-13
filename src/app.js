@@ -3846,49 +3846,46 @@ function interestWeightScore(x) {
 function modelMetricLabel(kind) {
   return { api: "API", nsi: "NSI", tps: "TPS", iw: "IW" }[kind] || kind;
 }
-function modelMetricCard(label, value, max, sub, cls = "pct-neutral") {
-  const pct = max ? Math.round((value / max) * 100) : value;
-  return `<div class="modelMetric ${cls}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}${max ? `/${max}` : ""}</b><small>${escapeHtml(sub)}</small></div>`;
+// A layer record's model score as a fact: its name and acronym, then the score
+// over its scale.
+function modelMetricFact(label, value, max, sub) {
+  return recordFact(`${sub} (${label})`, `${escapeHtml(value)}${max ? `/${max}` : ""}`);
 }
 function modelMetricsFor(p, obj) {
   if (p === "actors") {
     const v = actorPowerScore(obj);
-    return modelMetricCard(
+    return modelMetricFact(
       "API",
       v,
       20,
       labelText("Actor Power Index", "مؤشر قوة الفاعل", "Indice de puissance de l’acteur"),
-      pctClass((v / 20) * 100),
     );
   }
   if (p === "narrative") {
     const v = narrativeStrengthScore(obj);
-    return modelMetricCard(
+    return modelMetricFact(
       "NSI",
       v,
       15,
       labelText("Narrative Strength Index", "مؤشر قوة السردية", "Indice de force du récit"),
-      pctClass((v / 15) * 100),
     );
   }
   if (p === "tools") {
     const v = toolPressureScore(obj);
-    return modelMetricCard(
+    return modelMetricFact(
       "TPS",
       v,
       100,
       labelText("Tool Pressure Score", "مؤشر ضغط الأداة", "Score de pression de l’outil"),
-      pctClass(v),
     );
   }
   if (p === "interests") {
     const v = interestWeightScore(obj);
-    return modelMetricCard(
+    return modelMetricFact(
       "IW",
       v,
       100,
       labelText("Interest Weight", "وزن المصلحة", "Poids de l’intérêt"),
-      pctClass(v),
     );
   }
   return "";
@@ -4034,16 +4031,27 @@ function sampleAnalysis(lang = state.lang) {
 function countFor(p) {
   return state.analysis ? normalizeArray(state.analysis[p]).length : 0;
 }
+// A layer on the engine map: a numbered step that opens it in the case file,
+// with its records beside a bar of their share of the fullest layer's.
+function engineStep({ attr, key, index, color, label, count, max }) {
+  const depth = Math.round((count / Math.max(1, max)) * 100);
+  const current = state.activePillar === key ? ' aria-current="true"' : "";
+  return `<li><button class="j-engine-step" type="button" ${attr}="${escapeHtml(key)}" style="--j-layer:${color};--j-depth:${depth}%"${current}><span class="j-engine-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-engine-name">${escapeHtml(label[0])}</span><span class="j-engine-text">${escapeHtml(label[1])}</span><span class="j-engine-count"><b>${count}</b> ${escapeHtml(itemsWord())}</span><span class="j-engine-depth" aria-hidden="true"></span></button></li>`;
+}
+// A layer of the case file: a heading whose button opens its records (the
+// WAI-ARIA accordion pattern). The prefix names its ids and data attribute.
+function layerAccordion({ prefix, key, index, color, label, count, body }) {
+  const open = state.activePillar === key;
+  const id = escapeHtml(key);
+  return `<section class="j-layer" style="--j-layer:${color}"><h4 class="j-layer-h"><button id="${prefix}-head-${id}" class="j-layer-head" data-${prefix}="${id}" type="button" aria-expanded="${open}" aria-controls="${prefix}-panel-${id}"><span class="j-layer-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-layer-name">${escapeHtml(label[0])}</span><span class="j-layer-count"><b>${count}</b> ${escapeHtml(itemsWord())}</span><span class="j-layer-chev" aria-hidden="true"></span><span class="j-layer-text">${escapeHtml(label[1])}</span></button></h4><div id="${prefix}-panel-${id}" class="j-layer-body" role="region" aria-labelledby="${prefix}-head-${id}"${open ? "" : " hidden"}>${body}</div></section>`;
+}
 function renderEngineNav() {
-  const dict = t("pillars");
-  const arrow = state.lang === "ar" ? "←" : "→";
-  $("engineNav").innerHTML = PILLARS.map((p, i) => {
-    const d = dict[p];
-    const count = countFor(p);
-    const filled = count > 0 ? " filled" : "";
-    const depth = layerDepthPct(p);
-    return `<button class="engineCard ${state.activePillar === p ? "active" : ""}${filled} ${pctClass(depth)}" style="--pc:${COLORS[p]}" data-pillar-card="${p}" type="button"><div class="eyebrow">${String(i + 1).padStart(2, "0")}</div><div class="engineHeading"><span class="engineDot" aria-hidden="true"></span><h4>${d[0]}</h4></div><p>${d[1]}</p><div class="engineFooter"><span class="engineCount"><b>${count}</b><small>${itemsWord()}</small></span>${ringMetric(depth, "sm")}</div><span class="flowArrow" aria-hidden="true">${arrow}</span></button>`;
-  }).join("");
+  const labels = t("pillars");
+  const max = Math.max(...PILLARS.map(countFor));
+  $("engineNav").dataset.layers = PILLARS.length;
+  $("engineNav").innerHTML = PILLARS.map((p, index) =>
+    engineStep({ attr: "data-pillar-card", key: p, index, color: COLORS[p], label: labels[p], count: countFor(p), max }),
+  ).join("");
   document.querySelectorAll("[data-pillar-card]").forEach(
     (btn) =>
       (btn.onclick = () => {
@@ -4544,12 +4552,6 @@ function scoreMeter(value, label = "") {
 }
 function itemsWord() {
   return t("itemsWord") || (state.lang === "ar" ? "عناصر" : "items");
-}
-function layerDepthPct(p) {
-  if (!state.analysis) return 0;
-  const counts = PILLARS.map((x) => countFor(x));
-  const max = Math.max(1, ...counts);
-  return Math.round((countFor(p) / max) * 100);
 }
 function ringMetric(value, size = "sm", suffix = "%", toneClass = "") {
   const pct = valuePct(value);
@@ -5110,11 +5112,16 @@ function scoreFormulaHtml() {
     .join("");
   return `<div class="scoreFormulaCard"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p>${escapeHtml(scoreFormulaText())}</p><div class="formulaGrid">${entries}</div><div class="scoreBandLegend" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands}</div></div>`;
 }
-function itemCard(obj, extra = "") {
-  const inspectionAnchor = obj?.id
-    ? ` data-inspection-id="${escapeHtml(obj.id)}" tabindex="-1"`
+// A Strategic layer's record: its ID and codes, its statement and rationale,
+// then its model score as a fact.
+function itemCard(obj, metric = "") {
+  const has = (value) => value !== undefined && value !== null && value !== "";
+  const chip = (value) => (has(value) ? kernelChip(displayEnum(String(value))) : "");
+  const confidence = has(obj.confidence)
+    ? kernelChip(confidenceInfo(String(obj.confidence)).label, confidenceTone(obj.confidence))
     : "";
-  return `<article class="item"${inspectionAnchor}><div class="itemTitle">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</div><div class="itemMeta">${pill(obj.type || obj.category || obj.frame || obj.basis)}${pill(obj.confidence, "confidence")}${pill(obj.horizon || obj.timeframe)}${pill(obj.stakes)}</div>${obj.rationale ? `<div class="itemText">${escapeHtml(obj.rationale)}</div>` : ""}${extra}</article>`;
+  const head = `${recordIdCode(obj)}${chip(obj.type || obj.category || obj.frame || obj.basis)}${confidence}${chip(obj.horizon || obj.timeframe)}${chip(obj.stakes)}`;
+  return `<li><article class="j-rec"${recordAnchor(obj)}>${head ? `<header class="j-rec-head">${head}</header>` : ""}<p class="j-rec-title">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</p>${obj.rationale ? `<p class="j-rec-text">${escapeHtml(obj.rationale)}</p>` : ""}${metric ? `<dl class="j-rec-facts">${metric}</dl>` : ""}</article></li>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateClass = model.publication.approved ? "approved" : "blocked";
@@ -5389,13 +5396,13 @@ function renderOverview() {
 }
 function renderPillars() {
   const labels = t("pillars");
-  return `<h3>${t("engine")}</h3><div class="layerStack">${PILLARS.map(
-    (p, i) => {
-      const depth = layerDepthPct(p);
-      const open = state.activePillar === p;
-      return `<section class="accordion ${open ? "open" : ""}" style="--pc:${COLORS[p]}"><button id="acc-head-${p}" class="accHead" data-acc="${p}" type="button" aria-expanded="${open ? "true" : "false"}" aria-controls="acc-panel-${p}"><span class="accLead"><span class="accNumber">${String(i + 1).padStart(2, "0")}</span><span><strong>${labels[p][0]}</strong><small class="muted">${labels[p][1]}</small></span></span><span class="accMeta"><span class="countBadge"><b>${countFor(p)}</b> ${itemsWord()}</span>${ringMetric(depth, "xs")}</span></button><div id="acc-panel-${p}" class="accBody" role="region" aria-labelledby="acc-head-${p}"${open ? "" : " hidden"}>${state.analysis[p].length ? state.analysis[p].map((o) => itemCard(o, modelMetricsFor(p, o))).join("") : `<div class="empty"><strong>${t("noItems")}</strong></div>`}</div></section>`;
-    },
-  ).join("")}</div>`;
+  return `<h3>${t("engine")}</h3><div class="j-layers">${PILLARS.map((p, index) => {
+    const items = normalizeArray(state.analysis[p]);
+    const body = items.length
+      ? `<ol class="j-recs" data-records="layer">${items.map((o) => itemCard(o, modelMetricsFor(p, o))).join("")}</ol>`
+      : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`;
+    return layerAccordion({ prefix: "acc", key: p, index, color: COLORS[p], label: labels[p], count: items.length, body });
+  }).join("")}</div>`;
 }
 // A Strategic record card's anchor for the inspector's "Open full record", and
 // its ID.
@@ -6313,14 +6320,11 @@ function renderBiopoliticalEngineNav() {
   const counts = state.analysis
     ? BIO.PILLARS.map((pillar) => BIO.pillarCount(state.analysis, pillar.key))
     : BIO.PILLARS.map(() => 0);
-  const max = Math.max(1, ...counts);
-  const arrow = state.lang === "ar" ? "←" : "→";
-  $("engineNav").innerHTML = BIO.PILLARS.map((pillar, index) => {
-    const detail = labels[pillar.key];
-    const count = counts[index];
-    const depth = Math.round((count / max) * 100);
-    return `<button class="engineCard ${state.activePillar === pillar.key ? "active" : ""}${count ? " filled" : ""} ${pctClass(depth)}" style="--pc:${pillar.color}" data-bio-pillar="${pillar.key}" type="button"><div class="eyebrow">${String(index + 1).padStart(2, "0")}</div><div class="engineHeading"><span class="engineDot" aria-hidden="true"></span><h4>${escapeHtml(detail[0])}</h4></div><p>${escapeHtml(detail[1])}</p><div class="engineFooter"><span class="engineCount"><b>${count}</b><small>${itemsWord()}</small></span>${ringMetric(depth, "sm")}</div><span class="flowArrow" aria-hidden="true">${arrow}</span></button>`;
-  }).join("");
+  const max = Math.max(...counts);
+  $("engineNav").dataset.layers = BIO.PILLARS.length;
+  $("engineNav").innerHTML = BIO.PILLARS.map((pillar, index) =>
+    engineStep({ attr: "data-bio-pillar", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: counts[index], max }),
+  ).join("");
   document.querySelectorAll("[data-bio-pillar]").forEach(
     (button) =>
       (button.onclick = () => {
@@ -6386,13 +6390,10 @@ function renderBiopoliticalOverview() {
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");
-  return `<h3>${escapeHtml(t("engine"))}</h3><div class="layerStack bioLayerStack">${BIO.PILLARS.map(
-    (pillar, index) => {
-      const records = BIO.recordsFor(pillar.key, state.analysis, state.lang);
-      const open = state.activePillar === pillar.key;
-      return `<section class="accordion ${open ? "open" : ""}" style="--pc:${pillar.color}"><button id="bio-acc-head-${pillar.key}" class="accHead" data-bio-acc="${pillar.key}" type="button" aria-expanded="${open ? "true" : "false"}" aria-controls="bio-acc-panel-${pillar.key}"><span class="accLead"><span class="accNumber">${String(index + 1).padStart(2, "0")}</span><span><strong>${escapeHtml(labels[pillar.key][0])}</strong><small class="muted">${escapeHtml(labels[pillar.key][1])}</small></span></span><span class="accMeta"><span class="countBadge"><b>${records.length}</b> ${itemsWord()}</span>${ringMetric(Math.min(100, records.length * 24), "xs")}</span></button><div id="bio-acc-panel-${pillar.key}" class="accBody" role="region" aria-labelledby="bio-acc-head-${pillar.key}"${open ? "" : " hidden"}>${bioRecordsHtml(records)}</div></section>`;
-    },
-  ).join("")}</div>`;
+  return `<h3>${escapeHtml(t("engine"))}</h3><div class="j-layers">${BIO.PILLARS.map((pillar, index) => {
+    const records = BIO.recordsFor(pillar.key, state.analysis, state.lang);
+    return layerAccordion({ prefix: "bio-acc", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: records.length, body: bioRecordsHtml(records) });
+  }).join("")}</div>`;
 }
 function renderBiopoliticalEvidence() {
   const records = BIO.recordsFor(
@@ -6604,9 +6605,7 @@ function renderBiopoliticalReview() {
   document.querySelectorAll("[data-bio-acc]").forEach(
     (button) =>
       (button.onclick = () => {
-        const box = button.closest(".accordion");
-        box.classList.toggle("open");
-        const open = box.classList.contains("open");
+        const open = button.getAttribute("aria-expanded") !== "true";
         button.setAttribute("aria-expanded", open ? "true" : "false");
         const panel = document.getElementById(
           `bio-acc-panel-${button.dataset.bioAcc}`,
@@ -6766,9 +6765,7 @@ function renderReview() {
   document.querySelectorAll("[data-acc]").forEach(
     (b) =>
       (b.onclick = () => {
-        const box = b.closest(".accordion");
-        box.classList.toggle("open");
-        const open = box.classList.contains("open");
+        const open = b.getAttribute("aria-expanded") !== "true";
         b.setAttribute("aria-expanded", open ? "true" : "false");
         const panel = document.getElementById(`acc-panel-${b.dataset.acc}`);
         if (panel) panel.hidden = !open;

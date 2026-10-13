@@ -64,6 +64,19 @@
   then its drivers, early signals and disproving conditions. The "Type" line
   that repeated the type chip is gone. Retires 71 legacy selectors, among them
   the probability ring only scenarios used.
+- The model engine is on the kernel (`src/ui/engine.css`). The engine map is an
+  ordered list of numbered steps, one per layer: its name, description and
+  records, and a bar of their share of the fullest layer's in place of the
+  percentage ring, which had no target to measure against. The step whose layer
+  is open in the case file is marked `aria-current`. In the case file, each
+  layer is a heading whose button opens its records, with a chevron that says
+  whether it is open. A Strategic layer's records are record cards: their ID,
+  codes and confidence as chips, their rationale, and their model score as a
+  fact ("Actor Power Index (API) 18/20"). The buttons no longer hold block
+  elements (`div`, `p`, `h4`), which HTML does not allow there. Retires 115
+  legacy selectors.
+- The engine panel's state no longer reads "No analysis yet" over an imported
+  analysis after a redraw of the shell alone, such as going to the map.
 
 ### Accessibility
 

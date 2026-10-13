@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="src/ui/reference.css" />
   <link rel="stylesheet" href="src/ui/section.css" />
   <link rel="stylesheet" href="src/ui/evidence.css" />
+  <link rel="stylesheet" href="src/ui/engine.css" />
 <link rel="preload" as="image" href="assets/jarbou3i-mascot-192.png" fetchpriority="high" />
 </head>
 <body>
@@ -203,9 +204,9 @@
           <h2 data-i18n="engineTitle">خريطة محرك التحليل</h2>
           <p data-i18n="engineSubtitle">هذه ليست أزرارًا زائدة؛ هذه طبقات النموذج نفسها. بعد الاستيراد تصبح كل طبقة قابلة للفحص.</p>
         </div>
-        <div class="chips"><span class="chip" id="analysisStateChip" data-i18n="stateNoAnalysis">لا يوجد تحليل بعد</span></div>
+        <div class="chips"><span class="chip" id="analysisStateChip">لا يوجد تحليل بعد</span></div>
       </div>
-      <div class="engineNav" id="engineNav"></div>
+      <ol class="j-engine-map" id="engineNav"></ol>
     </section>
 
     <section class="panel hide j-case-panel" id="reviewPanel">

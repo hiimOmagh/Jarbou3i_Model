@@ -345,6 +345,28 @@ search over the records, and the records as `button.j-rec` cards in a
 two-column `.j-recs` list (`data-inspection-directory-item`), each with its ID,
 type, layer and confidence. Tests: `tests/results-inspection.spec.js`.
 
+## Model engine
+
+`src/ui/engine.css` (`.j-engine-*`, `.j-layer*`): the engine map and the case
+file's layers. A layer's colour (`--j-layer`, set by the app) only marks it;
+its number and name say which it is.
+
+- **Engine map:** `#engineNav` is an `ol.j-engine-map` of `button.j-engine-step`
+  steps (`data-pillar-card` or `data-bio-pillar`): number, name, description,
+  records, and a bar (`--j-depth`) of their share of the fullest layer's. Six
+  Strategic steps to a row, nine Biopolitical ones three to a row
+  (`data-layers`); three to a row at 1160px and below, one at 620px and below.
+  The step whose layer is open is `aria-current="true"`.
+- **Layers:** `.j-layers` holds one `.j-layer` per layer: an `h4` whose
+  `button.j-layer-head` (`data-acc` or `data-bio-acc`) has `aria-expanded` and
+  `aria-controls`, and a `.j-layer-body` region that is `hidden` when closed
+  and open in print. A Strategic layer's records are `.j-rec` cards
+  (`data-records="layer"`, `itemCard()`), their model score a fact
+  (`modelMetricFact()`); a Biopolitical layer's are `bioRecordHtml()` cards.
+
+Tests: `tests/evidence-intelligence.spec.js` (contracts of the map and the
+layers, a record card, opening and closing a layer).
+
 ## Evidence summary
 
 `src/ui/evidence.css` (`.j-evi-*`): the inspection section's evidence summary,

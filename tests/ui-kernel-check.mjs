@@ -8,7 +8,7 @@ import fs from "node:fs";
 import { KERNEL_CLASSES } from "../src/ui/contracts.js";
 
 // The kernel and the views built on it (shell, guided flow, case file).
-const css = ["src/ui/kernel.css", "src/ui/shell.css", "src/ui/flow.css", "src/ui/case.css", "src/ui/work.css", "src/ui/editor.css", "src/ui/commit.css", "src/ui/exchange.css", "src/ui/dialog.css", "src/ui/reference.css", "src/ui/section.css", "src/ui/evidence.css"]
+const css = ["src/ui/kernel.css", "src/ui/shell.css", "src/ui/flow.css", "src/ui/case.css", "src/ui/work.css", "src/ui/editor.css", "src/ui/commit.css", "src/ui/exchange.css", "src/ui/dialog.css", "src/ui/reference.css", "src/ui/section.css", "src/ui/evidence.css", "src/ui/engine.css"]
   .map((file) => fs.readFileSync(file, "utf8"))
   .join("\n")
   .replace(/\/\*[\s\S]*?\*\//g, "");
