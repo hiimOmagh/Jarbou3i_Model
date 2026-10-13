@@ -222,7 +222,7 @@ test.describe('Strategic HTML report content', () => {
     await page.locator('[data-bio-review="pillars"]').click();
     const mechanisms = page.locator('[data-bio-acc="mechanisms_infrastructure"]');
     if ((await mechanisms.getAttribute('aria-expanded')) !== 'true') await mechanisms.click();
-    const listed = await linkDirections('.bioRecord .itemTitle');
+    const listed = await linkDirections('[data-records="bio"] .j-rec-title');
     expect(listed.length).toBeGreaterThan(0);
     expect(listed.filter(([, forward]) => !forward)).toEqual([]);
 

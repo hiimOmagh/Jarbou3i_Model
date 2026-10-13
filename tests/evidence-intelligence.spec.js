@@ -47,6 +47,31 @@ test("strategic evidence reads as record cards with their strength and risk", as
   await expect(assumption.locator("dt")).toHaveText(["Risk", "Disproving test"]);
 });
 
+test("biopolitical records read as record cards in each pillar and the evidence section", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await openStep(page, "lens");
+  await page.locator('[data-lens="biopolitical"]').click();
+  await page.locator("#loadSampleBtn").click();
+  await page.locator('[data-bio-review="pillars"]').click();
+  await page.locator('[data-bio-acc="mechanisms_infrastructure"]').click();
+  const panel = "#bio-acc-panel-mechanisms_infrastructure";
+  const record = page.locator(`${panel} [data-records="bio"] > li`).first();
+  await expect(record).toBeVisible();
+  await expectKernel(page, panel);
+  // Its codes are chips in words, then its statement; its facts and lists
+  // are one description list.
+  await expect(record.locator(".j-chip")).toHaveText(["Infrastructure", "High"]);
+  await expect(record.locator(".j-rec-title")).toHaveText("QR credential and verification rule");
+  await expect(record.locator("dt")).toHaveText(["Stated purpose", "Ownership", "Oversight", "Scale"]);
+  await expect(record.locator("dd li")).toHaveText(["Individual", "Institutional", "National"]);
+  // The evidence section draws the same cards, their references live.
+  await page.locator('[data-bio-review="evidence"]').click();
+  const explanation = page.locator('#case-evidence [data-records="bio"] > li').first();
+  await expect(explanation.locator(".j-ref").first()).toBeVisible();
+  await expectKernel(page, "#case-evidence");
+});
+
 test("strategic claim–evidence matrix exports an explicitly derived audit artifact", async ({ page }) => {
   const intelligence = await openInspection(page, "strategic");
   const matrix = intelligence.locator("[data-evidence-traceability]");

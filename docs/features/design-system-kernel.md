@@ -310,7 +310,9 @@ kernel reuses them.
   (`.j-rec-id`) and chips, its statement (`.j-rec-title`), then its facts
   (`.j-rec-facts`, a `<dl>`). `data-tone` adds a leading edge; the chips say the
   same in words. A card that the inspector's "Open full record" lands on takes
-  `data-inspection-id` and `tabindex="-1"`.
+  `data-inspection-id` and `tabindex="-1"`. A summary under the statement is
+  `.j-rec-text`; facts written as prose take `data-prose` for a wider column,
+  and a fact may hold a list.
 - **Meter:** `.j-meter`, contract `role="img"` and a name: a 1–5 score drawn in
   five steps, with the score in figures beside them (`scoreMeter()` in
   `src/app.js`).
@@ -319,6 +321,11 @@ kernel reuses them.
 - **Evidence (Strategic):** evidence records and assumptions as cards
   (`data-records="evidence"`, `data-records="assumptions"`); basis, confidence
   and risk are kernel chips (`kernelChip()`), confidence and risk toned.
+- **Records (Biopolitical):** `bioRecordHtml()` draws every pillar's records
+  and the evidence section's as cards (`data-records="bio"`): the record's
+  codes as chips in words, untoned, since a code alone does not say whether it
+  is a confidence or a relevance; then its statement and summary; its details
+  and lists as one `data-prose` description list.
 
 ## Evidence summary
 

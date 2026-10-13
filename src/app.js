@@ -6273,33 +6273,32 @@ function mountRelationshipExplorer() {
       return null;
     });
 }
+// A Biopolitical record as a kernel card: its qualifiers, its statement, its
+// summary, then its facts and lists. Every pillar and the evidence view use it.
 function bioRecordHtml(item) {
   const graph = currentBiopoliticalGraph();
-  const meta = arr(item.meta)
-    .map((value) => pill(value))
+  const chips = arr(item.meta)
+    .map((value) => kernelChip(BIO.displayToken(state.lang, value)))
     .join("");
-  const details = arr(item.details)
-    .map(
-      (detail) =>
-        `<div class="bioDetail"><span>${escapeHtml(detail.label)}</span><p>${namedBioText(detail.value, graph)}</p></div>`,
-    )
-    .join("");
-  const lists = arr(item.lists)
-    .map(
-      (group) =>
-        `<div class="bioList"><b>${escapeHtml(group.label)}</b><ul>${arr(
-          group.items,
-        )
+  const facts = [
+    ...arr(item.details).map((detail) =>
+      recordFact(detail.label, namedBioText(detail.value, graph)),
+    ),
+    ...arr(item.lists).map((group) =>
+      recordFact(
+        group.label,
+        `<ul>${arr(group.items)
           .map((value) => `<li>${namedBioText(value, graph)}</li>`)
-          .join("")}</ul></div>`,
-    )
-    .join("");
-  return `<article class="item bioRecord"><div class="bioRecordHead"><div class="itemTitle">${namedBioText(item.title || "—", graph)}</div><div class="itemMeta">${meta}</div></div>${item.summary ? `<div class="itemText">${namedBioText(item.summary, graph)}</div>` : ""}${details ? `<div class="bioDetailGrid">${details}</div>` : ""}${lists ? `<div class="bioListGrid">${lists}</div>` : ""}</article>`;
+          .join("")}</ul>`,
+      ),
+    ),
+  ].join("");
+  return `<li><article class="j-rec">${chips ? `<header class="j-rec-head">${chips}</header>` : ""}<p class="j-rec-title">${namedBioText(item.title || "—", graph)}</p>${item.summary ? `<p class="j-rec-text">${namedBioText(item.summary, graph)}</p>` : ""}${facts ? `<dl class="j-rec-facts" data-prose>${facts}</dl>` : ""}</article></li>`;
 }
 function bioRecordsHtml(records) {
   return records.length
-    ? records.map(bioRecordHtml).join("")
-    : `<div class="empty"><strong>${escapeHtml(BIO.ui(state.lang, "noRecords"))}</strong></div>`;
+    ? `<ol class="j-recs" data-records="bio">${records.map(bioRecordHtml).join("")}</ol>`
+    : `<p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "noRecords"))}</p>`;
 }
 // Usable for review though not publishable; both overview gates say so.
 function bioGateReview(a, scores) {
@@ -6438,7 +6437,7 @@ function renderBiopoliticalEvidence() {
     state.analysis,
     state.lang,
   );
-  return `<h3>${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.0"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.1"))}</p><div class="bioRecordStack">${bioRecordsHtml(records)}</div>`;
+  return `<h3>${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.0"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.1"))}</p>${bioRecordsHtml(records)}`;
 }
 function renderBiopoliticalConnections() {
   return `<div id="relationshipExplorerMount" aria-live="polite"><div class="warning good" role="status">${escapeHtml(labelText("Loading relationship explorer…", "جارٍ تحميل مستكشف العلاقات…", "Chargement de l’explorateur de relations…"))}</div></div>`;

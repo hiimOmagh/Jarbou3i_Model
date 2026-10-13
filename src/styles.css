@@ -491,19 +491,7 @@ html[dir="rtl"] .welcomeBody,html[dir="rtl"] .welcomeTitle,html[dir="rtl"] .welc
 body.bio-v2 .engineNav{grid-template-columns:repeat(3,minmax(0,1fr));}
 body.bio-v2 .engineCard:nth-child(3n) .flowArrow{display:none;}
 .bioLayerStack{gap:16px;}
-.bioRecordStack{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;}
-.bioRecord{display:grid;grid-template-columns:minmax(0,1fr);gap:13px;overflow-wrap:anywhere;border-color:color-mix(in srgb,var(--accent) 10%,var(--line));}.bioRecord .itemMeta .chip{max-width:100%;white-space:normal;}
-.bioRecordHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
-.bioRecordHead .itemTitle{font-size:16px;line-height:1.42;}
-.bioDetailGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-.bioDetail{border:1px solid var(--line);border-radius:15px;padding:11px 12px;background:color-mix(in srgb,var(--surface-soft) 94%,transparent);min-width:0;}
-.bioDetail span{display:block;color:var(--muted);font-size:10.8px;font-weight:1000;text-transform:uppercase;letter-spacing:.055em;}
-.bioDetail p{margin:5px 0 0;color:var(--text);font-size:13px;line-height:1.55;overflow-wrap:anywhere;}
-.bioListGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-.bioList{border-inline-start:3px solid color-mix(in srgb,var(--accent) 58%,transparent);padding:4px 11px;min-width:0;}
-.bioList b{font-size:12.5px;color:var(--strong);}
-.bioList ul{margin:7px 0 0;padding-inline-start:19px;color:var(--text);font-size:12.8px;line-height:1.55;}
-.bioList li+li{margin-top:4px;}
+
 .bioMigration{margin-bottom:16px;border:1px solid color-mix(in srgb,var(--warn) 28%,var(--line));background:color-mix(in srgb,var(--warn) 8%,var(--surface-solid));border-radius:20px;padding:15px 17px;box-shadow:var(--shadow-xs);}
 .bioMigration strong{display:block;color:var(--strong);}
 .bioMigration p{margin:6px 0 0;color:var(--muted);}
@@ -525,7 +513,7 @@ body.bio-v2 .engineCard:nth-child(3n) .flowArrow{display:none;}
 .bioAuditNotes p{margin:0;}
 .bioAuditNotes p+p{margin-top:6px;}
 @media(max-width:1160px){body.bio-v2 .engineNav{grid-template-columns:repeat(2,minmax(0,1fr));}body.bio-v2 .engineCard:nth-child(3n) .flowArrow{display:grid;}body.bio-v2 .engineCard:nth-child(2n) .flowArrow{display:none;}}
-@media(max-width:760px){body.bio-v2 .engineNav,.bioDetailGrid,.bioListGrid,.bioConclusionGrid,.bioAuditGrid{grid-template-columns:minmax(0,1fr);}body.bio-v2 .engineCard .flowArrow{display:none!important;}.bioRecordHead{display:grid;}}
+@media(max-width:760px){body.bio-v2 .engineNav,.bioConclusionGrid,.bioAuditGrid{grid-template-columns:minmax(0,1fr);}body.bio-v2 .engineCard .flowArrow{display:none!important;}}
 
 /* Named references and relationship inspector */
 

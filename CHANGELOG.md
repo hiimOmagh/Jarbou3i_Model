@@ -43,6 +43,12 @@
   queue in three phases, the claim–evidence matrix as a kernel table. Its
   records open the inspector as 44px buttons; text that was 8–10.5px is now at
   least 12px. Retires the 129 legacy selectors these views used.
+- The Biopolitical records, in every pillar and in the evidence section, are
+  record cards: their qualifiers as chips, then the statement, its summary, and
+  its facts and lists as one description list at a reading width. The chips
+  are no longer coloured: a code such as "Low" does not say whether it is a
+  confidence or a relevance, so its colour could mislead. Retires the 17
+  legacy selectors they used.
 
 ### Accessibility
 
