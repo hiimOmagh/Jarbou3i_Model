@@ -6389,20 +6389,22 @@ function renderBiopoliticalConclusion() {
   const conclusion = groups
     .map(
       (group) =>
-        `<section class="bioConclusionGroup"><h4>${escapeHtml(group.label)}</h4>${
+        `<li><article class="j-rec"><h4 class="j-rec-title">${escapeHtml(group.label)}</h4>${
           arr(group.items).length
-            ? `<ul>${arr(group.items)
+            ? `<ul class="j-rec-text">${arr(group.items)
                 .map((value) => `<li>${escapeHtml(value)}</li>`)
                 .join("")}</ul>`
-            : `<p class="muted">${escapeHtml(t("noItems"))}</p>`
-        }</section>`,
+            : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`
+        }</article></li>`,
     )
     .join("");
+  // A check that does not apply is neither passed nor a concern.
+  const tones = { pass: "ok", concern: "warn", not_applicable: "idle" };
   const audit = BIO.SELF_AUDIT_KEYS.map((key) => {
     const status = a.self_audit[key] || "concern";
-    return `<div class="bioAuditItem ${status === "concern" ? "concern" : "pass"}"><span>${escapeHtml(BIO.auditLabel(state.lang, key))}</span><b>${escapeHtml(BIO.displayToken(state.lang, status))}</b></div>`;
+    return `<div data-tone="${tones[status]}"><dt>${escapeHtml(BIO.auditLabel(state.lang, key))}</dt><dd><span class="j-status" data-tone="${tones[status]}">${escapeHtml(BIO.displayToken(state.lang, status))}</span></dd></div>`;
   }).join("");
-  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><div class="bioConclusionGrid">${conclusion}</div><h3 class="bioSubheading">${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><div class="bioAuditGrid">${audit}</div>${a.self_audit_notes.length ? `<div class="bioAuditNotes">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
+  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><dl class="j-checks" data-records="self-audit">${audit}</dl>${a.self_audit_notes.length ? `<div class="j-note" data-tone="idle">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
 }
 function renderBiopoliticalReviewNav() {
   const connectionLabel = labelText("Connections", "العلاقات", "Connexions");

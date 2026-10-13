@@ -1,7 +1,7 @@
 /* Jarbou3i case sections (UIX-3, ADR-0002): the parts the case file's sections
-   share. A lede under a heading, record cards in a list, counts, a 1–5 meter
-   and a data table. Classes are .j-lede, .j-recs, .j-rec*, .j-stats, .j-meter
-   and .j-table*. */
+   share. A lede under a heading, record cards in a list, checks with their
+   verdicts, counts, a 1–5 meter and a data table. Classes are .j-lede,
+   .j-recs, .j-rec*, .j-checks, .j-stats, .j-meter and .j-table*. */
 
 /* The line under a section heading that says what the section holds. */
 .j-lede { max-width: 72ch; margin: calc(-1 * var(--j-s-2)) 0 var(--j-s-4); color: var(--j-fg-muted); line-height: 1.6; }
@@ -51,6 +51,24 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
 .j-rec-facts dd li + li { margin-top: var(--j-s-1); }
 /* A fact that is a set of qualifiers, such as the layers a record touches. */
 .j-rec-facts dd:has(> .j-chip) { display: flex; flex-wrap: wrap; gap: var(--j-s-1); }
+/* A summary that is a list of points. */
+ul.j-rec-text { padding-inline-start: var(--j-s-5); list-style: disc; }
+ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
+/* A note of several paragraphs. */
+.j-note > p { margin: 0; }
+.j-note > p + p { margin-top: var(--j-s-1); }
+
+/* Checks, each a question beside its verdict (a .j-status), two to a row; a
+   concern is washed so it stands out among the passes. */
+.j-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-2); margin: 0; }
+.j-checks > div {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--j-s-3); min-width: 0;
+  padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+}
+.j-checks > [data-tone="warn"] { background: var(--j-warn-wash); }
+.j-checks dt { color: var(--j-fg); font-size: var(--j-t-14); line-height: 1.45; overflow-wrap: anywhere; }
+.j-checks dd { margin: 0; }
+.j-checks + .j-note { margin-top: var(--j-s-3); }
 
 /* Counts, each a figure over its name; a tone colours the figure only. */
 .j-stats { display: grid; grid-template-columns: repeat(3, minmax(88px, 1fr)); gap: var(--j-s-2); }
@@ -88,7 +106,7 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
 }
 
 @media (max-width: 760px) {
-  .j-recs[data-cols="2"] { grid-template-columns: minmax(0, 1fr); }
+  .j-recs[data-cols="2"], .j-checks { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 620px) {
   .j-rec { padding: var(--j-s-3); }
@@ -98,7 +116,7 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
   .j-stats > span { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: var(--j-s-2); }
 }
 @media (forced-colors: active) {
-  .j-rec, .j-table-wrap, .j-stats > span { border-color: CanvasText; }
+  .j-rec, .j-checks > div, .j-table-wrap, .j-stats > span { border-color: CanvasText; }
   .j-meter > i { border: 1px solid CanvasText; }
   .j-meter > i[data-on] { background: CanvasText; }
 }

@@ -97,6 +97,12 @@
   "محظور", banned, where the brief says "غير معتمد", not approved). Import
   health is a heading under the overview, not a second section heading.
   Retires 140 legacy selectors (15 KB of `styles.css`).
+- The Biopolitical conclusion is on the kernel. The calibrated judgment's
+  groups are record cards; the model self-audit is a list of checks, each
+  verdict a kernel status said in words and in shape. A check that does not
+  apply is grey and hollow, where it was green like a pass, and a concern is
+  washed. The audit's questions are 14px (they were 12px). Retires 18 legacy
+  selectors.
 
 ### Accessibility
 

@@ -288,26 +288,6 @@ html[dir="rtl"] .welcomeBody,html[dir="rtl"] .welcomeTitle,html[dir="rtl"] .welc
 
 /* v1.3.0-bio-alpha.2.1 — lens toggle hit-target hardening */
 
-/* Biopolitical Training Map v2 */
-
-.bioConclusionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
-.bioConclusionGroup{border:1px solid var(--line);border-radius:19px;padding:15px;background:linear-gradient(180deg,var(--surface-solid),color-mix(in srgb,var(--surface-soft) 96%,transparent));box-shadow:var(--shadow-xs);}
-.bioConclusionGroup h4{margin:0;color:var(--strong);font-size:14px;}
-.bioConclusionGroup ul{margin:9px 0 0;padding-inline-start:20px;line-height:1.6;}
-.bioSubheading{margin-top:24px!important;}
-.bioAuditGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
-.bioAuditItem{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface-solid);text-transform:none;}
-.bioAuditItem span{font-size:12px;color:var(--text);overflow-wrap:anywhere;}
-.bioAuditItem b{font-size:10.5px;text-transform:uppercase;letter-spacing:.045em;}
-.bioAuditItem.pass{border-color:color-mix(in srgb,var(--success) 22%,var(--line));}
-.bioAuditItem.pass b{color:var(--success);}
-.bioAuditItem.concern{border-color:color-mix(in srgb,var(--warn) 28%,var(--line));background:color-mix(in srgb,var(--warn) 6%,var(--surface-solid));}
-.bioAuditItem.concern b{color:var(--warn);}
-.bioAuditNotes{margin-top:12px;border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:var(--surface-soft);color:var(--muted);}
-.bioAuditNotes p{margin:0;}
-.bioAuditNotes p+p{margin-top:6px;}
-@media(max-width:760px){.bioConclusionGrid,.bioAuditGrid{grid-template-columns:minmax(0,1fr);}}
-
 /* Named references and relationship inspector */
 
 /* Shared results inspection directory */

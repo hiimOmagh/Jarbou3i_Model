@@ -300,7 +300,8 @@ and the sheet that inspects it (`src/reference-ui.js`).
 
 ## Case sections
 
-`src/ui/section.css` (`.j-lede`, `.j-recs`, `.j-rec*`, `.j-meter`, `.j-table*`):
+`src/ui/section.css` (`.j-lede`, `.j-recs`, `.j-rec*`, `.j-checks`, `.j-meter`,
+`.j-table*`):
 the parts the case file's sections share, so each section rebuilt on the
 kernel reuses them.
 
@@ -311,9 +312,12 @@ kernel reuses them.
   (`.j-rec-facts`, a `<dl>`). `data-tone` adds a leading edge; the chips say the
   same in words. A card that the inspector's "Open full record" lands on takes
   `data-inspection-id` and `tabindex="-1"`. A summary under the statement is
-  `.j-rec-text`; facts written as prose take `data-prose` for a wider column,
-  and a fact may hold a list. A card that opens the inspector is a
+  `.j-rec-text` (a `ul.j-rec-text` when it is a list of points); facts written
+  as prose take `data-prose` for a wider column, and a fact may hold a list. A card that opens the inspector is a
   `button.j-rec`; a record a search filters out is a `hidden` list item.
+- **Checks:** `dl.j-checks`, each row a question (`dt`) beside its verdict, a
+  `.j-status` (`dd`); two to a row, one at 760px and below. `data-tone="warn"`
+  on a row washes a concern so it stands out among the passes.
 - **Counts:** `.j-stats`, figures over their names in three columns (four with
   `data-cols="4"`), or one count per row at 620px and below; `data-tone` (`ok`,
   `warn`, `crit`) on a count colours its figure.
@@ -336,6 +340,11 @@ kernel reuses them.
   codes as chips in words, untoned, since a code alone does not say whether it
   is a confidence or a relevance; then its statement and summary; its details
   and lists as one `data-prose` description list.
+- **Conclusion (Biopolitical):** the calibrated judgment's groups are cards
+  (`data-records="conclusion"`), each a heading over its points, or an idle
+  note when it has none. The model self-audit is checks
+  (`data-records="self-audit"`): a pass is `ok`, a concern `warn` and a check
+  that does not apply `idle`. Its notes are one idle note.
 
 ## Inspection directory
 

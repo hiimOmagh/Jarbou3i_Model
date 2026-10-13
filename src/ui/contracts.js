@@ -123,7 +123,7 @@ const FREE_CLASSES = [
   "j-ref-label", "j-ref-id",
   "j-insp-head", "j-insp-body", "j-insp-summary", "j-insp-sec", "j-insp-facts", "j-insp-pair", "j-insp-sub",
   "j-insp-list", "j-insp-rec", "j-insp-occ", "j-insp-foot",
-  "j-lede", "j-recs", "j-rec", "j-rec-head", "j-rec-id", "j-rec-title", "j-rec-text", "j-rec-facts", "j-stats", "j-table-wrap", "j-table",
+  "j-lede", "j-recs", "j-rec", "j-rec-head", "j-rec-id", "j-rec-title", "j-rec-text", "j-rec-facts", "j-checks", "j-stats", "j-table-wrap", "j-table",
   "j-idir", "j-idir-head",
   "j-engine-map", "j-engine-step", "j-engine-n", "j-engine-name", "j-engine-text", "j-engine-count", "j-engine-depth",
   "j-layers", "j-layer", "j-layer-h", "j-layer-head", "j-layer-n", "j-layer-name", "j-layer-text", "j-layer-count", "j-layer-chev", "j-layer-body",
