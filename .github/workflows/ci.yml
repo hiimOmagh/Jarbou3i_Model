@@ -51,11 +51,16 @@ jobs:
             browser: chromium
             shard: "1/1"
             artifact: chromium
-          - label: firefox
+          - label: firefox shard 1 of 2
             project: firefox
             browser: firefox
-            shard: "1/1"
-            artifact: firefox
+            shard: "1/2"
+            artifact: firefox-1-of-2
+          - label: firefox shard 2 of 2
+            project: firefox
+            browser: firefox
+            shard: "2/2"
+            artifact: firefox-2-of-2
           - label: webkit shard 1 of 4
             project: webkit
             browser: webkit

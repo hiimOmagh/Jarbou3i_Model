@@ -74,9 +74,7 @@ for (const spec of [
   "tests/rtl-mobile.spec.js",
   "tests/export-contract.spec.js",
   "tests/export-completeness.spec.js",
-  "tests/lens-import-contract.spec.js",
   "tests/import-validation.spec.js",
-  "tests/cross-locale-export-contract.spec.js",
   "tests/sample-language-contract.spec.js",
   "tests/release-audit-matrix.spec.js",
   "tests/ui-kernel.spec.js",
@@ -157,7 +155,12 @@ for (const token of [
   "needs: no-browser",
   "fail-fast: false",
   "- label: chromium",
-  "- label: firefox",
+  "- label: firefox shard 1 of 2",
+  "- label: firefox shard 2 of 2",
+  'shard: "1/2"',
+  'shard: "2/2"',
+  "artifact: firefox-1-of-2",
+  "artifact: firefox-2-of-2",
   "- label: webkit shard 1 of 4",
   "- label: webkit shard 2 of 4",
   "- label: webkit shard 3 of 4",
@@ -232,8 +235,8 @@ if ((workflow.match(/project: webkit/g) || []).length !== 4) {
 if ((workflow.match(/project: chromium/g) || []).length !== 1) {
   fail("desktop Chromium must be represented by exactly one core matrix leg");
 }
-if ((workflow.match(/project: firefox/g) || []).length !== 1) {
-  fail("Firefox must be represented by exactly one core matrix leg");
+if ((workflow.match(/project: firefox/g) || []).length !== 2) {
+  fail("Firefox must be represented by exactly two core shards");
 }
 if ((workflow.match(/project: mobile-chrome/g) || []).length !== 1) {
   fail("mobile Chromium must be represented by exactly one core matrix leg");

@@ -253,4 +253,34 @@ test.describe("Runtime import validation", () => {
     expect(exported).not.toMatch(/[\uE000-\uF8FF]/);
     expect(exported).not.toMatch(/turn7search2|turn0file0|filecite/);
   });
+
+  test("repairs assistant-interface citation markers in a Strategic import before export", async ({
+    page,
+  }, testInfo) => {
+    const data = await fixture("sample-analysis-en.json");
+    data.subject.executive_thesis = "Portable strategic thesis. \uE200cite\uE202turn8search1\uE201";
+    data.evidence.items[0].source_note = "Portable source note. \uE200filecite\uE202turn0file0\uE202L2-L4\uE201";
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await expect(page.locator("#importBtn")).toBeEnabled();
+    await expect(page.locator("#jsonStatus")).toContainText(
+      /2 non-portable assistant citation markers were removed/i,
+    );
+    await openStep(page, "answer");
+    await page.locator("#importBtn").click();
+    await page.locator('[data-review="exports"]').click();
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.locator("#exportHtml").click(),
+    ]);
+    const exportedPath = testInfo.outputPath("citation-repaired-report.html");
+    await download.saveAs(exportedPath);
+    const html = await fs.readFile(exportedPath, "utf8");
+    expect(html).toContain("Portable strategic thesis.");
+    expect(html).toContain("Portable source note.");
+    expect(html).not.toMatch(/[\uE000-\uF8FF]/);
+    expect(html).not.toMatch(/turn8search1|turn0file0|filecite/);
+  });
 });

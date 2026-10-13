@@ -34,7 +34,5 @@ Strategic export preserves its own report title and six-layer chain. It must not
 
 ## Browser proof
 
-- `tests/export-contract.spec.js`: lens identities.
+- `tests/export-contract.spec.js`: lens identities, and the report in all three languages for both lenses.
 - `tests/export-completeness.spec.js`: sentinel coverage across previously omitted high-value fields and JSON equivalence.
-- `tests/cross-locale-export-contract.spec.js`: three analysis languages and both lenses.
-- `tests/lens-import-contract.spec.js`: imported-lens authority and legacy disclosure.

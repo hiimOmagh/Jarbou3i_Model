@@ -102,6 +102,23 @@
   blended its text into the background, and contrast read 3.27:1 mid-fade.
 - A test checks the Strategic evidence cards: kernel contracts, the strength
   meter named as its score, and an assumption's risk in words.
+- The suite drops what it ran twice. The lens-import spec is gone: its legacy
+  refusal was a subset of import validation's, its lens switch is covered by
+  the AI-interchange test (which now also checks the review title), and its
+  Strategic citation repair and keyboard pillar check moved to import
+  validation and the accessibility test. The cross-locale export spec merged
+  into the export contract (Arabic and French; English already ran there, now
+  with its document language). The inspection spec's ten language tests are
+  four, one per lens and language, with the same checks. The 27-variant prompt
+  matrix, string logic that is the same in every engine, runs on Chromium
+  only. A report test that repeated the report renderer check is gone.
+- The Node checks no longer read the specs' source: 156 lines of
+  `static-check.mjs` pinned spec text, and one pinned CSS the app no longer
+  renders. `qa-check.mjs` and `source-of-truth-check.mjs` are gone; their
+  checks that nothing else made (index.html stays a thin shell, the module entry
+  point and the order of its side-effect imports) moved to `static-check.mjs`.
+- Firefox runs in two CI shards, like WebKit in four: as one leg it was the
+  slowest, at about eight minutes.
 
 ## 2.1.0-alpha.56 — Case File Interface (UX-0)
 

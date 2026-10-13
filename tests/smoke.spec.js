@@ -78,10 +78,4 @@ test('Jarbou3i Model core flow', async ({ page }) => {
   await page.locator('[data-bio-review="exports"]').click();
   await expect(page.locator('#exportHtml')).toBeVisible();
   await expect(page.locator('#exportJson')).toBeVisible();
-  await expect(page.locator('#exportMd')).toHaveCount(0);
-  await expect(page.locator('#printBtn')).toHaveCount(0);
-  await expect(page.locator('#selfCheckBtn')).toHaveCount(0);
-
-  const hasLegacySelfCheck = await page.evaluate(() => 'StrategicWorkbenchSelfCheck' in window);
-  expect(hasLegacySelfCheck).toBe(false);
 });

@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import fs from "node:fs/promises";
 import { openStep } from "./helpers/guided-flow.js";
 import { expectKernel } from "./helpers/kernel-check.js";
 
@@ -64,28 +63,4 @@ test("closing the inspector gives focus back while a stylesheet is still loading
   await expect(page.locator("#referenceInspector")).toBeHidden();
   await expect(reference).toBeFocused();
   release();
-});
-
-test("biopolitical HTML export includes names and a canonical reference directory", async ({ page }) => {
-  await page.goto("./");
-  await page.locator("#langEn").click();
-  await openStep(page, "settings");
-  await page.locator("#analysisLang").selectOption("en");
-  await openStep(page, "lens");
-  await page.locator('[data-lens="biopolitical"]').click();
-  await page.locator("#loadSampleBtn").click();
-  await page.locator('[data-bio-review="exports"]').click();
-
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.locator("#exportHtml").click(),
-  ]);
-  const path = await download.path();
-  const html = await fs.readFile(path, "utf8");
-  expect(html).toContain('data-reference-directory="named"');
-  expect(html).toContain("Reference directory");
-  expect(html).toContain('data-reference-id="ACT1"');
-  expect(html).toContain("Public-health authorities");
-  expect(html).toContain("Rules linked defined health credentials to access in specified settings. [E1]");
-  expect(html).toContain('id="canonical-analysis"');
 });

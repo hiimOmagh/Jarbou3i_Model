@@ -991,6 +991,7 @@ test.describe("AI interchange reliability", () => {
       await openStep(page, "answer");
       await page.locator("#importBtn").click();
       await expect(page.locator(`[data-lens="${other}"]`)).toHaveAttribute("aria-checked", "true");
+      await expect(page.locator("#reviewTitle")).toContainText(name);
       await openStep(page, "answer");
       await page.locator("#jsonInput").fill(JSON.stringify(data));
       await expect(page.locator("#importBtn")).toHaveText("Import analysis");
@@ -1275,6 +1276,10 @@ test.describe("AI interchange reliability", () => {
   });
 
   test("an answer that follows any Strategic prompt imports without gaps", async ({ page }) => {
+    // 27 prompt variants against the validator: string logic that is the same
+    // in every engine, so one engine runs it; the other suites drive the same
+    // prompt and import paths in all four.
+    test.skip(test.info().project.name !== "chromium", "engine-independent prompt matrix");
     test.slow();
     // Fill the prompt's JSON skeleton the way an assistant would: the first listed
     // code, a real date and URL, an ID defined above for each end of a link. Any

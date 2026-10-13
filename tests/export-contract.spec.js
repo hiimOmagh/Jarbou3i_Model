@@ -3,15 +3,15 @@ import fs from 'node:fs/promises';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
 import { openStep } from "./helpers/guided-flow.js";
 
-async function exportSampleReport(page, testInfo, lens) {
+async function exportSampleReport(page, testInfo, lens, lang = 'en') {
   await page.goto('./');
   await expect(page.locator('#loadSampleBtn')).toBeVisible();
 
-  // Sample content is localized; pin English before asserting English sample tokens.
-  await page.locator('#langEn').click();
-  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  // Sample content is localized; pin the language before asserting its tokens.
+  await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+  await expect(page.locator('html')).toHaveAttribute('lang', lang);
   await openStep(page, "settings");
-  await page.locator('#analysisLang').selectOption('en');
+  await page.locator('#analysisLang').selectOption(lang);
 
   if (lens === 'biopolitical') {
     await openStep(page, "lens");
@@ -35,9 +35,9 @@ async function exportSampleReport(page, testInfo, lens) {
     page.waitForEvent('download'),
     page.locator('#exportHtml').click()
   ]);
-  const filePath = testInfo.outputPath(`${lens}-export.html`);
+  const filePath = testInfo.outputPath(`${lang}-${lens}-export.html`);
   await download.saveAs(filePath);
-  await testInfo.attach(`${lens}-export.html`, { path: filePath, contentType: 'text/html' });
+  await testInfo.attach(`${lang}-${lens}-export.html`, { path: filePath, contentType: 'text/html' });
   return fs.readFile(filePath, 'utf8');
 }
 
@@ -54,6 +54,7 @@ test.describe('HTML export lens contract', () => {
     const html = await exportSampleReport(page, testInfo, 'strategic');
 
     expectAll(html, [
+      '<html lang="en" dir="ltr"',
       `name="app-version" content="${EXPECTED_VERSION}"`,
       'name="analysis-lens" content="strategic"',
       'data-analysis-lens="strategic"',
@@ -83,6 +84,7 @@ test.describe('HTML export lens contract', () => {
     const html = await exportSampleReport(page, testInfo, 'biopolitical');
 
     expectAll(html, [
+      '<html lang="en" dir="ltr"',
       `name="app-version" content="${EXPECTED_VERSION}"`,
       'name="analysis-lens" content="biopolitical"',
       'data-analysis-lens="biopolitical"',
@@ -121,6 +123,48 @@ test.describe('HTML export lens contract', () => {
       'Interests → Actors → Tools → Narrative → Results → Feedback'
     ]);
   });
+});
+
+// An Arabic or French report: its document language and direction, its lens
+// metadata, and its own title and causal chain, never the English title of
+// either lens.
+const LOCALIZED = {
+  ar: {
+    dir: 'rtl',
+    strategic: ['تقرير تحليل استراتيجي', 'المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة'],
+    biopolitical: ['تقرير التحليل الحيوسياسي — خريطة التدريب 2', 'السؤال ← الوظيفة الإنسانية ← منظومة القوة'],
+  },
+  fr: {
+    dir: 'ltr',
+    strategic: ['Rapport d’analyse stratégique', 'Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction'],
+    biopolitical: ['Rapport d’analyse biopolitique — Carte d’entraînement v2', 'Question → Fonction humaine → Système de pouvoir'],
+  },
+};
+const ENGLISH_TITLES = {
+  strategic: ['Strategic Analysis Report', 'Biopolitical Analysis Report'],
+  biopolitical: ['Biopolitical Analysis Report — Training Map v2', 'Strategic Analysis Report'],
+};
+
+test.describe('Localized HTML export contract', () => {
+  for (const [lang, locale] of Object.entries(LOCALIZED)) {
+    for (const lens of ['strategic', 'biopolitical']) {
+      test(`${lang} ${lens} export keeps its language and lens metadata`, async ({ page }, testInfo) => {
+        const html = await exportSampleReport(page, testInfo, lens, lang);
+        expectAll(html, [
+          `<html lang="${lang}" dir="${locale.dir}"`,
+          `name="app-version" content="${EXPECTED_VERSION}"`,
+          `name="analysis-lens" content="${lens}"`,
+          `data-analysis-lens="${lens}"`,
+          `data-export-contract-lens="${lens}"`,
+          ...locale[lens],
+        ]);
+        if (lens === 'biopolitical') {
+          expectAll(html, ['name="analysis-contract" content="biopolitical-training-map-v2"', 'name="schema-version" content="2.1.0"']);
+        }
+        expectNone(html, ENGLISH_TITLES[lens]);
+      });
+    }
+  }
 });
 
 async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {

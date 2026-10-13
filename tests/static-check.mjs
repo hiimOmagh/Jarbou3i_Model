@@ -19,11 +19,6 @@ const explorerStyles = read("src/relationship-explorer.css");
 const styles = read("src/styles.css");
 // The modern shell (UIX-2) is styled by the kernel and its own sheet.
 const shellStyles = read("src/ui/kernel.css") + read("src/ui/shell.css");
-const smokeBrowser = read("tests/smoke.spec.js");
-const applicationShellBrowser = read("tests/application-shell.spec.js");
-const resultsWorkspaceBrowser = read("tests/results-workspace.spec.js");
-const resultsExplanationBrowser = read("tests/results-explanation.spec.js");
-const resultsInspectionBrowser = read("tests/results-inspection.spec.js");
 const parser = read("src/json-parser.js");
 const aiInterchange = read("src/ai-interchange.js");
 const platformState = read("src/core/platform-state.js");
@@ -46,20 +41,6 @@ const provenance = read("src/core/provenance.js");
 const validator = read("src/biopolitics-schema-validator.js");
 const pkg = JSON.parse(read("package.json"));
 const lock = JSON.parse(read("package-lock.json"));
-
-if (
-  /\[data-results-inspection\]\s+\[data-reference-id=/.test(resultsInspectionBrowser)
-  || /\.locator\(['"`]\[data-reference-id=/.test(resultsInspectionBrowser)
-) {
-  fail("inspection browser contract uses an ambiguous cross-surface record selector");
-}
-for (const recordId of ["E1", "IV1"]) {
-  if (!resultsInspectionBrowser.includes(
-    `[data-inspection-directory-item] [data-reference-id="${recordId}"]`,
-  )) {
-    fail(`inspection browser contract does not scope ${recordId} to the canonical directory item`);
-  }
-}
 
 for (const [name, entry] of Object.entries(lock.packages || {})) {
   if (!entry?.resolved) continue;
@@ -112,6 +93,23 @@ const ids = [...index.matchAll(/id="([^"]+)"/g)].map((match) => match[1]);
 if (new Set(ids).size !== ids.length) fail("duplicate DOM IDs found");
 if (/<style>[\s\S]*<\/style>/.test(index)) fail("inline stylesheet remains");
 if (/<script>[\s\S]*<\/script>/.test(index)) fail("inline script remains");
+if (index.length > 50_000) fail("index.html must remain a thin shell");
+if (!index.includes('<script type="module" src="src/app.js"></script>')) fail("native module entry point is missing");
+// The runtime's side-effect imports load in dependency order.
+const importOrder = [
+  "biopolitics-schema-validator.js",
+  "strategic-schema-validator.js",
+  "biopolitics-sample-i18n.js",
+  "core/provenance.js",
+  "biopolitics.js",
+  "biopolitics-integrity.js",
+  "reference-ui.js",
+  "json-parser.js",
+].map((file) => app.indexOf(`import "./${file}";`));
+if (importOrder.some((position) => position < 0)) fail("runtime side-effect import is missing");
+if (importOrder.some((position, i) => i && position <= importOrder[i - 1])) {
+  fail("runtime side-effect imports load in an unsafe order");
+}
 if (validator.includes("require(")) fail("browser validator contains CommonJS imports");
 
 for (const file of [
@@ -255,12 +253,6 @@ for (const token of [
 ]) {
   if (!index.includes(token)) fail(`modern shell markup token missing: ${token}`);
 }
-if (!smokeBrowser.includes('.j-shell-phase[aria-current="step"]')) {
-  fail("workflow smoke assertion is not scoped to the workflow stage");
-}
-if (applicationShellBrowser.includes('"rgb(29, 78, 216)"')) {
-  fail("responsive shell test must not require the desktop active-step fill at 320 px");
-}
 for (const token of [
   // The case-file outline marks where the reader is.
   '"aria-current", "location"',
@@ -335,11 +327,6 @@ if (!explorer.includes('event.code === "Space"')) {
 for (const token of ["@media (forced-colors:active)", ":focus,:focus-visible", "color-scheme:light", "HighlightText", "translateY(calc(100% + 48px))"]) {
   if (!styles.includes(token)) fail(`final audit visual resilience contract missing: ${token}`);
 }
-const releaseAudit = read("tests/release-audit-matrix.spec.js");
-for (const token of ['matchMedia("print").matches', "expect.poll", "synchronizeAuditState", 'languageButton.press("Enter")', 'themeButton.press("Enter")']) {
-  if (!releaseAudit.includes(token)) fail(`final audit synchronization contract missing: ${token}`);
-}
-const relationshipBrowser = read("tests/relationship-explorer.spec.js");
 if (index.includes('rel="stylesheet" href="src/relationship-explorer.css"')) {
   fail("relationship explorer stylesheet remains in the initial document");
 }
@@ -356,17 +343,6 @@ for (const token of [
     fail(`relationship stylesheet capability loader missing: ${token}`);
   }
 }
-for (const token of [
-  'link[data-relationship-explorer-styles="true"]',
-  "Jarbou3iCapabilityLoads.relationshipExplorerStyles",
-  'route("**/relationship-explorer.css"',
-  'unroute("**/relationship-explorer.css"',
-  'display: "grid"',
-]) {
-  if (!relationshipBrowser.includes(token)) {
-    fail(`relationship stylesheet browser contract missing: ${token}`);
-  }
-}
 if (app.includes('import "./biopolitics-graph.js";')) {
   fail("biopolitical graph still has an eager side-effect import");
 }
@@ -378,17 +354,6 @@ for (const token of [
   "data-retry-biopolitical-graph",
 ]) {
   if (!app.includes(token)) fail(`biopolitical graph capability loader missing: ${token}`);
-}
-for (const token of [
-  "typeof window.Jarbou3iBiopoliticsGraph",
-  "biopoliticalGraph?.attempts",
-  "Jarbou3iCapabilityLoads.biopoliticalGraph",
-  'route("**/biopolitics-graph.js"',
-  'unroute("**/biopolitics-graph.js"',
-]) {
-  if (!relationshipBrowser.includes(token)) {
-    fail(`biopolitical graph lazy-load browser contract missing: ${token}`);
-  }
 }
 if (app.includes('import "./relationship-explorer.js";')) {
   fail("relationship explorer still has an eager side-effect import");
@@ -403,22 +368,9 @@ for (const token of [
 ]) {
   if (!app.includes(token)) fail(`relationship capability loader missing: ${token}`);
 }
-for (const token of [
-  "typeof window.Jarbou3iRelationshipExplorer",
-  "relationshipExplorer.attempts",
-  "relationshipExplorer.failures",
-  'route("**/relationship-explorer.js"',
-  'unroute("**/relationship-explorer.js"',
-]) {
-  if (!relationshipBrowser.includes(token)) fail(`relationship lazy-load browser contract missing: ${token}`);
-}
-for (const token of ['requestAnimationFrame(resolve)', 'expect(saveView).toBeFocused()', 'saveView.press("Enter")', 'restoreView.press("Enter")', 'openSelected.press("Enter")']) {
-  if (!relationshipBrowser.includes(token)) fail(`Firefox explorer stabilization contract missing: ${token}`);
-}
 for (const token of ["syncSearchDraft", "preserveSearchDraft = true", "preserveSearchDraft: false"]) {
   if (!explorer.includes(token)) fail(`relationship live-draft synchronization contract missing: ${token}`);
 }
-const exportCompletenessBrowser = read("tests/export-completeness.spec.js");
 for (const token of [
   '"./biopolitical-report.js"',
   "biopoliticalReportRendererPromise",
@@ -427,27 +379,6 @@ for (const token of [
   "buildLosslessBiopoliticalReport(renderer)",
 ]) {
   if (!app.includes(token)) fail(`report renderer capability loader missing: ${token}`);
-}
-for (const token of [
-  "typeof window.Jarbou3iBiopoliticalReport",
-  "biopoliticalReportRenderer.attempts",
-  "biopoliticalReportRenderer.failures",
-  'route("**/biopolitical-report.js"',
-  'unroute("**/biopolitical-report.js"',
-]) {
-  if (!exportCompletenessBrowser.includes(token)) {
-    fail(`report renderer lazy-load browser contract missing: ${token}`);
-  }
-}
-for (const token of [
-  'input.value = "Public-health authorities"',
-  'data-map-depth="guided"',
-  'toHaveValue("")',
-]) {
-  if (!relationshipBrowser.includes(token)) fail(`relationship render-race browser contract missing: ${token}`);
-}
-for (const token of ["preventScroll: true", 'deleteView.press("Enter")']) {
-  if (!relationshipBrowser.includes(token)) fail(`saved-view keyboard regression token missing: ${token}`);
 }
 for (const token of [
   "createResultsOrientation",
@@ -473,21 +404,6 @@ for (const token of [
   ".diagnosticsDivider",
 ]) {
   if (!styles.includes(token)) fail(`Phase 3 results-orientation style token missing: ${token}`);
-}
-for (const token of [
-  "promotedNextAction",
-  ".intelBrief .nextAction",
-  "toContainText(promotedNextAction)",
-  "toHaveAttribute('data-analysis-lens', 'strategic')",
-  "toHaveAttribute('data-analysis-lens', 'biopolitical')",
-]) {
-  if (!resultsWorkspaceBrowser.includes(token)) fail(`results authority assertion missing: ${token}`);
-}
-if (resultsWorkspaceBrowser.includes("orientation).toHaveAttribute('data-lens'")) {
-  fail("results browser contract must not assert the reserved lens-control attribute");
-}
-if (resultsWorkspaceBrowser.includes("Replace generic historical notes")) {
-  fail("results workspace test must not substitute fixture text for runtime authority");
 }
 for (const token of [
   "createResultsExplanation",
@@ -519,30 +435,6 @@ for (const token of [
   "min-height:44px",
 ]) {
   if (!styles.includes(token)) fail(`Phase 3 results-explanation style token missing: ${token}`);
-}
-for (const token of [
-  'toHaveCount(5)',
-  'strategicMechanisms.press("Enter")',
-  "strategicEvidenceName",
-  'strategicEvidence.press("Enter")',
-  'biopoliticalEffects.press("Enter")',
-  "biopoliticalEvidenceName",
-  'biopoliticalEvidence.press("Enter")',
-  'locator("#reviewContent")).toContainText',
-  'data-acc="tools"',
-  'data-bio-acc="distribution_effects"',
-  "Comment la conclusion est construite",
-  "width: 320",
-]) {
-  if (!resultsExplanationBrowser.includes(token)) fail(`results explanation browser contract missing: ${token}`);
-}
-for (const fixtureOnlyText of [
-  "Historical power distribution reference",
-  "Jurisdiction-specific health-pass law",
-]) {
-  if (resultsExplanationBrowser.includes(fixtureOnlyText)) {
-    fail(`results explanation browser test must use runtime authority instead of fixture text: ${fixtureOnlyText}`);
-  }
 }
 for (const token of [
   "createResultsInspectionIndex",
@@ -584,16 +476,6 @@ const referenceStyles = read("src/ui/reference.css");
 for (const token of [".j-insp-sec", ".j-insp-occ", ".j-insp-pair", ".j-ref"]) {
   if (!referenceStyles.includes(token)) fail(`Phase 3 inspection style token missing: ${token}`);
 }
-for (const token of [
-  'data-review="inspection"',
-  'data-bio-review="inspection"',
-  'data-inspection-section="provenance"',
-  'data-inspection-section="occurrences"',
-  'data-inspection-id="E1"',
-  'page.keyboard.press("Escape")',
-]) {
-  if (!resultsInspectionBrowser.includes(token)) fail(`results inspection browser contract missing: ${token}`);
-}
 if (/html,body\{[^}]*scroll-behavior:smooth/.test(styles)) {
   fail("global smooth scrolling must not block browser actionability scrolling");
 }
@@ -613,35 +495,14 @@ for (const token of ["const bindClick = (selector, handler)", "if (element) elem
 if (explorer.includes('.addEventListener("click"')) {
   fail("relationship explorer click handlers must remain idempotent across partial renders");
 }
-if (!releaseAudit.includes('connectionsTab.press("Enter")')) {
-  fail("release audit connections activation contract missing");
-}
-for (const token of ['connections.press("Enter")', 'data-bio-review="connections"]\')).toHaveAttribute("aria-current", "location")']) {
-  if (!relationshipBrowser.includes(token)) fail(`explorer tab synchronization contract missing: ${token}`);
-}
-const lensImportBrowser = read("tests/lens-import-contract.spec.js");
-for (const token of ["actors.press('Enter')", "data-bio-acc=\"actors_institutions\"", "aria-expanded"]) {
-  if (!lensImportBrowser.includes(token)) fail(`legacy import pillar synchronization contract missing: ${token}`);
-}
 for (const token of ["requestAnimationFrame(() => container.querySelector", "requestAnimationFrame(() => container?.querySelector"]) {
   if (explorer.includes(token)) fail(`unguarded deferred focus path remains: ${token}`);
-}
-const reflowAudit = read("tests/reflow-audit.spec.js");
-for (const token of ["equivalentZoom: 200", "equivalentZoom: 400", "undersizedTargets", 'locator("#topicInput").fill(locale.topic)', 'locator("#modalBackdrop")', "relationshipList [data-map-node]", 'connectionsTab.press("Enter")']) {
-  if (!reflowAudit.includes(token)) fail(`RC reflow contract missing: ${token}`);
 }
 for (const token of ["flex:0 0 32px", "min-width:32px"]) {
   if (!explorerStyles.includes(token)) fail(`Firefox reflow target contract missing: ${token}`);
 }
-const visualAudit = read("tests/visual-audit-evidence.spec.js");
-for (const token of ["screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length", 'capture_set: "final-language-theme-viewport-audit"', "waitForVisualAssets", "clearTransientUi", "anchorViewport", "story_geometry", "standalone-report", 'viewport.id === "phone" ? "#relationshipExplorerMount"', 'locator(".relationshipStoryFlow").count() === 0', 'mapView.press("Enter")']) {
-  if (!visualAudit.includes(token)) fail(`RC visual evidence contract missing: ${token}`);
-}
 for (const token of ["minmax(132px,1fr)", "overflow-x:auto", "scrollbar-width:thin", "scroll-snap-type:inline proximity"]) {
   if (!explorerStyles.includes(token)) fail(`story-path visibility contract missing: ${token}`);
-}
-for (const token of ["visual acceptance repair", ".navBtn.active .badge", "grid-template-columns:64px minmax(0,1fr)"]) {
-  if (!styles.includes(token)) fail(`alpha.4 visual repair contract missing: ${token}`);
 }
 for (const token of ['rel="preload" as="image" href="assets/jarbou3i-mascot-192.png"', 'decoding="sync"']) {
   if (!index.includes(token)) fail(`critical visual asset contract missing: ${token}`);

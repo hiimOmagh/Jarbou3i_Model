@@ -60,6 +60,12 @@ test("runtime accessibility and keyboard contract", async ({ page }) => {
   await accordion.click();
   await expect(accordion).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#bio-acc-panel-question_context")).toBeVisible();
+  // A layer on the engine map opens its pillar in the case file.
+  const actorsStep = page.locator('[data-bio-pillar="actors_institutions"]');
+  await actorsStep.focus();
+  await actorsStep.press("Enter");
+  await expect(page.locator('[data-bio-acc="actors_institutions"]')).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator('[data-bio-acc="actors_institutions"]')).toBeFocused();
 
   await openStep(page, "prompt");
   const previewButton = page.locator("#previewPromptBtn");

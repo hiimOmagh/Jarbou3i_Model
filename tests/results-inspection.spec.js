@@ -8,27 +8,8 @@ async function loadStrategicSample(page) {
 }
 
 for (const lens of ["strategic", "biopolitical"]) {
-  test(`Arabic ${lens} inspection shows layer, confidence and evidence balance in Arabic`, async ({ page }) => {
-    await page.goto("./");
-    await page.locator("#langAr").click();
-    await openStep(page, "settings");
-    await page.locator("#analysisLang").selectOption("ar");
-    await openStep(page, "lens");
-    await page.locator(`[data-lens="${lens}"]`).click();
-    await page.locator("#loadSampleBtn").click();
-    await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
-    const directory = page.locator("[data-results-inspection]");
-    await expect(directory.locator("[data-inspection-directory-item]").first()).toBeVisible();
-
-    const labels = await directory.locator("[data-inspection-directory-item] .j-chip, [data-balance]").allTextContents();
-    expect(labels.length).toBeGreaterThan(0);
-    expect(labels.filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
-  });
-}
-
-for (const lens of ["strategic", "biopolitical"]) {
   for (const language of ["ar", "fr"]) {
-    test(`the ${language} ${lens} record drawer names coded values in that language`, async ({ page }) => {
+    test(`the ${language} ${lens} inspection names its labels and coded values in that language`, async ({ page }) => {
       await page.goto("./");
       await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
       await openStep(page, "settings");
@@ -38,11 +19,36 @@ for (const lens of ["strategic", "biopolitical"]) {
       await page.locator("#loadSampleBtn").click();
       await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
       const directory = page.locator("[data-results-inspection]");
-      await directory.locator('[data-inspection-directory-item] [data-reference-id="E1"]').click();
+      await expect(directory.locator("[data-inspection-directory-item]").first()).toBeVisible();
+
+      if (language === "ar") {
+        // Layer, confidence and evidence balance carry no Latin letters.
+        const labels = await directory.locator("[data-inspection-directory-item] .j-chip, [data-balance]").allTextContents();
+        expect(labels.length).toBeGreaterThan(0);
+        expect(labels.filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
+      }
+
+      // A source cluster names its identity basis in that language.
+      const bases = await page.locator("[data-cluster-basis]").allTextContents();
+      expect(bases.length).toBeGreaterThan(0);
+      expect(bases.filter((text) => /· (?:url|title locator|title|missing)$/.test(text.trim()))).toEqual([]);
+
       const inspector = page.locator("#referenceInspector");
+      if (lens === "biopolitical") {
+        // A record named by a coded field ("infrastructure", "litigation").
+        for (const id of ["ASYM1", "RES1"]) {
+          await directory.locator(`[data-inspection-directory-item] [data-reference-id="${id}"]`).click();
+          const summary = inspector.locator(".j-insp-summary");
+          await expect(summary).toBeVisible();
+          expect(await summary.textContent()).not.toMatch(/^[a-z][a-z_ ]*$/);
+          await page.locator("#referenceInspectorClose").click();
+        }
+      }
+
+      // The record drawer shows no coded value as its English code: lowercase
+      // words such as "high" or "primary legal policy".
+      await directory.locator('[data-inspection-directory-item] [data-reference-id="E1"]').click();
       await expect(inspector).toBeVisible();
-      // A coded value shown as its English code: lowercase words such as
-      // "high" or "primary legal policy".
       const facts = await inspector.locator(".j-insp-facts > div").evaluateAll((rows) =>
         rows.map((row) => [row.querySelector("dt")?.textContent, row.querySelector("dd")?.textContent]),
       );
@@ -52,33 +58,6 @@ for (const lens of ["strategic", "biopolitical"]) {
         ...relations.map((text) => text.split(" · ")[1] || "").filter((value) => /^[a-z][a-z_ ]*$/.test(value)),
       ];
       expect(raw).toEqual([]);
-    });
-  }
-}
-
-for (const lens of ["strategic", "biopolitical"]) {
-  for (const language of ["ar", "fr"]) {
-    test(`the ${language} ${lens} source clusters and reference summaries name coded values in that language`, async ({ page }) => {
-      await page.goto("./");
-      await page.locator(language === "ar" ? "#langAr" : "#langFr").click();
-      await openStep(page, "settings");
-      await page.locator("#analysisLang").selectOption(language);
-      await openStep(page, "lens");
-      await page.locator(`[data-lens="${lens}"]`).click();
-      await page.locator("#loadSampleBtn").click();
-      await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
-      const bases = await page.locator("[data-cluster-basis]").allTextContents();
-      expect(bases.length).toBeGreaterThan(0);
-      expect(bases.filter((text) => /· (?:url|title locator|title|missing)$/.test(text.trim()))).toEqual([]);
-      if (lens !== "biopolitical") return;
-      // A record named by a coded field ("infrastructure", "litigation").
-      for (const id of ["ASYM1", "RES1"]) {
-        await page.locator(`[data-results-inspection] [data-inspection-directory-item] [data-reference-id="${id}"]`).click();
-        const summary = page.locator("#referenceInspector .j-insp-summary");
-        await expect(summary).toBeVisible();
-        expect(await summary.textContent()).not.toMatch(/^[a-z][a-z_ ]*$/);
-        await page.locator("#referenceInspectorClose").click();
-      }
     });
   }
 }
