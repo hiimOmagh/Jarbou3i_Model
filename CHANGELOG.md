@@ -108,6 +108,9 @@
   `focus()` did not apply the page's removed `inert` before that stylesheet
   arrived, so focus fell to the page; this was the WebKit test that failed CI
   intermittently.
+- An import or a sample scrolls to its review when it opens, not when its save
+  ends. A save that finished late moved the page under a click already begun,
+  and the click was lost; in WebKit this failed a CI import test now and then.
 - The evidence summary's claim–evidence matrix is a table with row headers;
   its balance, cluster basis and gap counts are words, their tone only added.
 

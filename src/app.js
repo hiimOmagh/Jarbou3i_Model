@@ -8506,10 +8506,12 @@ $("importBtn").onclick = async () => {
   toast(t("analysisImported"), "", { announce: false });
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
-  if (await persistImportedAnalysis(a)) discardTrip();
+  // Scroll now, not when the save ends: a late scroll moves the page under
+  // whatever the user is clicking by then.
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
+  if (await persistImportedAnalysis(a)) discardTrip();
 };
 $("repairPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
@@ -8568,10 +8570,12 @@ $("loadSampleBtn").onclick = async (event) => {
   toast(t("sampleLoaded"));
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
-  if (await persistImportedAnalysis(a)) discardTrip();
+  // Scroll now, not when the save ends: a late scroll moves the page under
+  // whatever the user is clicking by then.
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
+  if (await persistImportedAnalysis(a)) discardTrip();
   } catch (error) {
     showOperationFailure(error, "load_sample", event.currentTarget);
   }
