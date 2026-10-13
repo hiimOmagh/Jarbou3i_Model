@@ -16,7 +16,7 @@ test("shared explanation hierarchy drills into authored details across both lens
   await expect(explanation.locator('[data-explanation-section="effects"]')).toContainText("Rise of bipolarity");
 
   const strategicEvidenceCard = explanation.locator('[data-explanation-section="evidence"]');
-  const strategicEvidenceName = (await strategicEvidenceCard.locator(".explanationItems strong").first().textContent())?.trim();
+  const strategicEvidenceName = (await strategicEvidenceCard.locator(".j-brief-items strong").first().textContent())?.trim();
   expect(strategicEvidenceName).toBeTruthy();
   expect(strategicEvidenceName).not.toBe("—");
   const strategicEvidence = strategicEvidenceCard.locator("[data-explanation-open]");
@@ -48,7 +48,7 @@ test("shared explanation hierarchy drills into authored details across both lens
   await expect(explanation.locator('[data-explanation-section="effects"]')).toContainText("Workers and residents");
 
   const biopoliticalEvidenceCard = explanation.locator('[data-explanation-section="evidence"]');
-  const biopoliticalEvidenceName = (await biopoliticalEvidenceCard.locator(".explanationItems strong").first().textContent())?.trim();
+  const biopoliticalEvidenceName = (await biopoliticalEvidenceCard.locator(".j-brief-items strong").first().textContent())?.trim();
   expect(biopoliticalEvidenceName).toBeTruthy();
   expect(biopoliticalEvidenceName).not.toBe("—");
   const biopoliticalEvidence = biopoliticalEvidenceCard.locator("[data-explanation-open]");
@@ -70,7 +70,7 @@ test("shared explanation hierarchy drills into authored details across both lens
   await page.locator('[data-bio-review="overview"]').click();
   await page.locator("#langFr").click();
   await expect(explanation.locator("#resultsExplanationTitle")).toHaveText("Comment la conclusion est construite");
-  await expect(explanation.locator('[data-explanation-section="evidence"] h4')).toHaveText("Preuves et contre-preuves");
+  await expect(explanation.locator('[data-explanation-section="evidence"] h5')).toHaveText("Preuves et contre-preuves");
 
   await page.setViewportSize({ width: 320, height: 800 });
   await explanation.evaluate((element) => element.scrollIntoView({ block: "start", inline: "nearest" }));

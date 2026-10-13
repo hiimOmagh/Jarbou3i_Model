@@ -5123,9 +5123,19 @@ function itemCard(obj, metric = "") {
   const head = `${recordIdCode(obj)}${chip(obj.type || obj.category || obj.frame || obj.basis)}${confidence}${chip(obj.horizon || obj.timeframe)}${chip(obj.stakes)}`;
   return `<li><article class="j-rec"${recordAnchor(obj)}>${head ? `<header class="j-rec-head">${head}</header>` : ""}<p class="j-rec-title">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</p>${obj.rationale ? `<p class="j-rec-text">${escapeHtml(obj.rationale)}</p>` : ""}${metric ? `<dl class="j-rec-facts">${metric}</dl>` : ""}</article></li>`;
 }
+// A share of 100 as a tone: the bands of the score legend, from its colours.
+function pctTone(value) {
+  const n = valuePct(value);
+  return n >= 76 ? "ok" : n >= 56 ? "" : n >= 35 ? "warn" : "crit";
+}
+// A figure out of 100 with its bar; the bar repeats the figure, so it is hidden.
+function briefFigure(label, value) {
+  const tone = pctTone(value);
+  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${value}%</b><span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:${valuePct(value)}%" aria-hidden="true"></span></dd></div>`;
+}
 function resultsOrientationHtml(model, explanation) {
-  const gateClass = model.publication.approved ? "approved" : "blocked";
-  return `<section class="resultsOrientation" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="resultsOrientationHeader"><div><div class="sectionKicker">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</div><h3 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h3><p>${escapeHtml(model.topic)}</p></div><div class="orientationGate ${gateClass}"><span>${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong>${escapeHtml(model.publication.label)}</strong></div></header><div class="orientationMain"><article class="orientationConclusion"><span>${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></article><div class="orientationMetrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}"><div class="orientationMetric ${pctClass(model.readiness)}"><strong>${model.readiness}%</strong><span>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</span></div><div class="orientationMetric ${pctClass(model.coverage)}"><strong>${model.coverage}%</strong><span>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}</span></div></div></div><div class="orientationSignals"><article class="orientationSignal uncertainty"><span>${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></article><article class="orientationSignal action"><span>${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></article></div></section>${resultsExplanationHtml(explanation)}<div class="diagnosticsDivider"><span>${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</span></div>`;
+  const gateTone = model.publication.approved ? "ok" : "crit";
+  return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</span><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
 }
 function authoredText(...values) {
   for (const value of values) {
@@ -5330,20 +5340,24 @@ function biopoliticalResultsExplanation(a) {
 }
 function resultsExplanationHtml(model) {
   if (!model) return "";
+  const chip = (value) =>
+    ["high", "medium", "low"].includes(normalizeToken(value))
+      ? kernelChip(confidenceInfo(String(value)).label, confidenceTone(value))
+      : kernelChip(displayEnum(String(value)));
   const cards = model.sections
     .map((section, index) => {
       const items = section.items.length
-        ? `<ol class="explanationItems">${section.items
-            .map(
-              (item) =>
-                `<li><strong>${escapeHtml(item.name)}</strong>${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ""}${item.meta.length ? `<div class="explanationMeta">${item.meta.map((value) => pill(value, ["high", "medium", "low"].includes(normalizeToken(value)) ? "confidence" : "")).join("")}</div>` : ""}</li>`,
-            )
+        ? `<ol class="j-brief-items">${section.items
+            .map((item) => {
+              const tags = item.meta.filter((value) => value !== undefined && value !== null && value !== "");
+              return `<li><strong>${escapeHtml(item.name)}</strong>${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ""}${tags.length ? `<span class="j-brief-tags">${tags.map(chip).join("")}</span>` : ""}</li>`;
+            })
             .join("")}</ol>`
-        : `<p class="explanationEmpty">${escapeHtml(section.emptyLabel)}</p>`;
-      return `<article class="explanationCard" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header><span class="explanationIndex">${String(index + 1).padStart(2, "0")}</span><div><h4 id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h4><p>${escapeHtml(section.description)}</p></div><span class="explanationCount" aria-label="${escapeHtml(`${section.total} ${itemsWord()}`)}">${section.total}</span></header>${items}<button class="explanationInspect" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article>`;
+        : `<p class="j-brief-desc">${escapeHtml(section.emptyLabel)}</p>`;
+      return `<li><article class="j-rec" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header class="j-rec-head"><span class="j-rec-id" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><h5 class="j-rec-title" id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h5><span class="j-chip">${section.total}<span class="j-sr-only"> ${escapeHtml(itemsWord())}</span></span></header><p class="j-brief-desc">${escapeHtml(section.description)}</p>${items}<button class="j-btn j-brief-open" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article></li>`;
     })
     .join("");
-  return `<section class="resultsExplanation" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="resultsExplanationHeader"><div><div class="sectionKicker">${escapeHtml(labelText("Explanation", "الشرح", "Explication"))}</div><h3 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h3></div><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></header><div class="explanationGrid">${cards}</div></section>`;
+  return `<section class="j-brief" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Explanation", "الشرح", "Explication"))}</span><h4 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h4><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></div></header><ol class="j-brief-steps">${cards}</ol></section>`;
 }
 function wireResultsExplanation(lens) {
   document.querySelectorAll("[data-explanation-open]").forEach((button) => {

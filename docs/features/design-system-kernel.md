@@ -367,6 +367,28 @@ its number and name say which it is.
 Tests: `tests/evidence-intelligence.spec.js` (contracts of the map and the
 layers, a record card, opening and closing a layer).
 
+## Overview brief
+
+`src/ui/brief.css` (`.j-brief*`): the overview's first two parts, each a
+`section.j-brief` with a `.j-brief-head` (label, `h4`, a line under it).
+
+- **What matters first** (`data-results-orientation`): the publication gate, a
+  `.j-status` in `.j-brief-gate`; the conclusion (`.j-brief-claim`); readiness
+  and coverage in a `dl.j-brief-figures`, each figure with a `.j-brief-bar`
+  (`--j-pct`, its tone from `pctTone()`, the score legend's bands; hidden from
+  assistive technology, which reads the figure); the principal uncertainty and
+  the next action as `.j-brief-signal` blocks. Its parts carry
+  `data-orientation` (`gate`, `conclusion`, `metrics`, `uncertainty`, `action`).
+- **How the conclusion is built** (`data-results-explanation`): an
+  `ol.j-brief-steps` of five `.j-rec` cards (`data-explanation-section`), each
+  with an `h5` title, a count chip, its strongest records (`.j-brief-items`,
+  chips in `.j-brief-tags`) and a `.j-btn.j-brief-open` to the full record.
+- `.j-brief-divider` starts the detailed diagnostics; print hides it and the
+  links.
+
+Tests: `tests/results-workspace.spec.js` (contracts and axe of both parts, the
+gate verdict), `tests/results-explanation.spec.js` (the links and their focus).
+
 ## Evidence summary
 
 `src/ui/evidence.css` (`.j-evi-*`): the inspection section's evidence summary,

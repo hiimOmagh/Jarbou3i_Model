@@ -396,14 +396,9 @@ if (app.includes('data-results-orientation data-lens=')) {
 if ((app.match(/querySelectorAll\("#analysisLens \[data-lens\]"\)/g) || []).length !== 2) {
   fail("lens-control rendering and event binding must remain scoped to #analysisLens");
 }
-for (const token of [
-  ".resultsOrientation",
-  ".orientationConclusion",
-  ".orientationGate",
-  ".orientationSignals",
-  ".diagnosticsDivider",
-]) {
-  if (!styles.includes(token)) fail(`Phase 3 results-orientation style token missing: ${token}`);
+const briefStyles = read("src/ui/brief.css");
+for (const token of [".j-brief-gate", ".j-brief-claim", ".j-brief-figures", ".j-brief-signals", ".j-brief-divider"]) {
+  if (!briefStyles.includes(token)) fail(`Phase 3 results-orientation style token missing: ${token}`);
 }
 for (const token of [
   "createResultsExplanation",
@@ -427,14 +422,8 @@ for (const token of [
 if (app.includes('data-results-explanation data-lens=')) {
   fail("results explanation must not reuse the interactive lens-control namespace");
 }
-for (const token of [
-  ".resultsExplanation",
-  ".explanationGrid",
-  ".explanationCard",
-  ".explanationInspect",
-  "min-height:44px",
-]) {
-  if (!styles.includes(token)) fail(`Phase 3 results-explanation style token missing: ${token}`);
+for (const token of [".j-brief-steps", ".j-brief-items", ".j-brief-open"]) {
+  if (!briefStyles.includes(token)) fail(`Phase 3 results-explanation style token missing: ${token}`);
 }
 for (const token of [
   "createResultsInspectionIndex",

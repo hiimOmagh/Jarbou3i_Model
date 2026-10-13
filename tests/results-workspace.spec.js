@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel } from "./helpers/kernel-check.js";
 
 test('shared results orientation prioritizes decision context across both lenses', async ({ page }) => {
   await page.goto('./');
@@ -10,25 +11,27 @@ test('shared results orientation prioritizes decision context across both lenses
   await expect(orientation).toBeVisible();
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'strategic');
   await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('What matters first');
-  await expect(orientation.locator('.orientationConclusion')).toContainText('bipolar order');
-  await expect(orientation.locator('.orientationGate')).toContainText(/Blocked|Approved/);
-  await expect(orientation.locator('.orientationMetrics')).toContainText('Decision readiness');
-  await expect(orientation.locator('.orientationSignal.uncertainty')).not.toContainText('—');
-  const promotedNextAction = (await orientation.locator('.orientationSignal.action p').textContent())?.trim();
+  await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('bipolar order');
+  await expect(orientation.locator('[data-orientation="gate"]')).toContainText(/Blocked|Approved/);
+  await expect(orientation.locator('[data-orientation="metrics"]')).toContainText('Decision readiness');
+  await expect(orientation.locator('[data-orientation="uncertainty"]')).not.toContainText('—');
+  const promotedNextAction = (await orientation.locator('[data-orientation="action"] p').textContent())?.trim();
   expect(promotedNextAction).toBeTruthy();
   expect(promotedNextAction).not.toBe('—');
   await expect(page.locator('.intelBrief .nextAction')).toContainText(promotedNextAction);
+  await expectKernel(page, '[data-results-orientation]');
+  await expectKernel(page, '[data-results-explanation]');
 
   await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator('#loadSampleBtn').click();
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'biopolitical');
-  await expect(orientation.locator('.orientationConclusion')).toContainText('access-control infrastructure');
-  await expect(orientation.locator('.orientationSignal.uncertainty')).toContainText('Long-term normalization effects');
+  await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('access-control infrastructure');
+  await expect(orientation.locator('[data-orientation="uncertainty"]')).toContainText('Long-term normalization effects');
 
   await page.locator('#langFr').click();
   await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('L’essentiel d’abord');
-  await expect(orientation.locator('.orientationSignal.action')).toContainText('Prochaine action recommandée');
+  await expect(orientation.locator('[data-orientation="action"]')).toContainText('Prochaine action recommandée');
 
   await page.setViewportSize({ width: 320, height: 800 });
   await orientation.scrollIntoViewIfNeeded();
@@ -36,17 +39,17 @@ test('shared results orientation prioritizes decision context across both lenses
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(0);
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
-  await expect(orientation.locator('.orientationConclusion')).toBeVisible();
-  await expect(orientation.locator('.orientationGate')).toBeVisible();
-  await expect(orientation.locator('.orientationSignal.uncertainty')).toBeVisible();
-  await expect(orientation.locator('.orientationSignal.action')).toBeVisible();
+  await expect(orientation.locator('[data-orientation="conclusion"]')).toBeVisible();
+  await expect(orientation.locator('[data-orientation="gate"]')).toBeVisible();
+  await expect(orientation.locator('[data-orientation="uncertainty"]')).toBeVisible();
+  await expect(orientation.locator('[data-orientation="action"]')).toBeVisible();
 });
 
 test('an Arabic gate that is not approved says so, not banned', async ({ page }) => {
   await page.goto('./');
   await page.locator('#langAr').click();
   await page.locator('#loadSampleBtn').click();
-  await expect(page.locator('.orientationGate strong')).toHaveText('غير معتمد');
+  await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('غير معتمد');
 });
 
 test('the Bio overview gives one gate verdict and lists every open item in it', async ({ page }) => {
@@ -57,7 +60,7 @@ test('the Bio overview gives one gate verdict and lists every open item in it', 
   await page.locator('#loadSampleBtn').click();
   const gate = page.locator('.intelBrief .qualityGate');
   await expect(gate.locator('h4')).toHaveText('Quality gate: Review needed');
-  await expect(page.locator('.orientationGate strong')).toHaveText('Review needed');
+  await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('Review needed');
   const listed = await page.locator('.intelBrief .list .warning').count();
   expect(listed).toBeGreaterThan(4);
   await expect(gate.locator('li')).toHaveCount(listed);

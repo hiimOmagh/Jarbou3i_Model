@@ -77,6 +77,15 @@
   legacy selectors.
 - The engine panel's state no longer reads "No analysis yet" over an imported
   analysis after a redraw of the shell alone, such as going to the map.
+- The overview's brief is on the kernel (`src/ui/brief.css`). *What matters
+  first* gives the publication gate as a status (shape, colour and word), the
+  conclusion, and decision readiness and analytical coverage as figures whose
+  bars now fill to their value (they were full whatever the value), coloured
+  by the score legend's bands. *How the conclusion is built* is an ordered list
+  of five record cards whose chips are the kernel's 12px chips (they were 8px)
+  and whose links are 44px buttons. Their headings sit one level under the
+  overview's (`h4`, then `h5`), and a step's count is read as "2 items" rather
+  than an unnamed figure. Retires 88 legacy selectors.
 
 ### Accessibility
 

@@ -213,7 +213,7 @@ test("importing an analysis of the other lens sets aside the one on screen", asy
   await page.locator('[data-lens="strategic"]').click();
   await expect(page.locator("#reviewPanel")).toBeVisible();
   await expect(page.locator("[data-results-orientation]")).toHaveAttribute("data-analysis-lens", "strategic");
-  await expect(page.locator(".orientationConclusion")).toContainText("bipolar order");
+  await expect(page.locator('[data-orientation="conclusion"]')).toContainText("bipolar order");
 });
 
 test("removing the damaged analysis that is open leaves none open", async ({ page }) => {
