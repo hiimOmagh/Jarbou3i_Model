@@ -4296,24 +4296,6 @@ function riskScore(v) {
   if (/low|minor|contained|منخفض|ضعيف|محدود/.test(s)) return 34;
   return 52;
 }
-function semanticClass(v) {
-  const s = normalizeToken(v);
-  if (/existential|critical|حاسم|وجود/.test(s)) return "pct-excellent";
-  if (
-    /important|strategic|source_based|source_grounded|significant|مهم|استراتيجي/.test(
-      s,
-    )
-  )
-    return "pct-good";
-  if (
-    /medium|political|economic|ideological|short|long|observation|inference|متوسط|سياسي|اقتصادي/.test(
-      s,
-    )
-  )
-    return "pct-mid";
-  if (/low|minor|منخفض/.test(s)) return "pct-warn";
-  return "pct-neutral";
-}
 function basisInfo(v) {
   const s = normalizeToken(v);
   if (/source/.test(s))
@@ -4464,52 +4446,6 @@ function displayEnum(v) {
     map[s]?.[0] ||
     raw.replace(/_/g, " ").replace(/(?<![\p{L}\p{N}'’])\p{L}/gu, (m) => m.toUpperCase())
   );
-}
-function enumClass(v) {
-  const s = normalizeToken(v);
-  const map = {
-    source_based: "basis-source",
-    source_grounded: "basis-source",
-    observation: "basis-observed",
-    inference: "basis-inferred",
-    estimate: "basis-estimate",
-    assumption: "basis-assumption",
-    rhetoric_vs_action: "type-rhetoric",
-    tool_vs_goal: "type-tool",
-    result_vs_intention: "type-result",
-    interest_vs_alliance: "type-interest",
-    claim_vs_evidence: "type-evidence",
-    internal_inconsistency: "type-internal",
-  };
-  return map[s] || "";
-}
-function pill(v, kind = "") {
-  if (v === undefined || v === null || v === "") return "";
-  const raw = String(v);
-  let cls = "chip pct-neutral",
-    label = displayEnum(raw);
-  if (kind === "confidence") {
-    const info = confidenceInfo(raw);
-    cls = "chip confidence-chip " + info.cls;
-    label = info.label;
-  } else if (kind === "basis") {
-    const info = basisInfo(raw);
-    cls = "chip basis-chip " + info.cls;
-    label = info.label;
-  } else if (kind === "risk") {
-    const info = riskInfo(raw);
-    cls = "chip risk-chip " + info.cls;
-    label = info.label;
-  } else if (kind === "severity") {
-    cls = "chip severity-chip " + pctClass(severityScore(raw));
-    label = raw;
-  } else if (kind === "percent") {
-    cls = "chip " + pctClass(valuePct(Number(raw)));
-  } else {
-    const ecls = enumClass(raw);
-    cls = "chip " + (ecls || semanticClass(raw));
-  }
-  return `<span class="${cls}">${escapeHtml(label)}</span>`;
 }
 // A qualifier as a kernel chip: the words say it, the tone only adds to them.
 function kernelChip(label, tone = "") {
@@ -6230,7 +6166,7 @@ function mountRelationshipExplorer() {
     .catch(() => {
       const currentTarget = $("relationshipExplorerMount");
       if (!currentTarget) return null;
-      currentTarget.innerHTML = `<div class="warning" role="alert"><p>${escapeHtml(labelText("The relationship explorer could not be loaded.", "تعذّر تحميل مستكشف العلاقات.", "Impossible de charger l’explorateur de relations."))}</p><button type="button" class="secondary" data-retry-relationship-explorer>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
+      currentTarget.innerHTML = `<div class="j-note" data-tone="warn" role="alert"><p>${escapeHtml(labelText("The relationship explorer could not be loaded.", "تعذّر تحميل مستكشف العلاقات.", "Impossible de charger l’explorateur de relations."))}</p><button type="button" class="j-btn" data-retry-relationship-explorer>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
       currentTarget
         .querySelector("[data-retry-relationship-explorer]")
         ?.addEventListener("click", mountRelationshipExplorer, { once: true });
@@ -6383,7 +6319,7 @@ function renderBiopoliticalEvidence() {
   return `<h3>${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.0"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.1"))}</p>${bioRecordsHtml(records)}`;
 }
 function renderBiopoliticalConnections() {
-  return `<div id="relationshipExplorerMount" aria-live="polite"><div class="warning good" role="status">${escapeHtml(labelText("Loading relationship explorer…", "جارٍ تحميل مستكشف العلاقات…", "Chargement de l’explorateur de relations…"))}</div></div>`;
+  return `<div id="relationshipExplorerMount" aria-live="polite"><div class="j-note" data-tone="idle" role="status">${escapeHtml(labelText("Loading relationship explorer…", "جارٍ تحميل مستكشف العلاقات…", "Chargement de l’explorateur de relations…"))}</div></div>`;
 }
 function renderBiopoliticalConclusion() {
   const a = state.analysis;
@@ -6513,7 +6449,7 @@ function renderBiopoliticalReview() {
     $("reviewNav").innerHTML = "";
     $("reviewContent").setAttribute("aria-labelledby", "reviewTitle");
     $("reviewContent").innerHTML =
-      `<div class="warning good" role="status">${escapeHtml(labelText("Loading the biopolitical graph…", "جارٍ تحميل الرسم البياني البيوسياسي…", "Chargement du graphe biopolitique…"))}</div>`;
+      `<div class="j-note" data-tone="idle" role="status">${escapeHtml(labelText("Loading the biopolitical graph…", "جارٍ تحميل الرسم البياني البيوسياسي…", "Chargement du graphe biopolitique…"))}</div>`;
     loadBiopoliticalGraph()
       .then(() => {
         if (
@@ -6531,7 +6467,7 @@ function renderBiopoliticalReview() {
           return;
         }
         $("reviewContent").innerHTML =
-          `<div class="warning" role="alert"><p>${escapeHtml(labelText("The biopolitical graph could not be loaded.", "تعذّر تحميل الرسم البياني البيوسياسي.", "Impossible de charger le graphe biopolitique."))}</p><button type="button" class="secondary" data-retry-biopolitical-graph>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
+          `<div class="j-note" data-tone="warn" role="alert"><p>${escapeHtml(labelText("The biopolitical graph could not be loaded.", "تعذّر تحميل الرسم البياني البيوسياسي.", "Impossible de charger le graphe biopolitique."))}</p><button type="button" class="j-btn" data-retry-biopolitical-graph>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
         $("reviewContent")
           .querySelector("[data-retry-biopolitical-graph]")
           ?.addEventListener("click", renderBiopoliticalReview, { once: true });

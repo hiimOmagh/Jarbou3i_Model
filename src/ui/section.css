@@ -54,9 +54,10 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
 /* A summary that is a list of points. */
 ul.j-rec-text { padding-inline-start: var(--j-s-5); list-style: disc; }
 ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
-/* A note of several paragraphs. */
+/* A note of several paragraphs, or a sentence and what to do about it. */
 .j-note > p { margin: 0; }
 .j-note > p + p { margin-top: var(--j-s-1); }
+.j-note > p + .j-btn { margin-top: var(--j-s-2); }
 
 /* Checks, each a question beside its verdict (a .j-status), two to a row; a
    concern is washed so it stands out among the passes. */

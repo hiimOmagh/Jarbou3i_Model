@@ -34,8 +34,9 @@
   box-shadow: inset 3px 0 0 var(--j-signal);
 }
 :root[dir="rtl"] .j-case-outline [aria-current="location"] { box-shadow: inset -3px 0 0 var(--j-signal); }
+/* Rows start at the top: a lone note while a section loads keeps its height. */
 .j-case-doc {
-  display: grid; gap: var(--j-s-6); min-width: 0; min-height: 440px; padding: var(--j-card-pad);
+  display: grid; gap: var(--j-s-6); align-content: start; min-width: 0; min-height: 440px; padding: var(--j-card-pad);
   border: 1px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
 }
 /* Headings in the document, unless a view styles its own. */

@@ -154,7 +154,11 @@ document in reading order instead of tabs.
   a view styles its own (`:where(.j-case-doc) h3`, so any view's rule wins).
 - **Heavy parts stay lazy:** the relationship map loads when its section
   comes near the view, or at once when its outline entry is chosen (the
-  observer's turn comes late in Firefox and WebKit).
+  observer's turn comes late in Firefox and WebKit). While it, or the
+  biopolitical graph, loads, a `.j-note` (`idle`, `role="status"`) holds its
+  place; if it cannot load, a `warn` note (`role="alert"`) says so, with a
+  *Try again* `.j-btn` under the sentence. The document's rows start at its
+  top, so a lone note keeps its height.
 - **Tests:** `tests/case-file.spec.js`.
 
 ## Work panel
@@ -442,3 +446,8 @@ of the open summary, and the Strategic evidence cards).
 
 The save light is the header status as a button; it has no kernel contract of
 its own yet.
+
+`src/styles.css` keeps only what is not a view: the legacy tokens (now the
+kernel's), resets and form-control defaults, the app frame (`.app`, `.shell`,
+density), the toast, the skip link, `.hide`, `.srOnly`, `.ltr`, the print and
+forced-colours fallbacks, and the relationship map's forced-colours borders.

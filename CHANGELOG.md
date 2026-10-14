@@ -118,6 +118,18 @@
   regions. The shell's nav lands them 16px under the top of the view; they
   landed 184px down, an offset kept from a header that no longer sticks.
   Retires 35 legacy selectors.
+- The notes that say the relationship map or the biopolitical graph is
+  loading, or could not load, are kernel notes: loading is neutral (it wore
+  the green of a success), a failure is toned `warn` with a kernel *Try again*
+  button under the sentence. The review document's rows start at its top, so
+  a lone note there keeps its height instead of filling the frame.
+- Retires the legacy stylesheet's last view rules, 125 selectors no element
+  carries any more: the welcome card, the old buttons, cards, fields, chips and
+  their colour classes, and the score and source notes. `pill()` and the two
+  class helpers only it called go with them, as do 13 custom properties
+  nothing reads and the engine panel's own padding, which overrode the card's
+  and ignored compact density. `src/styles.css` is down from 17.6 KB to
+  5.8 KB.
 
 ### Accessibility
 
