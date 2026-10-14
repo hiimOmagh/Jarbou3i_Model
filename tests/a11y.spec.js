@@ -150,7 +150,7 @@ test("every review section is titled and described in every language and lens", 
       await expect(page.locator("#reviewNav button").first()).toBeVisible();
       const untitled = await page.locator("#reviewNav button").evaluateAll((entries) =>
         entries
-          .filter((entry) => !entry.querySelector(".navTitle")?.textContent.trim() || !entry.querySelector(".navHint")?.textContent.trim())
+          .filter((entry) => !entry.querySelector("strong")?.textContent.trim() || !entry.querySelector("small")?.textContent.trim())
           .map((entry) => entry.dataset.review || entry.dataset.bioReview),
       );
       expect(untitled, `${lens}/${lang}`).toEqual([]);

@@ -108,7 +108,7 @@ const FREE_CLASSES = [
   "j-flow-card", "j-flow-head", "j-flow-panel", "j-flow-topic", "j-flow-answer", "j-flow-examples",
   "j-flow-example-list", "j-flow-example", "j-flow-choices", "j-flow-choice", "j-flow-note", "j-flow-grid",
   "j-flow-howto", "j-flow-row", "j-flow-actions",
-  "j-case-panel", "j-case", "j-case-outline", "j-case-doc", "j-case-sec",
+  "j-case-panel", "j-case", "j-case-outline", "j-case-link", "j-case-count", "j-case-doc", "j-case-sec",
   "j-save-light", "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
   "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-errors",

@@ -26,7 +26,7 @@ export function createCommandPalette({ document, translate }) {
       [byId("shellNextAction"), clean(byId("shellNextAction")?.getAttribute("aria-label"))],
       ...[...document.querySelectorAll("#reviewNav [data-review], #reviewNav [data-bio-review]")].map((el) => [
         el,
-        `${open}: ${clean(el.querySelector(".navTitle, strong")?.textContent || el.textContent)}`,
+        `${open}: ${clean(el.querySelector("strong")?.textContent || el.textContent)}`,
       ]),
       [byId("workspaceSaveState"), clean(byId("workspaceSaveState")?.getAttribute("aria-label"))],
       ...["langAr", "langEn", "langFr"].map((id) => [byId(id), `${language}: ${clean(byId(id)?.textContent)}`]),

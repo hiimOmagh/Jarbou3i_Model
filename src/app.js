@@ -6439,21 +6439,12 @@ function renderBiopoliticalReviewNav() {
     "inspection",
     "exports",
   ];
-  const tones = {
-    overview: "var(--accent)",
-    pillars: "var(--p4)",
-    connections: "var(--accent-3)",
-    evidence: "var(--success)",
-    conclusion: "var(--warn)",
-    inspection: "var(--accent-2)",
-    exports: "var(--p5)",
-  };
   const labels = t("nav");
   const hints = t("navHints");
   $("reviewNav").innerHTML = items
     .map(
       (key) =>
-        `<button class="navBtn" data-bio-review="${key}" style="--navTone:${tones[key]}" type="button"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${escapeHtml(key === "connections" ? connectionLabel : labels[key])}</span><span class="navHint">${escapeHtml(key === "connections" ? connectionHint : hints[key] || "")}</span></span>${counts[key] !== "" ? `<span class="badge">${counts[key]}</span>` : ""}</button>`,
+        `<button class="j-case-link" data-bio-review="${key}" type="button"><strong>${escapeHtml(key === "connections" ? connectionLabel : labels[key])}</strong><small>${escapeHtml(key === "connections" ? connectionHint : hints[key] || "")}</small>${counts[key] !== "" ? `<span class="j-case-count">${counts[key]}</span>` : ""}</button>`,
     )
     .join("");
 }
@@ -6467,7 +6458,7 @@ function wireCaseOutline(selector, datasetKey) {
     const key = button.dataset[datasetKey];
     $(`case-${key}`)?.setAttribute(
       "aria-label",
-      button.querySelector(".navTitle")?.textContent || key,
+      button.querySelector("strong")?.textContent || key,
     );
     button.onclick = () => {
       const section = $(`case-${key}`);
@@ -6693,19 +6684,10 @@ function renderReviewNav() {
     "inspection",
     "exports",
   ];
-  const tones = {
-    overview: "var(--accent)",
-    pillars: "var(--p4)",
-    contradictions: "var(--warn)",
-    scenarios: "var(--accent-3)",
-    evidence: "var(--success)",
-    inspection: "var(--accent-2)",
-    exports: "var(--p5)",
-  };
   $("reviewNav").innerHTML = items
     .map(
       (k) =>
-        `<button class="navBtn" data-review="${k}" style="--navTone:${tones[k]}" type="button"><span class="navGlyph" aria-hidden="true"></span><span class="navText"><span class="navTitle">${t("nav")[k]}</span><span class="navHint">${t("navHints")?.[k] || ""}</span></span>${counts[k] !== "" ? `<span class="badge">${counts[k]}</span>` : ""}</button>`,
+        `<button class="j-case-link" data-review="${k}" type="button"><strong>${t("nav")[k]}</strong><small>${t("navHints")?.[k] || ""}</small>${counts[k] !== "" ? `<span class="j-case-count">${counts[k]}</span>` : ""}</button>`,
     )
     .join("");
 }

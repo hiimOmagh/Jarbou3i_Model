@@ -180,7 +180,7 @@ test.describe("Release Candidate visual audit evidence", () => {
         expect(flow.childrenOutside === 0 || exposesScrollSurface, JSON.stringify(flow)).toBe(true);
       }
 
-      const activeBadge = page.locator('[data-bio-review="connections"] .badge');
+      const activeBadge = page.locator('[data-bio-review="connections"] .j-case-count');
       const activeBadgeContrast = await activeBadge.evaluate((badge) => {
         const parseColor = (value) => {
           const numbers = value.match(/[\d.]+/g)?.map(Number) || [];

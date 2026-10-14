@@ -9,11 +9,30 @@
 /* The outline stays in reach while the document scrolls. */
 .j-case-outline {
   position: sticky; top: var(--j-s-4); max-height: calc(100vh - var(--j-s-6)); overflow-y: auto;
+  display: grid; gap: 2px; align-content: start;
   padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
 }
-/* Where the reader is: tinted, barred and bold, not colour alone. */
+/* An entry: the section's name over what it holds, its count beside them. */
+.j-case-link {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name count" "hint count";
+  align-items: center; align-content: center; gap: 2px var(--j-s-3); width: 100%; min-height: 44px; padding: var(--j-s-2) var(--j-s-3);
+  border: 0; border-radius: var(--j-r-2); background: transparent; color: var(--j-fg); font-weight: 600; text-align: start;
+}
+.j-case-link:hover { background: var(--j-panel-2); }
+.j-case-link:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+/* A name breaks between words, never inside one. */
+.j-case-link > strong { grid-area: name; font-size: var(--j-t-14); font-weight: inherit; line-height: 1.3; overflow-wrap: break-word; }
+.j-case-link > small { grid-area: hint; color: var(--j-fg-muted); font-size: var(--j-t-12); font-weight: 400; line-height: 1.35; overflow-wrap: anywhere; }
+.j-case-count {
+  grid-area: count; min-width: 28px; padding: 2px var(--j-s-2); border: 1px solid var(--j-line); border-radius: 999px;
+  background: var(--j-panel-2); color: var(--j-fg); font: 600 var(--j-t-12)/1.4 var(--j-font-data);
+  font-variant-numeric: tabular-nums; text-align: center;
+}
+/* Where the reader is: tinted and barred, not colour alone. Its weight stays:
+   a bolder name can wrap, and an outline above the document that changes
+   height moves the page under the reader. */
 .j-case-outline [aria-current="location"] {
-  background: var(--j-signal-wash); color: var(--j-fg); font-weight: 700;
+  background: var(--j-signal-wash); color: var(--j-fg);
   box-shadow: inset 3px 0 0 var(--j-signal);
 }
 :root[dir="rtl"] .j-case-outline [aria-current="location"] { box-shadow: inset -3px 0 0 var(--j-signal); }
@@ -29,7 +48,7 @@
 .j-case-sec:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 6px; border-radius: var(--j-r-2); }
 
 @media (forced-colors: active) {
-  .j-case-outline, .j-case-doc { border-color: CanvasText; }
+  .j-case-outline, .j-case-doc, .j-case-count { border-color: CanvasText; }
   .j-case-outline [aria-current="location"] { outline: 2px solid Highlight; }
 }
 /* One column: the outline sits above the document, in three columns, then two. */
@@ -39,9 +58,14 @@
 }
 @media (max-width: 940px) {
   .j-case-outline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-2); }
+  /* Tiles in a grid. */
+  .j-case-link { border: 1px solid var(--j-line); }
 }
 @media (max-width: 760px) {
   .j-case-outline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-2); padding: var(--j-s-2); }
+  /* Two to a row: the names only, the count under a name it does not fit beside. */
+  .j-case-link { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px var(--j-s-2); padding: var(--j-s-2); }
+  .j-case-link > small { display: none; }
   .j-case-doc { padding: var(--j-s-4); }
 }
 @media print {

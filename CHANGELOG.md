@@ -103,6 +103,14 @@
   apply is grey and hollow, where it was green like a pass, and a concern is
   washed. The audit's questions are 14px (they were 12px). Retires 18 legacy
   selectors.
+- The case file's outline is on the kernel. An entry is the section's name
+  over what it holds, its count beside them; the reader's place is tinted and
+  barred as before, but no longer bolder, since a bolder name can wrap and move
+  the page. The coloured orbs and edges, a different hue per
+  section that said nothing, are gone. On a phone a name no longer loses its
+  last letters ("Connection" for "Connections"): it breaks between words, and
+  a count that does not fit goes under it. Below 940px the entries are
+  bordered tiles. Retires 24 legacy selectors.
 
 ### Accessibility
 
