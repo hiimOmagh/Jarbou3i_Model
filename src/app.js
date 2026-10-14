@@ -5058,7 +5058,7 @@ function briefFigure(label, value) {
   return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${value}%</b>${briefBar(value)}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation) {
-  const gateTone = model.publication.approved ? "ok" : "crit";
+  const gateTone = model.publication.tone;
   return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</span><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
 }
 function authoredText(...values) {
@@ -5313,12 +5313,14 @@ function renderOverview() {
   const h = schemaHealth(a);
   const b = scoreBreakdown(a);
   const authoredUncertainty = arr(a.evidence?.items).find((item) => String(item.uncertainty || "").trim())?.uncertainty;
+  const gate = qualityGate(a);
   const orientation = createResultsOrientation({
     lens: "strategic",
     topic: a.subject.title || state.topic,
     conclusion: a.subject.executive_thesis || a.subject.question || a.subject.title,
     publicationApproved: b.provenance.publicationApproved,
-    publicationLabel: b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "غير معتمد", "Bloqué"),
+    publicationLabel: gate.status,
+    publicationTone: gate.tone,
     readiness: b.overall,
     coverage: b.analyticalCoverage,
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
@@ -5795,7 +5797,7 @@ html[dir="rtl"] .welcomeEyebrow{
   }
 }
 
-</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: ${b.analyticalCoverage}%</small><small>${escapeHtml(t("qualityGate"))}: ${escapeHtml(b.provenance.publicationApproved ? labelText("Approved", "معتمد", "Approuvé") : labelText("Blocked", "غير معتمد", "Bloqué"))}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
+</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: ${b.analyticalCoverage}%</small><small>${escapeHtml(t("qualityGate"))}: ${escapeHtml(qualityGate(a).status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
 }
 
 function buildLosslessStrategicReport() {
@@ -6206,17 +6208,19 @@ function bioRecordsHtml(records) {
 function bioGateReview(a, scores) {
   return a.contract_status === "canonical" && scores.structural >= 70;
 }
+// The Bio gate's verdict, which the quality gate and the brief both give.
+function bioGateVerdict(a, scores, health) {
+  if (health.publishable) return { status: t("publishReady"), tone: "ok" };
+  return bioGateReview(a, scores)
+    ? { status: t("reviewNeeded"), tone: "warn" }
+    : { status: t("doNotPublish"), tone: "crit" };
+}
 function bioGateHtml(a) {
   const scores = BIO.scores(a);
   const health = BIO.health(a, state.lang);
   const ready = health.publishable;
   const review = bioGateReview(a, scores);
-  const status = ready
-    ? t("publishReady")
-    : review
-      ? t("reviewNeeded")
-      : t("doNotPublish");
-  const tone = ready ? "ok" : review ? "warn" : "crit";
+  const { status, tone } = bioGateVerdict(a, scores, health);
   const summary = ready
     ? labelText(
         "The analysis satisfies the canonical, semantic, and evidence-verification gates.",
@@ -6285,11 +6289,7 @@ function renderBiopoliticalOverview() {
   const migration = a.migration
     ? `<p class="j-note j-brief-alert" data-tone="warn"><strong>${escapeHtml(BIO.ui(state.lang, "migration"))}</strong> ${escapeHtml(arr(a.migration.warnings).join(" · "))}</p>`
     : "";
-  const gateLabel = health.publishable
-    ? labelText("Approved", "معتمد", "Approuvé")
-    : bioGateReview(a, scores)
-      ? t("reviewNeeded")
-      : labelText("Blocked", "غير معتمد", "Bloqué");
+  const gate = bioGateVerdict(a, scores, health);
   const authoredUncertainty = arr(a.calibrated_conclusion?.unknown)[0]
     || arr(a.evidence?.items).find((item) => String(item.uncertainty || "").trim())?.uncertainty;
   const orientation = createResultsOrientation({
@@ -6297,7 +6297,8 @@ function renderBiopoliticalOverview() {
     topic: a.subject.title || state.topic,
     conclusion: a.subject.executive_finding || a.subject.research_question || a.subject.title,
     publicationApproved: health.publishable,
-    publicationLabel: gateLabel,
+    publicationLabel: gate.status,
+    publicationTone: gate.tone,
     readiness: scores.overall,
     coverage: scores.analyticalCoverage,
     uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),

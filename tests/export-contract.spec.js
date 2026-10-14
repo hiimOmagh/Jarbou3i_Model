@@ -199,7 +199,7 @@ test.describe('Strategic HTML report content', () => {
     expect(hero).toContain('Decision readiness');
     expect(hero).toContain('Analytical coverage');
     expect(hero).toContain('Quality gate');
-    expect(hero).toMatch(/Approved|Blocked/);
+    expect(hero).toContain('Quality gate: Do not publish yet');
     expect(hero).toContain('Decision readiness is capped by source traceability and independent review.');
     expect(hero).not.toContain('Overall index');
   });

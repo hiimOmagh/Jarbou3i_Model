@@ -16,6 +16,7 @@ export function createResultsOrientation({
   conclusion,
   publicationApproved = false,
   publicationLabel,
+  publicationTone,
   readiness,
   coverage,
   uncertainty,
@@ -32,6 +33,8 @@ export function createResultsOrientation({
     publication: Object.freeze({
       approved: Boolean(publicationApproved),
       label: text(publicationLabel),
+      // The quality gate's tone; without one, approved or not.
+      tone: ['ok', 'warn', 'crit'].includes(publicationTone) ? publicationTone : publicationApproved ? 'ok' : 'crit',
     }),
     readiness: score(readiness),
     coverage: score(coverage),

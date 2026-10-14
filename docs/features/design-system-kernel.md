@@ -411,7 +411,8 @@ each a `section.j-brief` with a `.j-brief-head` (label, `h4`, a line under it),
 then its detailed diagnostics.
 
 - **What matters first** (`data-results-orientation`): the publication gate, a
-  `.j-status` in `.j-brief-gate`; the conclusion (`.j-brief-claim`); readiness
+  `.j-status` in `.j-brief-gate` that gives the quality gate's verdict and tone
+  (`qualityGate()`, `bioGateVerdict()`), so the overview never shows two; the conclusion (`.j-brief-claim`); readiness
   and coverage in a `dl.j-brief-figures`, each figure with a `.j-brief-bar`
   (`--j-pct`, its tone from `pctTone()`, the score legend's bands; hidden from
   assistive technology, which reads the figure); the principal uncertainty and

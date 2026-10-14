@@ -12,7 +12,9 @@ test('shared results orientation prioritizes decision context across both lenses
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'strategic');
   await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('What matters first');
   await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('bipolar order');
-  await expect(orientation.locator('[data-orientation="gate"]')).toContainText(/Blocked|Approved/);
+  // One verdict: the brief says what the quality gate says.
+  await expect(page.locator('[data-diagnostic="gate"] h4')).toHaveText('Quality gate: Do not publish yet');
+  await expect(orientation.locator('[data-orientation="gate"] strong')).toHaveText('Do not publish yet');
   await expect(orientation.locator('[data-orientation="metrics"]')).toContainText('Decision readiness');
   await expect(orientation.locator('[data-orientation="uncertainty"]')).not.toContainText('—');
   const promotedNextAction = (await orientation.locator('[data-orientation="action"] p').textContent())?.trim();
@@ -49,7 +51,7 @@ test('an Arabic gate that is not approved says so, not banned', async ({ page })
   await page.goto('./');
   await page.locator('#langAr').click();
   await page.locator('#loadSampleBtn').click();
-  await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('غير معتمد');
+  await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('لا تنشر بعد');
 });
 
 test('the Bio overview gives one gate verdict and lists every open item in it', async ({ page }) => {

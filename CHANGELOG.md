@@ -15,6 +15,15 @@
   the names of the files you will attach. It is four rows tall, so its hint
   shows in full on a phone. The UX-0 prototype says the same.
 
+### Results
+
+- The overview gives one publication verdict. In Strategic, the brief said
+  "Blocked" while the quality gate below it said "Review needed" or "Do not
+  publish yet"; in Biopolitical it said "Approved" or "Blocked" where the
+  gate said "Publish-ready" or "Do not publish yet". The brief now repeats
+  the quality gate's verdict and tone in both lenses and all three
+  languages, and the Strategic report's "Quality gate" line does too.
+
 ### Design-system kernel
 
 - Moves the case file's layout onto the kernel: the outline beside the

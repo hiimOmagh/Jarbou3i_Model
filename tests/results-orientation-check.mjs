@@ -26,6 +26,11 @@ assert(Object.isFrozen(orientation.publication), 'publication state must be immu
 assert(orientation.readiness === 100, 'readiness was not bounded');
 assert(orientation.coverage === 74, 'coverage was not normalized');
 assert(orientation.publication.approved === false, 'publication state drifted');
+assert(orientation.publication.tone === 'crit', 'an unapproved gate without a tone was not critical');
+assert(
+  createResultsOrientation({ ...source, publicationTone: 'warn' }).publication.tone === 'warn',
+  "the quality gate's tone was not kept",
+);
 assert(orientation.uncertainty === source.uncertainty, 'authored uncertainty was not preserved');
 assert(!('analysis' in orientation), 'canonical analysis leaked into the view model');
 
