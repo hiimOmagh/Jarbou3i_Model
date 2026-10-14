@@ -2,9 +2,10 @@
    "Where your work is". Classes are .j-life-* and .j-save-light; the cards
    and buttons are kernel controls. */
 
-/* The save light is the header status, pressable: it opens the work panel. */
+/* The save light is the header status, pressable: it opens the work panel.
+   A control, so as tall as the header's other controls. */
 .j-save-light {
-  min-height: 32px; padding: 0 var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
+  min-height: var(--j-control); padding: 0 var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
   background: var(--j-panel); cursor: pointer;
 }
 .j-save-light:hover { border-color: var(--j-signal); background: var(--j-raise); }

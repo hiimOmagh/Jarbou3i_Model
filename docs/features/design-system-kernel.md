@@ -25,8 +25,7 @@ framework. The modern shell (UIX-2) is the first part of the app built on it.
   `src/styles.css` (`--bg`, `--text`, `--muted`, `--accent` and the others)
   point at kernel tokens. So every view, before it is rebuilt, takes the
   case-file look in both themes.
-  - Text on an accent fill uses `--on-accent`.
-  - Categorical colours (`--p1` to `--p6`), shadows and radii stay legacy.
+  - Categorical colours (`--p1` to `--p6`) and shadows stay legacy.
   - `tests/ui-kernel.spec.js` checks that the app's colours follow the kernel
     in both themes.
   - `tests/a11y-static-check.mjs` checks the muted-text margin of 4.75:1 in
@@ -81,6 +80,13 @@ tests use.
   `body` (`data-density`).
 - On phones, workspaces and density become 44px icon buttons. Their accessible
   names come from the app.
+- The skip link (`a.j-skip`, a link to an element on the page) waits above the
+  view and slides in on the first Tab, on the inline start.
+- The toast (`#toast.j-toast`, `role="status"`) stays in the page as a live
+  region: `data-open="false"` slides it below the view and fades it, rather
+  than removing it, so a message set while it opens is still read.
+  `toast(message, "crit")` gives a failure a leading edge; the words say it.
+  It takes its own width up to 560px and never prints.
 - The legacy shell rules (`.top`, `.workspaceBar`, `.segBtn` and the rest)
   were removed from `src/styles.css` once the shell passed the full suites.
 
@@ -171,7 +177,10 @@ UX-0 work panel, built on the app's own workspace model.
   opens the panel. `data-state` keeps the save state (`empty`, `saving`,
   `saved`, `error`); `data-life` adds `uncommitted` (the saved draft is not in
   a revision) or `snapshot` (a recovery snapshot was found). Its name is
-  "Where your work is: <state>".
+  "Where your work is: <state>". Its contract (`.j-save-light`): a
+  `<button type="button">` with `aria-haspopup="dialog"` and `aria-controls`
+  naming the panel, a known `data-state` and, if set, a known `data-life`. It
+  is a kernel status too, 44px high like the header's other controls.
 - **Where your work is:** the Workspaces dialog shows three cards for the open
   workspace: the recovery snapshot, the working draft and the revisions. Their
   actions open the existing editor, commit and history dialogs. Other
@@ -444,10 +453,8 @@ of the open summary, and the Strategic evidence cards).
 
 ## Not in the kernel yet
 
-The save light is the header status as a button; it has no kernel contract of
-its own yet.
-
-`src/styles.css` keeps only what is not a view: the legacy tokens (now the
-kernel's), resets and form-control defaults, the app frame (`.app`, `.shell`,
-density), the toast, the skip link, `.hide`, `.srOnly`, `.ltr`, the print and
-forced-colours fallbacks, and the relationship map's forced-colours borders.
+Every view and control is on the kernel. `src/styles.css` keeps only what is
+not one: the legacy tokens (now the kernel's), resets and form-control
+defaults, the app frame (`.app`, `.shell`, density), `.hide`, `.srOnly`,
+`.ltr`, the print and forced-colours fallbacks, and the relationship map's
+forced-colours borders.

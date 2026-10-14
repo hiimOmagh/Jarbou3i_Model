@@ -225,13 +225,37 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
 .j-toast {
   position: fixed; z-index: var(--j-z-toast); bottom: calc(var(--j-s-5) + env(safe-area-inset-bottom, 0px));
   inset-inline-start: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: var(--j-s-2); max-width: calc(100vw - 2 * var(--j-s-4));
+  display: flex; align-items: center; gap: var(--j-s-2);
+  /* Its own width up to a readable measure: centred from 50%, it would
+     otherwise wrap at half the view. */
+  width: max-content; max-width: min(560px, calc(100vw - 2 * var(--j-s-4)));
   padding: var(--j-s-3) var(--j-s-4); border-radius: var(--j-r-2); border: 1px solid var(--j-line-strong);
   background: var(--j-raise); color: var(--j-fg); box-shadow: var(--j-shadow); font-weight: 600;
   animation: j-toast-in var(--j-dur-2) var(--j-ease-out);
 }
 :root[dir="rtl"] .j-toast { transform: translateX(50%); }
 @keyframes j-toast-in { from { opacity: 0; translate: 0 8px; } }
+/* A toast that stays in the page (data-open) is a live region read while it
+   waits, so closed it slides below the view instead of leaving the tree; it
+   leaves faster than it comes. */
+.j-toast[data-open] { animation: none; transition: translate var(--j-dur-2) var(--j-ease-out), opacity var(--j-dur-2) var(--j-ease-out); }
+.j-toast[data-open="false"] {
+  translate: 0 calc(100% + var(--j-s-5) + var(--j-s-4) + env(safe-area-inset-bottom, 0px));
+  opacity: 0; pointer-events: none; transition-duration: var(--j-dur-1);
+}
+/* A failure: an edge, and the words say it. */
+.j-toast[data-tone="crit"] { border-inline-start: 4px solid var(--j-crit); }
+
+/* ---------- Skip link ---------- */
+/* The keyboard's first stop: above the view until it takes focus. */
+.j-skip {
+  position: fixed; z-index: var(--j-z-dialog); inset-block-start: var(--j-s-2); inset-inline-start: var(--j-s-3);
+  display: inline-flex; align-items: center; min-height: var(--j-control); padding: 0 var(--j-s-4);
+  border: 1px solid var(--j-line-strong); border-radius: var(--j-r-2); background: var(--j-raise); color: var(--j-fg);
+  box-shadow: var(--j-shadow); font-weight: 700; text-decoration: none;
+  translate: 0 calc(-100% - var(--j-s-4)); transition: translate var(--j-dur-2) var(--j-ease-out);
+}
+.j-skip:focus { translate: 0 0; outline: 2px solid var(--j-signal); outline-offset: 2px; }
 
 /* ---------- Dialog (native <dialog>, opened with showModal) ---------- */
 .j-dialog {
@@ -258,10 +282,15 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
 
 /* ---------- Motion and forced colours ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .j-root *, .j-root *::before, .j-root *::after { animation: none !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+  .j-root *, .j-root *::before, .j-root *::after,
+  .j-toast, .j-skip { animation: none !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
 }
 @media (forced-colors: active) {
   .j-status::before { forced-color-adjust: none; background: CanvasText; border-color: CanvasText; }
   .j-btn[data-variant="primary"] { border: 2px solid ButtonText; }
   .j-option[aria-selected="true"] { outline: 2px solid Highlight; }
+}
+/* Page furniture does not print. */
+@media print {
+  .j-toast, .j-skip { display: none !important; }
 }

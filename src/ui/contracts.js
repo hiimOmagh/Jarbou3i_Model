@@ -70,7 +70,26 @@ export const CONTRACTS = Object.freeze({
     (el) => (["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName) ? null : "must be an <input>, <textarea> or <select>"),
     oneOf("aria-invalid", ["true", "false"]),
   ],
-  "j-toast": [(el) => (el.getAttribute("role") === "status" ? null : 'needs role="status" so it is announced without taking focus')],
+  "j-toast": [
+    (el) => (el.getAttribute("role") === "status" ? null : 'needs role="status" so it is announced without taking focus'),
+    oneOf("data-open", ["true", "false"]),
+    oneOf("data-tone", ["crit"]),
+  ],
+  "j-skip": [
+    (el) => {
+      const target = el.tagName === "A" && el.getAttribute("href")?.match(/^#(.+)/)?.[1];
+      return target && el.ownerDocument.getElementById(target) ? null : "must be a link to an element on this page";
+    },
+    (el) => (text(el) ? null : "needs text"),
+  ],
+  "j-save-light": [
+    (el) => (el.tagName === "BUTTON" && el.getAttribute("type") === "button" ? null : 'must be a <button type="button">'),
+    (el) => (el.getAttribute("aria-haspopup") === "dialog" && el.ownerDocument.getElementById(el.getAttribute("aria-controls") || "")
+      ? null
+      : 'needs aria-haspopup="dialog" and aria-controls naming the work panel it opens'),
+    oneOf("data-state", ["empty", "saving", "saved", "error"], { required: true }),
+    oneOf("data-life", ["snapshot", "uncommitted", "conflict"]),
+  ],
   "j-kbd": [(el) => (el.tagName === "KBD" ? null : "must be a <kbd>")],
   "j-help": [(el) => (el.closest(".j-field") ? null : "must be inside a .j-field")],
   "j-ref": [
@@ -109,7 +128,7 @@ const FREE_CLASSES = [
   "j-flow-example-list", "j-flow-example", "j-flow-choices", "j-flow-choice", "j-flow-note", "j-flow-grid",
   "j-flow-howto", "j-flow-row", "j-flow-actions",
   "j-case", "j-case-outline", "j-case-link", "j-case-count", "j-case-doc", "j-case-sec",
-  "j-save-light", "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
+  "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
   "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-errors",
   "j-commit", "j-commit-facts", "j-commit-approve", "j-commit-confirm",

@@ -130,6 +130,15 @@
   nothing reads and the engine panel's own padding, which overrode the card's
   and ignored compact density. `src/styles.css` is down from 17.6 KB to
   5.8 KB.
+- The toast and the skip link are kernel controls, the toast as in the UX-0
+  prototype: a raised panel instead of an inverted block, a failure marked by
+  a red leading edge instead of a red fill, as wide as its message up to
+  560px (it wrapped at half the view, so a phone showed a narrow column). It
+  still waits below the view as a live region, and now fades as it slides,
+  leaving faster than it comes. The skip link is 44px high with the kernel's
+  focus ring. The save light has a DOM contract (a button that opens the work
+  panel, with a known state) and is 44px high like the header's other
+  controls; it was 32px.
 
 ### Accessibility
 

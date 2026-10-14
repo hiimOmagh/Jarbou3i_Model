@@ -88,7 +88,9 @@ test.describe("Design-system kernel", () => {
           <button type="button" role="radio" aria-checked="true">B</button>
         </div>
         <div class="j-field"><label>Name</label><input class="j-input"></div>
-        <div class="j-toast">Done</div>
+        <div class="j-toast" data-tone="bad">Done</div>
+        <a class="j-skip" href="#nowhere">Skip</a>
+        <button class="j-status j-save-light" data-tone="ok" data-state="lost">Saved</button>
         <span class="j-banner">New</span>`;
       document.body.append(broken);
       return window.kernelHarness.problems().map((entry) => `${entry.contract}: ${entry.problem}`);
@@ -103,6 +105,11 @@ test.describe("Design-system kernel", () => {
       'j-seg: exactly one option must be aria-checked="true"',
       "j-field: needs a <label for> naming a .j-input inside the field",
       'j-toast: needs role="status" so it is announced without taking focus',
+      'j-toast: data-tone="bad" is not one of crit',
+      "j-skip: must be a link to an element on this page",
+      'j-save-light: must be a <button type="button">',
+      'j-save-light: needs aria-haspopup="dialog" and aria-controls naming the work panel it opens',
+      'j-save-light: data-state="lost" is not one of empty, saving, saved, error',
       "j-banner: is not a kernel class",
     ]);
   });

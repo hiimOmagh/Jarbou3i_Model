@@ -131,9 +131,9 @@ for (const colorScheme of ["light", "dark"]) {
     await page.locator("#langEn").click();
     await openStep(page, "prompt");
     await page.locator("#copyPromptBtn").click();
-    await expect(page.locator("#toast")).toHaveClass(/\bbad\b/);
+    await expect(page.locator("#toast")).toHaveAttribute("data-tone", "crit");
     await settleTransitions(page);
-    const audited = await page.evaluate(auditFilledText, "#toast.show");
+    const audited = await page.evaluate(auditFilledText, '#toast[data-open="true"]');
     expect(audited.map((entry) => entry.id)).toEqual(["toast"]);
     expect(audited.filter((entry) => entry.ratio < 4.5)).toEqual([]);
   });
@@ -181,5 +181,5 @@ test("a newer toast is not dismissed by an older toast's timer, and duplicated s
   await page.locator("#previewPromptBtn").click();
   await expect(page.locator("#toast")).toHaveAttribute("aria-live", "polite");
   await page.waitForTimeout(900);
-  await expect(page.locator("#toast")).toHaveClass(/\bshow\b/);
+  await expect(page.locator("#toast")).toHaveAttribute("data-open", "true");
 });

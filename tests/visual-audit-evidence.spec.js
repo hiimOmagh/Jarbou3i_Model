@@ -47,7 +47,7 @@ async function waitForVisualAssets(page) {
 
 async function clearTransientUi(page) {
   const toast = page.locator("#toast");
-  await expect(toast).not.toHaveClass(/\bshow\b/, { timeout: 5000 });
+  await expect(toast).toHaveAttribute("data-open", "false", { timeout: 5000 });
   await expect.poll(() => toast.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return rect.top >= window.innerHeight || rect.bottom <= 0;

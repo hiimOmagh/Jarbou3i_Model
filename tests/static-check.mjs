@@ -196,7 +196,7 @@ for (const token of [
   if (!index.includes(token)) fail(`index accessibility token missing: ${token}`);
 }
 for (const token of [
-  'class="skipLink"',
+  'class="j-skip"',
   'id="workspaceBar"',
   'id="densityBtn"',
   'id="shellNextAction"',
@@ -227,12 +227,8 @@ for (const token of [
     fail(`Phase 2 shell feature token missing: ${token}`);
   }
 }
-for (const token of [
-  'body[data-density="compact"]',
-  ".skipLink:focus",
-]) {
-  if (!styles.includes(token)) fail(`Phase 2 shell stylesheet token missing: ${token}`);
-}
+if (!styles.includes('body[data-density="compact"]')) fail('Phase 2 shell stylesheet token missing: body[data-density="compact"]');
+if (!shellStyles.includes(".j-skip:focus")) fail("Phase 2 shell stylesheet token missing: .j-skip:focus");
 // The current phase is marked by more than colour, controls keep a 44px
 // target (icon-only on phones too), and the next action is the one primary.
 for (const token of [
@@ -323,9 +319,11 @@ if (!graph.includes("spatialProjection")) {
 if (!explorer.includes('event.code === "Space"')) {
   fail("cross-browser Space-key activation contract missing");
 }
-for (const token of ["@media (forced-colors:active)", ":focus,:focus-visible", "color-scheme:light", "HighlightText", "translateY(calc(100% + 48px))"]) {
+for (const token of ["@media (forced-colors:active)", ":focus,:focus-visible", "color-scheme:light", "HighlightText"]) {
   if (!styles.includes(token)) fail(`final audit visual resilience contract missing: ${token}`);
 }
+// A closed toast waits below the view, still a live region.
+if (!shellStyles.includes('.j-toast[data-open="false"]')) fail("final audit visual resilience contract missing: the closed toast");
 if (index.includes('rel="stylesheet" href="src/relationship-explorer.css"')) {
   fail("relationship explorer stylesheet remains in the initial document");
 }

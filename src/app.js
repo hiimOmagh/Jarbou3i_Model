@@ -1781,13 +1781,15 @@ function refreshDynamicMessages() {
 }
 let toastTimer = 0;
 // announce:false when an on-screen status region already announces the same message.
-function toast(msg, kind = "", { announce = true } = {}) {
+function toast(msg, tone = "", { announce = true } = {}) {
   const el = $("toast");
   el.setAttribute("aria-live", announce ? "polite" : "off");
   el.textContent = msg;
-  el.className = kind ? `toast show ${kind}` : "toast show";
+  if (tone) el.dataset.tone = tone;
+  else delete el.dataset.tone;
+  el.dataset.open = "true";
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => { el.dataset.open = "false"; }, 2600);
 }
 function setTheme(isDark, persist = true) {
   document.body.classList.toggle("dark", !!isDark);
@@ -6818,7 +6820,7 @@ function showOperationFailure(error, operation, invoker) {
     `L’opération s’est arrêtée sans altérer les données. ${diagnostic.code} à ${diagnostic.path}. Diagnostic ${diagnostic.id}.`,
   );
   setWorkspaceStatus("bad", summary);
-  toast(summary, "bad");
+  toast(summary, "crit");
   showModal(labelText("Operation diagnostics", "تشخيص العملية", "Diagnostic de l’opération"), JSON.stringify(diagnostic, null, 2), invoker);
   return diagnostic;
 }
@@ -8329,7 +8331,7 @@ $("copyPromptBtn").onclick = async (event) => {
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
-    toast(t("topicNeeded"), "bad", { announce: false });
+    toast(t("topicNeeded"), "crit", { announce: false });
     $("topicStatus").dataset.tone = "crit";
     $("topicStatus").textContent = t("topicNeeded");
     return;
@@ -8353,7 +8355,7 @@ $("previewPromptBtn").onclick = (event) => {
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
-    toast(t("topicNeeded"), "bad");
+    toast(t("topicNeeded"), "crit");
     return;
   }
   if (state.evidenceAccess === "provided" && !$("sourcesInput").value.trim()) {
@@ -8450,7 +8452,7 @@ $("repairPromptBtn").onclick = async (event) => {
         "Prompt copié. Collez-le dans la même conversation avec l’IA.",
       )
     : t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied");
-  toast(ok ? copied : t("copyFailed"), ok ? "" : "bad");
+  toast(ok ? copied : t("copyFailed"), ok ? "" : "crit");
   if (!ok)
     showModal(
       language ? invoker.textContent : t(truncated ? "continuePrompt" : completion ? "completionPrompt" : "repairPrompt"),
@@ -8468,7 +8470,7 @@ $("loadSampleBtn").onclick = async (event) => {
   if (a.analysis_lens === "biopolitical") {
     const validation = BIO_INTEGRITY.validateImport(a);
     if (!validation.ok) {
-      toast(importErrorText({ validation }), "bad");
+      toast(importErrorText({ validation }), "crit");
       return;
     }
     state.importValidation = validation;
@@ -8668,7 +8670,7 @@ window.addEventListener("beforeunload", (event) => {
 });
 $("modalCopy").onclick = async () => {
   const ok = await copyText($("modalContent").textContent);
-  toast(ok ? t("copied") : t("copyFailed"), ok ? "" : "bad");
+  toast(ok ? t("copied") : t("copyFailed"), ok ? "" : "crit");
 };
 [
   "analysisLang",
