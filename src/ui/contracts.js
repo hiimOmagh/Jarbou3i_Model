@@ -100,7 +100,7 @@ export const CONTRACTS = Object.freeze({
 // Classes that carry no structural rule: kernel helpers, and the modern
 // shell's layout (src/ui/shell.css), whose controls are kernel controls.
 const FREE_CLASSES = [
-  "j-root", "j-card", "j-label", "j-mono", "j-sr-only", "j-icon",
+  "j-root", "j-card", "j-card-head", "j-label", "j-mono", "j-sr-only", "j-icon",
   "j-shell", "j-shell-top", "j-shell-brand", "j-shell-brand-text", "j-shell-case", "j-shell-cluster",
   "j-shell-bar", "j-shell-nav", "j-shell-phase", "j-shell-phase-index", "j-shell-phase-copy",
   "j-shell-trust", "j-shell-next", "j-shell-next-copy",
@@ -108,7 +108,7 @@ const FREE_CLASSES = [
   "j-flow-card", "j-flow-head", "j-flow-panel", "j-flow-topic", "j-flow-answer", "j-flow-examples",
   "j-flow-example-list", "j-flow-example", "j-flow-choices", "j-flow-choice", "j-flow-note", "j-flow-grid",
   "j-flow-howto", "j-flow-row", "j-flow-actions",
-  "j-case-panel", "j-case", "j-case-outline", "j-case-link", "j-case-count", "j-case-doc", "j-case-sec",
+  "j-case", "j-case-outline", "j-case-link", "j-case-count", "j-case-doc", "j-case-sec",
   "j-save-light", "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
   "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-errors",

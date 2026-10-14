@@ -229,7 +229,6 @@ for (const token of [
 }
 for (const token of [
   'body[data-density="compact"]',
-  ".sectionEyebrow",
   ".skipLink:focus",
 ]) {
   if (!styles.includes(token)) fail(`Phase 2 shell stylesheet token missing: ${token}`);

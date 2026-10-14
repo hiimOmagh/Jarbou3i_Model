@@ -120,6 +120,16 @@ one at a time, with the mascot guide and a step list beside them.
 - **Tests:** `tests/guided-flow.spec.js`; other specs open a step with
   `tests/helpers/guided-flow.js` before using its controls.
 
+## Page sections
+
+The engine (`#enginePanel`) and the review (`#reviewPanel`) are kernel cards,
+`section.j-card` named by their heading. A card's heading is `.j-card-head`: a
+label (`.j-label`, the section's number and name), the `h2` and the line under
+it, and a status beside them, under them when they need the width. The
+engine's status is the analysis state (`.j-status`, `idle` until an analysis
+is imported, then `ok`). The shell's nav lands a section card 16px under the
+top of the view.
+
 ## Case file
 
 `src/ui/case.css` (`.j-case-*`) and `caseSection` / `wireCaseOutline` /

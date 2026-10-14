@@ -2,8 +2,6 @@
    with an outline that jumps to its sections. Classes are .j-case-*, layout
    only; the sections keep their own views. */
 
-/* The legacy panel clips its overflow, which would unpin the outline. */
-.j-case-panel { overflow: visible; }
 /* The outline beside the document; one column at 1120px and below. */
 .j-case { display: grid; grid-template-columns: 292px minmax(0, 1fr); gap: var(--j-card-gap); align-items: start; }
 /* The outline stays in reach while the document scrolls. */

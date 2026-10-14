@@ -195,6 +195,16 @@
   background: var(--j-panel); border: 1px solid var(--j-line); border-radius: var(--j-r-3);
   padding: var(--j-card-pad); display: grid; gap: var(--j-card-gap); min-width: 0;
 }
+/* A card that is a part of the page, which the shell's nav scrolls to. */
+section.j-card { scroll-margin-top: var(--j-s-4); }
+/* A card's heading: its label, title and the line under it, a status beside
+   them (under them when they need the width). */
+.j-card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-3) var(--j-s-5); }
+.j-card-head > div { display: grid; gap: var(--j-s-1); flex: 1 1 32ch; min-width: 0; }
+.j-card-head .j-label { color: var(--j-signal); }
+.j-card-head h2 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-28)/1.2 var(--j-font-display); letter-spacing: -.01em; }
+@media (max-width: 720px) { .j-card-head h2 { font-size: var(--j-t-22); } }
+.j-card-head p { max-width: 72ch; margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-14); line-height: 1.55; }
 
 /* ---------- Field ---------- */
 .j-field { display: grid; gap: var(--j-s-2); min-width: 0; }

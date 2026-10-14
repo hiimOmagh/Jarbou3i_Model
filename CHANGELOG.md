@@ -111,6 +111,13 @@
   last letters ("Connection" for "Connections"): it breaks between words, and
   a count that does not fit goes under it. Below 940px the entries are
   bordered tiles. Retires 24 legacy selectors.
+- The engine and the review are kernel cards, each headed like the setup steps:
+  its number and name as a label, its title and the line under it. The
+  engine's analysis state is a kernel status, hollow until an analysis is
+  imported (the old chip's grey dot said nothing). Both sections are named
+  regions. The shell's nav lands them 16px under the top of the view; they
+  landed 184px down, an offset kept from a header that no longer sticks.
+  Retires 35 legacy selectors.
 
 ### Accessibility
 

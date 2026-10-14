@@ -198,26 +198,26 @@
       </div>
     </section>
 
-    <section class="panel" id="enginePanel">
-      <div class="panelHeader">
+    <section class="j-card" id="enginePanel" aria-labelledby="engineTitle">
+      <header class="j-card-head">
         <div>
-          <div class="sectionEyebrow" data-i18n="engineEyebrow">02 / بنية النموذج</div>
-          <h2 data-i18n="engineTitle">خريطة محرك التحليل</h2>
+          <span class="j-label" data-i18n="engineEyebrow">02 / بنية النموذج</span>
+          <h2 id="engineTitle" data-i18n="engineTitle">خريطة محرك التحليل</h2>
           <p data-i18n="engineSubtitle">هذه ليست أزرارًا زائدة؛ هذه طبقات النموذج نفسها. بعد الاستيراد تصبح كل طبقة قابلة للفحص.</p>
         </div>
-        <div class="chips"><span class="chip" id="analysisStateChip">لا يوجد تحليل بعد</span></div>
-      </div>
+        <span class="j-status" data-tone="idle" id="analysisStateChip">لا يوجد تحليل بعد</span>
+      </header>
       <ol class="j-engine-map" id="engineNav"></ol>
     </section>
 
-    <section class="panel hide j-case-panel" id="reviewPanel">
-      <div class="panelHeader">
+    <section class="j-card hide" id="reviewPanel" aria-labelledby="reviewTitle">
+      <header class="j-card-head">
         <div>
-          <div class="sectionEyebrow" data-i18n="reviewEyebrow">03 / فحص النتيجة</div>
+          <span class="j-label" data-i18n="reviewEyebrow">03 / فحص النتيجة</span>
           <h2 id="reviewTitle" data-i18n="reviewTitle" tabindex="-1">مراجعة التحليل الاستراتيجي</h2>
           <p data-i18n="reviewSubtitle">تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.</p>
         </div>
-      </div>
+      </header>
       <div class="j-case">
         <nav class="j-case-outline" id="reviewNav" aria-label="المخطط"></nav>
         <div class="j-case-doc" id="reviewContent" tabindex="-1" aria-labelledby="reviewTitle"></div>

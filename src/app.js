@@ -4052,6 +4052,7 @@ function renderEngineNav() {
   $("analysisStateChip").textContent = state.analysis
     ? t("stateImported")
     : t("stateNoAnalysis");
+  $("analysisStateChip").dataset.tone = state.analysis ? "ok" : "idle";
 }
 function getWarnings() {
   if (!state.analysis) return [t("emptyEngine")];
@@ -6325,6 +6326,7 @@ function renderBiopoliticalEngineNav() {
   $("analysisStateChip").textContent = state.analysis
     ? t("stateImported")
     : t("stateNoAnalysis");
+  $("analysisStateChip").dataset.tone = state.analysis ? "ok" : "idle";
 }
 function renderBiopoliticalOverview() {
   const a = state.analysis;
