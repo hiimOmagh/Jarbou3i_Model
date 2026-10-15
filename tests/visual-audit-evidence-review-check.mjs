@@ -20,7 +20,7 @@ if (metadata.visual_assets_decoded !== true) fail("critical visual assets were n
 if (metadata.transient_ui_cleared !== true) fail("transient UI was not cleared before capture");
 if (metadata.deterministic_viewport_anchors !== true) fail("viewport captures were not deterministically anchored");
 if (metadata.report_top_anchor_verified !== true) fail("standalone report hero was not verified at the top anchor");
-if (metadata.phone_connections_target !== "relationshipExplorerMount") fail("phone Connections evidence does not target the explorer");
+if (metadata.connections_target !== "relationshipExplorerMount") fail("Connections evidence does not target the explorer");
 if (metadata.generated_by !== "tests/visual-audit-evidence.spec.js") fail("unexpected evidence generator");
 if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 6 || metadata.strategic_report_case_count !== 6 || metadata.strategic_report_surface_count !== 3 || metadata.screenshot_count !== 198) fail("visual evidence counts must be 18 matrix cases, 6 Biopolitical report cases of 6 surfaces, 6 Strategic report cases of 3 surfaces, and 198 screenshots");
 if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 217) fail("required_files must contain 217 artifacts");

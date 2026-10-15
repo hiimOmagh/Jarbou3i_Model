@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { hitHeight } from "./helpers/kernel-check.js";
 
 // The setup phase as the UX-0 prototype's guided flow (src/features/guided-flow.js):
 // one step at a time, the guide beside it, the app's own controls inside.
@@ -15,6 +16,9 @@ test.describe("Guided flow", () => {
     await expect(step(page, "topic")).toHaveAttribute("aria-current", "step");
     await expect(page.locator("#flowStepOf")).toHaveText("Step 1 of 5");
     await expect(page.locator("#flowBack")).toBeHidden();
+    // The step list and the examples are 44px targets.
+    expect(await hitHeight(step(page, "lens"))).toBeGreaterThanOrEqual(44);
+    expect(await hitHeight(page.locator(".j-flow-example").first())).toBeGreaterThanOrEqual(44);
     // A topic is needed to continue; an example gives one, with its context.
     await expect(page.locator("#flowNext")).toBeDisabled();
     await page.locator(".j-flow-example").first().click();

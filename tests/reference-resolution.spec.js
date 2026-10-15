@@ -1,18 +1,18 @@
 import { test, expect } from "@playwright/test";
 import { openStep } from "./helpers/guided-flow.js";
-import { expectKernel } from "./helpers/kernel-check.js";
+import { expectKernel, hitHeight } from "./helpers/kernel-check.js";
 
-// The Biopolitical sample's evidence section, and its first reference to E1.
-async function evidenceReference(page) {
+// The Biopolitical sample's evidence section, and its first reference to a record.
+async function evidenceReference(page, { lang = "en", id = "E1" } = {}) {
   await page.goto("./");
-  await page.locator("#langEn").click();
+  await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
   await openStep(page, "settings");
-  await page.locator("#analysisLang").selectOption("en");
+  await page.locator("#analysisLang").selectOption(lang);
   await openStep(page, "lens");
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="evidence"]').click();
-  return page.locator('#case-evidence [data-reference-id="E1"]').first();
+  return page.locator(`#case-evidence [data-reference-id="${id}"]`).first();
 }
 
 test("named evidence references open an accessible relationship inspector", async ({ page }) => {
@@ -38,6 +38,13 @@ test("named evidence references open an accessible relationship inspector", asyn
   await page.keyboard.press("Escape");
   await expect(inspector).toBeHidden();
   await expect(reference).toBeFocused();
+});
+
+test("a one-line reference chip is still a 44px target", async ({ page }) => {
+  // In Arabic, E2's chip fits on one line, about 32px tall.
+  const reference = await evidenceReference(page, { lang: "ar", id: "E2" });
+  await expect(reference).toBeVisible();
+  expect(await hitHeight(reference)).toBeGreaterThanOrEqual(44);
 });
 
 // WebKit's focus() does not apply a removed inert while a stylesheet is still

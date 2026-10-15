@@ -94,7 +94,14 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
 
   await openStep(page, "topic");
   await page.locator("#topicInput").fill("Regional water governance, 2024–2026");
+  // The next action names the task of the step the user is on.
+  await openStep(page, "lens");
+  await expect(nextAction).toHaveAttribute("data-shell-command", "lens");
+  await expect(page.locator("#shellNextActionLabel")).toHaveText("Choose a lens");
   await openStep(page, "prompt");
+  await expect(page.locator("#shellNextActionLabel")).toHaveText("Copy the prompt");
+  await nextAction.click();
+  await expect(page.locator("#copyPromptBtn")).toBeFocused();
   await page.locator("#copyPromptBtn").click();
   if (await page.locator("#modalBackdrop.show").isVisible()) {
     await page.locator("#modalClose").click();

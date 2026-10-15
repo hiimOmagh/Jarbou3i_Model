@@ -56,6 +56,10 @@ if (!index.includes('aria-live="polite"')) fail('aria-live region missing');
 if (!index.includes('role="dialog"')) fail('modal dialog role missing');
 if (!index.includes('aria-modal="true"')) fail('modal aria-modal missing');
 if (!index.includes('aria-labelledby="modalTitle"')) fail('modal labelling missing');
+// A <header> inside a dialog is a second banner landmark (axe landmark-no-duplicate-banner).
+index.split('role="dialog"').slice(1).forEach((dialog) => {
+  if (dialog.split('class="j-modal-back')[0].includes('<header')) fail('a dialog head must be a <div>, not a <header> landmark');
+});
 // The review is a case file: one document and an outline that marks where the reader is.
 if (!index.includes('j-case-outline')) fail('case-file outline missing');
 if (!app.includes('"aria-current", "location"')) fail('the outline must mark the current location');

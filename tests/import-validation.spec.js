@@ -100,7 +100,7 @@ test.describe("Runtime import validation", () => {
     await openStep(page, "answer");
     await page.locator("#importBtn").click();
     const review = page.locator("#reviewContent");
-    await expect(review).toContainText(/Quality gate:\s*Review needed/i);
+    await expect(review).toContainText(/Publication gate:\s*Review needed/i);
     await expect(review).toContainText(/before publication/i);
   });
 
@@ -213,7 +213,7 @@ test.describe("Runtime import validation", () => {
     await openStep(page, "answer");
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewContent")).toContainText(
-      /Quality gate:\s*Review needed/i,
+      /Publication gate:\s*Review needed/i,
     );
     const evidenceTab = page.locator('[data-bio-review="evidence"]');
     await evidenceTab.focus();

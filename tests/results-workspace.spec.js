@@ -13,7 +13,7 @@ test('shared results orientation prioritizes decision context across both lenses
   await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('What matters first');
   await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('bipolar order');
   // One verdict: the brief says what the quality gate says.
-  await expect(page.locator('[data-diagnostic="gate"] h4')).toHaveText('Quality gate: Do not publish yet');
+  await expect(page.locator('[data-diagnostic="gate"] h4')).toHaveText('Publication gate: Do not publish yet');
   await expect(orientation.locator('[data-orientation="gate"] strong')).toHaveText('Do not publish yet');
   await expect(orientation.locator('[data-orientation="metrics"]')).toContainText('Decision readiness');
   await expect(orientation.locator('[data-orientation="uncertainty"]')).not.toContainText('—');
@@ -61,7 +61,7 @@ test('the Bio overview gives one gate verdict and lists every open item in it', 
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator('#loadSampleBtn').click();
   const gate = page.locator('[data-diagnostic="gate"]');
-  await expect(gate.locator('h4')).toHaveText('Quality gate: Review needed');
+  await expect(gate.locator('h4')).toHaveText('Publication gate: Review needed');
   await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('Review needed');
   const listed = await page.locator('[data-diagnostic="warnings"] li').count();
   expect(listed).toBeGreaterThan(4);

@@ -52,9 +52,31 @@
   in dark.
 - The Biopolitical report's decision readiness has a bar in the app's score
   band colours, as the Strategic report's ring and the app's overview do.
+- In Arabic, a figure keeps its percent sign on its right ("75%"), as in the
+  app: the Strategic report's rings and coverage line showed "%75". The
+  Biopolitical report's contract line and reference types are set in the
+  interface font without letter spacing, so their Arabic letters stay joined.
 
 ### Interface
 
+- The header's next action follows the guided flow: it names the task of the
+  step you are on ("Choose a lens", "Check the settings", "Copy the prompt"),
+  then "Continue to import" once the prompt is copied. It said "Start with a
+  topic" on every step until the prompt was copied. AR/EN/FR.
+- In Arabic, the answer box and the continuation box lay pasted JSON out left
+  to right; their hints still read right to left while they are empty.
+- The publication gate has one name in each language, in the app, the
+  overview and both reports: "Publication gate", "بوابة النشر", "Contrôle de
+  publication". The app and the Strategic report said "Quality gate" ("بوابة
+  الجودة", "Barrière qualité"); the French overview said "Seuil de
+  publication".
+- The setup step list and the topic examples are 44px targets (they were 40
+  and 36px), and a reference chip on one line has a 44px hit area with no
+  change in look.
+- The five working dialogs no longer add a second banner landmark: their
+  heads are `<div>`s, not `<header>`s. This was the app's only axe finding.
+- The visual audit's Connections screenshots show the relationship explorer
+  at every viewport; on desktop and tablet they showed the case file's top.
 - The header's language options (and every segmented option) are 44px
   targets: the hit area spans the track's padding, with no change in look.
 - "The analysis is shown but was not saved on this device" comes as a

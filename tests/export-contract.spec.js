@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
 import { openStep } from "./helpers/guided-flow.js";
+import { misplacedPercents } from "./helpers/bidi.js";
 
 async function exportSampleReport(page, testInfo, lens, lang = 'en') {
   await page.goto('./');
@@ -169,6 +171,26 @@ test.describe('Localized HTML export contract', () => {
   }
 });
 
+// In Arabic, a figure keeps its percent sign on its right, as in the app, and
+// Arabic labels are set in the interface font with no letter spacing, so their
+// letters stay joined.
+test('Arabic reports keep figures and letter joins', async ({ page }, testInfo) => {
+  for (const lens of ['strategic', 'biopolitical']) {
+    await exportSampleReport(page, testInfo, lens, 'ar');
+    await page.goto(pathToFileURL(testInfo.outputPath(`ar-${lens}-export.html`)).href);
+    const misplaced = await misplacedPercents(page);
+    expect(misplaced, lens).toEqual([]);
+    if (lens === 'biopolitical') {
+      const spaced = await page.locator('.contractLine, .referenceIndex article > span').evaluateAll((labels) =>
+        labels.filter((label) => {
+          const style = getComputedStyle(label);
+          return !['normal', '0px'].includes(style.letterSpacing) || style.fontFamily !== getComputedStyle(document.body).fontFamily;
+        }).length);
+      expect(spaced).toBe(0);
+    }
+  }
+});
+
 async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
   await page.goto('./');
   await expect(page.locator('#loadSampleBtn')).toBeVisible();
@@ -200,8 +222,7 @@ test.describe('Strategic HTML report content', () => {
 
     expect(hero).toContain('Decision readiness');
     expect(hero).toContain('Analytical coverage');
-    expect(hero).toContain('Quality gate');
-    expect(hero).toContain('Quality gate: Do not publish yet');
+    expect(hero).toContain('Publication gate: Do not publish yet');
     expect(hero).toContain('Decision readiness is capped by source traceability and independent review.');
     expect(hero).not.toContain('Overall index');
   });

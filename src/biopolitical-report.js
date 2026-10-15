@@ -385,7 +385,7 @@
       dl div{min-width:0;padding:.7rem;border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel)}
       dt{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-transform:uppercase}
       dd{margin:.2rem 0 0;overflow-wrap:anywhere}
-      [dir="rtl"] :is(dt,.eyebrow,.gateBadge){font-family:var(--j-font-ui);letter-spacing:0}
+      [dir="rtl"] :is(dt,.eyebrow,.gateBadge,.contractLine,.referenceIndex article>span){font-family:var(--j-font-ui);letter-spacing:0}
       .recordList h4{margin:.9rem 0 .25rem}.recordList ul{margin:.25rem 0}
       .referenceChip{display:inline-flex;flex-wrap:wrap;gap:.25rem;margin:.1rem;padding:.08rem .35rem;border-radius:var(--j-r-1);background:var(--j-signal-wash);color:var(--j-signal-strong);text-decoration:none}
       .referenceChip small{font-family:var(--j-font-data)}

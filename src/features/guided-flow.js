@@ -9,6 +9,8 @@ export function createGuidedFlow({
   translate,
   canContinue = () => true,
   mood = () => "idle",
+  // Told after the step changes, so the header's next action can follow it.
+  onStep = () => {},
 } = {}) {
   const byId = (id) => document.getElementById(id);
   let current = FLOW_STEPS[0];
@@ -71,8 +73,10 @@ export function createGuidedFlow({
 
   function go(step, options) {
     if (!FLOW_STEPS.includes(step)) return;
+    const moved = step !== current;
     current = step;
     render(options);
+    if (moved) onStep(step);
   }
 
   // Opens the step that holds a control, so it can be reached or focused.

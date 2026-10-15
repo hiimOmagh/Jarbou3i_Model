@@ -43,11 +43,24 @@ assert(
 );
 assert(nextShellSection("engine", "PageDown") === null, "unsupported keys must be ignored");
 
-assert(resolveShellCommand({ stage: "topic" }).id === "topic", "topic command failed");
-assert(resolveShellCommand({ stage: "prompt" }).id === "import", "prompt command failed");
-assert(resolveShellCommand({ stage: "import" }).focusTarget === "jsonInput", "import focus failed");
+// The next action follows the guided-flow step, not the legacy stage alone.
+assert(resolveShellCommand().id === "topic", "topic command failed");
 assert(
-  resolveShellCommand({ stage: "topic", hasAnalysis: true }).section === "review",
+  ["topic", "lens", "settings", "prompt", "answer"]
+    .map((step) => resolveShellCommand({ step, stage: "topic" }).id)
+    .join(",") === "topic,lens,settings,prompt,import",
+  "a setup step did not name its own task",
+);
+assert(
+  resolveShellCommand({ step: "prompt", stage: "import" }).focusTarget === "jsonInput",
+  "a copied prompt did not lead to pasting the answer",
+);
+assert(
+  resolveShellCommand({ step: "lens", stage: "import" }).id === "lens",
+  "a copied prompt overrode the step the user went back to",
+);
+assert(
+  resolveShellCommand({ step: "topic", hasAnalysis: true }).section === "review",
   "analysis did not promote review",
 );
 

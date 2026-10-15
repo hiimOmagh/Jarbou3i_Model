@@ -5,11 +5,13 @@
 /* A reference: the record's name and its ID, a button that opens the sheet. */
 .j-ref {
   display: inline-grid; grid-template-columns: minmax(0, auto) auto; align-items: center; gap: var(--j-s-2);
-  max-width: 100%; margin: 2px 3px; padding: 5px var(--j-s-2);
+  position: relative; max-width: 100%; margin: 2px 3px; padding: 5px var(--j-s-2);
   border: 1px solid color-mix(in srgb, var(--j-signal) 35%, var(--j-line)); border-radius: var(--j-r-2);
   background: var(--j-signal-wash); color: var(--j-fg); font: inherit; text-align: start; vertical-align: middle; cursor: pointer;
 }
 .j-ref:hover { border-color: var(--j-signal); }
+/* The chip sits in a line of text; its hit area is a 44px target all the same. */
+.j-ref::after { content: ""; position: absolute; inset-inline: 0; top: 50%; height: var(--j-control); transform: translateY(-50%); }
 .j-ref:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
 .j-ref-label { min-width: 0; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
 .j-ref-id {

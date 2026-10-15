@@ -174,11 +174,11 @@
         <div class="j-flow-panel" id="pasteCard" data-flow-panel="answer" hidden>
           <div class="j-field">
             <label for="jsonInput" data-i18n="jsonLabel">نتيجة JSON</label>
-            <textarea id="jsonInput" class="j-input j-flow-answer" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
+            <textarea id="jsonInput" class="j-input j-flow-answer" dir="ltr" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
           </div>
           <div class="j-field" id="continuationField" hidden>
             <label for="continuationInput" data-i18n="continuationLabel">تابع النتيجة المقطوعة</label>
-            <textarea id="continuationInput" class="j-input j-flow-answer" data-i18n-placeholder="continuationPlaceholder"></textarea>
+            <textarea id="continuationInput" class="j-input j-flow-answer" dir="ltr" data-i18n-placeholder="continuationPlaceholder"></textarea>
           </div>
           <div class="j-flow-row">
             <button class="j-btn" data-variant="primary" data-size="lg" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button>
@@ -240,10 +240,10 @@
 </div>
 <div class="j-modal-back" id="workspaceBackdrop" aria-hidden="true">
   <section class="j-root j-modal" id="workspaceDialog" role="dialog" aria-modal="true" aria-labelledby="workspaceDialogTitle" tabindex="-1">
-    <header class="j-modal-head">
+    <div class="j-modal-head">
       <div><h3 id="workspaceDialogTitle">مساحات العمل المحلية</h3><p class="j-modal-hint" id="workspaceDialogHint">محفوظة على هذا الجهاز فقط.</p></div>
       <button class="j-btn" data-variant="ghost" data-size="icon" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
-    </header>
+    </div>
     <div class="j-root j-life" id="workLife" hidden></div>
     <div class="j-root j-ws">
       <h4 class="j-ws-title" id="workspaceListTitle">مساحات العمل</h4>
@@ -263,10 +263,10 @@
 </div>
 <div class="j-modal-back" id="editorBackdrop" aria-hidden="true">
   <section class="j-root j-modal" data-size="wide" id="editorDialog" role="dialog" aria-modal="true" aria-labelledby="editorTitle" tabindex="-1">
-    <header class="j-modal-head">
+    <div class="j-modal-head">
       <div><h3 id="editorTitle">Structured canonical editor</h3><p class="j-modal-hint" id="editorHint"></p></div>
       <button class="j-btn" data-variant="ghost" data-size="icon" id="editorClose" type="button" aria-label="Close editor">×</button>
-    </header>
+    </div>
     <div class="j-root j-editor">
       <section class="j-life-banner" data-tone="warn" id="editorRecovery" aria-labelledby="editorRecoveryTitle" hidden>
         <p><strong id="editorRecoveryTitle">Unsaved recovery snapshot found</strong> <span id="editorRecoveryHint">It matches this exact saved draft.</span></p>
@@ -300,10 +300,10 @@
 </div>
 <div class="j-modal-back" id="ledgerBackdrop" aria-hidden="true">
   <section class="j-root j-modal" data-size="wide" id="ledgerDialog" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle" tabindex="-1">
-    <header class="j-modal-head">
+    <div class="j-modal-head">
       <div><h3 id="ledgerTitle">Operational review ledger</h3><p class="j-modal-hint" id="ledgerHint"></p></div>
       <button class="j-btn" data-variant="ghost" data-size="icon" id="ledgerClose" type="button" aria-label="Close review ledger">×</button>
-    </header>
+    </div>
     <div class="j-ledger">
       <p class="j-modal-trust" id="ledgerTrust"></p>
       <div class="j-field">
@@ -336,10 +336,10 @@
 </div>
 <div class="j-modal-back" id="revisionBackdrop" aria-hidden="true">
   <section class="j-root j-modal" data-size="wide" id="revisionDialog" role="dialog" aria-modal="true" aria-labelledby="revisionTitle" tabindex="-1">
-    <header class="j-modal-head">
+    <div class="j-modal-head">
       <div><h3 id="revisionTitle">Revision history</h3><p class="j-modal-hint" id="revisionHint"></p></div>
       <button class="j-btn" data-variant="ghost" data-size="icon" id="revisionClose" type="button" aria-label="Close revision history">×</button>
-    </header>
+    </div>
     <div class="j-root j-commit">
       <p class="j-modal-trust" id="revisionTrust"></p>
       <div class="j-rev-grid">
@@ -361,10 +361,10 @@
 </div>
 <div class="j-modal-back" id="resolutionBackdrop" aria-hidden="true">
   <section class="j-root j-modal" data-size="wide" id="resolutionDialog" role="dialog" aria-modal="true" aria-labelledby="resolutionTitle" tabindex="-1">
-    <header class="j-modal-head">
+    <div class="j-modal-head">
       <div><h3 id="resolutionTitle">Resolution transaction</h3><p class="j-modal-hint" id="resolutionHint"></p></div>
       <button class="j-btn" data-variant="ghost" data-size="icon" id="resolutionClose" type="button" aria-label="Close resolution transaction">×</button>
-    </header>
+    </div>
     <div class="j-root j-commit">
       <p class="j-modal-trust" id="resolutionTrust"></p>
       <dl class="j-commit-facts" id="resolutionSummary"></dl>

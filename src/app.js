@@ -95,6 +95,9 @@ const I18N = {
     commandGoTo: "انتقل إلى",
     commandOpen: "افتح",
     shellActionTopic: "ابدأ بالموضوع",
+    shellActionLens: "اختر العدسة",
+    shellActionSettings: "راجع الإعدادات",
+    shellActionPrompt: "انسخ البرومبت",
     shellActionImport: "تابع إلى الاستيراد",
     shellActionReview: "راجع التحليل",
     shellMovedToSetup: "تم الانتقال إلى إعداد التحليل.",
@@ -266,7 +269,7 @@ const I18N = {
     scoreEvidenceHint: "وجود أدلة أو افتراضات قابلة للفحص.",
     scoreReadiness: "جاهزية المشاركة",
     scoreReadinessHint: "مدى وضوح التحليل وقابليته للتصدير.",
-    qualityGate: "بوابة الجودة",
+    qualityGate: "بوابة النشر",
     publishReady: "جاهز للنشر",
     reviewNeeded: "يحتاج مراجعة",
     doNotPublish: "لا تنشر بعد",
@@ -387,6 +390,9 @@ const I18N = {
     commandGoTo: "Go to",
     commandOpen: "Open",
     shellActionTopic: "Start with a topic",
+    shellActionLens: "Choose a lens",
+    shellActionSettings: "Check the settings",
+    shellActionPrompt: "Copy the prompt",
     shellActionImport: "Continue to import",
     shellActionReview: "Review analysis",
     shellMovedToSetup: "Moved to analysis setup.",
@@ -565,7 +571,7 @@ const I18N = {
     scoreEvidenceHint: "Evidence or testable assumptions anchor the analysis.",
     scoreReadiness: "Share readiness",
     scoreReadinessHint: "The analysis is clear enough to export and review.",
-    qualityGate: "Quality gate",
+    qualityGate: "Publication gate",
     publishReady: "Publish-ready",
     reviewNeeded: "Review needed",
     doNotPublish: "Do not publish yet",
@@ -690,6 +696,9 @@ const I18N = {
     commandGoTo: "Aller à",
     commandOpen: "Ouvrir",
     shellActionTopic: "Commencer par un sujet",
+    shellActionLens: "Choisir une lentille",
+    shellActionSettings: "Vérifier les réglages",
+    shellActionPrompt: "Copier le prompt",
     shellActionImport: "Continuer vers l’import",
     shellActionReview: "Examiner l’analyse",
     shellMovedToSetup: "Navigation vers la préparation de l’analyse.",
@@ -880,7 +889,7 @@ const I18N = {
     scoreReadiness: "Prêt à partager",
     scoreReadinessHint:
       "L’analyse est assez claire pour être exportée et revue.",
-    qualityGate: "Barrière qualité",
+    qualityGate: "Contrôle de publication",
     publishReady: "Prêt à publier",
     reviewNeeded: "Révision nécessaire",
     doNotPublish: "Ne pas publier",
@@ -1263,6 +1272,7 @@ const APPLICATION_SHELL = createApplicationShell({
   localize: labelText,
   renderRegion: (name) => PLATFORM_RENDERER.render(name),
   reveal: (id) => GUIDED_FLOW.reveal(id),
+  flowStep: () => GUIDED_FLOW.step,
 });
 // The setup phase, one step at a time (src/features/guided-flow.js).
 const GUIDED_FLOW = createGuidedFlow({
@@ -1275,6 +1285,7 @@ const GUIDED_FLOW = createGuidedFlow({
     const tone = $("jsonStatus").dataset.tone;
     return tone === "ok" ? "ok" : tone === "crit" ? "crit" : "warn";
   },
+  onStep: () => APPLICATION_SHELL.render(),
 });
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),
@@ -5063,7 +5074,7 @@ function briefFigure(label, value) {
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
-  return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</span><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(labelText("Publication gate", "بوابة النشر", "Seuil de publication"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
+  return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</span><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(t("qualityGate"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
 }
 function authoredText(...values) {
   for (const value of values) {
@@ -5376,7 +5387,7 @@ function renderScenarios() {
   const items = state.analysis.scenarios.items;
   const scenarioRecord = (s) => {
     const pct = Math.round(valuePct(Number(s.probability)));
-    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}${kernelChip(`${t("probability")} ${pct}%`)}${kernelChip(s.timeframe ? `${t("timeframe")}: ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
+    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}<span class="j-chip">${escapeHtml(t("probability"))} <bdi>${pct}%</bdi></span>${kernelChip(s.timeframe ? `${t("timeframe")}: ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
   };
   return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
@@ -5591,7 +5602,7 @@ function htmlReport() {
     .gate[data-tone="ok"]{color:var(--j-ok);background:var(--j-ok-wash)}.gate[data-tone="ok"]::before{border-radius:50%;background:var(--j-ok)}
     .gate[data-tone="warn"]{color:var(--j-warn);background:var(--j-warn-wash)}.gate[data-tone="warn"]::before{width:0;height:0;border-inline:5px solid transparent;border-bottom:9px solid var(--j-warn)}
     .gate[data-tone="crit"]{color:var(--j-crit);background:var(--j-crit-wash)}.gate[data-tone="crit"]::before{background:var(--j-crit)}
-    .rRing{--v:0;--tone:var(--j-signal);--hole:var(--j-panel);position:relative;display:flex;flex:none;align-items:baseline;justify-content:center;gap:1px;width:96px;height:96px;padding-top:31px;border-radius:50%;background:conic-gradient(var(--tone) calc(var(--v)*1%),var(--j-line) 0)}
+    .rRing{--v:0;--tone:var(--j-signal);--hole:var(--j-panel);position:relative;display:flex;direction:ltr;flex:none;align-items:baseline;justify-content:center;gap:1px;width:96px;height:96px;padding-top:31px;border-radius:50%;background:conic-gradient(var(--tone) calc(var(--v)*1%),var(--j-line) 0)}
     .rRing[data-tone="ok"]{--tone:var(--j-ok)}.rRing[data-tone="warn"]{--tone:var(--j-warn)}.rRing[data-tone="crit"]{--tone:var(--j-crit)}
     .rRing::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--hole)}
     .overall .rRing,.scenario .rRing{--hole:var(--j-panel-2)}
@@ -5639,7 +5650,7 @@ function htmlReport() {
       .evidenceTable td[data-label]::before{content:attr(data-label);display:block;color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-transform:uppercase}
       [dir="rtl"] .evidenceTable td[data-label]::before{font-family:var(--j-font-ui);letter-spacing:0}}
     @media print{@page{margin:14mm}body{background:var(--j-panel)}.shell{width:100%;padding:0}.hero,.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{break-inside:avoid;page-break-inside:avoid}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}`;
-  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: ${b.analyticalCoverage}%</small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
+  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: <bdi>${b.analyticalCoverage}%</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
 }
 
 function buildLosslessStrategicReport() {

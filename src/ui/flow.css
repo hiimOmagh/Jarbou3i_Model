@@ -29,7 +29,7 @@
 .j-flow-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .j-flow-step {
   display: flex; align-items: center; gap: var(--j-s-3); width: 100%;
-  min-height: 40px; padding: 0 var(--j-s-2); border: 0; border-radius: var(--j-r-2);
+  min-height: var(--j-control); padding: 0 var(--j-s-2); border: 0; border-radius: var(--j-r-2);
   background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-14); text-align: start;
 }
 .j-flow-step:hover { background: var(--j-raise); color: var(--j-fg); }
@@ -53,11 +53,14 @@
 .j-flow-panel { display: grid; gap: var(--j-s-4); min-width: 0; animation: j-flow-in var(--j-dur-2) var(--j-ease-out); }
 .j-flow-topic { min-height: 96px; font-size: var(--j-t-16); }
 .j-flow-answer { min-height: 220px; font-family: var(--j-font-data); font-size: var(--j-t-13); }
+/* An answer is JSON, laid out left to right in every language; its hint reads
+   in the page's direction while the box is empty. */
+[dir="rtl"] .j-flow-answer:placeholder-shown { direction: rtl; }
 
 .j-flow-examples { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-flow-example-list { display: contents; }
 .j-flow-example {
-  min-height: 36px; padding: 0 var(--j-s-3); border: 1px dashed var(--j-line-strong); border-radius: 999px;
+  min-height: var(--j-control); padding: 0 var(--j-s-3); border: 1px dashed var(--j-line-strong); border-radius: 999px;
   background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-13);
 }
 .j-flow-example:hover { border-style: solid; border-color: var(--j-signal); color: var(--j-fg); }

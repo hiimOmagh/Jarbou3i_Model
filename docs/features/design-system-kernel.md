@@ -125,6 +125,12 @@ one at a time, with the mascot guide and a step list beside them.
   (complete, notes, cut off, broken), with more than colour.
 - **Reaching a control:** the shell's next action and the app open the step
   that holds it (a saved import step reopens on the answer).
+- **The next action:** the header names the task of the step that is open
+  (`resolveShellCommand()` in `src/core/shell-navigation.js`), and pasting the
+  answer once the prompt is copied; the flow tells the shell when the step
+  changes.
+- **Targets:** step rows and topic examples are 44px. The answer boxes are
+  `dir="ltr"` (JSON); in Arabic their hint reads right to left while empty.
 - **Tests:** `tests/guided-flow.spec.js`; other specs open a step with
   `tests/helpers/guided-flow.js` before using its controls.
 
@@ -286,7 +292,8 @@ ledger.
   it; `.j-modal` (`data-size="wide"` for the four working dialogs) has the
   contract `role="dialog"`, `aria-modal="true"` and a name. IDs, the `show`
   class and the focus traps are unchanged. The close button is a ghost icon
-  `j-btn` named in the page language.
+  `j-btn` named in the page language. The head is a `<div class="j-modal-head">`:
+  a `<header>` inside a dialog is a second banner landmark.
 - **Shared parts:** the trust line (`.j-modal-trust`), section heads, actions,
   and the prompt's code block, which takes focus so the keyboard can scroll it.
 - **Pick list:** `.j-pick-list` of `.j-pick` buttons, contract `aria-pressed`;
@@ -313,6 +320,7 @@ and the sheet that inspects it (`src/reference-ui.js`).
 - **Reference:** `.j-ref`, contract `<button type="button">` with
   `data-reference-id` and a name; its label, then its ID (`.j-ref-id`, hidden
   from screen readers, which hear the name). Evidence also takes the `ok` tone.
+  A chip on one line is about 32px tall; its `::after` gives it a 44px hit area.
 - **Inspector:** the side sheet above. Its sections are `.j-insp-sec`; facts a
   two-column `.j-insp-facts` list; support beside counter-evidence
   `.j-insp-pair`; linked records and occurrences 44px `.j-insp-rec` buttons,

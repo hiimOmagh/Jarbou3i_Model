@@ -30,12 +30,20 @@ export function nextShellSection(
   return sections[(currentIndex + delta + sections.length) % sections.length];
 }
 
-export function resolveShellCommand({ stage, hasAnalysis = false } = {}) {
-  if (hasAnalysis || stage === "review") {
-    return Object.freeze({ id: "review", section: "review", focusTarget: "reviewTitle" });
-  }
-  if (stage === "import" || stage === "prompt") {
-    return Object.freeze({ id: "import", section: "workflow", focusTarget: "jsonInput" });
-  }
-  return Object.freeze({ id: "topic", section: "workflow", focusTarget: "topicInput" });
+// The next action is the task of the guided-flow step the user is on, or the
+// review once there is an analysis.
+const SETUP_COMMANDS = Object.freeze({
+  topic: Object.freeze({ id: "topic", section: "workflow", focusTarget: "topicInput" }),
+  lens: Object.freeze({ id: "lens", section: "workflow", focusTarget: "flowStepTitle" }),
+  settings: Object.freeze({ id: "settings", section: "workflow", focusTarget: "promptMode" }),
+  prompt: Object.freeze({ id: "prompt", section: "workflow", focusTarget: "copyPromptBtn" }),
+  answer: Object.freeze({ id: "import", section: "workflow", focusTarget: "jsonInput" }),
+});
+const REVIEW_COMMAND = Object.freeze({ id: "review", section: "review", focusTarget: "reviewTitle" });
+
+export function resolveShellCommand({ step, stage, hasAnalysis = false } = {}) {
+  if (hasAnalysis) return REVIEW_COMMAND;
+  // Once the prompt is copied, the task is pasting the answer.
+  if (step === "prompt" && stage === "import") return SETUP_COMMANDS.answer;
+  return SETUP_COMMANDS[step] || SETUP_COMMANDS.topic;
 }

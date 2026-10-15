@@ -14,6 +14,9 @@ const SHELL_TARGETS = Object.freeze({
 
 const SHELL_COMMAND_LABELS = Object.freeze({
   topic: "shellActionTopic",
+  lens: "shellActionLens",
+  settings: "shellActionSettings",
+  prompt: "shellActionPrompt",
   import: "shellActionImport",
   review: "shellActionReview",
 });
@@ -33,6 +36,8 @@ export function createApplicationShell({
   renderRegion,
   // Shows a control that sits in a hidden step before it is focused.
   reveal = () => {},
+  // The guided-flow step the user is on (src/features/guided-flow.js).
+  flowStep = () => "topic",
   requestFrame = globalThis.requestAnimationFrame?.bind(globalThis),
   reducedMotion = () =>
     globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true,
@@ -102,6 +107,7 @@ export function createApplicationShell({
     });
 
     const command = resolveShellCommand({
+      step: flowStep(),
       stage: state.stage,
       hasAnalysis: reviewAvailable,
     });
@@ -216,6 +222,7 @@ export function createApplicationShell({
 
   function activateNext() {
     const command = resolveShellCommand({
+      step: flowStep(),
       stage: state.stage,
       hasAnalysis: Boolean(state.analysis),
     });

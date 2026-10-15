@@ -175,7 +175,8 @@ test.describe("Release Candidate visual audit evidence", () => {
       await page.locator('[data-bio-review="connections"]').click();
       await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
       await clearTransientUi(page);
-      await anchorViewport(page, viewport.id === "phone" ? "#relationshipExplorerMount" : "#reviewPanel", 12);
+      // Connections opens inside the case file: anchor the explorer, not the file's top.
+      await anchorViewport(page, "#relationshipExplorerMount", 12);
       await saveScreenshot(page, testInfo, `connections-${key}.png`);
 
       const clippedRelationshipControls = await page.locator(".relationshipCommandBar button:visible").evaluateAll((buttons) =>
@@ -356,7 +357,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       transient_ui_cleared: true,
       deterministic_viewport_anchors: true,
       report_top_anchor_verified: true,
-      phone_connections_target: "relationshipExplorerMount",
+      connections_target: "relationshipExplorerMount",
       generated_by: "tests/visual-audit-evidence.spec.js",
       projects: ["chromium"],
       locales: LOCALES.map(({ id, dir }) => ({ id, dir })),
