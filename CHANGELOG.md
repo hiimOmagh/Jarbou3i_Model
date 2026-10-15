@@ -24,6 +24,22 @@
   the quality gate's verdict and tone in both lenses and all three
   languages, and the Strategic report's "Quality gate" line does too.
 
+### Reports
+
+- The exported Biopolitical report takes the case file's look, on a theme
+  that carries the kernel's tokens (`src/report-theme.js`, kept equal to
+  `src/ui/kernel.css` by `tests/ui-kernel-check.mjs`): flat panels, the
+  kernel's status shapes, the data font for figures. It is light by default
+  and in print, dark on a screen whose system is dark.
+- Its header gives the app's verdict: "Publish-ready", "Review needed" or
+  "Do not publish yet" with its tone, where it said "Passed" or "Blocked";
+  the appendix's publication line does too, in all three languages. The app
+  and the report share one rule for "Review needed" (`reviewable()`).
+- A section's record count no longer overlaps its open/close sign. Buttons,
+  contents links and section headers are at least 44px tall. The toolbar
+  holds only its buttons, at the inline end. Cards in a grid are spaced
+  evenly.
+
 ### Design-system kernel
 
 - Moves the case file's layout onto the kernel: the outline beside the

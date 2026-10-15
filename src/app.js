@@ -7,6 +7,8 @@ import "./biopolitics.js";
 import "./ai-interchange.js";
 import "./biopolitics-integrity.js";
 import "./reference-ui.js";
+// The exported reports' theme: the kernel's tokens as text.
+import "./report-theme.js";
 import "./json-parser.js";
 import "./contract-repair.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
@@ -6204,14 +6206,10 @@ function bioRecordsHtml(records) {
     ? `<ol class="j-recs" data-records="bio">${records.map(bioRecordHtml).join("")}</ol>`
     : `<p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "noRecords"))}</p>`;
 }
-// Usable for review though not publishable; both overview gates say so.
-function bioGateReview(a, scores) {
-  return a.contract_status === "canonical" && scores.structural >= 70;
-}
 // The Bio gate's verdict, which the quality gate and the brief both give.
 function bioGateVerdict(a, scores, health) {
   if (health.publishable) return { status: t("publishReady"), tone: "ok" };
-  return bioGateReview(a, scores)
+  return BIO.reviewable(a, scores)
     ? { status: t("reviewNeeded"), tone: "warn" }
     : { status: t("doNotPublish"), tone: "crit" };
 }
@@ -6219,7 +6217,7 @@ function bioGateHtml(a) {
   const scores = BIO.scores(a);
   const health = BIO.health(a, state.lang);
   const ready = health.publishable;
-  const review = bioGateReview(a, scores);
+  const review = BIO.reviewable(a, scores);
   const { status, tone } = bioGateVerdict(a, scores, health);
   const summary = ready
     ? labelText(

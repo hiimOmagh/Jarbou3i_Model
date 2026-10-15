@@ -5,6 +5,7 @@
 // stylesheet defines are exactly the ones the DOM-contract registry knows.
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 import { KERNEL_CLASSES } from "../src/ui/contracts.js";
 
 // The kernel and the views built on it (shell, guided flow, case file).
@@ -39,5 +40,27 @@ for (const selector of selectors) {
 
 const defined = [...new Set([...css.matchAll(/\.(j-[\w-]+)/g)].map(([, name]) => name))].sort();
 assert.deepEqual(defined, [...KERNEL_CLASSES], "the src/ui stylesheets and the DOM-contract registry differ");
+
+// The exported reports carry the kernel's tokens as text (src/report-theme.js):
+// every value is the kernel's, in each theme.
+const kernelCss = fs.readFileSync("src/ui/kernel.css", "utf8");
+const tokensOf = (block) => Object.fromEntries(
+  [...block.matchAll(/(--j-[\w-]+)\s*:\s*([^;]+);/g)].map(([, name, value]) => [name, value.replace(/\s+/g, " ").trim()]),
+);
+const kernelTokens = {
+  dark: tokensOf(kernelCss.match(/^:root\s*\{([\s\S]*?)\n\}/m)[1]),
+  light: tokensOf(kernelCss.match(/^:root\[data-theme="light"\]\s*\{([\s\S]*?)\n\}/m)[1]),
+};
+const reportWindow = {};
+vm.runInNewContext(fs.readFileSync("src/report-theme.js", "utf8"), { window: reportWindow });
+const reportTokens = reportWindow.Jarbou3iReportTheme.tokens;
+for (const theme of ["light", "dark"]) {
+  for (const [name, value] of Object.entries(reportTokens[theme])) {
+    assert.equal(value, kernelTokens[theme][name], `the report's ${theme} ${name} is not the kernel's`);
+  }
+}
+for (const [name, value] of Object.entries(reportTokens.shared)) {
+  assert.equal(value, kernelTokens.dark[name], `the report's ${name} is not the kernel's`);
+}
 
 console.log(`UI kernel: ${selectors.length} selectors scoped, ${defined.length} classes registered.`);

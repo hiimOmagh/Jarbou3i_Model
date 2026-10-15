@@ -4515,6 +4515,12 @@ ${schema}${interchangeGuide}`;
     };
   }
 
+  // Usable for review though not publishable: canonical and structurally
+  // sound. The app's gates and the exported report give the same verdict.
+  function reviewable(analysis, score = scores(analysis)) {
+    return analysis?.contract_status === "canonical" && score.structural >= 70;
+  }
+
   function health(analysis, lang = "en", options = {}) {
     const a = normalizeV2(analysis);
     const structuralMissing = [];
@@ -4774,6 +4780,7 @@ ${schema}${interchangeGuide}`;
     recordsFor,
     pillarCount,
     scores,
+    reviewable,
     health,
     conclusionRecords,
   });

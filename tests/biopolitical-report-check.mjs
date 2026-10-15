@@ -12,6 +12,7 @@ for (const file of [
   "src/biopolitics.js",
   "src/biopolitics-integrity.js",
   "src/biopolitics-graph.js",
+  "src/report-theme.js",
   "src/biopolitical-report.js",
 ]) {
   new vm.Script(fs.readFileSync(file, "utf8"), { filename: file }).runInContext(

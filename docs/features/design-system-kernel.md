@@ -452,6 +452,28 @@ chip (`data-balance`), the identity basis of a cluster a label
 (`data-cluster-basis`). Tests: `tests/evidence-intelligence.spec.js` (contracts
 of the open summary, and the Strategic evidence cards).
 
+## Exported reports (UIX-4)
+
+A report is a standalone HTML file that loads no stylesheet, so
+`src/report-theme.js` (`window.Jarbou3iReportTheme`) carries the kernel's
+tokens as text: `css` declares the colour, type, space and radius tokens,
+light by default and in print, dark under `screen and
+(prefers-color-scheme: dark)`; `tokens` holds them by theme.
+`tests/ui-kernel-check.mjs` fails when a value differs from
+`src/ui/kernel.css`. The app imports the module, so it is in place when a
+report renderer loads.
+
+- **Biopolitical** (`src/biopolitical-report.js`): its stylesheet is the
+  theme's `css` then the report's rules, on `--j-*` tokens. The header's
+  `.gateBadge` and the "Review first" card carry `data-tone` (`ok`, `warn`,
+  `crit`) and the app's verdict (`Jarbou3iBiopolitics.health()` and
+  `reviewable()`); `data-publication-gate` stays `passed` or `blocked`.
+- **Strategic** (`htmlReport()` in `src/app.js`): not on the theme yet.
+
+Tests: `tests/biopolitical-report-check.mjs` (the report's structure and
+text), `tests/export-contract.spec.js` (the exported file), the visual
+audit's report cases.
+
 ## Not in the kernel yet
 
 Every view and control is on the kernel. `src/styles.css` keeps only what is
