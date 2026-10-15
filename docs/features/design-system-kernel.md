@@ -468,7 +468,11 @@ report renderer loads.
   `.gateBadge` and the "Review first" card carry `data-tone` (`ok`, `warn`,
   `crit`) and the app's verdict (`Jarbou3iBiopolitics.health()` and
   `reviewable()`); `data-publication-gate` stays `passed` or `blocked`.
-- **Strategic** (`htmlReport()` in `src/app.js`): not on the theme yet.
+- **Strategic** (`htmlReport()` in `src/app.js`, through `REPORT_THEME`):
+  its stylesheet is the theme's `css` then the report's rules. A score ring
+  (`.rRing`) carries `data-tone` from `pctTone()`, the app's score bands;
+  the hero's quality-gate line (`.gate`) the tone of `qualityGate()`. Below
+  820px an evidence row is a card whose cells show their `data-label`.
 
 Tests: `tests/biopolitical-report-check.mjs` (the report's structure and
 text), `tests/export-contract.spec.js` (the exported file), the visual

@@ -22,9 +22,9 @@ if (metadata.deterministic_viewport_anchors !== true) fail("viewport captures we
 if (metadata.report_top_anchor_verified !== true) fail("standalone report hero was not verified at the top anchor");
 if (metadata.phone_connections_target !== "relationshipExplorerMount") fail("phone Connections evidence does not target the explorer");
 if (metadata.generated_by !== "tests/visual-audit-evidence.spec.js") fail("unexpected evidence generator");
-if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 5 || metadata.screenshot_count !== 174) fail("visual evidence counts must be 18 matrix cases, 6 report cases, 5 report surfaces, and 174 screenshots");
-if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 193) fail("required_files must contain 193 artifacts");
-for (const target of ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"]) {
+if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 6 || metadata.strategic_report_case_count !== 6 || metadata.strategic_report_surface_count !== 3 || metadata.screenshot_count !== 198) fail("visual evidence counts must be 18 matrix cases, 6 Biopolitical report cases of 6 surfaces, 6 Strategic report cases of 3 surfaces, and 198 screenshots");
+if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 217) fail("required_files must contain 217 artifacts");
+for (const target of ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical", "report-dark", "strategic-report", "strategic-report-evidence", "strategic-report-dark"]) {
   if (!metadata.coverage?.includes(target)) fail(`coverage must include ${target}`);
 }
 
@@ -53,4 +53,4 @@ for (const locale of ["ar", "en", "fr"]) {
   }
 }
 
-console.log(`Visual audit evidence review passed: 18 matrix cases, 6 report cases, 5 report surfaces, 174 screenshots, ${metadata.required_files.length} artifacts`);
+console.log(`Visual audit evidence review passed: 18 matrix cases, 6 Biopolitical and 6 Strategic report cases, 198 screenshots, ${metadata.required_files.length} artifacts`);

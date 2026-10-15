@@ -39,6 +39,17 @@
   contents links and section headers are at least 44px tall. The toolbar
   holds only its buttons, at the inline end. Cards in a grid are spaced
   evenly.
+- The exported Strategic report takes the same look on the same theme, with
+  dark mode. Its score rings take the app's score bands and colours; its
+  "Quality gate" line takes the gate's tone and status shape. It drops the
+  app stylesheet it carried and never used (about 220 lines).
+- In the Strategic report, a scenario's probability ring shows again (a
+  rule for the layer's item count had blanked it). On a phone, each
+  evidence row is a card with its labels instead of a table squeezed to
+  one word per line. A source's date keeps its order in Arabic.
+- The visual audit adds the Strategic report (top, evidence, top in dark)
+  in each language on desktop and phone, and the Biopolitical report's top
+  in dark.
 
 ### Design-system kernel
 

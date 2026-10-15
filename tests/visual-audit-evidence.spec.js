@@ -23,6 +23,8 @@ const REPORT_DETAIL_SURFACES = [
   { id: "references", selector: "#references" },
   { id: "canonical", selector: "#canonical" },
 ];
+// The Strategic report is one page: its top, its evidence table, its top in dark.
+const STRATEGIC_REPORT_SHOTS = ["strategic-report", "strategic-report-evidence", "strategic-report-dark"];
 
 function evidencePath(fileName) {
   return path.join(process.cwd(), EVIDENCE_DIR, fileName);
@@ -60,6 +62,46 @@ async function anchorViewport(page, selector, offset = 16) {
     window.scrollTo({ top: Math.max(0, top), left: 0, behavior: "instant" });
   }, offset);
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
+
+// Exports the sample's report in a lens and opens the file at its top.
+async function openExportedReport(page, testInfo, { locale, viewport, lens, key }) {
+  await page.setViewportSize({ width: viewport.width, height: viewport.height });
+  await page.goto("./");
+  await page.locator(locale.button).click();
+  await openStep(page, "settings");
+  await page.locator("#analysisLang").selectOption(locale.id);
+  await openStep(page, "lens");
+  await page.locator(`[data-lens="${lens}"]`).click();
+  await page.locator("#loadSampleBtn").click();
+  await page.locator(lens === "biopolitical" ? '[data-bio-review="exports"]' : '[data-review="exports"]').click();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.locator("#exportHtml").click(),
+  ]);
+  const downloadPath = testInfo.outputPath(`report-${lens}-${key}.html`);
+  await download.saveAs(downloadPath);
+  const html = await fs.readFile(downloadPath, "utf8");
+  await page.setContent(html, { waitUntil: "load" });
+  await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
+  await expect(page.locator(`[data-analysis-lens="${lens}"]`)).toBeVisible();
+  const reportText = await page.locator("body").innerText();
+  expect(reportText).not.toMatch(/[\uE000-\uF8FF]/);
+  const reportOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(reportOverflow).toBeLessThanOrEqual(2);
+  await page.evaluate(() => {
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  });
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator(".hero")).toBeInViewport();
+}
+
+// The reports follow the system's colour scheme; the top again, in dark.
+async function saveDarkScreenshot(page, testInfo, fileName) {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await saveScreenshot(page, testInfo, fileName);
+  await page.emulateMedia({ colorScheme: "light" });
 }
 
 async function writeJson(testInfo, fileName, value) {
@@ -268,36 +310,9 @@ test.describe("Release Candidate visual audit evidence", () => {
     const { locale, viewport } = reportCase;
     const key = `${locale.id}-${viewport.id}`;
     test(`standalone-report-${key}`, async ({ page }, testInfo) => {
-      await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto("./");
-      await page.locator(locale.button).click();
-      await openStep(page, "settings");
-      await page.locator("#analysisLang").selectOption(locale.id);
-      await openStep(page, "lens");
-      await page.locator('[data-lens="biopolitical"]').click();
-      await page.locator("#loadSampleBtn").click();
-      await page.locator('[data-bio-review="exports"]').click();
-      const [download] = await Promise.all([
-        page.waitForEvent("download"),
-        page.locator("#exportHtml").click(),
-      ]);
-      const downloadPath = testInfo.outputPath(`report-${key}.html`);
-      await download.saveAs(downloadPath);
-      const html = await fs.readFile(downloadPath, "utf8");
-      await page.setContent(html, { waitUntil: "load" });
-      await expect(page.locator("html")).toHaveAttribute("lang", locale.id);
-      await expect(page.locator('[data-analysis-lens="biopolitical"]')).toBeVisible();
-      const reportText = await page.locator("body").innerText();
-      expect(reportText).not.toMatch(/[\uE000-\uF8FF]/);
-      const reportOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      expect(reportOverflow).toBeLessThanOrEqual(2);
-      await page.evaluate(() => {
-        document.documentElement.style.scrollBehavior = "auto";
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      });
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-      await expect(page.locator(".hero")).toBeInViewport();
+      await openExportedReport(page, testInfo, { locale, viewport, lens: "biopolitical", key });
       await saveScreenshot(page, testInfo, `report-${key}.png`);
+      await saveDarkScreenshot(page, testInfo, `report-dark-${key}.png`);
       for (const surface of REPORT_DETAIL_SURFACES) {
         const section = page.locator(surface.selector);
         await section.evaluate((details) => { details.open = true; });
@@ -305,6 +320,15 @@ test.describe("Release Candidate visual audit evidence", () => {
         await expect(section).toBeInViewport();
         await saveScreenshot(page, testInfo, `report-${surface.id}-${key}.png`);
       }
+    });
+
+    test(`strategic-report-${key}`, async ({ page }, testInfo) => {
+      await openExportedReport(page, testInfo, { locale, viewport, lens: "strategic", key });
+      await saveScreenshot(page, testInfo, `strategic-report-${key}.png`);
+      await saveDarkScreenshot(page, testInfo, `strategic-report-dark-${key}.png`);
+      await anchorViewport(page, ".evidenceTable", 8);
+      await expect(page.locator(".evidenceTable")).toBeInViewport();
+      await saveScreenshot(page, testInfo, `strategic-report-evidence-${key}.png`);
     });
   }
 
@@ -317,7 +341,9 @@ test.describe("Release Candidate visual audit evidence", () => {
       const key = `${locale.id}-${viewport.id}`;
       return [
         `report-${key}.png`,
+        `report-dark-${key}.png`,
         ...REPORT_DETAIL_SURFACES.map((surface) => `report-${surface.id}-${key}.png`),
+        ...STRATEGIC_REPORT_SHOTS.map((shot) => `${shot}-${key}.png`),
       ];
     });
     await ensureEvidenceDir();
@@ -338,9 +364,11 @@ test.describe("Release Candidate visual audit evidence", () => {
       viewports: VIEWPORTS,
       case_count: cases.length,
       report_case_count: reportCases.length,
-      report_surface_count: 1 + REPORT_DETAIL_SURFACES.length,
-      screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length * (1 + REPORT_DETAIL_SURFACES.length),
-      coverage: ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical"],
+      report_surface_count: 2 + REPORT_DETAIL_SURFACES.length,
+      strategic_report_case_count: reportCases.length,
+      strategic_report_surface_count: STRATEGIC_REPORT_SHOTS.length,
+      screenshot_count: cases.length * SCREENSHOT_KINDS.length + reportCases.length * (2 + REPORT_DETAIL_SURFACES.length + STRATEGIC_REPORT_SHOTS.length),
+      coverage: ["shell", "strategic-results", "workspace-health", "biopolitical-results", "connections", "review-ledger", "resolution-transaction", "import-audit", "standalone-report", "report-pillar", "report-relationships", "report-references", "report-canonical", "report-dark", ...STRATEGIC_REPORT_SHOTS],
       required_files: [...requiredFiles, ...reportFiles, "visual-audit-metadata.json"],
     }, null, 2)}\n`, "utf8");
   });
