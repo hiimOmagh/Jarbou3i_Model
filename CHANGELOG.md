@@ -50,6 +50,18 @@
 - The visual audit adds the Strategic report (top, evidence, top in dark)
   in each language on desktop and phone, and the Biopolitical report's top
   in dark.
+- The Biopolitical report's decision readiness has a bar in the app's score
+  band colours, as the Strategic report's ring and the app's overview do.
+
+### Interface
+
+- The header's language options (and every segmented option) are 44px
+  targets: the hit area spans the track's padding, with no change in look.
+- "The analysis is shown but was not saved on this device" comes as a
+  warning, with the toast's warning edge, in all three languages.
+- The visual overhaul (UIX-1 to UIX-4) is complete: every screen and both
+  exported reports are on the design-system kernel. The execution plan and
+  the capability map say so.
 
 ### Design-system kernel
 

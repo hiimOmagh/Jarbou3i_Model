@@ -116,6 +116,8 @@ test.describe('HTML export lens contract', () => {
       'Analytical coverage',
       'data-canonical-contract="complete"'
     ]);
+    // Readiness takes the app's score bands: the sample's 40% is a warning.
+    expect(html).toContain('<strong>40%</strong><span class="metricBar" data-tone="warn" style="--pct:40%" aria-hidden="true">');
     expect(html).not.toMatch(/[\uE000-\uF8FF]/);
 
     expectNone(html, [

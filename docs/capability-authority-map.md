@@ -49,7 +49,7 @@ do not override this map.
 | Publication | Canonical JSON and standalone HTML | Complete | Export contracts and report renderers | Preserve dossier verification state in Alpha.56 |
 | Publication | Evidence appendix and derived manifests | Complete | Evidence intelligence/review-plan exports | Unify with research intake without parallel truth |
 | Interchange | Import, validation, and bounded repair | Complete | Parser, validators, migration, and lens adapters | Keep semantic claims outside automatic repair |
-| Experience | Analytical Command Center overhaul | Planned | `UX-0`, `UIX-1` through `UIX-4` | Validate the target experience, then migrate complete workflows without a big-bang rewrite |
+| Experience | Analytical Command Center overhaul | Complete | Design-system kernel (`src/ui/`, ADR-0002); `UIX-1` through `UIX-4` | UX-0's five-second target is unmeasured (Gate 0 waived); validate with real analysts |
 | Comparison | Semantic cross-analysis comparison | Planned | `COMPARE-1` | Classify evidence, scope, interpretation, confidence, and judgment changes |
 | Challenge | Systematic reasoning challenge and disposition | Planned | `CHALLENGE-1` | Extend the existing review/adjudication authorities |
 | Decision | Decision and conditional-scenario support | Planned | `DECIDE-1` | Bind options, trade-offs, affected populations, assumptions, tripwires, and rationale to exact analysis revisions |

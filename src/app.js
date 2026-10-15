@@ -6429,6 +6429,7 @@ function buildLosslessBiopoliticalReport(reportRenderer) {
     version,
     bio: BIO,
     graphApi: BIO_GRAPH,
+    scoreTone: pctTone,
   });
 }
 function renderExports() {
@@ -7579,7 +7580,7 @@ async function persistImportedAnalysis(analysis) {
     savedReply = null;
     $("importBtn").disabled = false;
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
-    toast(workspaceText("notSaved"));
+    toast(workspaceText("notSaved"), "warn");
     return null;
   }
 }

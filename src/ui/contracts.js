@@ -73,7 +73,7 @@ export const CONTRACTS = Object.freeze({
   "j-toast": [
     (el) => (el.getAttribute("role") === "status" ? null : 'needs role="status" so it is announced without taking focus'),
     oneOf("data-open", ["true", "false"]),
-    oneOf("data-tone", ["crit"]),
+    oneOf("data-tone", ["crit", "warn"]),
   ],
   "j-skip": [
     (el) => {

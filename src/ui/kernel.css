@@ -147,9 +147,12 @@
 /* ---------- Segmented control (one choice of a few) ---------- */
 .j-seg { flex: none; display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel); }
 .j-seg > button {
+  position: relative;
   min-height: 38px; min-width: 44px; padding: 0 var(--j-s-3); border: 0; border-radius: 6px;
   background: transparent; color: var(--j-fg-muted); font: 600 var(--j-t-13) var(--j-font-ui);
 }
+/* The hit area spans the track's padding: 44px tall, like every other target. */
+.j-seg > button::after { content: ""; position: absolute; inset: -3px -1px; }
 .j-seg > button[aria-checked="true"] { background: var(--j-raise); color: var(--j-fg); box-shadow: inset 0 0 0 1px var(--j-line-strong); }
 
 /* ---------- Status: shape + colour + text, never colour alone ---------- */
@@ -243,8 +246,9 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
   translate: 0 calc(100% + var(--j-s-5) + var(--j-s-4) + env(safe-area-inset-bottom, 0px));
   opacity: 0; pointer-events: none; transition-duration: var(--j-dur-1);
 }
-/* A failure: an edge, and the words say it. */
+/* A failure or a warning: an edge, and the words say it. */
 .j-toast[data-tone="crit"] { border-inline-start: 4px solid var(--j-crit); }
+.j-toast[data-tone="warn"] { border-inline-start: 4px solid var(--j-warn); }
 
 /* ---------- Skip link ---------- */
 /* The keyboard's first stop: above the view until it takes focus. */

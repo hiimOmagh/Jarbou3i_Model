@@ -84,6 +84,7 @@ test("a failed save is said when it happens and stays shown in Workspaces", asyn
   await page.locator("#importBtn").click();
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "error");
   await expect(page.locator("#toast")).toContainText("was not saved on this device");
+  await expect(page.locator("#toast")).toHaveAttribute("data-tone", "warn");
 
   await page.locator("#workspaceSaveState").click();
   await expect(page.locator("[data-workspace-row]")).toHaveCount(0);

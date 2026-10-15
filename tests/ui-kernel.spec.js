@@ -34,6 +34,17 @@ test.describe("Design-system kernel", () => {
     expect(card).toBe("16px");
     const button = await page.locator(".j-btn").first().evaluate((el) => el.getBoundingClientRect().height);
     expect(button).toBeGreaterThanOrEqual(44);
+    // A segmented option is hit over its track's padding too.
+    const option = await page.locator(".j-seg > button").first().evaluate((el) => {
+      const { left, width, top, bottom } = el.getBoundingClientRect();
+      const x = left + width / 2;
+      let first = top;
+      let last = bottom;
+      while (el.contains(document.elementFromPoint(x, first - 1))) first -= 1;
+      while (el.contains(document.elementFromPoint(x, last))) last += 1;
+      return last - first;
+    });
+    expect(option).toBeGreaterThanOrEqual(44);
   });
 
   test("a segmented control moves with the arrows, mirrored in Arabic", async ({ page }) => {
@@ -105,7 +116,7 @@ test.describe("Design-system kernel", () => {
       'j-seg: exactly one option must be aria-checked="true"',
       "j-field: needs a <label for> naming a .j-input inside the field",
       'j-toast: needs role="status" so it is announced without taking focus',
-      'j-toast: data-tone="bad" is not one of crit',
+      'j-toast: data-tone="bad" is not one of crit, warn',
       "j-skip: must be a link to an element on this page",
       'j-save-light: must be a <button type="button">',
       'j-save-light: needs aria-haspopup="dialog" and aria-controls naming the work panel it opens',

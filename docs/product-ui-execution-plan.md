@@ -294,3 +294,8 @@ human benchmark. `UIX-1` and `UIX-2` are now authorized under this plan's bounda
 five-second acceptance target remains unmeasured. The app's screens are then rebuilt to the
 prototype's structure, one at a time: the guided flow (setup), the case file (`UIX-3`, ahead of
 `RESEARCH-1`) and the work panel.
+
+**Status (2026-10-15):** `UIX-1` through `UIX-4` are complete. Every screen and control, and
+both exported reports, are on the design-system kernel
+([design-system-kernel.md](features/design-system-kernel.md)); the visual overhaul is closed.
+`RESEARCH-1` is next in order and is not yet authorized.

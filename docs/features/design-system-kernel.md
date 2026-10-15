@@ -40,7 +40,8 @@ framework. The modern shell (UIX-2) is the first part of the app built on it.
 - **Themes.** Dark first. Light is designed, not inverted. Without
   `data-theme` the theme follows the system.
 - **Accessibility.** Status uses shape, colour and text; colour never stands
-  alone. Controls are at least 44px in both densities. Focus is a 2px outline.
+  alone. Controls are at least 44px in both densities; a segmented option's
+  hit area spans its track's padding to reach it. Focus is a 2px outline.
   Reduced motion stops animation. Forced colours keep the primary action
   outlined. Arabic labels are not letter-spaced or upper-cased.
 - **No remote resources.** System fonts only.
@@ -85,7 +86,8 @@ tests use.
 - The toast (`#toast.j-toast`, `role="status"`) stays in the page as a live
   region: `data-open="false"` slides it below the view and fades it, rather
   than removing it, so a message set while it opens is still read.
-  `toast(message, "crit")` gives a failure a leading edge; the words say it.
+  `toast(message, "crit")` gives a failure a leading edge, `"warn"` a
+  warning (an analysis shown but not saved); the words say it.
   It takes its own width up to 560px and never prints.
 - The legacy shell rules (`.top`, `.workspaceBar`, `.segBtn` and the rest)
   were removed from `src/styles.css` once the shell passed the full suites.
