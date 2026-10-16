@@ -241,6 +241,34 @@ export function createApplicationShell({
         );
     }
 
+    // Below 900px density and theme sit in the Display menu (shell.css): it
+    // opens under its button and closes once a choice is made, so it never
+    // covers the page it changes.
+    const displayMenu = byId("displayMenu");
+    if (displayMenu?.showPopover) {
+      let openWidth = 0;
+      displayMenu.addEventListener("beforetoggle", (event) => {
+        if (event.newState !== "open") return;
+        // Its end under the button's end (its width is fixed in shell.css),
+        // kept on screen where the header wrapped the button to a row's start.
+        const box = byId("displayMenuBtn").getBoundingClientRect();
+        const view = document.documentElement.clientWidth;
+        openWidth = view;
+        const width = Math.min(240, view - 16);
+        const end = document.documentElement.dir === "rtl" ? box.left : box.right - width;
+        displayMenu.style.top = `${box.bottom + window.scrollY + 8}px`;
+        displayMenu.style.left = `${Math.max(8, Math.min(end, view - width - 8))}px`;
+      });
+      displayMenu.addEventListener("click", (event) => {
+        if (event.target.closest("button") && displayMenu.matches(":popover-open")) displayMenu.hidePopover();
+      });
+      // A rotation moves its button: it closes rather than float where the
+      // button was (or past 900px, where its controls are back in the row).
+      window.addEventListener("resize", () => {
+        if (displayMenu.matches(":popover-open") && document.documentElement.clientWidth !== openWidth) displayMenu.hidePopover();
+      });
+    }
+
     document.querySelectorAll("[data-shell-nav]").forEach((button) => {
       button.onclick = () => navigate(button.dataset.shellNav);
       button.addEventListener("keydown", (event) => {

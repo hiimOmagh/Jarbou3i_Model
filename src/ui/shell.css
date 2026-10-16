@@ -13,13 +13,18 @@
 .j-shell-brand img { width: 32px; height: 32px; border-radius: var(--j-r-2); flex: none; }
 .j-shell-brand-text { display: grid; gap: 2px; min-width: 0; }
 .j-shell-brand h1 { font: 700 var(--j-t-16)/1.2 var(--j-font-display); color: var(--j-fg); }
-/* Global context: the case open now, when there is one. */
+/* Global context: the case open now, when there is one. Its own row: beside
+   the header's controls a real title had room for a few letters. */
 .j-shell-case {
-  min-width: 0; max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  padding-inline-start: var(--j-s-3); border-inline-start: 1px solid var(--j-line);
+  order: 3; flex-basis: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: var(--j-fg-muted); font-size: var(--j-t-13);
 }
 .j-shell-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); margin-inline-start: auto; }
+/* Density and theme: in the header's row, or below 900px in the Display menu,
+   a popover the app places under its button. */
+.j-shell-display { display: none; }
+.j-shell-tools { display: contents; color: inherit; }
+.j-shell-tool-name { display: none; }
 
 .j-shell-bar {
   display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3);
@@ -59,18 +64,37 @@
 [data-density="compact"] .j-shell-top, [data-density="compact"] .j-shell-bar { padding-block: var(--j-s-1); }
 [data-density="compact"] .j-shell-phase-copy small { display: none; }
 
-@media (max-width: 1024px) {
-  .j-shell-case { order: 3; flex-basis: 100%; max-width: none; padding: 0; border: 0; }
+@media (max-width: 900px) {
+  /* Icon-only below 900px; these buttons carry an aria-label from the app. */
+  .j-shell-cluster > .j-btn > span:not([aria-hidden]) { display: none; }
+  .j-shell-cluster .j-btn { min-width: var(--j-control); }
+  .j-shell-cluster > .j-btn { padding: 0; }
+  .j-shell-cluster .j-kbd { display: none; }
+}
+/* Without popovers the controls stay in the header's row. */
+@supports selector(:popover-open) {
+@media (max-width: 900px) {
+  .j-shell-display { display: inline-flex; }
+  .j-shell-tools { display: none; }
+  .j-shell-tools:popover-open {
+    position: absolute; inset: auto; margin: 0; display: grid; gap: var(--j-s-1); width: 240px; max-width: calc(100% - 16px);
+    padding: var(--j-s-2); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-2);
+    background: var(--j-raise); color: var(--j-fg); box-shadow: var(--j-shadow);
+  }
+  /* In the menu a control reads as its name, then its state. */
+  .j-shell-tools .j-btn, .j-shell-tools .j-btn[data-size="icon"] { width: 100%; padding: 0 var(--j-s-3); justify-content: flex-start; }
+  .j-shell-tool-name { display: inline; }
+  .j-shell-tools #densityLabel { margin-inline-start: auto; color: var(--j-fg-muted); }
+}
 }
 @media (max-width: 720px) {
   .j-shell-phase-copy small, .j-shell-trust { display: none; }
-  /* Icon-only on phones; these buttons carry an aria-label from the app. */
-  .j-shell-cluster .j-btn > span:not([aria-hidden]) { display: none; }
-  .j-shell-cluster .j-btn { min-width: var(--j-control); padding: 0; }
-  .j-shell-cluster .j-kbd { display: none; }
   .j-shell-nav { flex: 1 1 100%; }
   .j-shell-phase { flex: 1 1 0; justify-content: center; }
   .j-shell-next { flex: 1 1 100%; }
+  /* The guided flow carries the setup steps' one primary action; the header's
+     next action comes back with an analysis. */
+  .j-shell-next:not([data-shell-command="review"]) { display: none; }
 }
 @media (forced-colors: active) {
   .j-shell-phase[aria-current="step"] { border: 2px solid Highlight; }

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { displayControl } from "./helpers/display-menu.js";
 
 // UIX-1 design-system kernel: src/ui/kernel.css, src/ui/contracts.js and
 // src/ui/controls.js, shown by the component harness in tests/ui-harness/.
@@ -144,7 +145,7 @@ test.describe("Design-system kernel", () => {
     const first = await read();
     expect(first.same).toBe(true);
     expect(first.theme).toBe(first.dark ? "dark" : "light");
-    await page.locator("#themeBtn").click();
+    await (await displayControl(page, "themeBtn")).click();
     const second = await read();
     expect(second.same).toBe(true);
     expect(second.theme).toBe(second.dark ? "dark" : "light");

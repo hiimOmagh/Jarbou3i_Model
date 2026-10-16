@@ -48,6 +48,7 @@ and jargon.
 ## Findings
 
 Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
+**C (date)** = fixed in UIX-5 slice C;
 **open** = planned below.
 
 ### A. Truthful status
@@ -67,9 +68,9 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 | # | Finding | Status |
 |---|---|---|
 | B1 | After import the answer box still said "Valid JSON. You can import the analysis now" beside a disabled button; the toast pointed at "the engine layers" | D1 |
-| B2 | The case file starts far down the page (about 3,400px on a phone) | open (UIX-5 C) |
-| B3 | Below 1120px the outline is not sticky and nothing leads back to the top | open (UIX-5 C) |
-| B4 | Nested cards leave 180–240px for text on a phone; the desktop header title truncates | open (UIX-5 C) |
+| B2 | The case file starts far down the page (about 3,400px on a phone) | C (2026-10-16) |
+| B3 | Below 1120px the outline is not sticky and nothing leads back to the top | C (2026-10-16) |
+| B4 | Nested cards leave 180–240px for text on a phone; the desktop header title truncates | C (2026-10-16) |
 
 ### C. An answer held back for missing parts
 
@@ -133,7 +134,7 @@ about 900px. **Open (UIX-5 B).**
    name is "Structure check", not the proposed "Structure complete": the
    overview already shows "Structural completion".
 3. **Next slices, in order:**
-   - C, the phone first screen (B2–B4);
+   - C, the phone first screen (B2–B4): done 2026-10-16;
    - B, the explorer (G);
    - a report-and-print slice (F);
    - a language slice (E2–E6, AR/EN/FR and the prototype).

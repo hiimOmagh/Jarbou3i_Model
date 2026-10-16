@@ -45,6 +45,13 @@
 .j-case-sec + .j-case-sec { padding-top: var(--j-s-6); border-top: 1px solid var(--j-line); }
 .j-case-sec:focus { outline: none; }
 .j-case-sec:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 6px; border-radius: var(--j-r-2); }
+/* Below 1120px the outline scrolls away with the page; this brings it back. */
+.j-case-return {
+  position: fixed; z-index: var(--j-z-top); inset-inline-end: var(--j-s-4);
+  bottom: calc(var(--j-s-4) + env(safe-area-inset-bottom, 0px)); box-shadow: var(--j-shadow);
+}
+.j-case-return[hidden] { display: none; }
+@media (min-width: 1121px) { .j-case-return { display: none; } }
 
 @media (forced-colors: active) {
   .j-case-outline, .j-case-doc, .j-case-count { border-color: CanvasText; }
@@ -67,8 +74,12 @@
   .j-case-link > small { display: none; }
   .j-case-doc { padding: var(--j-s-4); }
 }
+/* A phone holds one card less: the document is the review panel's body. */
+@media (max-width: 620px) {
+  .j-case-doc { padding: 0; border: 0; background: none; }
+}
 @media print {
   .j-case { display: block; }
-  .j-case-outline { display: none !important; }
+  .j-case-outline, .j-case-return { display: none !important; }
   .j-case-doc { border-color: #bbb; background: #fff; }
 }

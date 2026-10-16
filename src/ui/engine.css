@@ -72,6 +72,11 @@
 }
 @media (max-width: 620px) {
   .j-engine-map, .j-engine-map[data-layers="9"] { grid-template-columns: minmax(0, 1fr); }
+  /* With an analysis open the case file holds each layer's description, so
+     the map keeps names and records, two to a row, and the case file comes
+     sooner. */
+  .j-engine-map[data-loaded="true"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .j-engine-map[data-loaded="true"] .j-engine-text { display: none; }
   .j-layer-head, .j-layer-body { padding: var(--j-s-3); }
 }
 /* A printed case file shows every layer open. */

@@ -81,6 +81,9 @@ const I18N = {
     densityTitle: "تبديل كثافة العرض",
     densityComfortable: "مريح",
     densityCompact: "مضغوط",
+    densityName: "الكثافة",
+    themeName: "الوضع",
+    displayMenu: "العرض",
     workspaceNavigation: "التنقل في مساحة العمل",
     workspaceSectionSetup: "الإعداد",
     workspaceSectionSetupHint: "حدّد الموضوع واستورد التحليل",
@@ -117,6 +120,7 @@ const I18N = {
     previewPrompt: "معاينة البرومبت",
     editTopic: "تعديل الموضوع",
     caseOutline: "المخطط",
+    caseOutlineReturn: "العودة إلى المخطط",
     flowStepTopic: "الموضوع",
     flowStepLens: "العدسة",
     flowStepSettings: "الإعدادات",
@@ -379,6 +383,9 @@ const I18N = {
     densityTitle: "Toggle display density",
     densityComfortable: "Comfortable",
     densityCompact: "Compact",
+    densityName: "Density",
+    themeName: "Theme",
+    displayMenu: "Display",
     workspaceNavigation: "Workspace navigation",
     workspaceSectionSetup: "Set up",
     workspaceSectionSetupHint: "Define and import the analysis",
@@ -415,6 +422,7 @@ const I18N = {
     previewPrompt: "Preview prompt",
     editTopic: "Edit topic",
     caseOutline: "Outline",
+    caseOutlineReturn: "Back to the outline",
     flowStepTopic: "Topic",
     flowStepLens: "Lens",
     flowStepSettings: "Settings",
@@ -688,6 +696,9 @@ const I18N = {
     densityTitle: "Changer la densité d’affichage",
     densityComfortable: "Confortable",
     densityCompact: "Compacte",
+    densityName: "Densité",
+    themeName: "Thème",
+    displayMenu: "Affichage",
     workspaceNavigation: "Navigation de l’espace de travail",
     workspaceSectionSetup: "Préparer",
     workspaceSectionSetupHint: "Définir et importer l’analyse",
@@ -724,6 +735,7 @@ const I18N = {
     previewPrompt: "Aperçu du prompt",
     editTopic: "Modifier le sujet",
     caseOutline: "Plan",
+    caseOutlineReturn: "Retour au plan",
     flowStepTopic: "Sujet",
     flowStepLens: "Lentille",
     flowStepSettings: "Réglages",
@@ -4082,6 +4094,7 @@ function renderEngineNav() {
   const labels = t("pillars");
   const max = Math.max(...PILLARS.map(countFor));
   $("engineNav").dataset.layers = PILLARS.length;
+  $("engineNav").dataset.loaded = String(Boolean(state.analysis));
   $("engineNav").innerHTML = PILLARS.map((p, index) =>
     engineStep({ attr: "data-pillar-card", key: p, index, color: COLORS[p], label: labels[p], count: countFor(p), max }),
   ).join("");
@@ -6174,6 +6187,7 @@ function renderBiopoliticalEngineNav() {
     : BIO.PILLARS.map(() => 0);
   const max = Math.max(...counts);
   $("engineNav").dataset.layers = BIO.PILLARS.length;
+  $("engineNav").dataset.loaded = String(Boolean(state.analysis));
   $("engineNav").innerHTML = BIO.PILLARS.map((pillar, index) =>
     engineStep({ attr: "data-bio-pillar", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: counts[index], max }),
   ).join("");
@@ -6361,7 +6375,19 @@ function markCaseLocation() {
     } else button.removeAttribute("aria-current");
   });
 }
-window.addEventListener("scroll", () => requestAnimationFrame(markCaseLocation), { passive: true });
+// Below 1120px the outline scrolls away (case.css); once it has, and the
+// document is still in view, a button brings the reader back to it.
+function syncOutlineReturn() {
+  const nav = $("reviewNav").getBoundingClientRect();
+  const doc = $("reviewContent").getBoundingClientRect();
+  $("caseOutlineReturn").hidden = !(nav.height && nav.bottom < 0 && doc.bottom > window.innerHeight / 2);
+}
+$("caseOutlineReturn").onclick = () => {
+  const nav = $("reviewNav");
+  nav.scrollIntoView({ block: "start" });
+  (nav.querySelector('[aria-current="location"]') || nav.querySelector("button"))?.focus({ preventScroll: true });
+};
+window.addEventListener("scroll", () => requestAnimationFrame(() => { markCaseLocation(); syncOutlineReturn(); }), { passive: true });
 document.addEventListener("focusin", (event) => {
   const section = event.target.closest?.(".j-case-sec");
   if (!section) return;

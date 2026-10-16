@@ -15,6 +15,46 @@
   the names of the files you will attach. It is four rows tall, so its hint
   shows in full on a phone. The UX-0 prototype says the same.
 
+### Phone first screen and density (UIX-5 slice C)
+
+From the 2026-10-15 audit (M1, M2, L3) and the real-answer walkthrough (B2–B4),
+measured at 390×844 before and after:
+
+- The topic field is whole on a phone's first screen in Arabic, English and
+  French (it ended at 874–904px, past the 844px fold; now 782–812px, and
+  805–811px with the wider Verdana standing in for Linux fonts). Three causes:
+  - The empty, hidden banner region kept its own display, so its margin and
+    the page's gap left 36px of blank space above the guide at every width.
+  - On a phone the header's next action duplicated the guided flow's Continue
+    during setup: two filled primary buttons. It now waits for an analysis.
+  - At 620px and below the flow is one card: the step inside it lost its own
+    border, and "Step 1 of 5" is read to screen readers only, since the step
+    list above already marks the step.
+- One card less on a phone (620px and below): cards take the compact
+  padding, and the case document is the review panel's body. Score cards start
+  26px from the edge, not 59px, and text that was 201px wide is 267px.
+- The case file comes sooner on a phone: with an analysis open, the model map
+  keeps each layer's name and records, two to a row, and leaves the
+  descriptions to the case file's layers (the case file started at 2,499px; now
+  1,937px with the sample).
+- Below 1120px the outline scrolls away with the page; once it has, a "Back to
+  the outline" button brings the reader back to it and to the current
+  section's entry.
+- Below 900px density and theme sit in a Display menu under one button, each
+  named ("Density: Comfortable", "Theme") instead of the bare "↕" and "◐", and
+  the command palette goes icon-only. The French tablet header loses its extra
+  row (163px to 111px). The menu stays on screen where the header wraps its
+  button to a row's start, and closes once a choice is made. Browsers without
+  popovers keep the controls in the header's row. Density's icon is now drawn,
+  not a "↕" character.
+- The open case's title has its own header row at every width, not only below
+  1024px: beside the header's controls a real title showed a few letters.
+  With an analysis open the header changes by one short row: 32px taller in
+  Arabic and English at 1440px, in Arabic at 1280px, and in French at 1280px;
+  17px shorter in English at 1280px and French at 1440px, where the squeezed
+  title had pushed the controls to a row of their own.
+- The Biopolitical report keeps 16px gutters on a phone (it had 8px).
+
 ### Real AI answers (UIX-5 slice D)
 
 From a walk through eight real ChatGPT answers, every section opened and the

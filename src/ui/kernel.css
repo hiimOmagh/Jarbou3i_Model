@@ -56,6 +56,10 @@
   --j-card-pad: var(--j-s-4);
   --j-card-gap: var(--j-s-3);
 }
+/* A phone keeps its width for content: cards take the compact padding. */
+@media (max-width: 620px) {
+  :root { --j-card-pad: var(--j-s-4); --j-card-gap: var(--j-s-3); }
+}
 /* The light theme is designed, not inverted. It follows the system unless a
    theme is chosen; both selectors carry the same values. */
 @media (prefers-color-scheme: light) {

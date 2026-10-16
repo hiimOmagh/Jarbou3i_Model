@@ -13,6 +13,8 @@
 
 /* Lifecycle banners: above the flow and the case file. */
 .j-life-banners { display: grid; gap: var(--j-s-2); margin-bottom: var(--j-s-4); }
+/* Its own display would keep an empty region's margin and the page's gap. */
+.j-life-banners[hidden] { display: none; }
 .j-life-banner {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-3);
   padding: var(--j-s-3) var(--j-s-4); border: 1px solid var(--j-line); border-inline-start-width: 4px;

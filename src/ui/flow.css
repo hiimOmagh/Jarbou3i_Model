@@ -114,6 +114,14 @@
   .j-flow-head h2 { font-size: var(--j-t-22); }
   .j-flow-howto { grid-template-columns: minmax(0, 1fr); }
 }
+/* A phone holds one card less: the step is the flow's body. The step list
+   above it already says which step this is; the count stays for screen
+   readers. */
+@media (max-width: 620px) {
+  .j-flow { gap: var(--j-s-4); padding: var(--j-s-4); background: var(--j-panel); }
+  .j-flow .j-flow-card { gap: var(--j-s-4); padding: 0; border: 0; background: none; }
+  .j-flow-head .j-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 @media (forced-colors: active) {
   .j-flow-step[aria-current="step"], .j-flow-choice[aria-checked="true"] { outline: 2px solid Highlight; }
   /* A checked choice is painted in system colours; its description follows them. */

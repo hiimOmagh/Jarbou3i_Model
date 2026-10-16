@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { openStep } from "./helpers/guided-flow.js";
+import { displayControl } from "./helpers/display-menu.js";
 
 test('runs under the production content security policy without violations', async ({ page }) => {
   await page.addInitScript(() => {
@@ -43,7 +44,7 @@ test('Jarbou3i Model core flow', async ({ page }) => {
   await page.locator('#langEn').click();
   await openStep(page, "settings");
   await page.locator('#analysisLang').selectOption('en');
-  await page.locator('#themeBtn').click();
+  await (await displayControl(page, "themeBtn")).click();
   await expect(page.locator('body')).toHaveClass(/dark/);
   await expect(page.locator('#themeBtn')).toHaveAttribute('aria-pressed', 'true');
 

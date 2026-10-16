@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 import { openStep } from "./helpers/guided-flow.js";
+import { displayControl } from "./helpers/display-menu.js";
 import {
   clearWorkspaceRecords,
   countWorkspaceRecords,
@@ -629,7 +630,7 @@ test("guarded reset removes the current workspace", async ({ page }) => {
 // timeout on WebKit.
 test("full reset clears workspaces and preferences", async ({ page }) => {
   await useEnglish(page);
-  await page.locator("#themeBtn").click();
+  await (await displayControl(page, "themeBtn")).click();
   await createSavedWorkspace(page, "biopolitical");
   await page.locator("#workspaceSaveState").click();
   await page.locator("#workspaceResetAll").click();

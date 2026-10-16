@@ -92,4 +92,36 @@ test.describe("Case file", () => {
     const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
     expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
   });
+
+  test("on a phone the case file holds one card less, comes sooner, and leads back to its outline", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    // Before an analysis the model map explains each layer.
+    await expect(page.locator(".j-engine-text").first()).toBeVisible();
+    await page.locator("#loadSampleBtn").click();
+    // With one, the case file holds the descriptions: the map keeps names
+    // and records, two to a row.
+    await expect(page.locator(".j-engine-text").first()).toBeHidden();
+    const [first, second] = await page.locator(".j-engine-step").evaluateAll((steps) => steps.slice(0, 2).map((step) => step.getBoundingClientRect().top));
+    expect(Math.abs(first - second)).toBeLessThan(1);
+    // A section uses the width: one card around it, not three.
+    const section = await page.locator("#case-overview").boundingBox();
+    expect(section.width).toBeGreaterThanOrEqual(330);
+
+    const back = page.locator("#caseOutlineReturn");
+    await expect(back).toBeHidden();
+    await page.locator('#reviewNav [data-review="evidence"]').click();
+    await expect(back).toBeInViewport();
+    await expect(back).toHaveText("Back to the outline");
+    await back.click();
+    await expect(page.locator("#reviewNav")).toBeInViewport();
+    await expect(page.locator('#reviewNav [data-review="evidence"]')).toBeFocused();
+    await expect(back).toBeHidden();
+
+    // Beside the document, the outline stays in reach on its own.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('#reviewNav [data-review="evidence"]').click();
+    await expect(back).toBeHidden();
+  });
 });

@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
+import fs from "node:fs/promises";
 import { openStep } from "./helpers/guided-flow.js";
+import { displayControl } from "./helpers/display-menu.js";
 
 async function renderRegionCounts(page) {
   return page.evaluate(() =>
@@ -29,16 +31,19 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
   await expect(page.locator("#lensContextLabel")).toContainText(/Strategic|استرات|stratég/i);
 
   await page.setViewportSize({ width: 320, height: 800 });
-  const themeBounds = await page.locator("#themeBtn").boundingBox();
+  const theme = await displayControl(page, "themeBtn");
+  const themeBounds = await theme.boundingBox();
   expect(themeBounds).not.toBeNull();
   // 44px target; the 0.01px allows float noise in the measured box (Firefox: 43.999996).
-  expect(themeBounds.width).toBeGreaterThanOrEqual(44 - 0.01);
-  await page.locator("#themeBtn").click();
+  expect(themeBounds.height).toBeGreaterThanOrEqual(44 - 0.01);
+  await theme.click();
+  // A choice closes the menu, so it never covers the page it changed.
+  await expect(page.locator("#displayMenu")).toBeHidden();
   await expect(page.locator("body")).toHaveClass(/dark/);
   await expect(page.locator('.j-shell-phase[aria-current="step"] .j-shell-phase-index')).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
-  const density = page.locator("#densityBtn");
+  const density = await displayControl(page, "densityBtn");
   const beforeDensity = await renderRegionCounts(page);
   await density.focus();
   await density.press("Enter");
@@ -77,10 +82,22 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   await page.locator("#langEn").click();
 
   const nextAction = page.locator("#shellNextAction");
+  // On a phone the guided flow carries the setup steps' primary action, so
+  // the header's next action waits for an analysis.
+  const phone = page.viewportSize().width <= 720;
+  const runNext = async (focused, step) => {
+    if (phone) {
+      await expect(nextAction).toBeHidden();
+      // The guided flow takes the same step there.
+      if (step) await openStep(page, step);
+      return;
+    }
+    await nextAction.click();
+    await expect(page.locator(focused)).toBeFocused();
+  };
   await expect(nextAction).toHaveAttribute("data-shell-command", "topic");
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Start with a topic");
-  await nextAction.click();
-  await expect(page.locator("#topicInput")).toBeFocused();
+  await runNext("#topicInput");
 
   const workflowNav = page.locator('[data-shell-nav="workflow"]');
   const engineNav = page.locator('[data-shell-nav="engine"]');
@@ -100,16 +117,14 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Choose a lens");
   await openStep(page, "prompt");
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Copy the prompt");
-  await nextAction.click();
-  await expect(page.locator("#copyPromptBtn")).toBeFocused();
+  await runNext("#copyPromptBtn");
   await page.locator("#copyPromptBtn").click();
   if (await page.locator("#modalBackdrop.show").isVisible()) {
     await page.locator("#modalClose").click();
   }
   await expect(nextAction).toHaveAttribute("data-shell-command", "import");
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Continue to import");
-  await nextAction.click();
-  await expect(page.locator("#jsonInput")).toBeFocused();
+  await runNext("#jsonInput", "answer");
 
   await page.locator("#loadSampleBtn").click();
   await expect(nextAction).toHaveAttribute("data-shell-command", "review");
@@ -132,4 +147,68 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   await expect(page.locator('[data-flow-step="answer"][aria-current="step"]')).toBeVisible();
   await expect(page.locator("#importBtn")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
+test("a phone's first screen holds the topic field and one primary action", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  for (const language of ["#langAr", "#langEn", "#langFr"]) {
+    await page.locator(language).click();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(page.locator("#topicInput")).toBeInViewport({ ratio: 1 });
+    await expect(page.locator("#shellNextAction")).toBeHidden();
+    await expect(page.locator("#flowNext")).toBeVisible();
+  }
+});
+
+test("below 900px density and theme are named in a Display menu that stays on screen", async ({ page }) => {
+  for (const { width, language, names } of [
+    { width: 768, language: "#langFr", names: ["Densité", "Thème"] },
+    { width: 390, language: "#langAr", names: ["الكثافة", "الوضع"] },
+  ]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("./");
+    await page.locator(language).click();
+    await expect(page.locator("#densityBtn")).toBeHidden();
+    const button = page.locator("#displayMenuBtn");
+    await button.focus();
+    await button.press("Enter");
+    const menu = page.locator("#displayMenu");
+    await expect(menu).toBeVisible();
+    await expect(page.locator("#densityBtn")).toContainText(names[0]);
+    await expect(page.locator("#themeBtn")).toContainText(names[1]);
+    const box = await menu.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    // Escape closes it and gives focus back; a choice closes it too.
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(button).toBeFocused();
+    await button.press("Enter");
+    const density = await page.locator("body").getAttribute("data-density");
+    await page.locator("#densityBtn").click();
+    await expect(menu).toBeHidden();
+    await expect(page.locator("body")).not.toHaveAttribute("data-density", density);
+  }
+  // A rotation closes it; above 900px the controls are back in the header's row.
+  await page.locator("#displayMenuBtn").click();
+  await expect(page.locator("#displayMenu")).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect.poll(() => page.locator("#displayMenu").evaluate((menu) => menu.matches(":popover-open"))).toBe(false);
+  await expect(page.locator("#displayMenuBtn")).toBeHidden();
+  await expect(page.locator("#themeBtn")).toBeVisible();
+});
+
+test("the open case's title has its own header row, not a few letters", async ({ page }) => {
+  const data = JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/sample-analysis-en.json`, "utf8"));
+  data.subject.title = "How regional water governance reshapes cross-border alliances between 2024 and 2026";
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await openStep(page, "answer");
+  await page.locator("#jsonInput").fill(JSON.stringify(data));
+  await page.locator("#importBtn").click();
+  const title = page.locator("#shellCaseTitle");
+  await expect(title).toHaveText(data.subject.title);
+  expect(await title.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
 });
