@@ -11,11 +11,20 @@ async function startWithoutPersistedWorkspace(page) {
 }
 
 // The detail level, the overlay and saved views fold away until opened.
-async function openViewOptions(page) {
-  const panel = page.locator(".relationshipOptions");
-  if (!(await panel.evaluate((details) => details.open))) await panel.locator("summary").click();
+// The explorer records a folding panel as open on its toggle event, which
+// fires a task after the click: a control pressed before it re-renders the
+// explorer with the panel closed. Open it, then wait for that event.
+async function openPanel(page, selector) {
+  const panel = page.locator(selector);
+  if (await panel.evaluate((details) => details.open)) return;
+  await panel.evaluate((details) => {
+    details.toggled = new Promise((resolve) => details.addEventListener("toggle", resolve, { once: true }));
+  });
+  await panel.locator("summary").click();
+  await panel.evaluate((details) => details.toggled);
   await expect(panel).toHaveAttribute("open", "");
 }
+const openViewOptions = (page) => openPanel(page, ".relationshipOptions");
 
 async function openExplorer(
   page,
@@ -716,8 +725,7 @@ test("the explorer's controls are labelled kernel controls, readable and full-si
   await openExplorer(page);
   await page.locator('[data-map-mode="network"]').click();
   await openViewOptions(page);
-  await page.locator(".relationshipAdvanced > summary").click();
-  await expect(page.locator(".relationshipAdvanced")).toHaveAttribute("open", "");
+  await openPanel(page, ".relationshipAdvanced");
   // Reading, layout, detail level and overlay: each a radio group named by its visible label.
   const groups = page.locator('.relationshipExplorer [role="radiogroup"]');
   await expect(groups).toHaveCount(4);

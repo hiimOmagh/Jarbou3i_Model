@@ -412,6 +412,10 @@ report exported and printed (`docs/audits/2026-10-15-real-reply-walkthrough.md`)
 
 ### Tests
 
+- The relationship-explorer tests wait for a folding panel's toggle event
+  after opening it. A control pressed before that event re-rendered the
+  explorer with the panel closed, which hid the next control (a CI flake in
+  the saved-views test).
 - The crash-recovery tests wait for the recovery snapshot to be stored before
   they reload, instead of a fixed 700ms that a loaded machine could outrun.
 - A regression test holds the relationship map's stylesheet back and checks
