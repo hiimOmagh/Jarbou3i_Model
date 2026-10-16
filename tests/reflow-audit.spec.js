@@ -84,8 +84,8 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await connectionsTab.focus();
           await connectionsTab.press("Enter");
           await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-current", "location");
-          await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-pressed", "true");
-          await expect(page.locator('[data-map-view="spatial"]')).toBeDisabled();
+          await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-checked", "true");
+          await expect(page.locator('[data-map-view="spatial"]')).toHaveCount(0);
           await expectNoPageOverflow(page);
 
           const clippedControls = await clippedRelationshipControls(page);

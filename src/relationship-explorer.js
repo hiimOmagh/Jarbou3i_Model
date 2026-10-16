@@ -41,6 +41,8 @@
       spatialUnavailable: "Spatial view requires a wider screen and 3D transform support.", orbitLeft: "Orbit left", orbitRight: "Orbit right",
       orbitUp: "Tilt up", orbitDown: "Tilt down", closer: "Move closer", farther: "Move farther", resetSpatial: "Reset spatial view", orientation: "Orientation",
       findSpatialRecord: "Find a spatial record", chooseSpatialRecord: "Choose a record",
+      reading: "Reading", layout: "Layout", viewOptions: "View options",
+      emptyReading: "No connections to show in this reading yet.", showNetwork: "Show the network",
     },
     ar: {
       title: "مستكشف العلاقات", subtitle: "تتبّع الادعاءات المؤلَّفة والأدلة والتبعيات البنيوية دون تغيير التحليل.",
@@ -73,6 +75,8 @@
       spatialUnavailable: "يتطلب العرض المجسّم شاشة أوسع ودعم التحويلات ثلاثية الأبعاد.", orbitLeft: "تدوير يسارًا", orbitRight: "تدوير يمينًا",
       orbitUp: "إمالة لأعلى", orbitDown: "إمالة لأسفل", closer: "تقريب", farther: "إبعاد", resetSpatial: "إعادة ضبط العرض المجسّم", orientation: "الاتجاه",
       findSpatialRecord: "ابحث عن سجل في المشهد", chooseSpatialRecord: "اختر سجلًا",
+      reading: "القراءة", layout: "طريقة العرض", viewOptions: "خيارات العرض",
+      emptyReading: "لا توجد علاقات لعرضها في هذه القراءة بعد.", showNetwork: "اعرض الشبكة",
     },
     fr: {
       title: "Explorateur de relations", subtitle: "Suivez les énoncés, les preuves et les dépendances structurelles sans modifier l’analyse.",
@@ -105,6 +109,8 @@
       spatialUnavailable: "La vue spatiale nécessite un écran plus large et la prise en charge des transformations 3D.", orbitLeft: "Orbiter à gauche", orbitRight: "Orbiter à droite",
       orbitUp: "Incliner vers le haut", orbitDown: "Incliner vers le bas", closer: "Rapprocher", farther: "Éloigner", resetSpatial: "Réinitialiser la vue spatiale", orientation: "Orientation",
       findSpatialRecord: "Trouver une fiche spatiale", chooseSpatialRecord: "Choisir une fiche",
+      reading: "Lecture", layout: "Disposition", viewOptions: "Options d’affichage",
+      emptyReading: "Aucune connexion à afficher dans cette lecture pour l’instant.", showNetwork: "Afficher le réseau",
     },
   };
 
@@ -171,6 +177,8 @@
     selectedId: "", selectedEdgeId: "", zoom: 1, depth: "guided",
     focused: false, tour: false, tourIndex: 0, overlay: "none", savedViewId: "",
     spatialYaw: -18, spatialPitch: 48, spatialZoom: 0.68,
+    // The folding panels as last toggled; until then the filters follow the detail level.
+    optionsOpen: false, advancedOpen: null,
   };
   let savedViews = [];
   let storageKey = "";
@@ -188,6 +196,8 @@
   const pillarLabels = () => root.Jarbou3iBiopolitics?.ui(lang, "pillars") || {};
   const finiteNumber = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const normalizeYaw = (value) => ((finiteNumber(value, -18) + 180) % 360 + 360) % 360 - 180;
+  // The connection families each reading shows.
+  const modeFamilies = (mode) => mode === "story" ? ["explicit"] : mode === "evidence" ? ["evidence"] : ["explicit", "evidence", "structural"];
 
   function detectSpatialCapability() {
     return Boolean(
@@ -246,9 +256,11 @@
       spatialPitch: Math.max(18, Math.min(72, finiteNumber(snapshot?.spatialPitch, 48))),
       spatialZoom: Math.max(0.58, Math.min(1.08, finiteNumber(snapshot?.spatialZoom, 0.68))),
       focused: false, tour: false, tourIndex: 0,
+      // The filters follow the restored detail level, as after a Guided or Analyst choice.
+      advancedOpen: null,
     });
     const families = Array.isArray(snapshot?.families) ? snapshot.families.filter((value) => ["explicit", "evidence", "structural"].includes(value)) : [];
-    state.families = new Set(families.length ? families : allowedMode === "story" ? ["explicit"] : allowedMode === "evidence" ? ["evidence"] : ["explicit", "evidence", "structural"]);
+    state.families = new Set(families.length ? families : modeFamilies(allowedMode));
     document.documentElement.classList.remove("relationshipFocusOpen");
   }
 
@@ -304,11 +316,7 @@
 
   function setMode(mode, renderOptions) {
     state.mode = mode;
-    state.families = mode === "story"
-      ? new Set(["explicit"])
-      : mode === "evidence"
-        ? new Set(["evidence"])
-        : new Set(["explicit", "evidence", "structural"]);
+    state.families = new Set(modeFamilies(mode));
     state.relation = "";
     state.tourIndex = 0;
     render(`relationshipMode-${mode}`, renderOptions);
@@ -407,7 +415,7 @@
       const counter = edges.filter((edge) => edge.relation === "countered_by");
       const evidenceColumn = (items, label, empty, tone) => `<section class="relationshipEvidenceColumn relationshipEvidenceColumn--${tone}"><h3>${escapeHtml(label)} <b>${items.length}</b></h3>${items.length ? items.map((edge) => {
         const target = graph.resolve(edge.target);
-        return `<div class="relationshipEvidenceItem${state.tour && state.selectedEdgeId === edge.id ? " is-tour-target" : ""}">${target ? nodeButton(target, { compact: true }) : ""}<button type="button" data-map-edge="${escapeHtml(edge.id)}" data-evidence-edge="${escapeHtml(edge.id)}">${escapeHtml(c().why)}</button></div>`;
+        return `<div class="relationshipEvidenceItem${state.tour && state.selectedEdgeId === edge.id ? " is-tour-target" : ""}">${target ? nodeButton(target, { compact: true }) : ""}<button class="j-btn" type="button" data-map-edge="${escapeHtml(edge.id)}" data-evidence-edge="${escapeHtml(edge.id)}">${escapeHtml(c().why)}</button></div>`;
       }).join("") : `<p>${escapeHtml(empty)}</p>`}</section>`;
       return `<article class="relationshipEvidenceCluster"><section class="relationshipEvidenceClaim"><h3>${escapeHtml(c().evidenceClaim)}</h3>${nodeButton(source)}</section>${evidenceColumn(supporting, c().supporting, c().noSupporting, "support")}${evidenceColumn(counter, c().counter, c().noCounter, "counter")}</article>`;
     }).join("");
@@ -463,7 +471,7 @@
       .sort((a, b) => a.label.localeCompare(b.label, lang))
       .map((node) => option(node.id, node.label, state.selectedId))
       .join("");
-    return `<section class="relationshipSpatial" data-relationship-spatial="available" aria-labelledby="relationshipSpatialTitle"><header><div><h3 id="relationshipSpatialTitle">${escapeHtml(c().spatialLabel)}</h3><p>${escapeHtml(c().spatialInstructions)}</p></div><output class="relationshipSpatialOrientation" aria-live="polite">${escapeHtml(c().orientation)}: ${state.spatialYaw}° · ${state.spatialPitch}°</output></header><div class="relationshipSpatialControls" role="group" aria-label="${escapeHtml(c().spatialLabel)}"><button type="button" data-spatial-control="left" aria-label="${escapeHtml(c().orbitLeft)}">←</button><button type="button" data-spatial-control="right" aria-label="${escapeHtml(c().orbitRight)}">→</button><button type="button" data-spatial-control="up" aria-label="${escapeHtml(c().orbitUp)}">↑</button><button type="button" data-spatial-control="down" aria-label="${escapeHtml(c().orbitDown)}">↓</button><button type="button" data-spatial-control="farther" aria-label="${escapeHtml(c().farther)}">−</button><button type="button" data-spatial-control="closer" aria-label="${escapeHtml(c().closer)}">+</button><button type="button" data-spatial-reset>${escapeHtml(c().resetSpatial)}</button></div><label class="relationshipSpatialNavigator"><span>${escapeHtml(c().findSpatialRecord)}</span><select id="spatialRecordSelect">${option("", c().chooseSpatialRecord, state.selectedId)}${navigatorOptions}</select></label><div class="relationshipSpatialViewport" tabindex="0" role="region" aria-label="${escapeHtml(c().spatialLabel)}"><div class="relationshipSpatialScene" style="${spatialSceneStyle()}">${edges}${clusters}${nodes}</div></div></section>`;
+    return `<section class="relationshipSpatial" data-relationship-spatial="available" aria-labelledby="relationshipSpatialTitle"><header><div><h3 id="relationshipSpatialTitle">${escapeHtml(c().spatialLabel)}</h3><p>${escapeHtml(c().spatialInstructions)}</p></div><output class="relationshipSpatialOrientation" aria-live="polite">${escapeHtml(c().orientation)}: ${state.spatialYaw}° · ${state.spatialPitch}°</output></header><div class="relationshipSpatialControls" role="group" aria-label="${escapeHtml(c().spatialLabel)}"><button class="j-btn" data-size="icon" type="button" data-spatial-control="left" aria-label="${escapeHtml(c().orbitLeft)}">←</button><button class="j-btn" data-size="icon" type="button" data-spatial-control="right" aria-label="${escapeHtml(c().orbitRight)}">→</button><button class="j-btn" data-size="icon" type="button" data-spatial-control="up" aria-label="${escapeHtml(c().orbitUp)}">↑</button><button class="j-btn" data-size="icon" type="button" data-spatial-control="down" aria-label="${escapeHtml(c().orbitDown)}">↓</button><button class="j-btn" data-size="icon" type="button" data-spatial-control="farther" aria-label="${escapeHtml(c().farther)}">−</button><button class="j-btn" data-size="icon" type="button" data-spatial-control="closer" aria-label="${escapeHtml(c().closer)}">+</button><button class="j-btn" type="button" data-spatial-reset>${escapeHtml(c().resetSpatial)}</button></div><div class="j-field relationshipSpatialNavigator"><label for="spatialRecordSelect">${escapeHtml(c().findSpatialRecord)}</label><select class="j-input" id="spatialRecordSelect">${option("", c().chooseSpatialRecord, state.selectedId)}${navigatorOptions}</select></div><div class="relationshipSpatialViewport" tabindex="0" role="region" aria-label="${escapeHtml(c().spatialLabel)}"><div class="relationshipSpatialScene" style="${spatialSceneStyle()}">${edges}${clusters}${nodes}</div></div></section>`;
   }
 
   function mapHtml(data) {
@@ -489,7 +497,7 @@
     const target = graph.resolve(edge.target);
     const visible = data.edges.some((item) => item.id === edge.id);
     const analystSource = state.depth === "analyst" ? `<div><dt>${escapeHtml(c().source)}</dt><dd>${escapeHtml(edge.provenance)} · <code>${escapeHtml(edge.path)}</code></dd></div>` : "";
-    return `<aside class="relationshipEdgeDetails relationshipInspection" aria-live="polite"><header><div><span>${escapeHtml(tokenLabel(edge.family))}</span><h3>${escapeHtml(c().edgeDetails)}</h3></div><button type="button" data-clear-selection aria-label="${escapeHtml(c().clearSelection)}">×</button></header>${visible ? "" : `<div class="relationshipSelectionNotice"><p>${escapeHtml(c().hiddenSelection)}</p><button type="button" data-reveal-selection>${escapeHtml(c().reveal)}</button></div>`}<dl><div><dt>${escapeHtml(c().from)}</dt><dd>${escapeHtml(source?.label || edge.source)}${state.depth === "analyst" ? ` <b dir="ltr">[${escapeHtml(edge.source)}]</b>` : ""}</dd></div><div><dt>${escapeHtml(c().to)}</dt><dd>${escapeHtml(target?.label || edge.target)}${state.depth === "analyst" ? ` <b dir="ltr">[${escapeHtml(edge.target)}]</b>` : ""}</dd></div><div><dt>${escapeHtml(c().relation)}</dt><dd>${escapeHtml(tokenLabel(edge.relation))}</dd></div><div class="relationshipWhy"><dt>${escapeHtml(c().why)}</dt><dd>${escapeHtml(edgeExplanation(edge))}</dd></div>${analystSource}</dl></aside>`;
+    return `<aside class="relationshipEdgeDetails relationshipInspection" aria-live="polite"><header><div><span>${escapeHtml(tokenLabel(edge.family))}</span><h3>${escapeHtml(c().edgeDetails)}</h3></div><button class="j-btn" data-variant="ghost" data-size="icon" type="button" data-clear-selection aria-label="${escapeHtml(c().clearSelection)}">×</button></header>${visible ? "" : `<div class="relationshipSelectionNotice"><p>${escapeHtml(c().hiddenSelection)}</p><button class="j-btn" type="button" data-reveal-selection>${escapeHtml(c().reveal)}</button></div>`}<dl><div><dt>${escapeHtml(c().from)}</dt><dd>${escapeHtml(source?.label || edge.source)}${state.depth === "analyst" ? ` <b dir="ltr">[${escapeHtml(edge.source)}]</b>` : ""}</dd></div><div><dt>${escapeHtml(c().to)}</dt><dd>${escapeHtml(target?.label || edge.target)}${state.depth === "analyst" ? ` <b dir="ltr">[${escapeHtml(edge.target)}]</b>` : ""}</dd></div><div><dt>${escapeHtml(c().relation)}</dt><dd>${escapeHtml(tokenLabel(edge.relation))}</dd></div><div class="relationshipWhy"><dt>${escapeHtml(c().why)}</dt><dd>${escapeHtml(edgeExplanation(edge))}</dd></div>${analystSource}</dl></aside>`;
   }
 
   function nodeDetailsHtml(data) {
@@ -498,7 +506,7 @@
     const visible = data.nodes.some((item) => item.id === node.id);
     const incoming = graph.incoming(node.id).length;
     const outgoing = graph.outgoing(node.id).length;
-    return `<aside class="relationshipNodeDetails relationshipInspection" aria-live="polite"><header><div><span>${escapeHtml(graph.typeLabel(node.type))}</span><h3>${escapeHtml(node.label)}</h3></div><button type="button" data-clear-selection aria-label="${escapeHtml(c().clearSelection)}">×</button></header>${visible ? "" : `<div class="relationshipSelectionNotice"><p>${escapeHtml(c().hiddenSelection)}</p><button type="button" data-reveal-selection>${escapeHtml(c().reveal)}</button></div>`}<dl><div><dt>${escapeHtml(c().pillar)}</dt><dd>${escapeHtml(pillarLabels()[node.pillar]?.[0] || tokenLabel(node.pillar))}</dd></div>${node.confidence ? `<div><dt>${escapeHtml(c().confidence)}</dt><dd>${escapeHtml(tokenLabel(node.confidence))}</dd></div>` : ""}<div><dt>${escapeHtml(c().connected)}</dt><dd>${incoming + outgoing}</dd></div>${state.depth === "analyst" ? `<div><dt>ID</dt><dd><code dir="ltr">${escapeHtml(node.id)}</code></dd></div>` : ""}</dl><div class="relationshipInspectionActions"><button type="button" data-open-selected>${escapeHtml(c().openRecord)}</button><button type="button" data-focus-selected>${escapeHtml(c().oneHop)}</button></div></aside>`;
+    return `<aside class="relationshipNodeDetails relationshipInspection" aria-live="polite"><header><div><span>${escapeHtml(graph.typeLabel(node.type))}</span><h3>${escapeHtml(node.label)}</h3></div><button class="j-btn" data-variant="ghost" data-size="icon" type="button" data-clear-selection aria-label="${escapeHtml(c().clearSelection)}">×</button></header>${visible ? "" : `<div class="relationshipSelectionNotice"><p>${escapeHtml(c().hiddenSelection)}</p><button class="j-btn" type="button" data-reveal-selection>${escapeHtml(c().reveal)}</button></div>`}<dl><div><dt>${escapeHtml(c().pillar)}</dt><dd>${escapeHtml(pillarLabels()[node.pillar]?.[0] || tokenLabel(node.pillar))}</dd></div>${node.confidence ? `<div><dt>${escapeHtml(c().confidence)}</dt><dd>${escapeHtml(tokenLabel(node.confidence))}</dd></div>` : ""}<div><dt>${escapeHtml(c().connected)}</dt><dd>${incoming + outgoing}</dd></div>${state.depth === "analyst" ? `<div><dt>ID</dt><dd><code dir="ltr">${escapeHtml(node.id)}</code></dd></div>` : ""}</dl><div class="relationshipInspectionActions"><button class="j-btn" type="button" data-open-selected>${escapeHtml(c().openRecord)}</button><button class="j-btn" type="button" data-focus-selected>${escapeHtml(c().oneHop)}</button></div></aside>`;
   }
 
   function inspectionHtml(data) {
@@ -513,30 +521,52 @@
     const target = graph.resolve(edge.target);
     const last = state.tourIndex === edges.length - 1;
     const progress = Math.round(((state.tourIndex + 1) / edges.length) * 100);
-    return `<section class="relationshipWalkthrough" aria-labelledby="relationshipWalkthroughTitle"><header><div><span>${state.tourIndex + 1} ${escapeHtml(c().of)} ${edges.length}</span><h3 id="relationshipWalkthroughTitle">${escapeHtml(c().walkthrough)}</h3></div><button type="button" data-tour-stop aria-label="${escapeHtml(c().stopTour)}">×</button></header><div class="relationshipWalkthroughProgress" role="progressbar" aria-valuemin="1" aria-valuemax="${edges.length}" aria-valuenow="${state.tourIndex + 1}"><i style="width:${progress}%"></i></div><div class="relationshipWalkthroughPath"><strong>${escapeHtml(source?.label || edge.source)}</strong><span><b>${escapeHtml(tokenLabel(edge.relation))}</b><i aria-hidden="true">${arrow()}</i></span><strong>${escapeHtml(target?.label || edge.target)}</strong></div><p><b>${escapeHtml(c().why)}</b> ${escapeHtml(edgeExplanation(edge))}</p><footer><button type="button" data-tour-step="previous"${state.tourIndex === 0 ? " disabled" : ""}>${escapeHtml(c().previous)}</button><button type="button" data-tour-step="next">${escapeHtml(last ? c().finish : c().next)}</button></footer></section>`;
+    return `<section class="relationshipWalkthrough" aria-labelledby="relationshipWalkthroughTitle"><header><div><span>${state.tourIndex + 1} ${escapeHtml(c().of)} ${edges.length}</span><h3 id="relationshipWalkthroughTitle">${escapeHtml(c().walkthrough)}</h3></div><button class="j-btn" data-variant="ghost" data-size="icon" type="button" data-tour-stop aria-label="${escapeHtml(c().stopTour)}">×</button></header><div class="relationshipWalkthroughProgress" role="progressbar" aria-valuemin="1" aria-valuemax="${edges.length}" aria-valuenow="${state.tourIndex + 1}"><i style="width:${progress}%"></i></div><div class="relationshipWalkthroughPath"><strong>${escapeHtml(source?.label || edge.source)}</strong><span><b>${escapeHtml(tokenLabel(edge.relation))}</b><i aria-hidden="true">${arrow()}</i></span><strong>${escapeHtml(target?.label || edge.target)}</strong></div><p><b>${escapeHtml(c().why)}</b> ${escapeHtml(edgeExplanation(edge))}</p><footer><button class="j-btn" type="button" data-tour-step="previous"${state.tourIndex === 0 ? " disabled" : ""}>${escapeHtml(c().previous)}</button><button class="j-btn" data-variant="primary" type="button" data-tour-step="next">${escapeHtml(last ? c().finish : c().next)}</button></footer></section>`;
+  }
+
+  // One of a few, on the kernel's segmented control under a visible label.
+  // Its options are radios: one tab stop, arrows move the choice (bindEvents).
+  function choiceHtml(name, label, current, values) {
+    const id = `relationship${name[0].toUpperCase()}${name.slice(1)}`;
+    return `<div class="relationshipControl"><span class="j-label" id="${id}Label">${escapeHtml(label)}</span><div class="j-seg" role="radiogroup" aria-labelledby="${id}Label">${values.map((value) => `<button id="${id}-${value}" type="button" role="radio" aria-checked="${current === value}" tabindex="${current === value ? "0" : "-1"}" data-map-${name}="${value}">${escapeHtml(c()[value])}</button>`).join("")}</div></div>`;
+  }
+
+  function selectHtml(id, label, options) {
+    return `<div class="j-field"><label for="${id}">${escapeHtml(label)}</label><select class="j-input" id="${id}">${options}</select></div>`;
   }
 
   function controlsHtml(data) {
     const types = unique(graph.nodes.map((node) => node.type));
     const relations = unique(graph.edges.filter((edge) => state.families.has(edge.family)).map((edge) => edge.relation));
     const labels = pillarLabels();
-    const modeToggle = `<div class="relationshipModes" role="radiogroup" aria-label="${escapeHtml(c().title)}">${["story", "evidence", "network"].map((mode) => `<button id="relationshipMode-${mode}" type="button" role="radio" aria-checked="${state.mode === mode}" tabindex="${state.mode === mode ? "0" : "-1"}" data-map-mode="${mode}" class="${state.mode === mode ? "active" : ""}">${escapeHtml(c()[mode])}</button>`).join("")}</div>`;
-    const depthToggle = `<div class="relationshipDepth" role="group" aria-label="${escapeHtml(c().depth)}">${["guided", "analyst"].map((depth) => `<button type="button" data-map-depth="${depth}" aria-pressed="${state.depth === depth}" class="${state.depth === depth ? "active" : ""}">${escapeHtml(c()[depth])}</button>`).join("")}</div>`;
-    const viewToggle = `<div class="relationshipViewToggle"><button type="button" data-map-view="map" aria-pressed="${state.view === "map"}" class="${state.view === "map" ? "active" : ""}">${escapeHtml(c().map)}</button><button type="button" data-map-view="list" aria-pressed="${state.view === "list"}" class="${state.view === "list" ? "active" : ""}">${escapeHtml(c().list)}</button><button type="button" data-map-view="spatial" aria-pressed="${state.view === "spatial"}" class="${state.view === "spatial" ? "active" : ""}"${spatialAvailable ? "" : ` disabled aria-disabled="true" title="${escapeHtml(c().spatialUnavailable)}"`}>${escapeHtml(c().spatial)}</button></div>`;
-    const overlayToggle = `<div class="relationshipOverlayToggle" role="group" aria-label="${escapeHtml(c().overlay)}">${["none", "temporal", "comparative"].map((overlay) => `<button type="button" data-map-overlay="${overlay}" aria-pressed="${state.overlay === overlay}" class="${state.overlay === overlay ? "active" : ""}">${escapeHtml(c()[overlay])}</button>`).join("")}</div>`;
-    const filters = `<div class="relationshipToolbar"><label><span>${escapeHtml(c().pillar)}</span><select id="relationshipPillar">${option("", c().all, state.pillar)}${(root.Jarbou3iBiopolitics?.PILLARS || []).map((pillar) => option(pillar.key, labels[pillar.key]?.[0] || tokenLabel(pillar.key), state.pillar)).join("")}</select></label><label><span>${escapeHtml(c().type)}</span><select id="relationshipType">${option("", c().all, state.type)}${types.map((type) => option(type, graph.typeLabel(type), state.type)).join("")}</select></label><label><span>${escapeHtml(c().confidence)}</span><select id="relationshipConfidence">${option("", c().all, state.confidence)}${["high", "medium", "low"].map((value) => option(value, tokenLabel(value), state.confidence)).join("")}</select></label><label><span>${escapeHtml(c().verification)}</span><select id="relationshipVerification">${option("", c().all, state.verification)}${unique(graph.nodes.filter((node) => node.type === "evidence").map((node) => node.record?.verification_status)).map((value) => option(value, tokenLabel(value), state.verification)).join("")}</select></label><label><span>${escapeHtml(c().relation)}</span><select id="relationshipRelation">${option("", c().all, state.relation)}${relations.map((value) => option(value, tokenLabel(value), state.relation)).join("")}</select></label></div>`;
-    const layers = `<div class="relationshipLayers"><fieldset><legend class="srOnly">${escapeHtml(c().edges)}</legend>${[["explicit", c().explicit], ["evidence", c().evidenceEdges], ["structural", c().structural]].map(([family, label]) => `<label><input type="checkbox" data-map-family="${family}"${state.families.has(family) ? " checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}</fieldset><label class="relationshipNeighborhood"><input id="relationshipNeighborhood" type="checkbox"${state.neighborhood ? " checked" : ""}${state.selectedId ? "" : " disabled"}><span>${escapeHtml(c().neighborhood)}</span></label>${state.mode === "network" && state.view === "map" ? `<div class="relationshipZoom"><button type="button" data-map-zoom="out" aria-label="${escapeHtml(c().zoomOut)}">−</button><button type="button" data-map-zoom="fit">${escapeHtml(c().fit)}</button><button type="button" data-map-zoom="in" aria-label="${escapeHtml(c().zoomIn)}">+</button></div>` : ""}</div>`;
-    const actions = `<div class="relationshipPrimaryActions"><button type="button" data-tour-toggle aria-pressed="${state.tour}">${escapeHtml(state.tour ? c().stopTour : c().startTour)}</button><button type="button" data-focus-toggle aria-pressed="${state.focused}">${escapeHtml(state.focused ? c().exitFocus : c().focus)}</button></div>`;
-    const saved = `<div class="relationshipSavedViews"><label><span>${escapeHtml(c().savedViews)}</span><select id="relationshipSavedView">${option("", c().noSavedView, state.savedViewId)}${savedViews.map((item) => option(item.id, item.name, state.savedViewId)).join("")}</select></label><button type="button" data-save-view>${escapeHtml(c().saveView)}</button><button type="button" data-restore-view${state.savedViewId ? "" : " disabled"}>${escapeHtml(c().restoreView)}</button><button type="button" data-delete-view${state.savedViewId ? "" : " disabled"}>${escapeHtml(c().deleteView)}</button></div>`;
+    // Spatial is offered only where it can be drawn; the view options say why it is missing.
+    const views = spatialAvailable ? ["map", "list", "spatial"] : ["map", "list"];
+    const actions = `<div class="relationshipPrimaryActions"><button class="j-btn" type="button" data-tour-toggle>${escapeHtml(state.tour ? c().stopTour : c().startTour)}</button><button class="j-btn" type="button" data-focus-toggle>${escapeHtml(state.focused ? c().exitFocus : c().focus)}</button></div>`;
+    const filters = `<div class="relationshipToolbar">${selectHtml("relationshipPillar", c().pillar, `${option("", c().all, state.pillar)}${(root.Jarbou3iBiopolitics?.PILLARS || []).map((pillar) => option(pillar.key, labels[pillar.key]?.[0] || tokenLabel(pillar.key), state.pillar)).join("")}`)}${selectHtml("relationshipType", c().type, `${option("", c().all, state.type)}${types.map((type) => option(type, graph.typeLabel(type), state.type)).join("")}`)}${selectHtml("relationshipConfidence", c().confidence, `${option("", c().all, state.confidence)}${["high", "medium", "low"].map((value) => option(value, tokenLabel(value), state.confidence)).join("")}`)}${selectHtml("relationshipVerification", c().verification, `${option("", c().all, state.verification)}${unique(graph.nodes.filter((node) => node.type === "evidence").map((node) => node.record?.verification_status)).map((value) => option(value, tokenLabel(value), state.verification)).join("")}`)}${selectHtml("relationshipRelation", c().relation, `${option("", c().all, state.relation)}${relations.map((value) => option(value, tokenLabel(value), state.relation)).join("")}`)}</div>`;
+    const layers = `<div class="relationshipLayers"><fieldset><legend class="j-sr-only">${escapeHtml(c().edges)}</legend>${[["explicit", c().explicit], ["evidence", c().evidenceEdges], ["structural", c().structural]].map(([family, label]) => `<label><input type="checkbox" data-map-family="${family}"${state.families.has(family) ? " checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("")}</fieldset><label class="relationshipNeighborhood"><input id="relationshipNeighborhood" type="checkbox"${state.neighborhood ? " checked" : ""}${state.selectedId ? "" : " disabled"}><span>${escapeHtml(c().neighborhood)}</span></label>${state.mode === "network" && state.view === "map" ? `<div class="relationshipZoom"><button class="j-btn" data-size="icon" type="button" data-map-zoom="out" aria-label="${escapeHtml(c().zoomOut)}">−</button><button class="j-btn" type="button" data-map-zoom="fit">${escapeHtml(c().fit)}</button><button class="j-btn" data-size="icon" type="button" data-map-zoom="in" aria-label="${escapeHtml(c().zoomIn)}">+</button></div>` : ""}</div>`;
+    const saved = `<div class="relationshipSavedViews">${selectHtml("relationshipSavedView", c().savedViews, `${option("", c().noSavedView, state.savedViewId)}${savedViews.map((item) => option(item.id, item.name, state.savedViewId)).join("")}`)}<div class="relationshipSavedActions"><button class="j-btn" type="button" data-save-view>${escapeHtml(c().saveView)}</button><button class="j-btn" type="button" data-restore-view${state.savedViewId ? "" : " disabled"}>${escapeHtml(c().restoreView)}</button><button class="j-btn" data-variant="danger" type="button" data-delete-view${state.savedViewId ? "" : " disabled"}>${escapeHtml(c().deleteView)}</button></div></div>`;
     const capabilityNote = spatialAvailable ? "" : `<p class="relationshipCapabilityNote">${escapeHtml(c().spatialUnavailable)}</p>`;
-    return `<div class="relationshipCommandBar">${modeToggle}${depthToggle}${viewToggle}${overlayToggle}${actions}</div>${capabilityNote}<div class="relationshipSearchRow"><label class="relationshipSearch"><span>${escapeHtml(c().search)}</span><input id="relationshipSearch" type="search" value="${escapeHtml(state.query)}" placeholder="${escapeHtml(c().searchPlaceholder)}"></label><button type="button" data-map-reset>${escapeHtml(c().reset)}</button></div>${saved}<details class="relationshipAdvanced"${state.depth === "analyst" ? " open" : ""}><summary>${escapeHtml(c().advanced)}</summary>${filters}${layers}</details><div class="relationshipLegend" aria-label="${escapeHtml(c().legend)}">${[["explicit", c().explicit], ["evidence", c().evidenceEdges], ["structural", c().structural]].map(([family, label]) => `<span class="relationshipLegend--${family}"><i aria-hidden="true"></i>${escapeHtml(label)}</span>`).join("")}</div><p class="relationshipCount" role="status" aria-live="polite"><b>${data.nodes.length}</b> ${escapeHtml(c().nodes)} · <b>${data.edges.length}</b> ${escapeHtml(c().edges)}</p>`;
+    // The line styles are drawn on the network map only.
+    const legend = state.mode === "network" && state.view === "map" ? `<div class="relationshipLegend" aria-label="${escapeHtml(c().legend)}">${[["explicit", c().explicit], ["evidence", c().evidenceEdges], ["structural", c().structural]].map(([family, label]) => `<span class="relationshipLegend--${family}"><i aria-hidden="true"></i>${escapeHtml(label)}</span>`).join("")}</div>` : "";
+    // The reading leads; the options fold away, and the filters open with Analyst.
+    const advancedOpen = state.advancedOpen ?? state.depth === "analyst";
+    return `<div class="relationshipCommandBar">${choiceHtml("mode", c().reading, state.mode, ["story", "evidence", "network"])}${choiceHtml("view", c().layout, state.view, views)}${actions}</div><div class="relationshipSearchRow"><div class="j-field relationshipSearch"><label for="relationshipSearch">${escapeHtml(c().search)}</label><input class="j-input" id="relationshipSearch" type="search" value="${escapeHtml(state.query)}" placeholder="${escapeHtml(c().searchPlaceholder)}"></div><button class="j-btn" type="button" data-map-reset>${escapeHtml(c().reset)}</button></div><details class="j-disclosure relationshipOptions" data-relationship-panel="optionsOpen"${state.optionsOpen ? " open" : ""}><summary>${escapeHtml(c().viewOptions)}</summary><div class="relationshipPanel"><div class="relationshipChoices">${choiceHtml("depth", c().depth, state.depth, ["guided", "analyst"])}${choiceHtml("overlay", c().overlay, state.overlay, ["none", "temporal", "comparative"])}</div>${capabilityNote}${saved}</div></details><details class="j-disclosure relationshipAdvanced" data-relationship-panel="advancedOpen"${advancedOpen ? " open" : ""}><summary>${escapeHtml(c().advanced)}</summary><div class="relationshipPanel">${filters}${layers}</div></details>${legend}<p class="relationshipCount" role="status" aria-live="polite"><b>${data.nodes.length}</b> ${escapeHtml(c().nodes)} · <b>${data.edges.length}</b> ${escapeHtml(c().edges)}</p>`;
+  }
+
+  // Nothing to show: said as a filter that matched nothing, or as a reading
+  // with no connections of its kind, each with the way back.
+  function emptyHtml() {
+    const filtered = Boolean(state.query.trim() || state.pillar || state.type || state.confidence || state.verification || state.relation || state.neighborhood)
+      || [...state.families].sort().join() !== modeFamilies(state.mode).sort().join();
+    if (filtered) return `<div class="relationshipEmpty"><p>${escapeHtml(c().empty)}</p><button class="j-btn" type="button" data-map-reset>${escapeHtml(c().reset)}</button></div>`;
+    return `<div class="relationshipEmpty"><p>${escapeHtml(c().emptyReading)}</p>${state.mode === "network" ? "" : `<button class="j-btn" type="button" data-empty-network>${escapeHtml(c().showNetwork)}</button>`}</div>`;
   }
 
   function resultsHtml(data, inspection = inspectionHtml(data)) {
     const walkthrough = walkthroughHtml(data);
     const content = data.nodes.length
       ? state.view === "map" ? mapHtml(data) : state.view === "spatial" ? spatialHtml(data) : listHtml(data)
-      : `<div class="relationshipEmpty">${escapeHtml(c().empty)}</div>`;
+      : emptyHtml();
     return `${overlayHtml()}${walkthrough}<div class="relationshipWorkspace"><div class="relationshipView">${content}</div>${inspection}</div>`;
   }
 
@@ -575,7 +605,7 @@
     if (state.view === "spatial" && !spatialAvailable) state.view = "list";
     const data = visibleData();
     const inspection = inspectionHtml(data);
-    container.innerHTML = `<section class="relationshipExplorer${state.focused ? " is-focus" : ""}${inspection ? " has-inspection" : ""}" dir="${lang === "ar" ? "rtl" : "ltr"}" role="${state.focused ? "dialog" : "region"}"${state.focused ? ` aria-modal="true" aria-label="${escapeHtml(c().focus)}"` : ` aria-label="${escapeHtml(c().title)}"`}><header class="relationshipIntro"><div><span>2D · ${escapeHtml(c()[state.mode])}</span><h2>${escapeHtml(c().title)}</h2><p>${escapeHtml(c().subtitle)}</p></div>${state.focused ? `<button type="button" data-focus-toggle class="relationshipFocusExit">${escapeHtml(c().exitFocus)}</button>` : ""}</header>${controlsHtml(data)}<div data-relationship-results>${resultsHtml(data, inspection)}</div></section>`;
+    container.innerHTML = `<section class="relationshipExplorer${state.focused ? " is-focus" : ""}${inspection ? " has-inspection" : ""}" dir="${lang === "ar" ? "rtl" : "ltr"}" role="${state.focused ? "dialog" : "region"}"${state.focused ? ` aria-modal="true" aria-label="${escapeHtml(c().focus)}"` : ` aria-label="${escapeHtml(c().title)}"`}><header class="relationshipIntro"><div><span>2D · ${escapeHtml(c()[state.mode])}</span><h3>${escapeHtml(c().title)}</h3><p>${escapeHtml(c().subtitle)}</p></div>${state.focused ? `<button class="j-btn relationshipFocusExit" type="button" data-focus-toggle>${escapeHtml(c().exitFocus)}</button>` : ""}</header>${controlsHtml(data)}<div data-relationship-results>${resultsHtml(data, inspection)}</div></section>`;
     bindEvents();
     if (state.view === "map" && state.mode === "network") observeAndDraw();
     else resizeObserver?.disconnect();
@@ -635,20 +665,26 @@
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
-    const modeButtons = [...container.querySelectorAll("[data-map-mode]")];
-    modeButtons.forEach((button, index) => {
-      button.onclick = () => setMode(button.dataset.mapMode);
-      button.onkeydown = (event) => {
-        let target = null;
-        if (["ArrowRight", "ArrowDown"].includes(event.key)) target = modeButtons[(index + 1) % modeButtons.length];
-        if (["ArrowLeft", "ArrowUp"].includes(event.key)) target = modeButtons[(index - 1 + modeButtons.length) % modeButtons.length];
-        if (event.key === "Home") target = modeButtons[0];
-        if (event.key === "End") target = modeButtons[modeButtons.length - 1];
-        if (target) {
-          event.preventDefault();
-          setMode(target.dataset.mapMode);
-        }
-      };
+    // A choice group's arrows move its choice (the APG radio group), left and
+    // right as the line reads, so reversed in Arabic.
+    container.querySelectorAll('.j-seg[role="radiogroup"]').forEach((group) => {
+      const radios = [...group.querySelectorAll('[role="radio"]:not(:disabled)')];
+      const [back, forward] = lang === "ar" ? ["ArrowRight", "ArrowLeft"] : ["ArrowLeft", "ArrowRight"];
+      radios.forEach((radio, index) => radio.onkeydown = (event) => {
+        const target = event.key === "Home" ? radios[0]
+          : event.key === "End" ? radios[radios.length - 1]
+            : [forward, "ArrowDown"].includes(event.key) ? radios[(index + 1) % radios.length]
+              : [back, "ArrowUp"].includes(event.key) ? radios[(index - 1 + radios.length) % radios.length]
+                : null;
+        if (!target) return;
+        event.preventDefault();
+        if (target !== radio) target.click();
+      });
+    });
+    container.querySelectorAll("[data-map-mode]").forEach((button) => button.onclick = () => setMode(button.dataset.mapMode));
+    // A whole render rebuilds the panels: each keeps the state it was toggled to.
+    container.querySelectorAll("[data-relationship-panel]").forEach((panel) => panel.ontoggle = () => {
+      state[panel.dataset.relationshipPanel] = panel.open;
     });
     const inputs = {
       relationshipPillar: "pillar", relationshipType: "type", relationshipConfidence: "confidence",
@@ -679,17 +715,19 @@
     container.querySelectorAll("[data-map-view]").forEach((button) => button.onclick = () => {
       if (button.dataset.mapView === "spatial" && !spatialAvailable) return;
       state.view = button.dataset.mapView;
-      render();
+      render(button.id);
     });
     container.querySelectorAll("[data-map-depth]").forEach((button) => button.onclick = () => {
       state.depth = button.dataset.mapDepth;
-      render();
+      // The filters follow the detail level again: open with Analyst.
+      state.advancedOpen = null;
+      render(button.id);
     });
     container.querySelectorAll("[data-map-overlay]").forEach((button) => button.onclick = () => {
       state.overlay = button.dataset.mapOverlay;
       render();
-      const overlay = state.overlay;
-      focusAfterRender(() => container.querySelector(`[data-map-overlay="${CSS.escape(overlay)}"]`), { force: true });
+      const id = button.id;
+      focusAfterRender(() => document.getElementById(id), { force: true });
     });
     container.querySelectorAll("[data-spatial-control]").forEach((button) => {
       button.onclick = () => updateSpatial(button.dataset.spatialControl);
@@ -840,10 +878,12 @@
       state.zoom = action === "fit" ? 0.82 : Math.max(0.7, Math.min(1.4, state.zoom + (action === "in" ? 0.1 : -0.1)));
       render();
     });
-    bindClick("[data-map-reset]", () => {
+    // The search row's reset, and the empty state's when a filter matched nothing.
+    container.querySelectorAll("[data-map-reset]").forEach((button) => button.onclick = () => {
       Object.assign(state, { query: "", pillar: "", type: "", confidence: "", verification: "", relation: "", neighborhood: false, selectedId: "", selectedEdgeId: "", zoom: 1, tour: false, tourIndex: 0, overlay: "none", spatialYaw: -18, spatialPitch: 48, spatialZoom: 0.68 });
       setMode("story", { preserveSearchDraft: false });
     });
+    bindClick("[data-empty-network]", () => setMode("network"));
   }
 
   function drawEdges() {

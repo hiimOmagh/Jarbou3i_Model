@@ -128,11 +128,13 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
 
         const mobile = testInfo.project.name === "mobile-chrome";
         if (mobile) {
-          await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-pressed", "true");
-          await expect(page.locator('[data-map-view="spatial"]')).toBeDisabled();
+          await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-checked", "true");
+          // Spatial is not offered where it cannot be drawn; the view options say why.
+          await expect(page.locator('[data-map-view="spatial"]')).toHaveCount(0);
+          await page.locator(".relationshipOptions > summary").click();
           await expect(page.locator(".relationshipCapabilityNote")).toBeVisible();
         } else {
-          await expect(page.locator('[data-map-view="map"]')).toHaveAttribute("aria-pressed", "true");
+          await expect(page.locator('[data-map-view="map"]')).toHaveAttribute("aria-checked", "true");
           await expect(page.locator('[data-map-view="spatial"]')).toBeEnabled();
         }
 

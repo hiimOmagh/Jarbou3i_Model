@@ -206,7 +206,7 @@ test.describe("Release Candidate visual audit evidence", () => {
         await mapView.focus();
         await expect(mapView).toBeFocused();
         await mapView.press("Enter");
-        await expect(mapView).toHaveAttribute("aria-pressed", "true");
+        await expect(mapView).toHaveAttribute("aria-checked", "true");
         await expect(page.locator(".relationshipStoryFlow").first()).toBeVisible();
       }
       const storyGeometry = await page.locator(".relationshipStoryFlow").evaluateAll((flows) => flows.map((flow) => {

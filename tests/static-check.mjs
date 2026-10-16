@@ -484,10 +484,12 @@ if (explorer.includes('.addEventListener("click"')) {
 for (const token of ["requestAnimationFrame(() => container.querySelector", "requestAnimationFrame(() => container?.querySelector"]) {
   if (explorer.includes(token)) fail(`unguarded deferred focus path remains: ${token}`);
 }
-for (const token of ["flex:0 0 32px", "min-width:32px"]) {
-  if (!explorerStyles.includes(token)) fail(`Firefox reflow target contract missing: ${token}`);
+// The inspection's close button is a kernel icon button, which never shrinks
+// (src/ui/kernel.css: .j-btn[data-size="icon"] is flex: none).
+for (const token of ['data-size="icon" type="button" data-clear-selection']) {
+  if (!explorer.includes(token)) fail(`Firefox reflow target contract missing: ${token}`);
 }
-for (const token of ["minmax(132px,1fr)", "overflow-x:auto", "scrollbar-width:thin", "scroll-snap-type:inline proximity"]) {
+for (const token of ["minmax(116px,1fr)", "overflow-x:auto", "scrollbar-width:thin", "scroll-snap-type:inline proximity"]) {
   if (!explorerStyles.includes(token)) fail(`story-path visibility contract missing: ${token}`);
 }
 for (const token of ['rel="preload" as="image" href="assets/jarbou3i-mascot-192.png"', 'decoding="sync"']) {

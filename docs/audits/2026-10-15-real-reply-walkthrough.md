@@ -114,7 +114,10 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 Text at 9.5–11.5px and controls at 32–34px. Groups are unlabeled. Network
 lanes are clipped and edges invisible. The empty state wrongly says "no
 records match filters" when no filter is set. On a phone the controls take
-about 900px. **Open (UIX-5 B).**
+about 900px. **Done (UIX-5 B, 2026-10-16).** The controls are kernel controls
+at 12px and up; the network's lanes fit the map and its edges are drawn over
+them; a reading with no connections says so, apart from a filter that matched
+nothing; on a phone the controls end about 300px sooner.
 
 ### H. Technical
 

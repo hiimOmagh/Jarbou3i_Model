@@ -15,6 +15,48 @@
   the names of the files you will attach. It is four rows tall, so its hint
   shows in full on a phone. The UX-0 prototype says the same.
 
+### Relationship explorer on the kernel (UIX-5 slice B)
+
+From the 2026-10-15 audit (H2) and the real-answer walkthrough (theme G),
+measured with the Biopolitical sample in Arabic, English and French:
+
+- The explorer's controls are kernel controls. Reading (Story, Evidence
+  trail, Network), Layout, Detail level and Overlay are each a radio group
+  under a visible label: one tab stop each, arrows move the choice, and in
+  Arabic left and right follow the line. Before, only the reading was a
+  radio group, under the explorer's name, and the layout group had no name.
+  Buttons, fields, selects and the two folding panels follow the kernel's
+  contracts, are 44px tall, and have a visible focus ring.
+- No text under 12px: 40–41 labels per view were 8–11.5px. Weights follow the
+  kernel (600/700), and text on the accent is the kernel's on-accent colour,
+  so step numbers and the walkthrough's Next button stay readable in the dark
+  theme.
+- The reading comes first. Detail level, overlay and saved views fold into
+  **View options**; filters and layers stay in **Filters and map controls**,
+  which still opens with Analyst. The connection legend shows only on the
+  network map, where lines are drawn. The intro is a section heading in the
+  case file (an h3, like its neighbours), not a card. Controls before the
+  first relationship: 642–674px on a phone (was 916–1003px) and 566–606px on
+  a 1280px desktop (was 662–678px).
+- Spatial is offered only where it can be drawn. On a phone it is left out of
+  Layout, not shown disabled, and View options says why.
+- French saved-view buttons wrap rather than clip, and "Connections list" no
+  longer breaks inside a word.
+- The network map fits its width: lanes were as wide as their longest label,
+  so the map scrolled sideways (782px shown of 2,100–2,312px). Connections
+  are drawn over the lanes and under the records; before, the lanes covered
+  them and they showed only in the gaps.
+- Story paths and the evidence trail lay out by their own width, not the
+  window's. Beside the case outline or an open inspection, a wide window is a
+  narrow view. A story's steps sit side by side while each stays readable,
+  then scroll; a claim sits over its supporting and counter-evidence, then in
+  one column.
+- An empty view says why and offers the way back. If a search or filter
+  matched nothing, it shows "No records match the current filters" with
+  Reset filters. If the reading has no connections and no filter is set, it
+  says "No connections to show in this reading yet" and offers Show the
+  network. Before, it blamed the filters in both cases.
+
 ### Phone first screen and density (UIX-5 slice C)
 
 From the 2026-10-15 audit (M1, M2, L3) and the real-answer walkthrough (B2–B4),

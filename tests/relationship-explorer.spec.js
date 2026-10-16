@@ -1,12 +1,20 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { openStep } from "./helpers/guided-flow.js";
+import { expectKernel, hitHeight } from "./helpers/kernel-check.js";
 
 async function startWithoutPersistedWorkspace(page) {
   await page.addInitScript(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
+}
+
+// The detail level, the overlay and saved views fold away until opened.
+async function openViewOptions(page) {
+  const panel = page.locator(".relationshipOptions");
+  if (!(await panel.evaluate((details) => details.open))) await panel.locator("summary").click();
+  await expect(panel).toHaveAttribute("open", "");
 }
 
 async function openExplorer(
@@ -355,7 +363,7 @@ test("search, filters, node inspection, and edge details stay synchronized", asy
   await listView.focus();
   await expect(listView).toBeFocused();
   await listView.press("Enter");
-  await expect(listView).toHaveAttribute("aria-pressed", "true");
+  await expect(listView).toHaveAttribute("aria-checked", "true");
   const edge = page.locator("[data-map-edge]").first();
   await edge.focus();
   await expect(edge).toBeFocused();
@@ -367,24 +375,31 @@ test("search, filters, node inspection, and edge details stay synchronized", asy
 test("Guided and Analyst detail levels preserve clarity and provenance", async ({ page }) => {
   await openExplorer(page);
   await page.locator('[data-map-view="map"]').click();
-  await expect(page.locator('[data-map-depth="guided"]')).toHaveAttribute("aria-pressed", "true");
+  await openViewOptions(page);
+  await expect(page.locator('[data-map-depth="guided"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".relationshipNodeMeta")).toHaveCount(0);
   await expect(page.locator("[data-story-edge]")).toHaveCount(4);
 
   await page.locator("[data-story-edge]").first().click();
   await expect(page.locator(".relationshipWhy")).toBeVisible();
   await expect(page.locator(".relationshipEdgeDetails code")).toHaveCount(0);
+  await page.locator("[data-save-view]").click();
 
+  // The filters open with Analyst, and close again with a restored Guided view.
   await page.locator('[data-map-depth="analyst"]').click();
-  await expect(page.locator('[data-map-depth="analyst"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-map-depth="analyst"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".relationshipNodeMeta").first()).toBeVisible();
   await expect(page.locator(".relationshipEdgeDetails code")).toBeVisible();
   await expect(page.locator(".relationshipAdvanced")).toHaveAttribute("open", "");
+  await page.locator("[data-restore-view]").click();
+  await expect(page.locator('[data-map-depth="guided"]')).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator(".relationshipAdvanced")).not.toHaveAttribute("open", "");
 });
 
 test("temporal and comparative overlays expose canonical context without changing the graph", async ({ page }) => {
   await openExplorer(page);
   const originalCount = await page.locator(".relationshipCount").textContent();
+  await openViewOptions(page);
 
   await page.locator('[data-map-overlay="temporal"]').click();
   const timeline = page.locator('[data-relationship-overlay="temporal"]');
@@ -408,14 +423,15 @@ test("analysis-scoped saved views restore and delete presentation state", async 
   await networkMode.focus();
   await networkMode.press("Enter");
   await expect(networkMode).toHaveAttribute("aria-checked", "true");
+  await openViewOptions(page);
   const analystDepth = page.locator('[data-map-depth="analyst"]');
   await analystDepth.focus();
   await analystDepth.press("Enter");
-  await expect(analystDepth).toHaveAttribute("aria-pressed", "true");
+  await expect(analystDepth).toHaveAttribute("aria-checked", "true");
   const temporalOverlay = page.locator('[data-map-overlay="temporal"]');
   await temporalOverlay.focus();
   await temporalOverlay.press("Enter");
-  await expect(temporalOverlay).toHaveAttribute("aria-pressed", "true");
+  await expect(temporalOverlay).toHaveAttribute("aria-checked", "true");
   const search = page.locator("#relationshipSearch");
   const saveView = page.locator("[data-save-view]");
 
@@ -449,17 +465,18 @@ test("analysis-scoped saved views restore and delete presentation state", async 
 
   await page.locator("[data-map-reset]").click();
   await expect(page.locator('[data-map-mode="story"]')).toHaveAttribute("aria-checked", "true");
-  await expect(page.locator('[data-map-overlay="none"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-map-overlay="none"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator("#relationshipSearch")).toHaveValue("");
   const restoreView = page.locator("[data-restore-view]");
   await restoreView.focus();
   await restoreView.press("Enter");
   await expect(page.locator('[data-map-mode="network"]')).toHaveAttribute("aria-checked", "true");
-  await expect(page.locator('[data-map-depth="analyst"]')).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator('[data-map-overlay="temporal"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-map-depth="analyst"]')).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator('[data-map-overlay="temporal"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator("#relationshipSearch")).toHaveValue("Public-health authorities");
 
   await openExplorer(page, "en", { expectColdStart: false });
+  await openViewOptions(page);
   await expect(page.locator(`#relationshipSavedView option[value="${savedId}"]`)).toHaveCount(1);
   await page.locator("#relationshipSavedView").selectOption(savedId);
   const deleteView = page.locator("[data-delete-view]");
@@ -475,8 +492,10 @@ test("capability-gated Spatial view preserves the complete graph and accessible 
   const spatialToggle = page.locator('[data-map-view="spatial"]');
   const mobile = await page.evaluate(() => innerWidth < 761);
   if (mobile) {
-    await expect(spatialToggle).toBeDisabled();
-    await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(spatialToggle).toHaveCount(0);
+    await openViewOptions(page);
+    await expect(page.locator(".relationshipCapabilityNote")).toBeVisible();
+    await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-checked", "true");
     await expect(page.locator("[data-relationship-spatial]")).toHaveCount(0);
     return;
   }
@@ -484,7 +503,7 @@ test("capability-gated Spatial view preserves the complete graph and accessible 
   await expect(spatialToggle).toBeEnabled();
   await page.locator('[data-map-mode="network"]').click();
   await spatialToggle.click();
-  await expect(spatialToggle).toHaveAttribute("aria-pressed", "true");
+  await expect(spatialToggle).toHaveAttribute("aria-checked", "true");
   const spatial = page.locator('[data-relationship-spatial="available"]');
   await expect(spatial).toBeVisible();
   await expect(spatial.locator(".relationshipSpatialNode")).toHaveCount(32);
@@ -498,6 +517,7 @@ test("capability-gated Spatial view preserves the complete graph and accessible 
   await expect(orbitRight).toBeFocused();
   await orbitRight.press("Enter");
   await expect(scene).toHaveAttribute("style", /--spatial-yaw:-6deg/);
+  await openViewOptions(page);
   const saveView = page.locator("[data-save-view]");
   await saveView.focus();
   await expect(saveView).toBeFocused();
@@ -512,7 +532,7 @@ test("capability-gated Spatial view preserves the complete graph and accessible 
   await restoreView.focus();
   await expect(restoreView).toBeFocused();
   await restoreView.press("Enter");
-  await expect(page.locator('[data-map-view="spatial"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-map-view="spatial"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".relationshipSpatialScene")).toHaveAttribute("style", /--spatial-yaw:-6deg/);
   await page.locator("#spatialRecordSelect").selectOption("ACT1");
   await expect(page.locator(".relationshipNodeDetails h3")).toHaveText("Public-health authorities");
@@ -527,7 +547,7 @@ test("capability-gated Spatial view preserves the complete graph and accessible 
   await listView.focus();
   await expect(listView).toBeFocused();
   await listView.press("Enter");
-  await expect(listView).toHaveAttribute("aria-pressed", "true");
+  await expect(listView).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".relationshipList")).toBeVisible();
   await expect(page.locator("[data-relationship-spatial]")).toHaveCount(0);
 });
@@ -536,7 +556,7 @@ test("Spatial view orbit controls are keyboard complete and reduced-motion safe"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openExplorer(page);
   const spatialToggle = page.locator('[data-map-view="spatial"]');
-  if (await spatialToggle.isDisabled()) return;
+  if (!(await spatialToggle.count())) return;
 
   await page.locator('[data-map-mode="network"]').click();
   await spatialToggle.click();
@@ -605,7 +625,7 @@ test("edge inspection survives mode and view changes and can reveal hidden conte
 
   await page.locator("[data-reveal-selection]").click();
   await expect(page.locator('[data-map-mode="network"]')).toHaveAttribute("aria-checked", "true");
-  await expect(page.locator('[data-map-view="map"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-map-view="map"]')).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".relationshipSelectionNotice")).toHaveCount(0);
 });
 
@@ -678,11 +698,139 @@ test("Arabic mobile explorer defaults to a labelled list without page overflow",
   await page.setViewportSize({ width: 390, height: 844 });
   await openExplorer(page, "ar");
   await expect(page.locator(".relationshipExplorer")).toHaveAttribute("dir", "rtl");
-  await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator('[data-map-view="spatial"]')).toBeDisabled();
+  await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-checked", "true");
+  // The reading comes first: the view options and the filters are folded.
+  await expect(page.locator(".relationshipOptions")).not.toHaveAttribute("open", "");
+  await expect(page.locator(".relationshipAdvanced")).not.toHaveAttribute("open", "");
+  await expect(page.locator('[data-map-view="spatial"]')).toHaveCount(0);
+  await openViewOptions(page);
   await expect(page.locator(".relationshipCapabilityNote")).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   expect(overflow).toBe(false);
   const results = await new AxeBuilder({ page }).include(".relationshipExplorer").analyze();
   expect(results.violations.filter((item) => ["serious", "critical"].includes(item.impact))).toEqual([]);
+});
+
+test("the explorer's controls are labelled kernel controls, readable and full-size", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openExplorer(page);
+  await page.locator('[data-map-mode="network"]').click();
+  await openViewOptions(page);
+  await page.locator(".relationshipAdvanced > summary").click();
+  await expect(page.locator(".relationshipAdvanced")).toHaveAttribute("open", "");
+  // Reading, layout, detail level and overlay: each a radio group named by its visible label.
+  const groups = page.locator('.relationshipExplorer [role="radiogroup"]');
+  await expect(groups).toHaveCount(4);
+  for (const group of await groups.all()) {
+    const label = await group.evaluate((element) => document.getElementById(element.getAttribute("aria-labelledby"))?.textContent.trim());
+    expect(label).toBeTruthy();
+  }
+  await expectKernel(page, ".relationshipExplorer");
+
+  // No text under the kernel's 12px, no control under its 44px target.
+  const small = await page.locator(".relationshipExplorer").evaluate((explorer) => [...explorer.querySelectorAll("*")]
+    .filter((element) => element.getClientRects().length && [...element.childNodes].some((node) => node.nodeType === 3 && node.textContent.trim()))
+    .filter((element) => parseFloat(getComputedStyle(element).fontSize) < 12)
+    .map((element) => element.textContent.trim().slice(0, 30)));
+  expect(small).toEqual([]);
+  const controls = page.locator([
+    ".relationshipCommandBar button", ".relationshipSearchRow :is(input, button)", ".relationshipExplorer details > summary",
+    ".relationshipPanel :is(button, select)", ".relationshipLayers label",
+  ].join(", "));
+  for (const control of await controls.all()) {
+    if (!(await control.isVisible())) continue;
+    await control.scrollIntoViewIfNeeded();
+    const label = await control.evaluate((element) => element.textContent.trim() || element.getAttribute("aria-label") || element.id);
+    expect(await hitHeight(control), label).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test("Arabic choice groups move with the arrows as the line reads", async ({ page }) => {
+  await openExplorer(page, "ar");
+  const story = page.locator('[data-map-mode="story"]');
+  await story.focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.locator('[data-map-mode="evidence"]')).toBeFocused();
+  await expect(page.locator('[data-map-mode="evidence"]')).toHaveAttribute("aria-checked", "true");
+  await page.keyboard.press("ArrowRight");
+  await expect(story).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(page.locator('[data-map-mode="network"]')).toHaveAttribute("aria-checked", "true");
+  // One tab stop per group: the checked option.
+  await expect(page.locator('[data-map-mode][tabindex="0"]')).toHaveCount(1);
+  await expect(page.locator('[data-map-mode="network"]')).toHaveAttribute("tabindex", "0");
+});
+
+test("the network map fits its lanes and draws connections over them", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openExplorer(page);
+  await page.locator('[data-map-mode="network"]').click();
+  // Its choice keeps focus a frame later, scrolling to it: wait, then scroll.
+  await expect(page.locator('[data-map-mode="network"]')).toBeFocused();
+  const viewport = page.locator(".relationshipMapViewport");
+  await expect.poll(() => viewport.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  // The map is taller than the window: its first lanes in view.
+  await viewport.evaluate((element) => element.scrollIntoView({ block: "start" }));
+  // The edges are drawn a frame after the records are laid out.
+  await expect(page.locator("[data-map-edge-line]:not([d])")).toHaveCount(0);
+  // Where a connection crosses a lane it is drawn over the lane, under its records.
+  const crossings = await page.evaluate(() => {
+    const svg = document.querySelector(".relationshipEdges");
+    svg.style.pointerEvents = "auto";
+    const boxes = (selector) => [...document.querySelectorAll(selector)].map((element) => element.getBoundingClientRect());
+    const nodes = boxes(".relationshipNode");
+    const lanes = boxes(".relationshipLane");
+    const inside = (box, x, y) => x > box.left && x < box.right && y > box.top && y < box.bottom;
+    const origin = svg.getBoundingClientRect();
+    const found = { overLane: 0, hidden: 0 };
+    for (const path of svg.querySelectorAll("[data-map-edge-line]")) {
+      const length = path.getTotalLength();
+      for (let step = 1; step < 20; step += 1) {
+        const share = step / 20;
+        const point = path.getPointAtLength(length * share);
+        const [x, y] = [origin.left + point.x, origin.top + point.y];
+        if (nodes.some((box) => inside(box, x, y)) || !lanes.some((box) => inside(box, x, y))) continue;
+        const top = document.elementFromPoint(x, y);
+        if (!top?.closest(".relationshipCanvas")) continue;
+        found.overLane += 1;
+        // The edge layer (a dashed line's gap included) or a record, never the lane.
+        if (!top.closest(".relationshipEdges, .relationshipNode")) {
+          found.hidden += 1;
+          found.covering = top.closest(".relationshipLane")?.dataset.mapLane;
+        }
+      }
+    }
+    svg.style.pointerEvents = "";
+    return found;
+  });
+  expect(crossings.overLane).toBeGreaterThan(0);
+  expect(crossings.hidden, JSON.stringify(crossings)).toBe(0);
+});
+
+test("an empty view says why and offers the way back", async ({ page }) => {
+  await openExplorer(page);
+  // A filter that matched nothing.
+  await page.locator("#relationshipSearch").fill("zzzz-no-such-record");
+  const empty = page.locator(".relationshipEmpty");
+  await expect(empty).toContainText("No records match the current filters.");
+  await empty.locator("[data-map-reset]").click();
+  await expect(empty).toHaveCount(0);
+  await expect(page.locator("#relationshipSearch")).toHaveValue("");
+
+  // A reading with no connections of its kind, with no filter set.
+  await page.evaluate(() => {
+    const analysis = window.Jarbou3iBiopolitics.sample("en");
+    const graph = window.Jarbou3iBiopoliticsGraph.build(analysis, "en");
+    window.Jarbou3iRelationshipExplorer.mount(
+      document.getElementById("relationshipExplorerMount"),
+      { ...graph, edges: graph.edges.filter((edge) => edge.family !== "explicit") },
+      { lang: "en", analysis },
+    );
+  });
+  await expect(page.locator('[data-map-mode="story"]')).toHaveAttribute("aria-checked", "true");
+  await expect(empty).toContainText("No connections to show in this reading yet.");
+  await expect(empty).not.toContainText("filters");
+  await empty.locator("[data-empty-network]").click();
+  await expect(page.locator('[data-map-mode="network"]')).toHaveAttribute("aria-checked", "true");
+  await expect(empty).toHaveCount(0);
 });
