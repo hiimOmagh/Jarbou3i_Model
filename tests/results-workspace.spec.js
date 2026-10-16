@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs/promises';
 import { openStep } from "./helpers/guided-flow.js";
 import { expectKernel } from "./helpers/kernel-check.js";
 
@@ -91,3 +92,18 @@ for (const language of ["ar", "fr"]) {
     expect([...new Set(leaked)]).toEqual([]);
   });
 }
+
+test('the analysis’s own assessment is shown as its claim, in the page language', async ({ page }) => {
+  const data = JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/sample-analysis-en.json`, 'utf8'));
+  await page.goto('./');
+  await page.locator('#langEn').click();
+  await openStep(page, "answer");
+  await page.locator('#jsonInput').fill(JSON.stringify(data));
+  await page.locator('#importBtn').click();
+  const assessment = page.locator('[data-diagnostic="self-assessment"]');
+  await expect(assessment).toHaveAttribute('data-tone', 'idle');
+  await expect(assessment.locator('h4')).toHaveText("The AI's own assessment, not verified");
+  await expect(assessment.locator('p')).toHaveText('Weakest layer: Evidence & assumptions · Publication risk: medium');
+  await page.locator('#langFr').click();
+  await expect(assessment.locator('p')).toHaveText('Couche la plus faible : Preuves & hypothèses · Risque de publication : moyen');
+});

@@ -226,6 +226,7 @@
       },
       conclusion: "Calibrated judgment",
       selfAudit: "Model self-audit",
+      selfAuditNote: "The AI's checks of its own answer: a pass is its claim, not a verification.",
       migration: "Legacy Biopolitical import migrated to v2",
       noRecords: "No structured records in this pillar.",
       sourceTier: "Source tier",
@@ -339,6 +340,7 @@
       },
       conclusion: "الحكم المُعاير",
       selfAudit: "المراجعة الذاتية للنموذج",
+      selfAuditNote: "فحوص الذكاء الاصطناعي لإجابته: «ناجح» ادعاء منه وليس تحققًا.",
       migration: "تمت ترقية الاستيراد الحيوسياسي القديم إلى الإصدار 2",
       noRecords: "لا توجد سجلات منظّمة في هذه الركيزة.",
       sourceTier: "رتبة المصدر",
@@ -453,6 +455,7 @@
       },
       conclusion: "Jugement calibré",
       selfAudit: "Auto-audit du modèle",
+      selfAuditNote: "Les contrôles de l’IA sur sa propre réponse : une réussite est son affirmation, pas une vérification.",
       migration: "Import biopolitique historique migré vers v2",
       noRecords: "Aucun enregistrement structuré dans ce pilier.",
       sourceTier: "Niveau de source",
@@ -4317,7 +4320,7 @@ ${schema}${interchangeGuide}`;
       const placeholder = isPlaceholderEvidence(item, a);
       const hasLocator = filled(item.source_url) || filled(item.source_locator);
       if (placeholder) placeholders += 1;
-      if (hasLocator) traceable += 1;
+      if (hasLocator && !placeholder) traceable += 1;
       if (item.verification_status === "verified") verified += 1;
       const structuralFields = [
         "claim",
@@ -4382,6 +4385,7 @@ ${schema}${interchangeGuide}`;
       ? provenanceApi.assessEvidenceProvenance(a, {
           lens: "biopolitical",
           reviewDecisions: options.reviewDecisions || {},
+          isPlaceholder: isPlaceholderEvidence,
         })
       : {
           sourceTraceability: 0,
@@ -4638,6 +4642,7 @@ ${schema}${interchangeGuide}`;
       ? provenanceApi.assessEvidenceProvenance(a, {
           lens: "biopolitical",
           reviewDecisions: options.reviewDecisions || {},
+          isPlaceholder: isPlaceholderEvidence,
         })
       : { publicationApproved: false };
     block(

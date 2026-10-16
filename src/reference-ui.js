@@ -165,7 +165,8 @@
     rootElement.className = "j-modal-back";
     rootElement.dataset.variant = "sheet";
     rootElement.setAttribute("aria-hidden", "true");
-    rootElement.innerHTML = `<aside class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><header class="j-insp-head"><div><p class="j-label" id="referenceInspectorType"></p><h2 id="referenceInspectorTitle"></h2></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close></button></header><div class="j-insp-body" id="referenceInspectorBody"></div><footer class="j-insp-foot"><button class="j-btn" id="referenceShowMap" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></footer></aside>`;
+    // A dialog, built from divs: aside, header and footer would add landmarks inside it.
+    rootElement.innerHTML = `<div class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><div class="j-insp-head"><div><p class="j-label" id="referenceInspectorType"></p><h2 id="referenceInspectorTitle"></h2></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close></button></div><div class="j-insp-body" id="referenceInspectorBody"></div><div class="j-insp-foot"><button class="j-btn" id="referenceShowMap" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></div></div>`;
     document.body.append(rootElement);
     return rootElement;
   }

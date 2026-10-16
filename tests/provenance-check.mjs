@@ -58,4 +58,25 @@ assert(
   "confidence diagnostics are inconsistent",
 );
 
+// The no-source placeholder may name a locator, but it points at no source.
+const placeholderOnly = {
+  ...analysis,
+  evidence: {
+    items: [{ ...analysis.evidence.items[0], source_url: "", source_locator: "Procedural instruction" }],
+  },
+};
+const placeholderId = placeholderOnly.evidence.items[0].id;
+const asPlaceholder = assessEvidenceProvenance(placeholderOnly, {
+  lens: "biopolitical",
+  isPlaceholder: (record) => record.id === placeholderId,
+});
+assert(
+  asPlaceholder.sourceTraceability === 0 && asPlaceholder.records[0].sourceStatus === "provided",
+  "a placeholder's locator made it traceable",
+);
+assert(
+  assessEvidenceProvenance(placeholderOnly, { lens: "biopolitical" }).sourceTraceability === 100,
+  "a precise locator no longer makes real evidence traceable",
+);
+
 console.log("Provenance checks passed.");

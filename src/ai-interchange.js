@@ -1217,6 +1217,9 @@ Write each value in English, consistent with the rest of your analysis, and use 
 
 Missing parts:`,
       reference: "the ID of an existing record",
+      evidenceReference: "the ID of an existing evidence record, listed below",
+      wrote: (value) => `; your answer has "${value}"`,
+      evidenceIds: "Existing evidence IDs:",
       duplicate: "a new ID that no other record uses",
       records: (shape) => `a list with at least one record shaped like ${shape}`,
       texts: "a list of short texts",
@@ -1234,6 +1237,9 @@ Missing parts:`,
 
 الأجزاء الناقصة:`,
       reference: "معرّف سجل موجود",
+      evidenceReference: "معرّف سجل دليل موجود، من القائمة أدناه",
+      wrote: (value) => `؛ في إجابتك: "${value}"`,
+      evidenceIds: "معرّفات الأدلة الموجودة:",
       duplicate: "معرّف جديد لا يستخدمه أي سجل آخر",
       records: (shape) => `قائمة فيها سجل واحد على الأقل بالشكل ${shape}`,
       texts: "قائمة نصوص قصيرة",
@@ -1251,6 +1257,9 @@ Rédigez chaque valeur en français, en cohérence avec le reste de votre analys
 
 Parties manquantes :`,
       reference: "l’identifiant d’un élément existant",
+      evidenceReference: "l’identifiant d’une preuve existante, listée ci-dessous",
+      wrote: (value) => ` ; votre réponse contient « ${value} »`,
+      evidenceIds: "Identifiants de preuve existants :",
       duplicate: "un nouvel identifiant qu’aucun autre élément n’utilise",
       records: (shape) => `une liste d’au moins un élément de la forme ${shape}`,
       texts: "une liste de textes courts",
@@ -1263,6 +1272,11 @@ Parties manquantes :`,
     },
   };
 
+  const clip = (value) => (value.length > 80 ? `${value.slice(0, 79)}…` : value);
+  const isEvidenceReference = (item) =>
+    text(object(item).code).toUpperCase() === "BROKEN_REFERENCE" &&
+    array(object(item).allowedTypes).includes("evidence");
+
   // One line per gap: its path, what kind of value it needs (read from the
   // prompt template), and the record it belongs to.
   function describeGap(item, candidate, template, copy) {
@@ -1270,8 +1284,12 @@ Parties manquantes :`,
     const code = text(object(item).code).toUpperCase();
     const keys = pointerKeys(target);
     let description;
-    if (code === "BROKEN_REFERENCE") description = copy.reference;
-    else if (code === "DUPLICATE_GLOBAL_ID") description = copy.duplicate;
+    if (code === "BROKEN_REFERENCE") {
+      // What the AI wrote instead, and the IDs listed below, let it pick the right record.
+      description = isEvidenceReference(item) ? copy.evidenceReference : copy.reference;
+      const written = text(object(item).reference);
+      if (written) description += copy.wrote(clip(written));
+    } else if (code === "DUPLICATE_GLOBAL_ID") description = copy.duplicate;
     else {
       // The template holds one example entry per list, so any index reads entry 0.
       const shape = keys.reduce((node, key) => (Array.isArray(node) ? node[0] : node?.[key]), template);
@@ -1298,9 +1316,10 @@ Parties manquantes :`,
       if (name) label = name.trim();
       return next;
     }, candidate);
-    const shortLabel = label.length > 80 ? `${label.slice(0, 79)}…` : label;
+    const shortLabel = clip(label);
     return `${target} — ${description}${shortLabel ? copy.within(shortLabel) : ""}`;
   }
+
 
   // Asks only for the missing parts: resending the whole analysis would hit
   // the same output limit that left the gaps in the first place.
@@ -1321,7 +1340,14 @@ Parties manquantes :`,
     const lines = gaps
       .slice(0, 50)
       .map((item) => describeGap(item, object(candidate), object(template), copy));
-    return `${copy.intro}\n${[...new Set(lines)].join("\n")}`;
+    const evidenceIds = gaps.some(isEvidenceReference)
+      ? array(object(object(candidate).evidence).items)
+          .filter((item) => text(object(item).id))
+          .slice(0, 40)
+          .map((item) => `${text(item.id)} — ${clip(text(item.source_title) || text(item.claim))}`)
+      : [];
+    const evidenceList = evidenceIds.length ? `\n\n${copy.evidenceIds}\n${evidenceIds.join("\n")}` : "";
+    return `${copy.intro}\n${[...new Set(lines)].join("\n")}${evidenceList}`;
   }
 
   // A reply that holds only the missing parts: {"fill": {"/path": value}}.

@@ -71,16 +71,22 @@ function normalizeReviewDecision(decision) {
   });
 }
 
+// isPlaceholder(record, analysis) names the lens's no-source placeholder: its
+// locator, if any, points at no source, so it is never traceable.
 export function assessEvidenceProvenance(
   analysis,
-  { lens = analysis?.analysis_lens || "strategic", reviewDecisions = {} } = {},
+  {
+    lens = analysis?.analysis_lens || "strategic",
+    reviewDecisions = {},
+    isPlaceholder = () => false,
+  } = {},
 ) {
   const records = evidenceRecords(analysis, lens);
   const details = records.map((record, index) => {
     const id = text(record?.id) || `evidence-${index + 1}`;
     const hasUrl = validHttpUrl(record?.source_url);
     const hasLocator = Boolean(text(record?.source_locator));
-    const sourceStatus = hasUrl || hasLocator
+    const sourceStatus = (hasUrl || hasLocator) && !isPlaceholder(record, analysis)
       ? "traceable"
       : text(record?.source_title || record?.source_note)
         ? "provided"

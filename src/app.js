@@ -19,6 +19,7 @@ import { createGuidedFlow } from "./features/guided-flow.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
 import { createResultsExplanation } from "./core/results-explanation.js";
 import { createResultsInspectionIndex } from "./core/results-inspection.js";
+import { linkCitation } from "./core/relationship-intelligence.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 import {
@@ -129,6 +130,8 @@ const I18N = {
     flowSay_warn: "أستطيع قراءتها مع بعض الملاحظات. راجعها أدناه قبل الاستيراد.",
     flowSay_trunc: "انقطعت الإجابة. يحدث هذا مع الإجابات الطويلة.",
     flowSay_crit: "هناك خلل في الصيغة. لنصلحه.",
+    flowSay_gaps: "اقتربنا: تنقص بضعة أجزاء. اطلبها وحدها من الذكاء الاصطناعي.",
+    flowSay_done: "تم الاستيراد. مراجعتك جاهزة.",
     flowBack: "رجوع",
     flowContinue: "متابعة",
     flowExamplesLabel: "جرّب مثالًا:",
@@ -155,8 +158,9 @@ const I18N = {
     clear: "مسح",
     jsonWaiting: "الصق نتيجة JSON للتحقق.",
     jsonValid: "JSON صالح. يمكنك الآن استيراد التحليل.",
+    jsonImported: "مستورد: هذا هو التحليل قيد المراجعة. الصق إجابة جديدة لتستبدله.",
     jsonInvalid: "JSON غير صالح أو غير مكتمل. استخدم برومبت الإصلاح إذا لزم.",
-    analysisImported: "تم استيراد التحليل. انتقل الآن إلى مراجعة الطبقات.",
+    analysisImported: "تم استيراد التحليل. ابدأ بالخلاصة.",
     repairCopied: "تم نسخ برومبت الإصلاح.",
     completionCopied: "تم نسخ برومبت الاستكمال.",
     continuePrompt: "برومبت متابعة النتيجة المقطوعة",
@@ -267,8 +271,8 @@ const I18N = {
     scoreFalsifiabilityHint: "وجود سيناريوهات مع شروط إبطال واضحة.",
     scoreEvidence: "ارتكاز الأدلة",
     scoreEvidenceHint: "وجود أدلة أو افتراضات قابلة للفحص.",
-    scoreReadiness: "جاهزية المشاركة",
-    scoreReadinessHint: "مدى وضوح التحليل وقابليته للتصدير.",
+    scoreReadiness: "فحص البنية",
+    scoreReadinessHint: "ينخفض مع كل تنبيه بنيوي؛ ولا يعني أن التحليل جاهز للمشاركة.",
     qualityGate: "بوابة النشر",
     publishReady: "جاهز للنشر",
     reviewNeeded: "يحتاج مراجعة",
@@ -424,6 +428,8 @@ const I18N = {
     flowSay_warn: "I can read it, with a few notes. Check them below before you import.",
     flowSay_trunc: "It got cut off. That happens with long answers.",
     flowSay_crit: "Something is off in the format. Let's fix it.",
+    flowSay_gaps: "Nearly there: a few parts are missing. Ask the AI for just those.",
+    flowSay_done: "Imported. Your review is ready.",
     flowBack: "Back",
     flowContinue: "Continue",
     flowExamplesLabel: "Try an example:",
@@ -451,9 +457,10 @@ const I18N = {
     clear: "Clear",
     jsonWaiting: "Paste JSON to validate.",
     jsonValid: "Valid JSON. You can import the analysis now.",
+    jsonImported: "Imported: this is the analysis under review. Paste a new answer to replace it.",
     jsonInvalid: "Invalid or incomplete JSON. Use the repair prompt if needed.",
     analysisImported:
-      "Analysis imported. You can now review the engine layers.",
+      "Analysis imported. Start with its overview.",
     repairCopied: "Repair prompt copied.",
     completionCopied: "Completion prompt copied.",
     continuePrompt: "Continue cut-off result prompt",
@@ -569,8 +576,8 @@ const I18N = {
       "Scenarios include explicit falsifiers or disproval conditions.",
     scoreEvidence: "Evidence grounding",
     scoreEvidenceHint: "Evidence or testable assumptions anchor the analysis.",
-    scoreReadiness: "Share readiness",
-    scoreReadinessHint: "The analysis is clear enough to export and review.",
+    scoreReadiness: "Structure check",
+    scoreReadinessHint: "Drops with each structural warning; it does not say the analysis is ready to share.",
     qualityGate: "Publication gate",
     publishReady: "Publish-ready",
     reviewNeeded: "Review needed",
@@ -730,6 +737,8 @@ const I18N = {
     flowSay_warn: "Je peux la lire, avec quelques remarques. Vérifiez-les ci-dessous avant d’importer.",
     flowSay_trunc: "Elle a été coupée. Cela arrive avec les longues réponses.",
     flowSay_crit: "Le format pose problème. Corrigeons-le.",
+    flowSay_gaps: "Presque terminé : il manque quelques parties. Demandez-les seules à l’IA.",
+    flowSay_done: "Importée. Votre examen est prêt.",
     flowBack: "Retour",
     flowContinue: "Continuer",
     flowExamplesLabel: "Essayez un exemple :",
@@ -758,10 +767,11 @@ const I18N = {
     clear: "Effacer",
     jsonWaiting: "Collez un JSON pour le valider.",
     jsonValid: "JSON valide. Vous pouvez maintenant importer l’analyse.",
+    jsonImported: "Importée : c’est l’analyse en cours d’examen. Collez une nouvelle réponse pour la remplacer.",
     jsonInvalid:
       "JSON invalide ou incomplet. Utilisez le prompt de réparation si nécessaire.",
     analysisImported:
-      "Analyse importée. Vous pouvez maintenant examiner les couches du moteur.",
+      "Analyse importée. Commencez par la synthèse.",
     repairCopied: "Prompt de réparation copié.",
     completionCopied: "Prompt de complétion copié.",
     continuePrompt: "Prompt pour continuer le résultat coupé",
@@ -886,9 +896,9 @@ const I18N = {
     scoreEvidence: "Ancrage probatoire",
     scoreEvidenceHint:
       "Des preuves ou hypothèses testables soutiennent l’analyse.",
-    scoreReadiness: "Prêt à partager",
+    scoreReadiness: "Contrôle de structure",
     scoreReadinessHint:
-      "L’analyse est assez claire pour être exportée et revue.",
+      "Baisse à chaque avertissement structurel ; il ne dit pas que l’analyse est prête à partager.",
     qualityGate: "Contrôle de publication",
     publishReady: "Prêt à publier",
     reviewNeeded: "Révision nécessaire",
@@ -1128,6 +1138,12 @@ const AI_INTERCHANGE = window.Jarbou3iAiInterchange;
 if (!AI_INTERCHANGE)
   throw new Error("AI Interchange Contract v1 compiler failed to load.");
 const PROVENANCE = window.Jarbou3iProvenance;
+// Biopolitical evidence can be the no-source placeholder: no locator makes it traceable.
+const provenanceFor = (analysis, lens = analysis?.analysis_lens) =>
+  PROVENANCE.assessEvidenceProvenance(
+    analysis,
+    lens === "biopolitical" ? { lens, isPlaceholder: BIO.isPlaceholderEvidence } : { lens },
+  );
 if (!PROVENANCE) throw new Error("Evidence provenance service failed to load.");
 const SETTINGS_KEY = "jarbou3i-model-settings";
 const SUPPORTED_LANGUAGES = ["ar", "en", "fr"];
@@ -1282,6 +1298,9 @@ const GUIDED_FLOW = createGuidedFlow({
   mood: (step) => {
     if (step !== "answer" || !$("jsonInput").value.trim()) return "idle";
     if (!$("continuationField").hidden) return "trunc";
+    if (state.analysis && $("jsonInput").value === savedReply) return "done";
+    const audit = state.importAudit;
+    if (!state.jsonValid && audit?.completionCandidate && audit.completionDiagnostics?.length) return "gaps";
     const tone = $("jsonStatus").dataset.tone;
     return tone === "ok" ? "ok" : tone === "crit" ? "crit" : "warn";
   },
@@ -2165,18 +2184,26 @@ function renderImportAuditDetails({
     ...contractQuarantine,
   ];
   summary.textContent = labelText(
-    `Review details · ${blocking} publication blocker${blocking === 1 ? "" : "s"} · ${warnings.length} review · ${repairCount} repaired`,
-    `تفاصيل المراجعة · ${blocking} ${blocking === 1 ? "عائق نشر" : "عوائق نشر"} · ${warnings.length} للمراجعة · ${repairCount} إصلاحات`,
-    `Détails · ${blocking} blocage${blocking === 1 ? "" : "s"} de publication · ${warnings.length} à revoir · ${repairCount} réparations`,
+    `Review details · ${pluralText(blocking, BLOCKER_COUNT)} · ${warnings.length} review · ${pluralText(repairCount, REPAIR_COUNT)}`,
+    `تفاصيل المراجعة · ${pluralText(blocking, BLOCKER_COUNT)} · ${warnings.length} للمراجعة · ${pluralText(repairCount, REPAIR_COUNT)}`,
+    `Détails · ${pluralText(blocking, BLOCKER_COUNT)} · ${warnings.length} à revoir · ${pluralText(repairCount, REPAIR_COUNT)}`,
   );
+  // A message shared by many records is listed once, with each of their paths.
+  const warningGroups = new Map();
+  warnings.forEach((warning) => {
+    const message = localizedImportIssueMessage(warning);
+    if (!warningGroups.has(message)) warningGroups.set(message, []);
+    warningGroups.get(message).push(warning.path || "/");
+  });
+  const hiddenGroups = Math.max(0, warningGroups.size - 12);
   const warningItems = warnings.length
-    ? `<ul>${warnings
+    ? `<ul>${[...warningGroups]
         .slice(0, 12)
         .map(
-          (warning) =>
-            `<li><span class="j-audit-path" dir="ltr">${escapeHtml(warning.path || "/")}</span> — ${escapeHtml(localizedImportIssueMessage(warning))}</li>`,
+          ([message, paths]) =>
+            `<li>${escapeHtml(message)}${paths.map((path) => ` <span class="j-audit-path" dir="ltr">${escapeHtml(path)}</span>`).join("")}</li>`,
         )
-        .join("")}</ul>`
+        .join("")}${hiddenGroups ? `<li>${escapeHtml(labelText(`and ${hiddenGroups} more`, `و${hiddenGroups} غيرها`, `et ${hiddenGroups} de plus`))}</li>` : ""}</ul>`
     : `<p>${escapeHtml(labelText("No contract or integrity warnings.", "لا توجد تنبيهات عقد أو نزاهة.", "Aucun avertissement de contrat ou d’intégrité."))}</p>`;
   const repairs = [
     parsed?.recovered
@@ -2359,7 +2386,7 @@ function renderImportAuditDetails({
       : "",
   ].filter(Boolean);
   const quarantineHtml = quarantined.length
-    ? `<section class="j-audit-group"><h4>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h4><p>${escapeHtml(labelText("Unknown properties and invalid values were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues et les valeurs invalides n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
+    ? `<section class="j-audit-group"><h3>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h3><p>${escapeHtml(labelText("Unknown properties and invalid values were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues et les valeurs invalides n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
         .slice(0, 20)
         .map(
           (item) =>
@@ -2369,10 +2396,15 @@ function renderImportAuditDetails({
     : "";
   body.innerHTML = `${
     provenance?.total
-      ? `<section class="j-audit-group"><h4>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h4><p>${escapeHtml(labelText(`${blocking} of ${provenance.total} evidence records lack independent approval. Draft import is allowed; model-declared verification remains untrusted.`, `يفتقر ${blocking} من ${provenance.total} سجلات أدلة إلى اعتماد مستقل. استيراد المسودة مسموح؛ ويظل التحقق الذي يعلنه النموذج غير موثوق.`, `${blocking} preuves sur ${provenance.total} n’ont pas d’approbation indépendante. L’import du brouillon est permis ; la vérification déclarée par le modèle reste non fiable.`))}</p></section>`
+      ? `<section class="j-audit-group"><h3>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h3><p>${escapeHtml(labelText(`Evidence awaiting independent approval: ${blocking} of ${provenance.total}. Verification the AI declares for its own sources is not trusted.`, `أدلة تنتظر اعتمادًا مستقلًا: ${blocking} من ${provenance.total}. لا يُعتدّ بالتحقق الذي يعلنه الذكاء الاصطناعي لمصادره.`, `Preuves en attente d’approbation indépendante : ${blocking} sur ${provenance.total}. La vérification que l’IA déclare pour ses propres sources n’est pas fiable.`))}</p></section>`
       : ""
-  }<section class="j-audit-group"><h4>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h4>${warningItems}</section><section class="j-audit-group"><h4>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h4>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
+  }<section class="j-audit-group"><h3>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h3>${warningItems}</section><section class="j-audit-group"><h3>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h3>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
   details.hidden = false;
+}
+// The answer box holds the analysis under review once it is imported.
+function showReplyImported() {
+  $("jsonStatus").dataset.tone = "ok";
+  $("jsonStatus").textContent = t("jsonImported");
 }
 function validateJsonInput() {
   const text = $("jsonInput").value.trim();
@@ -2572,9 +2604,7 @@ function validateJsonInput() {
       ...completionDiagnostics,
       ...(state.importValidation?.warnings || []).filter((item) => !gapKeys.has(`${item.path} ${item.message}`)),
     ];
-    const provenance = PROVENANCE.assessEvidenceProvenance(analysis, {
-      lens: analysis.analysis_lens,
-    });
+    const provenance = provenanceFor(analysis);
     const citationRepair = warnings.find(
       (warning) => warning.code === "NON_PORTABLE_CITATION_MARKERS_REMOVED",
     );
@@ -2648,9 +2678,9 @@ function validateJsonInput() {
           )
       : needsIndependentReview
         ? labelText(
-            `Reviewable draft. Publication blockers: ${provenance.total - provenance.approved} of ${provenance.total} evidence records lack independent approval. Review: ${problems.length} contract or integrity warning${problems.length === 1 ? "" : "s"}. Draft import is allowed; publication is blocked.`,
-            `مسودة قابلة للمراجعة. عوائق النشر: ${provenance.total - provenance.approved} من ${provenance.total} سجلات أدلة بلا اعتماد مستقل. المراجعة: ${problems.length} ${problems.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. استيراد المسودة مسموح والنشر محظور.`,
-            `Brouillon révisable. Blocages de publication : ${provenance.total - provenance.approved} preuves sur ${provenance.total} sans approbation indépendante. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de contrat ou d’intégrité. L’import du brouillon est permis ; la publication est bloquée.`,
+            `Reviewable draft. Evidence awaiting independent approval: ${provenance.total - provenance.approved} of ${provenance.total}. Review: ${problems.length} contract or integrity warning${problems.length === 1 ? "" : "s"}. You can import it; publication stays blocked.`,
+            `مسودة قابلة للمراجعة. أدلة تنتظر اعتمادًا مستقلًا: ${provenance.total - provenance.approved} من ${provenance.total}. المراجعة: ${problems.length} ${problems.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. يمكنك استيرادها، ويظل النشر محظورًا.`,
+            `Brouillon révisable. Preuves en attente d’approbation indépendante : ${provenance.total - provenance.approved} sur ${provenance.total}. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de contrat ou d’intégrité. Vous pouvez l’importer ; la publication reste bloquée.`,
           )
         : warnings.length
           ? labelText(
@@ -2714,15 +2744,19 @@ function validateJsonInput() {
               "هذا ليس تحليلًا مكتملًا، لذا لم يُستورد. الصق إجابة الذكاء الاصطناعي الكاملة على البرومبت الحالي، أو أنشئ برومبتًا جديدًا.",
               "Ce n’est pas une analyse complète ; elle n’est donc pas importée. Collez la réponse complète de l’IA au prompt actuel, ou générez un nouveau prompt.",
             );
-    $("jsonStatus").textContent = [completionMessage, unplacedMessage, lensNotice, languageNotice, incompleteMessage || validationMessage, citationNotice]
-      .filter(Boolean)
-      .join(" ");
+    // The answer in the box is the analysis already imported: say that, not that it can be imported.
+    if (!incomplete && $("jsonInput").value === savedReply) showReplyImported();
+    else
+      $("jsonStatus").textContent = [completionMessage, unplacedMessage, lensNotice, languageNotice, incompleteMessage || validationMessage, citationNotice]
+        .filter(Boolean)
+        .join(" ");
     if (incomplete) {
       state.jsonValid = false;
       $("importBtn").disabled = true;
       // With nothing listed to complete, there is nothing to ask the AI for.
       $("repairPromptBtn").disabled = !(gaps && completionCandidate) && !importErrors.length;
-      $("jsonStatus").dataset.tone = "crit";
+      // Missing parts the AI can be asked for are a step to finish, not a failure.
+      $("jsonStatus").dataset.tone = gaps && completionCandidate ? "warn" : "crit";
       $("pasteCard").classList.remove("ready");
       $("pasteCard").classList.add("invalid");
       $("continuationField").hidden = true;
@@ -4556,6 +4590,12 @@ function impactScope(c) {
   if (sev >= 45) return labelText("Operational impact", "أثر تشغيلي");
   return labelText("Limited impact", "أثر محدود");
 }
+// Strategic records cite evidence through links (relationship-intelligence.js).
+const UNCITED_EVIDENCE_CAP = 50;
+function strategicEvidenceCited(a) {
+  const ids = new Set(arr(a?.evidence?.items).map((item) => String(item?.id ?? "").trim()).filter(Boolean));
+  return arr(a?.links).some((link) => linkCitation(link, (id) => ids.has(id)));
+}
 function scoreBreakdown(a = state.analysis) {
   if (!a)
     return {
@@ -4636,8 +4676,9 @@ function scoreBreakdown(a = state.analysis) {
           18,
       )
     : 0;
+  // Evidence that no record cites grounds nothing yet, however much of it there is.
   const evidence = Math.min(
-    100,
+    strategicEvidenceCited(a) ? 100 : UNCITED_EVIDENCE_CAP,
     ev.length * 9 + ass.length * 7 + sourceShare + counterShare,
   );
   const warnings = getWarnings(a).filter(
@@ -4933,8 +4974,13 @@ function scoreDiagnostic(key, val, a = state.analysis) {
                 ),
         },
         evidence: {
-          reason:
-            val < 70
+          reason: !strategicEvidenceCited(a)
+            ? labelText(
+                "No record is linked to the evidence yet, so it grounds nothing.",
+                "لا يرتبط أي سجل بالأدلة بعد، فهي لا تسند شيئًا.",
+                "Aucune fiche n’est encore reliée aux preuves : elles n’étayent rien.",
+              )
+            : val < 70
               ? labelText(
                   "Evidence grounding is weak or too inference-heavy.",
                   "الارتكاز على الأدلة ضعيف أو يعتمد كثيرًا على الاستنتاجات.",
@@ -4943,8 +4989,13 @@ function scoreDiagnostic(key, val, a = state.analysis) {
                   "Evidence and assumptions provide reasonable grounding.",
                   "الأدلة والافتراضات تعطي ارتكازًا معقولًا.",
                 ),
-          action:
-            val < 70
+          action: !strategicEvidenceCited(a)
+            ? labelText(
+                "Link each evidence item to the records it supports or contradicts.",
+                "اربط كل دليل بالسجلات التي يدعمها أو يناقضها.",
+                "Reliez chaque preuve aux fiches qu’elle étaye ou contredit.",
+              )
+            : val < 70
               ? labelText(
                   "Add source-grounded claims and tests for assumptions.",
                   "أضف ادعاءات مرتكزة على مصادر واختبارات للافتراضات.",
@@ -5322,6 +5373,32 @@ function wireResultsExplanation(lens) {
     };
   });
 }
+// The analysis’s own next improvement, else the structure’s; the overview and the report agree.
+function strategicNextAction(a, health) {
+  return String(a.quality_gate?.next_improvement || "").trim() || health.next;
+}
+// The AI's own reading of its answer (quality_gate), shown as its claim beside the app's gate.
+function strategicSelfAssessmentHtml(a) {
+  const weakestKey = String(a.quality_gate?.weakest_layer || "").trim();
+  // A layer named by its key reads in the page language.
+  const pillars = t("pillars") || {};
+  const weakest = Object.hasOwn(pillars, weakestKey)
+    ? pillars[weakestKey]
+    : ["evidence", "contradictions", "scenarios"].includes(weakestKey) ? t(weakestKey) : weakestKey;
+  const risk = String(a.quality_gate?.publication_risk || "").trim();
+  if (!weakest && !risk) return "";
+  const colon = labelText(": ", ": ", " : ");
+  const riskText = {
+    low: labelText("low", "منخفض", "faible"),
+    medium: labelText("medium", "متوسط", "moyen"),
+    high: labelText("high", "مرتفع", "élevé"),
+  }[risk.toLowerCase()] || risk;
+  const parts = [
+    weakest && `${labelText("Weakest layer", "أضعف طبقة", "Couche la plus faible")}${colon}${weakest}`,
+    risk && `${labelText("Publication risk", "خطر النشر", "Risque de publication")}${colon}${riskText}`,
+  ].filter(Boolean);
+  return `<div class="j-note" data-tone="idle" data-diagnostic="self-assessment"><h4>${escapeHtml(labelText("The AI's own assessment, not verified", "تقييم الذكاء الاصطناعي لنفسه، غير متحقق منه", "Auto-évaluation de l’IA, non vérifiée"))}</h4><p>${escapeHtml(parts.join(" · "))}</p></div>`;
+}
 function renderOverview() {
   const a = state.analysis;
   const warnings = getWarnings(a);
@@ -5339,9 +5416,9 @@ function renderOverview() {
     readiness: b.overall,
     coverage: b.analyticalCoverage,
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
-    nextAction: a.quality_gate?.next_improvement || h.next,
+    nextAction: strategicNextAction(a, h),
   });
-  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${nextActionHtml(h.next)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}<section aria-labelledby="schemaHealthTitle"><h4 id="schemaHealthTitle">${t("schemaHealth")}</h4>${diagNotesHtml(h.missing, t("healthGood"))}</section></div>`;
+  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}${strategicSelfAssessmentHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${nextActionHtml(h.next)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}<section aria-labelledby="schemaHealthTitle"><h4 id="schemaHealthTitle">${t("schemaHealth")}</h4>${diagNotesHtml(h.missing, t("healthGood"))}</section></div>`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -5487,8 +5564,9 @@ function htmlReport() {
     evidence: t("scoreEvidence"),
     readiness: t("scoreReadiness"),
   };
-  const reportRing = (v) => {
-    const tone = pctTone(v);
+  // A probability is not a quality score, so it keeps the neutral ring.
+  const reportRing = (v, { neutral = false } = {}) => {
+    const tone = neutral ? "" : pctTone(v);
     return `<span class="rRing"${tone ? ` data-tone="${tone}"` : ""} style="--v:${valuePct(v)}"><span>${Math.round(valuePct(v))}</span><small>%</small></span>`;
   };
   const metricHtml = metricKeys
@@ -5547,7 +5625,7 @@ function htmlReport() {
     normalizeArray(a.scenarios?.items)
       .map(
         (s) =>
-          `<article class="scenario"><header><div><small>${escapeHtml(s.timeframe || "—")}</small><h3>${escapeHtml(s.name || "—")}</h3></div>${reportRing(Number(s.probability) || 0)}</header>${s.rationale ? `<p>${escapeHtml(s.rationale)}</p>` : ""}<div class="cols"><div><b>${escapeHtml(t("drivers"))}</b>${
+          `<article class="scenario"><header><div><small>${escapeHtml(s.timeframe || "—")}</small><h3>${escapeHtml(s.name || "—")}</h3></div>${reportRing(Number(s.probability) || 0, { neutral: true })}</header>${s.rationale ? `<p>${escapeHtml(s.rationale)}</p>` : ""}<div class="cols"><div><b>${escapeHtml(t("drivers"))}</b>${
             arr(s.drivers)
               .map((x) => `<p>• ${escapeHtml(x)}</p>`)
               .join("") || "<p>—</p>"
@@ -5650,7 +5728,7 @@ function htmlReport() {
       .evidenceTable td[data-label]::before{content:attr(data-label);display:block;color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-transform:uppercase}
       [dir="rtl"] .evidenceTable td[data-label]::before{font-family:var(--j-font-ui);letter-spacing:0}}
     @media print{@page{margin:14mm}body{background:var(--j-panel)}.shell{width:100%;padding:0}.hero,.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{break-inside:avoid;page-break-inside:avoid}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}`;
-  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: <bdi>${b.analyticalCoverage}%</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(h.next)}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
+  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: <bdi>${b.analyticalCoverage}%</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(strategicNextAction(a, h))}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
 }
 
 function buildLosslessStrategicReport() {
@@ -5683,7 +5761,7 @@ function currentResultsInspectionIndex(lens = state.analysis?.analysis_lens || "
   if (inspectionIndexCache.indexes.has(lens)) {
     return inspectionIndexCache.indexes.get(lens);
   }
-  const provenance = PROVENANCE.assessEvidenceProvenance(state.analysis, { lens });
+  const provenance = provenanceFor(state.analysis, lens);
   const index = createResultsInspectionIndex({
     lens,
     analysis: state.analysis,
@@ -6188,13 +6266,13 @@ function renderBiopoliticalConclusion() {
         }</article></li>`,
     )
     .join("");
-  // A check that does not apply is neither passed nor a concern.
-  const tones = { pass: "ok", concern: "warn", not_applicable: "idle" };
+  // The AI's own checks: a pass is its claim, so it is not shown as verified.
+  const tones = { pass: "idle", concern: "warn", not_applicable: "idle" };
   const audit = BIO.SELF_AUDIT_KEYS.map((key) => {
     const status = a.self_audit[key] || "concern";
     return `<div data-tone="${tones[status]}"><dt>${escapeHtml(BIO.auditLabel(state.lang, key))}</dt><dd><span class="j-status" data-tone="${tones[status]}">${escapeHtml(BIO.displayToken(state.lang, status))}</span></dd></div>`;
   }).join("");
-  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><dl class="j-checks" data-records="self-audit">${audit}</dl>${a.self_audit_notes.length ? `<div class="j-note" data-tone="idle">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
+  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p><dl class="j-checks" data-records="self-audit">${audit}</dl>${a.self_audit_notes.length ? `<div class="j-note" data-tone="idle">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
 }
 function renderBiopoliticalReviewNav() {
   const connectionLabel = labelText("Connections", "العلاقات", "Connexions");
@@ -7205,6 +7283,16 @@ const CHANGE_COUNT = {
   ar: { zero: "لا تغييرات", one: "تغيير واحد", two: "تغييران", few: "{count} تغييرات", many: "{count} تغييرًا", other: "{count} تغيير" },
   fr: { one: "{count} modification", other: "{count} modifications" },
 };
+const BLOCKER_COUNT = {
+  en: { one: "{count} publication blocker", other: "{count} publication blockers" },
+  ar: { zero: "لا عوائق نشر", one: "عائق نشر واحد", two: "عائقا نشر", few: "{count} عوائق نشر", many: "{count} عائقًا للنشر", other: "{count} عائق نشر" },
+  fr: { one: "{count} blocage de publication", other: "{count} blocages de publication" },
+};
+const REPAIR_COUNT = {
+  en: { one: "{count} repaired", other: "{count} repaired" },
+  ar: { zero: "لا إصلاحات", one: "إصلاح واحد", two: "إصلاحان", few: "{count} إصلاحات", many: "{count} إصلاحًا", other: "{count} إصلاح" },
+  fr: { one: "{count} réparation", other: "{count} réparations" },
+};
 const REVISION_COUNT = {
   en: { one: "{count} revision", other: "{count} revisions" },
   ar: { zero: "لا نسخ", one: "نسخة واحدة", two: "نسختان", few: "{count} نسخ", many: "{count} نسخة", other: "{count} نسخة" },
@@ -7616,6 +7704,7 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   if (!keepReply) {
     $("jsonInput").value = savedReply;
     $("importBtn").disabled = true;
+    showReplyImported();
   }
   writeSettings({ activeWorkspaceId: workspace.workspace_id, analysisLens: state.analysisLens });
   // The reply kept for a reload now belongs with the analysis on screen.
@@ -8276,6 +8365,7 @@ $("importBtn").onclick = async () => {
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
   $("importBtn").disabled = true;
+  showReplyImported();
   $("topicStatus").dataset.tone = "ok";
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"), "", { announce: false });
@@ -8342,6 +8432,7 @@ $("loadSampleBtn").onclick = async (event) => {
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
   $("importBtn").disabled = true;
+  showReplyImported();
   toast(t("sampleLoaded"));
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });

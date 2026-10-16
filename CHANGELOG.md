@@ -15,6 +15,64 @@
   the names of the files you will attach. It is four rows tall, so its hint
   shows in full on a phone. The UX-0 prototype says the same.
 
+### Real AI answers (UIX-5 slice D)
+
+From a walk through eight real ChatGPT answers, every section opened and the
+report exported and printed (`docs/audits/2026-10-15-real-reply-walkthrough.md`):
+
+- A no-source answer's placeholder evidence no longer counts as a traceable
+  source. Its locator names the prompt's instruction, not a source, yet it
+  gave "Source traceability 100%", which raised the decision-readiness cap,
+  and "1 traceable" in the source groups. It now reads 0% and 0, and is
+  listed for review as an untraceable source. The rule that names the
+  placeholder is still the Biopolitical one; `assessEvidenceProvenance`
+  takes it as `isPlaceholder`.
+- After import, the answer box says "Imported: this is the analysis under
+  review" instead of "Valid JSON. You can import the analysis now", also
+  after a language change, a reload or a sample. The guide says the review
+  is ready. The toast says to start with the overview, not "the engine
+  layers".
+- An answer held back for missing parts is shown as a step to finish, not a
+  format error: the status is amber, and the guide says "Nearly there: a few
+  parts are missing. Ask the AI for just those." A real format error stays
+  red.
+- The completion prompt quotes what the AI wrote where an evidence ID was
+  expected (ChatGPT wrote a sentence about the study) and lists the
+  existing evidence IDs with their titles, so the AI can pick the right one.
+- The import details list a message shared by many records once, with all
+  their paths ("Evidence is placeholder, untraceable, or not fully verified"
+  appeared 13 times), and say how many groups are not shown. The blocker
+  line reads "Evidence awaiting independent approval: 13 of 13", without
+  the plural errors of "1 of 1 evidence records" and "1 preuves sur 1", and
+  no longer says "Draft import is allowed" when the import is held back.
+  Its group headings are h3 under the step's h2.
+- The Strategic report gives the analysis's own next improvement, as the
+  overview does, not the structure check's line. Scenario probabilities in
+  the report keep a neutral ring: a 20% scenario is not a failing score.
+- The reference inspector is a dialog built from divs: its `aside`, `header`
+  and `footer` added a complementary region and a second banner (axe).
+- Strategic records have no field to cite evidence, so their links now carry
+  the citations: a link between an evidence record and another record cites
+  it, and a `contradicts` link cites it as counter-evidence
+  (`linkCitation`). The evidence trails, back-references, "uncited" counts
+  and review tasks follow. A Strategic answer whose evidence no record cites
+  scores at most 50 for evidence grounding, and its explanation says to link
+  the evidence to the records it supports or contradicts.
+- "Share readiness" is "Structure check" (فحص البنية, Contrôle de structure):
+  it drops with each structural warning and does not say the analysis is
+  ready to share. Its hint says so. ("Structure complete" was proposed, but
+  the overview already shows "Structural completion".)
+- The Strategic overview shows the analysis's own weakest layer and
+  publication risk as "The AI's own assessment, not verified", the layer
+  named in the page language.
+- The Biopolitical self-audit shows the model's "pass" as its claim: a
+  neutral status, not green, under a line that says a pass is not a
+  verification; the report does the same, and its "concern" is amber, not
+  red.
+- The import details' summary counts blockers and repairs with the plural
+  forms of each language ("عائقا نشر", "2 blocages de publication",
+  "لا إصلاحات").
+
 ### Results
 
 - The overview gives one publication verdict. In Strategic, the brief said

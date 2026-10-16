@@ -22,6 +22,19 @@ test.describe("Case file", () => {
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "connections", "evidence", "conclusion", "inspection", "exports"].map((key) => `case-${key}`));
   });
 
+  test("the model's own checks read as its claims, not as verification", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#loadSampleBtn").click();
+    const conclusion = page.locator("#case-conclusion");
+    await expect(conclusion).toContainText("a pass is its claim, not a verification");
+    const audit = conclusion.locator('[data-records="self-audit"]');
+    await expect(audit.locator(".j-status").first()).toBeVisible();
+    await expect(audit.locator('.j-status[data-tone="ok"]')).toHaveCount(0);
+  });
+
   test("the outline jumps to a section and follows the reader", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();

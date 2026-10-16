@@ -404,6 +404,20 @@ test.describe('Strategic HTML report content', () => {
     await expect(ledger).not.toContainText(/ · none\b/);
   });
 
+  test('the report names the analysis’s own next step and keeps probabilities neutral', async ({ page }, testInfo) => {
+    const data = await strategicFixture('sample-analysis-en.json');
+    data.quality_gate.next_improvement = 'Test the export-control claim against customs data.';
+    data.scenarios.items.forEach((item) => { item.probability = 20; });
+    const html = await exportImportedStrategic(page, testInfo, data, 'en-next-step');
+
+    // The overview and the report give the same next action.
+    expect(html).toContain('Next best action:</b> Test the export-control claim against customs data.');
+    // A probability is not a quality score: a low one is not shown as a failure.
+    const rings = [...html.matchAll(/<article class="scenario">[\s\S]*?<span class="rRing"([^>]*)>/g)].map((match) => match[1]);
+    expect(rings.length).toBe(data.scenarios.items.length);
+    for (const attributes of rings) expect(attributes).not.toContain('data-tone');
+  });
+
   test('an interest without a rationale does not print its raw stakes code', async ({ page }, testInfo) => {
     const data = await strategicFixture('sample-analysis-ar.json');
     delete data.interests[0].rationale;

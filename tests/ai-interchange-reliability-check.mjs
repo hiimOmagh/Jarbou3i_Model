@@ -377,6 +377,22 @@ const criterionLine = criterionPrompt
 if (!criterionLine?.includes(`"${fixture.intervention_assessment.capture_assessment.criteria[1].criterion}"`)) {
   fail(`completion prompt must name the criterion whose status is missing: ${criterionLine}`);
 }
+// An evidence reference the AI wrote as prose is quoted back, with the IDs it can use.
+const proseBenefit = structuredClone(fixture);
+proseBenefit.intervention_assessment.interventions[0].evidence_of_benefit = ["A field study of remote monitoring"];
+const proseErrors = window.Jarbou3iBiopoliticsIntegrity.validateImport(proseBenefit).errors;
+const prosePrompt = compiler.buildCompletionPrompt(proseBenefit, proseErrors, "en", bioTemplate);
+const proseLine = prosePrompt
+  .split("\n")
+  .find((line) => line.startsWith("/intervention_assessment/interventions/0/evidence_of_benefit/0"));
+if (
+  proseErrors.length !== 1 ||
+  !proseLine?.includes('"A field study of remote monitoring"') ||
+  !proseLine.includes("evidence record") ||
+  !fixture.evidence.items.every((item) => prosePrompt.includes(`\n${item.id} — `))
+) {
+  fail(`completion prompt must quote a prose evidence reference and list the evidence IDs: ${proseLine}`);
+}
 // A generated ID skips the ones the answer already uses: an AI that drops a
 // record and forgets one ref must not end with two records sharing an ID.
 const idCandidate = { evidence: { items: [{ id: "E1" }, { id: "E3" }, { claim: "no ref" }] } };

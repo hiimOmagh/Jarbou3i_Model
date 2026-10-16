@@ -85,6 +85,11 @@ for (const tag of buttonTags) {
   if (!/\btype="button"/.test(tag)) fail(`button without explicit type=button: ${tag}`);
 }
 
+// The reference inspector is a dialog: landmark elements inside it would add a
+// complementary region and a second banner.
+const inspectorShell = fs.readFileSync('src/reference-ui.js', 'utf8').match(/rootElement\.innerHTML = `([^`]*)`/)?.[1] || '';
+if (!/id="referenceInspector" role="dialog"/.test(inspectorShell)) fail('reference inspector dialog shell not found');
+if (/<(aside|header|footer)\b/.test(inspectorShell)) fail('reference inspector dialog must not contain landmark elements');
 if (!/\.srOnly/.test(styles)) fail('screen-reader utility class missing');
 if (!/:focus-visible/.test(styles)) fail('focus-visible styling missing');
 

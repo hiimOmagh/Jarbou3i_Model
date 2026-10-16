@@ -22,8 +22,8 @@
 }
 /* Not colour alone: the bubble's edge changes and the mascot stops to react. */
 .j-flow-guide:not([data-mood="idle"]) .j-flow-mascot img { animation: j-flow-pop var(--j-dur-3) var(--j-ease-out); }
-.j-flow-guide[data-mood="ok"] .j-flow-say { border-color: var(--j-ok); }
-.j-flow-guide:is([data-mood="warn"], [data-mood="trunc"]) .j-flow-say { border-color: var(--j-warn); }
+.j-flow-guide:is([data-mood="ok"], [data-mood="done"]) .j-flow-say { border-color: var(--j-ok); }
+.j-flow-guide:is([data-mood="warn"], [data-mood="trunc"], [data-mood="gaps"]) .j-flow-say { border-color: var(--j-warn); }
 .j-flow-guide[data-mood="crit"] .j-flow-say { border-color: var(--j-crit); border-width: 2px; }
 
 .j-flow-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }

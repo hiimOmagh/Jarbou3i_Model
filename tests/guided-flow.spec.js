@@ -55,6 +55,14 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#flowGuide")).toHaveAttribute("data-mood", "ok");
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();
+    // Once imported, the answer step says so instead of offering the import again,
+    // and keeps saying so in another language.
+    await step(page, "answer").click();
+    await expect(page.locator("#flowGuide")).toHaveAttribute("data-mood", "done");
+    await expect(page.locator("#flowSay")).toHaveText("Imported. Your review is ready.");
+    await expect(page.locator("#jsonStatus")).toHaveText(/^Imported: this is the analysis under review/);
+    await page.locator("#langFr").click();
+    await expect(page.locator("#jsonStatus")).toHaveText(/^Importée : c’est l’analyse en cours d’examen/);
   });
 
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {

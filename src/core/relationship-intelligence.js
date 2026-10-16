@@ -52,6 +52,22 @@ function evidenceReferences(node, analysis) {
   return references;
 }
 
+// Strategic records have no field to cite evidence, so a link between an
+// evidence record and another record cites it; a "contradicts" link cites it
+// as counter-evidence.
+export function linkCitation(link, isEvidence) {
+  const from = text(link?.from ?? link?.source);
+  const to = text(link?.to ?? link?.target);
+  if (!from || !to || isEvidence(from) === isEvidence(to)) return null;
+  const fromEvidence = isEvidence(from);
+  return Object.freeze({
+    ownerId: fromEvidence ? to : from,
+    targetId: fromEvidence ? from : to,
+    role: text(link?.relation) === "contradicts" ? "counter" : "supporting",
+    endpoint: fromEvidence ? "from" : "to",
+  });
+}
+
 function publicNode(node) {
   return deepFreeze({
     id: text(node?.id),
@@ -128,6 +144,23 @@ export function createRelationshipIntelligence({
       else unresolvedEvidence.push(reference);
     });
   });
+  if (lens === "strategic") {
+    const isEvidence = (id) => byId.get(id)?.type === "evidence";
+    publicEdges.forEach((edge) => {
+      if (!byId.has(edge.source) || !byId.has(edge.target)) return;
+      const citation = linkCitation(edge, isEvidence);
+      if (!citation) return;
+      const reference = deepFreeze({
+        ownerId: citation.ownerId,
+        targetId: citation.targetId,
+        role: citation.role,
+        field: "links",
+        path: `${edge.path}/${citation.endpoint}`,
+      });
+      evidenceByOwner.get(reference.ownerId).push(reference);
+      evidenceBacklinks.get(reference.targetId).push(reference);
+    });
+  }
 
   const provenanceById = new Map(arr(provenance?.records).map((item) => [text(item?.id), item]));
   const isolatedRecords = publicNodes

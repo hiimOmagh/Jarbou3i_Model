@@ -22,7 +22,7 @@
 .j-export-raw pre:focus-visible { outline: 2px solid var(--j-signal); outline-offset: -2px; }
 
 .j-audit-body { display: grid; gap: var(--j-s-3); padding: 0 var(--j-s-3) var(--j-s-3); font-size: var(--j-t-13); }
-.j-audit-group h4 { margin: 0 0 var(--j-s-1); font-size: var(--j-t-13); }
+.j-audit-group h3 { margin: 0 0 var(--j-s-1); font-size: var(--j-t-13); }
 .j-audit-group p, .j-audit-group ul { margin: 0; }
 .j-audit-group ul { padding-inline-start: var(--j-s-5); }
 .j-audit-path, .j-audit-group code { font-family: var(--j-font-data); overflow-wrap: anywhere; }

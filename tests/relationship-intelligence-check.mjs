@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { createRelationshipIntelligence, parseRelationshipDeepLink } from "../src/core/relationship-intelligence.js";
+import { createRelationshipIntelligence, linkCitation, parseRelationshipDeepLink } from "../src/core/relationship-intelligence.js";
 import { createResultsInspectionIndex } from "../src/core/results-inspection.js";
 import { assessEvidenceProvenance } from "../src/core/provenance.js";
 import "../src/biopolitics-graph.js";
@@ -30,8 +30,30 @@ assert(strategicIndex.resolveDeepLink("#record=biopolitical:E1") === null, "cros
 assert(parseRelationshipDeepLink("#record=strategic:E1")?.lens === "strategic", "deep-link parser rejected a valid target");
 assert(parseRelationshipDeepLink("#record=unknown:E1") === null, "deep-link parser accepted an unknown lens");
 
+// Strategic links carry its citations: a link between evidence and a record
+// cites it, and a "contradicts" link cites it as counter-evidence.
+assert(!strategicIndex.backReferences("E1").evidence.length, "evidence without a link was cited");
+const linked = structuredClone(strategic);
+linked.links.push(
+  { from: "E1", to: "R1", relation: "enables" },
+  { from: "A1", to: "E1", relation: "contradicts" },
+);
+const linkedIndex = createResultsInspectionIndex({
+  lens: "strategic",
+  analysis: linked,
+  provenance: assessEvidenceProvenance(linked, { lens: "strategic" }),
+  lang: "en",
+});
+assert(
+  linkedIndex.evidenceTrail("R1").supporting.some((item) => item.targetId === "E1" && item.path === "/links/3/from"),
+  "a link from evidence does not cite it",
+);
+assert(linkedIndex.evidenceTrail("A1").counter.some((item) => item.targetId === "E1"), "a contradicting link is not counter-evidence");
+assert(linkedIndex.backReferences("E1").evidence.length === 2, "linked evidence is still uncited");
+assert(linkCitation({ from: "E1", to: "E2" }, (id) => id.startsWith("E")) === null, "a link between two evidence records cited one");
+
 const biopolitical = fixture("sample-analysis-bio-en.json");
-const graph = globalThis.Jarbou3iBiopoliticsGraph.build(biopolitical, "en");
+const graph =globalThis.Jarbou3iBiopoliticsGraph.build(biopolitical, "en");
 const provenance = assessEvidenceProvenance(biopolitical, { lens: "biopolitical" });
 const biopoliticalIndex = createResultsInspectionIndex({
   lens: "biopolitical", analysis: biopolitical, graph, provenance, lang: "en",

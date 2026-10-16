@@ -296,7 +296,7 @@
     }).join("");
     const conclusion = `<details class="reportSection" id="conclusion">
       <summary><span class="sectionNumber">10</span><span class="sectionHeading"><strong>${escapeHtml(c.conclusion)}</strong><small>${escapeHtml(c.conclusionHint)}</small></span></summary>
-      <div class="sectionBody"><div class="conclusionGrid">${conclusionGroups}</div><ul class="auditList">${audit}</ul></div>
+      <div class="sectionBody"><div class="conclusionGrid">${conclusionGroups}</div><p class="auditNote">${escapeHtml(bio.ui(locale, "selfAuditNote"))}</p><ul class="auditList">${audit}</ul></div>
     </details>`;
 
     const familyLabels = { explicit: c.authored, evidence: c.evidence, structural: c.structural };
@@ -399,7 +399,7 @@
       .referenceIndex article>span{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);text-transform:uppercase}
       .referenceIndex p{margin:.35rem 0;color:var(--j-fg-muted)}
       .auditList{padding:0;list-style:none}.auditList li{display:flex;justify-content:space-between;gap:1rem;padding:.65rem;border-bottom:1px solid var(--j-line)}
-      [data-audit-state="pass"],[data-audit-state="not_applicable"]{color:var(--j-ok)}[data-audit-state="concern"]{color:var(--j-crit)}
+      [data-audit-state="concern"]{color:var(--j-warn)}
       .caution,.empty{color:var(--j-fg-muted)}
       .jsonInspector pre{max-height:40rem;overflow:auto;padding:1rem;border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2);color:var(--j-fg);font:var(--j-t-13)/1.55 var(--j-font-data);direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
       .jsonInspector summary{cursor:pointer;padding:.8rem}

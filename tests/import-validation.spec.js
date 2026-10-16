@@ -58,9 +58,45 @@ test.describe("Runtime import validation", () => {
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeDisabled();
     await expect(page.locator("#jsonStatus")).toContainText(/not imported yet/i);
+    // Missing parts the AI can be asked for are a step to finish, not a format error.
+    await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "warn");
+    await expect(page.locator("#flowGuide")).toHaveAttribute("data-mood", "gaps");
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     await expect(audit).toContainText("/power_map/actors/0/id");
+    await expect(audit).not.toContainText(/Draft import is allowed/i);
+    // A message shared by several records is listed once, with all their paths.
+    const messages = await audit.locator("li").evaluateAll((items) =>
+      items.map((item) => item.firstChild?.textContent || ""),
+    );
+    expect(new Set(messages).size).toBe(messages.length);
+    await expect(audit.locator("li:has(.j-audit-path + .j-audit-path)").first()).toBeVisible();
+  });
+
+  test("a no-source placeholder's locator does not make it a traceable source", async ({
+    page,
+  }) => {
+    await openBiopoliticalImport(page);
+    const data = await fixture("sample-analysis-bio-en.json");
+    const clearEvidenceReferences = (value) => {
+      if (!value || typeof value !== "object") return;
+      for (const [key, child] of Object.entries(value)) {
+        if (["evidence_ids", "supporting_evidence_ids", "counter_evidence_ids", "evidence_of_benefit"].includes(key)) value[key] = [];
+        else clearEvidenceReferences(child);
+      }
+    };
+    clearEvidenceReferences(data);
+    const [placeholder] = await page.evaluate(() =>
+      JSON.parse(window.Jarbou3iBiopolitics.buildSchemaTemplate("en", "research", "none")).evidence.items,
+    );
+    data.evidence.items = [{ ...placeholder, source_locator: "Procedural instruction" }];
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await page.locator("#importBtn").click();
+    const review = page.locator("#reviewContent");
+    await expect(review.locator(".j-stats span", { hasText: "Source traceability" }).locator("b")).toHaveText("0%");
+    await review.locator("[data-evidence-intelligence] > summary").click();
+    await expect(review.locator("[data-source-cluster] span", { hasText: "Traceable" }).locator("b")).toHaveText("0");
   });
 
   test("refuses legacy six-layer content and asks for a new prompt", async ({
@@ -92,7 +128,7 @@ test.describe("Runtime import validation", () => {
     await expect(audit).toBeVisible();
     await audit.locator("summary").click();
     await expect(audit).toContainText(/Publication blockers/i);
-    await expect(audit).toContainText(/Draft import is allowed/i);
+    await expect(audit).toContainText(/Evidence awaiting independent approval: \d+ of \d+\./);
     await expect(audit).toContainText(/publication remains blocked/i);
     await expect(page.locator("#importBtn")).toBeEnabled();
     await expect(audit).toContainText(/Review required/i);
@@ -134,12 +170,15 @@ test.describe("Runtime import validation", () => {
         fixture: "sample-analysis-bio-ar.json",
         warning: "رابط المصدر ليس رابط HTTP(S) مطلقًا",
         schema: "لا تطابق القيمة بنية عقد التحليل المطلوبة",
+        // Two blockers take the dual form.
+        blockers: "عائقا نشر",
       },
       {
         button: "#langFr",
         fixture: "sample-analysis-bio-fr.json",
         warning: "L’URL de la source n’est pas une URL HTTP(S) absolue",
         schema: "La valeur ne respecte pas la structure requise",
+        blockers: "2 blocages de publication",
       },
     ];
     for (const current of cases) {
@@ -154,6 +193,7 @@ test.describe("Runtime import validation", () => {
       await expect(page.locator("#importBtn")).toBeEnabled();
       const audit = page.locator("#importAuditDetails");
       await audit.locator("summary").click();
+      await expect(audit.locator("summary")).toContainText(current.blockers);
       await expect(audit).toContainText(current.warning);
       await expect(audit).not.toContainText("Source URL is not an absolute HTTP(S) URL");
       await expect(audit.locator(".j-audit-path").first()).toHaveAttribute("dir", "ltr");
