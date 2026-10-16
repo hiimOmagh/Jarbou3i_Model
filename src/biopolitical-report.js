@@ -60,8 +60,6 @@
       source: "Open source",
       evidenceRecord: "Evidence record",
       sourceUnavailable: "No portable source link supplied",
-      officialContract: "Canonical analysis contract",
-      schema: "schema",
       authored: "Authored causal connections",
       evidence: "Evidence connections",
       structural: "Structural references",
@@ -119,8 +117,6 @@
       source: "فتح المصدر",
       evidenceRecord: "سجل دليل",
       sourceUnavailable: "لم يُقدَّم رابط مصدر قابل للنقل",
-      officialContract: "عقد التحليل النظامي",
-      schema: "المخطط",
       authored: "العلاقات السببية المؤلَّفة",
       evidence: "علاقات الأدلة",
       structural: "المراجع البنيوية",
@@ -178,8 +174,6 @@
       source: "Ouvrir la source",
       evidenceRecord: "Élément de preuve",
       sourceUnavailable: "Aucun lien de source portable fourni",
-      officialContract: "Contrat d’analyse canonique",
-      schema: "schéma",
       authored: "Connexions causales rédigées",
       evidence: "Connexions probatoires",
       structural: "Références structurelles",
@@ -199,7 +193,7 @@
   };
 
   // scoreTone: the app's score bands (ok, warn, crit or none) for a figure.
-  function build({ analysis, lang, version, bio, graphApi, scoreTone = () => "" }) {
+  function build({ analysis, lang, version, bio, graphApi, scoreTone = () => "", exportedAt = null }) {
     const theme = root.Jarbou3iReportTheme;
     if (!analysis || !bio || !graphApi || !theme) {
       throw new Error("Biopolitical report dependencies are unavailable.");
@@ -337,7 +331,6 @@
       .heroGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,330px);gap:2rem;align-items:start}
       .hero h1{max-width:24ch;margin:.5rem 0;color:var(--j-fg);font:700 clamp(1.9rem,4vw,var(--j-t-36))/1.15 var(--j-font-display);letter-spacing:-.01em}
       .hero p{margin:.5rem 0;color:var(--j-fg-muted)}.hero .chain{max-width:76ch;font-size:var(--j-t-14)}
-      .hero .contractLine{margin:0;color:var(--j-signal);font:600 var(--j-t-12)/1.4 var(--j-font-data)}
       .statusPanel{display:grid;gap:var(--j-s-3)}
       .metricCard{padding:var(--j-s-4);border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2)}
       .metricCard strong{display:block;color:var(--j-fg);font:700 clamp(1.7rem,4vw,2.4rem)/1 var(--j-font-data);font-variant-numeric:tabular-nums}
@@ -385,7 +378,7 @@
       dl div{min-width:0;padding:.7rem;border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel)}
       dt{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-transform:uppercase}
       dd{margin:.2rem 0 0;overflow-wrap:anywhere}
-      [dir="rtl"] :is(dt,.eyebrow,.gateBadge,.contractLine,.referenceIndex article>span){font-family:var(--j-font-ui);letter-spacing:0}
+      [dir="rtl"] :is(dt,.eyebrow,.gateBadge,.referenceIndex article>span){font-family:var(--j-font-ui);letter-spacing:0}
       .recordList h4{margin:.9rem 0 .25rem}.recordList ul{margin:.25rem 0}
       .referenceChip{display:inline-flex;flex-wrap:wrap;gap:.25rem;margin:.1rem;padding:.08rem .35rem;border-radius:var(--j-r-1);background:var(--j-signal-wash);color:var(--j-signal-strong);text-decoration:none}
       .referenceChip small{font-family:var(--j-font-data)}
@@ -410,16 +403,17 @@
 
       @media(max-width:800px){.shell{width:min(100% - 2rem,1180px);padding-top:.5rem}.heroGrid,.overviewGrid{grid-template-columns:1fr}.reportToc ol,.projectionGrid,.conclusionGrid,.referenceIndex,dl{grid-template-columns:1fr}.recordCard>header{display:block}.sourceLink,.sourceMissing{margin-top:.65rem}.toolbar{position:static;justify-content:stretch;width:auto;margin-inline:0}.toolbar button{flex:1 1 auto}.reportSection>summary{gap:.65rem}.recordCount{display:none}}
 
-      @media print{@page{margin:13mm}body{background:#fff;font-size:10.5pt}.shell{width:100%;padding:0}.hero{padding:1.2rem;border-radius:0;box-shadow:none}.toolbar,.reportToc,.skipLink{display:none!important}.overviewGrid{grid-template-columns:1fr}.reportSection{box-shadow:none;break-inside:auto}.reportSection>summary{break-after:avoid-page}.reportSection>summary:after{display:none}.reportSection>.sectionBody,.subsection>*:not(summary),.jsonInspector>*:not(summary){display:block!important}.reportSection:not([open])>.sectionBody,.subsection:not([open])>*:not(summary){display:block!important}.recordCard,.projectionGrid article,.referenceIndex article{break-inside:avoid-page}.canonicalAppendix .jsonInspector{display:none}}
+      @media print{body{background:#fff;font-size:10.5pt}.shell{width:100%;padding:0}.hero{padding:1.2rem;border-radius:0;box-shadow:none}.toolbar,.reportToc,.skipLink{display:none!important}.overviewGrid{grid-template-columns:1fr}.reportSection{box-shadow:none;break-inside:auto}.reportSection>summary{break-after:avoid-page}.reportSection>summary:after{display:none}details::details-content{display:block;content-visibility:visible}.recordCard,.conclusionGroup,.projectionGrid article,.referenceIndex article{break-inside:auto}.recordCard>header,.tags,dl div,.auditList li,.edgeList li,.referenceIndex article{break-inside:avoid-page}h2,h3,h4,.recordCard>header,.subsection>summary{break-after:avoid-page}p,li{orphans:3;widows:3}.canonicalAppendix .jsonInspector{display:none}}
     `;
-    const script = `(function(){const sections=[...document.querySelectorAll('.reportSection')];document.querySelector('[data-expand-all]').addEventListener('click',()=>sections.forEach(s=>s.open=true));document.querySelector('[data-collapse-all]').addEventListener('click',()=>sections.forEach(s=>s.open=false));document.querySelector('[data-print]').addEventListener('click',()=>window.print());document.addEventListener('click',event=>{const link=event.target.closest('.referenceChip');if(!link)return;const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();let parent=target.closest('details');while(parent){parent.open=true;parent=parent.parentElement.closest('details')}history.replaceState(null,'',link.getAttribute('href'));target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});const inspector=document.querySelector('.jsonInspector');inspector.addEventListener('toggle',()=>{if(!inspector.open)return;const target=document.getElementById('canonical-json-view');if(target.textContent)return;try{target.textContent=JSON.stringify(JSON.parse(document.getElementById('canonical-analysis').textContent),null,2)}catch(error){target.textContent='Unable to render canonical JSON.'}});})();`;
+    const script = `(function(){const sections=[...document.querySelectorAll('.reportSection')];document.querySelector('[data-expand-all]').addEventListener('click',()=>sections.forEach(s=>s.open=true));document.querySelector('[data-collapse-all]').addEventListener('click',()=>sections.forEach(s=>s.open=false));document.querySelector('[data-print]').addEventListener('click',()=>window.print());document.addEventListener('click',event=>{const link=event.target.closest('.referenceChip');if(!link)return;const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();let parent=target.closest('details');while(parent){parent.open=true;parent=parent.parentElement.closest('details')}history.replaceState(null,'',link.getAttribute('href'));target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});let closed=[];addEventListener('beforeprint',()=>{closed=[...document.querySelectorAll('details:not([open])')].filter(d=>!d.closest('.jsonInspector'));closed.forEach(d=>d.open=true)});addEventListener('afterprint',()=>{closed.forEach(d=>d.open=false);closed=[]});const inspector=document.querySelector('.jsonInspector');inspector.addEventListener('toggle',()=>{if(!inspector.open)return;const target=document.getElementById('canonical-json-view');if(target.textContent)return;try{target.textContent=JSON.stringify(JSON.parse(document.getElementById('canonical-analysis').textContent),null,2)}catch(error){target.textContent='Unable to render canonical JSON.'}});})();`;
 
-    return `<!doctype html><html lang="${locale}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="${escapeHtml(version)}"><meta name="analysis-lens" content="biopolitical"><meta name="analysis-contract" content="${escapeHtml(bio.APP_CONTRACT)}"><meta name="schema-version" content="${escapeHtml(bio.SCHEMA_VERSION)}"><title>${escapeHtml(a.subject.title || c.title)}</title><style>${theme.css}${css}</style></head><body data-publication-gate="${gate}"><a class="skipLink" href="#report-content">${escapeHtml(c.skip)}</a><main class="shell" id="report-content" data-analysis-lens="biopolitical" data-export-contract-lens="biopolitical" data-analysis-contract="${escapeHtml(bio.APP_CONTRACT)}" data-schema-version="${escapeHtml(bio.SCHEMA_VERSION)}" data-app-version="${escapeHtml(version)}">
-      <header class="hero"><div class="heroGrid"><div><p class="contractLine">${escapeHtml(c.officialContract)} · ${escapeHtml(bio.APP_CONTRACT)} · ${escapeHtml(c.schema)} ${escapeHtml(bio.SCHEMA_VERSION)}</p><h1>${escapeHtml(a.subject.title || c.title)}</h1><p>${escapeHtml(c.title)}</p><p class="chain">${escapeHtml(c.chain)}</p></div><div class="statusPanel"><section class="metricCard gateCard"><span class="gateBadge" data-tone="${verdictTone}">${escapeHtml(verdict)}</span><span>${escapeHtml(c.publication)}</span><small>${escapeHtml(health.publishable ? c.passedNote : c.blockedNote)}</small></section><section class="metricCard"><strong>${score.overall}%</strong><span class="metricBar"${readinessTone ? ` data-tone="${readinessTone}"` : ""} style="--pct:${score.overall}%" aria-hidden="true"></span><span>${escapeHtml(c.analyticalReadiness)}</span><small>${escapeHtml(c.readinessNote)}</small></section><section class="metricCard compactMetrics"><span><b>${score.analyticalCoverage}%</b> ${escapeHtml(c.analyticalCoverage)}</span><span><b>${score.provenance.sourceTraceability}%</b> ${escapeHtml(c.sourceTraceability)}</span><span><b>${score.provenance.humanReview}%</b> ${escapeHtml(c.humanReview)}</span></section></div></div></header>
+    return `<!doctype html><html lang="${locale}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="${escapeHtml(version)}"><meta name="analysis-lens" content="biopolitical"><meta name="analysis-contract" content="${escapeHtml(bio.APP_CONTRACT)}"><meta name="schema-version" content="${escapeHtml(bio.SCHEMA_VERSION)}"><title>${escapeHtml(a.subject.title || c.title)}</title><style>${theme.css}${css}${theme.printCss(locale, a.subject.title || c.title, !health.publishable)}</style></head><body data-publication-gate="${gate}"><a class="skipLink" href="#report-content">${escapeHtml(c.skip)}</a><main class="shell" id="report-content" data-analysis-lens="biopolitical" data-export-contract-lens="biopolitical" data-analysis-contract="${escapeHtml(bio.APP_CONTRACT)}" data-schema-version="${escapeHtml(bio.SCHEMA_VERSION)}" data-app-version="${escapeHtml(version)}">
+      ${health.publishable ? "" : theme.draftHtml(locale, verdictTone, c.blockedNote)}<header class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || c.title)}</h1><p>${escapeHtml(c.title)}</p>${theme.exportedHtml(locale, exportedAt)}<p class="chain">${escapeHtml(c.chain)}</p></div><div class="statusPanel"><section class="metricCard gateCard"><span class="gateBadge" data-tone="${verdictTone}">${escapeHtml(verdict)}</span><span>${escapeHtml(c.publication)}</span><small>${escapeHtml(health.publishable ? c.passedNote : c.blockedNote)}</small></section><section class="metricCard"><strong>${score.overall}%</strong><span class="metricBar"${readinessTone ? ` data-tone="${readinessTone}"` : ""} style="--pct:${score.overall}%" aria-hidden="true"></span><span>${escapeHtml(c.analyticalReadiness)}</span><small>${escapeHtml(c.readinessNote)}</small></section><section class="metricCard compactMetrics"><span><b>${score.analyticalCoverage}%</b> ${escapeHtml(c.analyticalCoverage)}</span><span><b>${score.provenance.sourceTraceability}%</b> ${escapeHtml(c.sourceTraceability)}</span><span><b>${score.provenance.humanReview}%</b> ${escapeHtml(c.humanReview)}</span></section></div></div></header>
       <div class="overviewGrid"><section class="overviewCard"><h2>${escapeHtml(c.executive)}</h2><p>${renderValue(a.subject.executive_finding || "—")}</p><p>${renderValue(a.subject.context || "")}</p></section><section class="overviewCard blockers" data-tone="${verdictTone}"><h2>${escapeHtml(c.reviewFirst)}</h2>${health.missing.length ? `<ol>${health.missing.slice(0,5).map((item)=>`<li>${renderValue(item)}</li>`).join("")}</ol>` : `<p>${escapeHtml(c.passedNote)}</p>`}</section></div>
       <nav class="reportToc" aria-label="${escapeHtml(c.contents)}"><h2>${escapeHtml(c.contents)}</h2><ol>${toc.map((item)=>`<li><a href="${item.href}"><span>${item.number}</span>${escapeHtml(item.label)}</a></li>`).join("")}</ol></nav>
       <div class="toolbar" aria-label="${escapeHtml(c.contents)}"><button type="button" data-expand-all>${escapeHtml(c.expand)}</button><button type="button" data-collapse-all>${escapeHtml(c.collapse)}</button><button type="button" data-print>${escapeHtml(c.print)}</button></div>
       ${pillarSections}${conclusion}${atlas}${directory}${appendix}
+      ${theme.provenanceHtml(locale, { exportedAt, generatedAt: a.generated_at, analysisId: a.analysis_id, schemaVersion: bio.SCHEMA_VERSION, version })}
     </main><script type="application/json" id="canonical-analysis">${canonicalJson}</script><script>${script}</script></body></html>`;
   }
 

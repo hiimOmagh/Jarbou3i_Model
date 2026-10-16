@@ -91,6 +91,12 @@ test("the engine map and the strategic layers read as steps and record cards", a
   await expect(record.locator(".j-rec-title")).toHaveText("United States");
   await expect(record.locator("dt")).toHaveText("Actor Power Index (API)");
   await expect(record.locator("dd")).toHaveText("18/20");
+  // A result states its goal, cost-benefit and effect on the balance of power.
+  await page.locator('[data-pillar-card="results"]').click();
+  const result = page.locator('#acc-panel-results [data-records="layer"] > li').first();
+  await expect(result.locator("dt")).toHaveText(["Goal achieved", "Cost-benefit", "Power balance"]);
+  await expect(result.locator("dd")).toHaveText(["70%", "3/5", "Strengthened"]);
+  await page.locator('[data-pillar-card="actors"]').click();
   // Its head closes it, and the map no longer marks it.
   await head.click();
   await expect(head).toHaveAttribute("aria-expanded", "false");

@@ -110,7 +110,6 @@ const I18N = {
     engineEyebrow: "02 / بنية النموذج",
     reviewEyebrow: "03 / فحص النتيجة",
     severity: "الشدة",
-    severityShort: "شدة",
     timeframeLabel: "السياق الزمني/الجغرافي",
     timeframePlaceholder: "اختياري: 2022–2026، أوروبا",
     sourcesLabel: "المصادر المقدمة",
@@ -412,7 +411,6 @@ const I18N = {
     engineEyebrow: "02 / Model structure",
     reviewEyebrow: "03 / Inspect outcome",
     severity: "Severity",
-    severityShort: "S",
     timeframeLabel: "Time/geographic context",
     timeframePlaceholder: "Optional: 2022–2026, Europe",
     sourcesLabel: "Supplied sources",
@@ -725,7 +723,6 @@ const I18N = {
     engineEyebrow: "02 / Structure du modèle",
     reviewEyebrow: "03 / Examiner le résultat",
     severity: "Sévérité",
-    severityShort: "S",
     timeframeLabel: "Contexte temporel/géographique",
     timeframePlaceholder: "Optionnel : 2022–2026, Europe",
     sourcesLabel: "Sources fournies",
@@ -3894,9 +3891,30 @@ function modelMetricLabel(kind) {
   return { api: "API", nsi: "NSI", tps: "TPS", iw: "IW" }[kind] || kind;
 }
 // A layer record's model score as a fact: its name and acronym, then the score
-// over its scale.
+// over its scale. Facts are [label, text] pairs: the app and the report show
+// the same ones.
 function modelMetricFact(label, value, max, sub) {
-  return recordFact(`${sub} (${label})`, `${escapeHtml(value)}${max ? `/${max}` : ""}`);
+  return [[`${sub} (${label})`, `${value}${max ? `/${max}` : ""}`]];
+}
+// A result's own figures: how far its goal was met, its cost-benefit and its
+// effect on the balance of power.
+function resultFacts(obj) {
+  const has = (value) => value !== undefined && value !== null && String(value).trim() !== "";
+  const balance = String(obj.power_balance_impact ?? "").trim();
+  const balanceText = {
+    strengthened: labelText("Strengthened", "تعزّز", "Renforcé"),
+    neutral: labelText("Neutral", "محايد", "Neutre"),
+    weakened: labelText("Weakened", "ضعُف", "Affaibli"),
+  }[normalizeToken(balance)] || balance;
+  return [
+    has(obj.goal_achieved_pct) && [labelText("Goal achieved", "تحقق الهدف", "Objectif atteint"), Number.isFinite(Number(obj.goal_achieved_pct)) ? `${Math.round(valuePct(obj.goal_achieved_pct))}%` : String(obj.goal_achieved_pct)],
+    has(obj.cost_benefit) && [labelText("Cost-benefit", "الكلفة والعائد", "Coût-bénéfice"), `${obj.cost_benefit}/5`],
+    balanceText && [labelText("Power balance", "ميزان القوة", "Rapport de force"), balanceText],
+  ].filter(Boolean);
+}
+// Facts as the app's record facts.
+function recordFactsHtml(facts) {
+  return facts.map(([label, value]) => recordFact(label, `<bdi>${escapeHtml(value)}</bdi>`)).join("");
 }
 function modelMetricsFor(p, obj) {
   if (p === "actors") {
@@ -3935,7 +3953,8 @@ function modelMetricsFor(p, obj) {
       labelText("Interest Weight", "وزن المصلحة", "Poids de l’intérêt"),
     );
   }
-  return "";
+  if (p === "results") return resultFacts(obj);
+  return [];
 }
 function qualityGate(a = state.analysis) {
   const b = scoreBreakdown(a);
@@ -4346,6 +4365,11 @@ function confidenceScore(v) {
 }
 function confidenceClass(v) {
   return pctClass(confidenceScore(v));
+}
+// A contradiction's severity as read: "Severity 7/10".
+function severityText(c) {
+  if (c.severity === undefined || c.severity === null || c.severity === "") return "";
+  return `${t("severity")} ${c.severity}${Number.isFinite(Number(c.severity)) ? "/10" : ""}`;
 }
 function severityScore(v) {
   const m = String(v ?? "").match(/\d+(?:\.\d+)?/);
@@ -5390,16 +5414,17 @@ function wireResultsExplanation(lens) {
 function strategicNextAction(a, health) {
   return String(a.quality_gate?.next_improvement || "").trim() || health.next;
 }
-// The AI's own reading of its answer (quality_gate), shown as its claim beside the app's gate.
-function strategicSelfAssessmentHtml(a) {
+// The AI's own reading of its answer (quality_gate), shown as its claim beside
+// the app's gate, in the app and in the report: { title, text } or null.
+function strategicSelfAssessment(a) {
   const weakestKey = String(a.quality_gate?.weakest_layer || "").trim();
   // A layer named by its key reads in the page language.
   const pillars = t("pillars") || {};
   const weakest = Object.hasOwn(pillars, weakestKey)
-    ? pillars[weakestKey]
+    ? pillars[weakestKey][0]
     : ["evidence", "contradictions", "scenarios"].includes(weakestKey) ? t(weakestKey) : weakestKey;
   const risk = String(a.quality_gate?.publication_risk || "").trim();
-  if (!weakest && !risk) return "";
+  if (!weakest && !risk) return null;
   const colon = labelText(": ", ": ", " : ");
   const riskText = {
     low: labelText("low", "منخفض", "faible"),
@@ -5410,7 +5435,11 @@ function strategicSelfAssessmentHtml(a) {
     weakest && `${labelText("Weakest layer", "أضعف طبقة", "Couche la plus faible")}${colon}${weakest}`,
     risk && `${labelText("Publication risk", "خطر النشر", "Risque de publication")}${colon}${riskText}`,
   ].filter(Boolean);
-  return `<div class="j-note" data-tone="idle" data-diagnostic="self-assessment"><h4>${escapeHtml(labelText("The AI's own assessment, not verified", "تقييم الذكاء الاصطناعي لنفسه، غير متحقق منه", "Auto-évaluation de l’IA, non vérifiée"))}</h4><p>${escapeHtml(parts.join(" · "))}</p></div>`;
+  return { title: labelText("The AI's own assessment, not verified", "تقييم الذكاء الاصطناعي لنفسه، غير متحقق منه", "Auto-évaluation de l’IA, non vérifiée"), text: parts.join(" · ") };
+}
+function strategicSelfAssessmentHtml(a) {
+  const assessment = strategicSelfAssessment(a);
+  return assessment ? `<div class="j-note" data-tone="idle" data-diagnostic="self-assessment"><h4>${escapeHtml(assessment.title)}</h4><p>${escapeHtml(assessment.text)}</p></div>` : "";
 }
 function renderOverview() {
   const a = state.analysis;
@@ -5438,7 +5467,7 @@ function renderPillars() {
   return `<h3>${t("engine")}</h3><div class="j-layers">${PILLARS.map((p, index) => {
     const items = normalizeArray(state.analysis[p]);
     const body = items.length
-      ? `<ol class="j-recs" data-records="layer">${items.map((o) => itemCard(o, modelMetricsFor(p, o))).join("")}</ol>`
+      ? `<ol class="j-recs" data-records="layer">${items.map((o) => itemCard(o, recordFactsHtml(modelMetricsFor(p, o)))).join("")}</ol>`
       : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`;
     return layerAccordion({ prefix: "acc", key: p, index, color: COLORS[p], label: labels[p], count: items.length, body });
   }).join("")}</div>`;
@@ -5462,9 +5491,7 @@ function renderContradictions() {
     const hasSeverity = c.severity !== undefined && c.severity !== null && c.severity !== "";
     const score = severityScore(c.severity);
     const tone = hasSeverity ? (score >= 80 ? "crit" : score >= 60 ? "warn" : "") : "";
-    const severity = hasSeverity
-      ? `${t("severity")} ${c.severity}${Number.isFinite(Number(c.severity)) ? "/10" : ""}`
-      : "";
+    const severity = severityText(c);
     const layers = affectedLayers(c);
     const layerChips = layers.length
       ? layers.map((p) => kernelChip(t("pillars")[p][0].replace(/[🔴🟠🟡🔵🟣⚫]/g, "").trim())).join("")
@@ -5595,13 +5622,17 @@ function htmlReport() {
       ([k, w]) => `<span><b>${w}%</b>${escapeHtml(scoreWeightLabel(k))}</span>`,
     )
     .join("")}</div></section>`;
+  // A record's ID and its facts, as the app's record cards give them.
+  const rid = (x) => (x?.id ? `<code class="rid">${escapeHtml(x.id)}</code>` : "");
+  const factsHtml = (facts) =>
+    facts.length ? `<dl class="facts">${facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl>` : "";
   const pillarsHtml = PILLARS.map(
     (p) =>
       `<section class="block"><header><h2>${escapeHtml(t("pillars")[p][0])}</h2><span>${normalizeArray(a[p]).length} ${escapeHtml(t("itemsWord"))}</span></header>${
         normalizeArray(a[p])
           .map(
             (x) =>
-              `<article class="item"><h3>${escapeHtml(x.name || x.description || "—")}</h3><div class="chips">${[
+              `<article class="item"><h3>${escapeHtml(x.name || x.description || "—")}</h3><div class="chips">${rid(x)}${[
                 displayEnum(x.type),
                 displayEnum(x.category),
                 displayEnum(x.frame),
@@ -5613,7 +5644,7 @@ function htmlReport() {
                 .map((v) => `<em>${escapeHtml(v)}</em>`)
                 .join(
                   "",
-                )}</div><p>${escapeHtml(x.rationale || "")}</p></article>`,
+                )}</div>${x.rationale ? `<p>${escapeHtml(x.rationale)}</p>` : ""}${factsHtml(modelMetricsFor(p, x))}</article>`,
           )
           .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`
       }</section>`,
@@ -5625,7 +5656,7 @@ function htmlReport() {
           affectedLayers(c)
             .map((p) => t("pillars")[p][0])
             .join(" · ") || labelText("Cross-layer", "عابر للطبقات");
-        return `<article class="conflict"><header><div><small>${escapeHtml(contradictionTypeLabel(c.contradiction_type || c.type))}</small><h3>${escapeHtml(c.rhetoric || "—")}</h3></div><div class="chips"><em>${escapeHtml(confidenceInfo(c.confidence).label)}</em><em>${escapeHtml(t("severityShort"))} ${escapeHtml(c.severity || "—")}</em></div></header><div class="signal"><b>${escapeHtml(analysisSignalLabel())}</b><span>${escapeHtml(contradictionMeaning(c))}</span><small>${escapeHtml(labelText("Affected layers", "الطبقات المتأثرة"))}: ${escapeHtml(layers)}</small></div><ul>${arr(
+        return `<article class="conflict"><header><div><small>${escapeHtml(contradictionTypeLabel(c.contradiction_type || c.type))}</small><h3>${escapeHtml(c.rhetoric || "—")}</h3></div><div class="chips">${rid(c)}<em>${escapeHtml(confidenceInfo(c.confidence).label)}</em>${severityText(c) ? `<em>${escapeHtml(severityText(c))}</em>` : ""}</div></header><div class="signal"><b>${escapeHtml(analysisSignalLabel())}</b><span>${escapeHtml(contradictionMeaning(c))}</span><small>${escapeHtml(labelText("Affected layers", "الطبقات المتأثرة"))}: ${escapeHtml(layers)}</small></div><ul>${arr(
           c.actions,
         )
           .map((x) => `<li>${escapeHtml(x)}</li>`)
@@ -5638,7 +5669,7 @@ function htmlReport() {
     normalizeArray(a.scenarios?.items)
       .map(
         (s) =>
-          `<article class="scenario"><header><div><small>${escapeHtml(s.timeframe || "—")}</small><h3>${escapeHtml(s.name || "—")}</h3></div>${reportRing(Number(s.probability) || 0, { neutral: true })}</header>${s.rationale ? `<p>${escapeHtml(s.rationale)}</p>` : ""}<div class="cols"><div><b>${escapeHtml(t("drivers"))}</b>${
+          `<article class="scenario"><header><div>${rid(s)}<small>${escapeHtml(s.timeframe || "—")}</small><h3>${escapeHtml(s.name || "—")}</h3></div>${reportRing(Number(s.probability) || 0, { neutral: true })}</header>${s.rationale ? `<p>${escapeHtml(s.rationale)}</p>` : ""}<div class="cols"><div><b>${escapeHtml(t("drivers"))}</b>${
             arr(s.drivers)
               .map((x) => `<p>• ${escapeHtml(x)}</p>`)
               .join("") || "<p>—</p>"
@@ -5666,14 +5697,14 @@ function htmlReport() {
         const counter = e.counter_evidence || e.counterEvidence || "";
         const uncertainty = e.uncertainty ? `<br><span class="muted">${escapeHtml(labelText("Uncertainty", "عدم اليقين", "Incertitude"))}: ${escapeHtml(e.uncertainty)}</span>` : "";
         const strength = e.evidence_strength ? `<br><span class="muted">${escapeHtml(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"))}: ${escapeHtml(e.evidence_strength)}/5</span>` : "";
-        return `<tr><td><b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}: ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
+        return `<tr><td>${rid(e)}<b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}: ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
       })
       .join("") || `<tr><td colspan="4">${escapeHtml(t("noItems"))}</td></tr>`;
   const assumptions =
     normalizeArray(a.assumptions?.items)
       .map(
         (x) =>
-          `<article class="assumption"><h3>${escapeHtml(x.assumption || x.name || "—")}</h3><div class="chips"><em>${escapeHtml(riskInfo(x.risk || x.risk_level).label)}</em>${x.confidence ? `<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>` : ""}</div><p><b>${escapeHtml(t("test"))}:</b> ${escapeHtml(x.disproving_test || x.test || "—")}</p><p><b>${escapeHtml(labelText("If wrong", "إذا كان خاطئًا"))}:</b> ${escapeHtml(x.implication_if_wrong || "—")}</p></article>`,
+          `<article class="assumption"><h3>${escapeHtml(x.assumption || x.name || "—")}</h3><div class="chips">${rid(x)}<em>${escapeHtml(riskInfo(x.risk || x.risk_level).label)}</em>${x.confidence ? `<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>` : ""}</div><p><b>${escapeHtml(t("test"))}:</b> ${escapeHtml(x.disproving_test || x.test || "—")}</p>${x.implication_if_wrong ? `<p><b>${escapeHtml(labelText("If wrong", "إذا كان خاطئًا"))}:</b> ${escapeHtml(x.implication_if_wrong)}</p>` : ""}</article>`,
       )
       .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
   const gate = qualityGate(a);
@@ -5732,6 +5763,12 @@ function htmlReport() {
     .evidenceTable td:last-child{border-inline-end:1px solid var(--j-line);border-start-end-radius:var(--j-r-2);border-end-end-radius:var(--j-r-2)}
     .sourceUrl{font-weight:600}
     .muted{color:var(--j-fg-muted)}
+    .rid{padding:.1rem .45rem;border:1px solid var(--j-line);border-radius:var(--j-r-1);background:var(--j-panel);color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);direction:ltr;unicode-bidi:isolate}
+    .scenario header .rid,.evidenceTable .rid{margin-inline-end:var(--j-s-2)}
+    .facts{display:flex;flex-wrap:wrap;gap:var(--j-s-2);margin:var(--j-s-3) 0 0}
+    .facts div{display:flex;flex-wrap:wrap;gap:0 var(--j-s-2);align-items:baseline;min-width:0;padding:var(--j-s-1) var(--j-s-3);border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2)}
+    .facts dt{color:var(--j-fg-muted);font-size:var(--j-t-13);font-weight:600}.facts dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
+    .reportDate{font-size:var(--j-t-14)}
     [dir="rtl"] :is(.evidenceTable th,.conflict header small,.scenario header small){font-family:var(--j-font-ui);letter-spacing:0}
     @media(max-width:820px){.heroGrid,.grid,.cols,.weights{grid-template-columns:1fr}.shell{width:calc(100% - 1rem);padding-top:.5rem}.metric,.block,.evidenceTable,.formula{padding:var(--j-s-4)}
       .evidenceTable thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -5740,8 +5777,20 @@ function htmlReport() {
       .evidenceTable td{padding:var(--j-s-1) 0;border:0!important;border-radius:0!important;background:none}
       .evidenceTable td[data-label]::before{content:attr(data-label);display:block;color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-transform:uppercase}
       [dir="rtl"] .evidenceTable td[data-label]::before{font-family:var(--j-font-ui);letter-spacing:0}}
-    @media print{@page{margin:14mm}body{background:var(--j-panel)}.shell{width:100%;padding:0}.hero,.metric,.block,.conflict,.scenario,.assumption,.evidenceTable,.formula{break-inside:avoid;page-break-inside:avoid}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}`;
-  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(exportContract.title)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}"><section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p><p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: <bdi>${b.analyticalCoverage}%</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${exportContractHtml}${formulaHtml}<section class="grid">${metricHtml}</section><section class="block"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(strategicNextAction(a, h))}</p></section>${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section></main></body></html>`;
+    @media print{body{background:var(--j-panel);font-size:10.5pt}.shell{width:100%;padding:0}.heroGrid{grid-template-columns:minmax(0,1fr) 200px;gap:var(--j-s-4)}.weights,.cols{grid-template-columns:repeat(3,minmax(0,1fr))}.metric,.block,.evidenceTable,.formula{padding:var(--j-s-4)}.metric,.item,.assumption,.exportContract,.weights span,.cols div,.signal,.evidenceTable tr,.facts div{break-inside:avoid-page}h2,h3,.block>header,.conflict>header,.scenario>header{break-after:avoid-page}p{orphans:3;widows:3}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}`;
+  const exportedAt = new Date();
+  const docTitle = a.subject.title ? `${a.subject.title} — ${exportContract.title}` : exportContract.title;
+  const assessment = strategicSelfAssessment(a);
+  const thesisHtml = `<section class="block thesis"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(strategicNextAction(a, h))}</p>${assessment ? `<p class="muted"><b>${escapeHtml(assessment.title)}:</b> ${escapeHtml(assessment.text)}</p>` : ""}</section>`;
+  const draftHtml = gate.tone === "ok" ? "" : REPORT_THEME.draftHtml(state.lang, gate.tone, gate.summary);
+  const provenanceHtml = REPORT_THEME.provenanceHtml(state.lang, {
+    exportedAt,
+    generatedAt: a.generated_at,
+    analysisId: a.analysis_id,
+    schemaVersion: a.schema_version,
+    version: reportVersion,
+  });
+  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(docTitle)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}${REPORT_THEME.printCss(state.lang, docTitle, Boolean(draftHtml))}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}">${draftHtml}<section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p>${REPORT_THEME.exportedHtml(state.lang, exportedAt)}<p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: <bdi>${b.analyticalCoverage}%</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${thesisHtml}${formulaHtml}<section class="grid">${metricHtml}</section>${exportContractHtml}${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section>${provenanceHtml}</main></body></html>`;
 }
 
 function buildLosslessStrategicReport() {
@@ -6545,6 +6594,7 @@ function buildLosslessBiopoliticalReport(reportRenderer) {
     bio: BIO,
     graphApi: BIO_GRAPH,
     scoreTone: pctTone,
+    exportedAt: new Date(),
   });
 }
 function renderExports() {

@@ -992,7 +992,7 @@ function evidenceView(a) {
       <div class="cards">${as.map((x) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(x.id)}" aria-pressed="${selectedId === x.id}">
         <div class="recHead"><span class="mono help">${esc(x.id)}</span><span class="chip ${x.risk === "high" ? "low" : x.risk === "low" ? "high" : "medium"}">${esc(t("risk"))}: ${esc(x.risk)}</span></div>
         <h3 ${contentLang(a)}>${esc(x.assumption)}</h3>
-        <dl class="kv"><dt>${esc(t("disprovenBy"))}</dt><dd ${contentLang(a)}>${esc(x.disproving_test)}</dd><dt>${esc(t("ifWrong"))}</dt><dd ${contentLang(a)}>${esc(x.implication_if_wrong)}</dd></dl>
+        <dl class="kv"><dt>${esc(t("disprovenBy"))}</dt><dd ${contentLang(a)}>${esc(x.disproving_test)}</dd>${x.implication_if_wrong ? `<dt>${esc(t("ifWrong"))}</dt><dd ${contentLang(a)}>${esc(x.implication_if_wrong)}</dd>` : ""}</dl>
       </button>`).join("")}</div>
     </div>`;
 }
@@ -1002,7 +1002,7 @@ function tensionsView(a) {
   return `${head(t("tTitle"), t("tHint"))}
     <div class="cards">${items.map((c) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(c.id)}" aria-pressed="${selectedId === c.id}">
       <div class="recHead"><span class="mono help">${esc(c.id)} · ${esc(humanize(c.contradiction_type))}</span>
-        <span class="meter" role="img" aria-label="${esc(`${t("severity")} ${c.severity}/5`)}">${Array.from({ length: 5 }, (_, i) => `<i class="${i < c.severity ? "on" : ""}"></i>`).join("")}</span></div>
+        <span class="meter" role="img" aria-label="${esc(`${t("severity")} ${c.severity}/10`)}">${Array.from({ length: 5 }, (_, i) => `<i class="${i < Math.round(c.severity / 2) ? "on" : ""}"></i>`).join("")}</span></div>
       <div class="vs">
         <div><span class="label">${esc(t("says"))}</span><p ${contentLang(a)}>${esc(c.rhetoric)}</p></div>
         <div><span class="label">${esc(t("does"))}</span><ul ${contentLang(a)}>${(c.actions || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
@@ -1195,7 +1195,7 @@ function explanationsView(a, m) {
     </button>`).join("")}</div>
     ${tensions.length ? `<div class="panelBox"><span class="label">${esc(t("ccTitle"))}</span>
       <div class="cards">${tensions.map((c) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(c.id)}" aria-pressed="${selectedId === c.id}">
-        <div class="recHead"><span class="mono help">${esc(c.id)}</span>${typeof c.severity === "number" ? `<span class="meter" role="img" aria-label="${esc(`${t("severity")} ${c.severity}/5`)}">${Array.from({ length: 5 }, (_, i) => `<i class="${i < c.severity ? "on" : ""}"></i>`).join("")}</span>` : ""}</div>
+        <div class="recHead"><span class="mono help">${esc(c.id)}</span>${typeof c.severity === "number" ? `<span class="meter" role="img" aria-label="${esc(`${t("severity")} ${c.severity}/10`)}">${Array.from({ length: 5 }, (_, i) => `<i class="${i < Math.round(c.severity / 2) ? "on" : ""}"></i>`).join("")}</span>` : ""}</div>
         <div class="vs">
           <div><span class="label">${esc(t("careClaim"))}</span><p ${contentLang(a)}>${esc(c.care_claim)}</p></div>
           <div><span class="label">${esc(t("controlEffects"))}</span><p ${contentLang(a)}>${esc(joined(c.control_effects))}</p></div>

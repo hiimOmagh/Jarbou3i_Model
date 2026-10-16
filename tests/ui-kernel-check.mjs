@@ -62,5 +62,12 @@ for (const theme of ["light", "dark"]) {
 for (const [name, value] of Object.entries(reportTokens.shared)) {
   assert.equal(value, kernelTokens.dark[name], `the report's ${name} is not the kernel's`);
 }
+// A report's dates and printed page title: an answer's stated day stays that
+// day whatever its offset, and a title cannot end the CSS string it sits in.
+const reportTheme = reportWindow.Jarbou3iReportTheme;
+assert.equal(reportTheme.dateText("en", "2026-04-27T00:00:00+03:00", { utc: true }), "April 27, 2026");
+assert.equal(reportTheme.dateText("en", "YYYY-MM-DDTHH:mm:ssZ", { utc: true }), "", "a placeholder date is printed");
+const running = reportTheme.printCss("en", 'a\f"b</style>', true).match(/@top-center\{content:"((?:[^"\\]|\\.)*)";/);
+assert.ok(running && !/[\f<]/.test(running[1]), "a report title breaks out of its page header");
 
 console.log(`UI kernel: ${selectors.length} selectors scoped, ${defined.length} classes registered.`);

@@ -15,6 +15,50 @@
   the names of the files you will attach. It is four rows tall, so its hint
   shows in full on a phone. The UX-0 prototype says the same.
 
+### Reports and print (UIX-5 slice F)
+
+From the real-answer walkthrough (theme F), measured by printing the exported
+reports of four real answers and two samples to A4 in Chromium:
+
+- A Biopolitical report prints in full. Printing showed only the sections
+  that were open, so a report printed as exported lost most of its content
+  (the Arabic answer printed 7 pages of 31). Closed sections now print, and
+  where the browser cannot show them from the print styles alone (WebKit),
+  the report opens them for printing and closes them again afterwards.
+- No more half-empty pages. Sections and whole layers no longer jump to the
+  next page; records, scenarios and contradictions break between their parts,
+  while a record's header, tags and facts stay together. No page before the
+  last is 35% blank or more, apart from one in one report (up to 6 per report
+  before). The
+  Strategic report prints in 18 pages in English (was 20) and 27 in French
+  (was 29). Fully expanded, the Biopolitical reports print in 31 pages in
+  Arabic (was 36), 40 in English (was 45) and 65 in French (was 75).
+- Each printed page carries the report's name above it, with "Draft" while
+  the publication gate blocks it, and its page number below ("3 / 18"),
+  where the browser draws page margins (Chromium and Edge). The Strategic
+  report's title is its subject and type, as the Biopolitical report's
+  already was, so a saved PDF is no longer called "Strategic Analysis Report".
+- The thesis comes first. A Strategic report opens with its title, readiness
+  and executive thesis on page one (it was on page three, after the scoring
+  formula and six score cards), with the next step and the AI's own
+  assessment of its answer, as the app shows them.
+- A report says what it is. While the publication gate blocks it, a **Draft**
+  banner opens it and says why. Under the title, the day it was exported.
+  At the end, **About this report**: export date, the date the answer gives
+  itself, analysis ID, schema version and app version. The Biopolitical
+  report's contract and schema line leaves the top of the page for its
+  schema version there; the contract's code stays in the file's metadata.
+- A Strategic report shows each record as the app does: its ID, a
+  contradiction's severity on its scale ("Severity 7/10", was "S 7"), and the
+  model's figures for interests, actors, tools and narratives. Results now
+  show their goal achieved, cost-benefit and effect on the balance of power,
+  in the app as in the report; before, neither showed them. An assumption
+  that states no consequence has no empty "If wrong: —" row. The UX-0
+  prototype reads severity out of 10 and leaves out the empty row too.
+- The AI's weakest layer reads as the layer's name when the answer gives a
+  layer's key ("results"); it printed the layer's name and description
+  joined by a comma.
+
 ### Relationship explorer on the kernel (UIX-5 slice B)
 
 From the 2026-10-15 audit (H2) and the real-answer walkthrough (theme G),

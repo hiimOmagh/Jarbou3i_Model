@@ -96,7 +96,7 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 |---|---|---|
 | E1 | Plural errors: "1 of 1 evidence records", "1 preuves sur 1", Arabic counts | D1/D2 for the import status and summary; open elsewhere |
 | E2 | Jargon: canonical/canonique/نظامي, contract/عقد, intelligence/استخبارات, hash-chained | open |
-| E3 | Raw editor keys, paths, hashes and permalinks; the report prints the contract slug | open |
+| E3 | Raw editor keys, paths, hashes and permalinks; the report prints the contract slug | report: done (UIX-5 F); open elsewhere |
 | E4 | French typography: no space before ":" and "%", ISO dates | open |
 | E5 | Arabic: "برومبت", three names for the lens, gender agreement | open |
 | E6 | Layer metrics as acronyms (IW, API, TPS, NSI) on mixed scales | open |
@@ -105,9 +105,20 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 
 | # | Finding | Status |
 |---|---|---|
-| F1 | The thesis comes late; there is no draft banner, date or provenance footer | open |
-| F2 | Print: 20 pages (EN) and 36 (AR), many 35–65% blank, no page numbers, a generic PDF title | open |
-| F3 | "S 5", empty "If wrong: —", IDs dropped; the app and the report show different fields (`goal_achieved_pct`, `cost_benefit`, `power_balance_impact`, `weakest_layer`, `publication_risk`) | open |
+| F1 | The thesis comes late; there is no draft banner, date or provenance footer | done (UIX-5 F) |
+| F2 | Print: 20 pages (EN) and 36 (AR), many 35–65% blank, no page numbers, a generic PDF title | done (UIX-5 F) |
+| F3 | "S 5", empty "If wrong: —", IDs dropped; the app and the report show different fields (`goal_achieved_pct`, `cost_benefit`, `power_balance_impact`, `weakest_layer`, `publication_risk`) | done (UIX-5 F) |
+
+**Done (UIX-5 F, 2026-10-16).** A Biopolitical report prints its closed
+sections too; it printed only the open ones, so a report printed as exported
+lost most of its content. Records break between pages, sections no longer
+jump, and no page before the last is a third blank, apart from one. Pages
+carry the report's name ("Draft" while blocked) and their number. The
+Strategic report opens with its thesis on page one and has its subject in its
+title. Both reports open with a Draft banner while blocked, give the export
+date, and end with the report's provenance. Strategic records keep their IDs,
+severity reads out of 10, an absent "If wrong" is left out, and results show
+their goal, cost-benefit and power balance in the app and the report.
 
 ### G. Relationship explorer (audit H2)
 

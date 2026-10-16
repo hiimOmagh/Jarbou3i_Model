@@ -181,7 +181,7 @@ test('Arabic reports keep figures and letter joins', async ({ page }, testInfo) 
     const misplaced = await misplacedPercents(page);
     expect(misplaced, lens).toEqual([]);
     if (lens === 'biopolitical') {
-      const spaced = await page.locator('.contractLine, .referenceIndex article > span').evaluateAll((labels) =>
+      const spaced = await page.locator('.provenance dt, .referenceIndex article > span').evaluateAll((labels) =>
         labels.filter((label) => {
           const style = getComputedStyle(label);
           return !['normal', '0px'].includes(style.letterSpacing) || style.fontFamily !== getComputedStyle(document.body).fontFamily;
@@ -425,5 +425,76 @@ test.describe('Strategic HTML report content', () => {
 
     expect(html).toContain('dir="rtl"');
     expect(html).not.toContain('<p>existential</p>');
+  });
+});
+
+// A report says what it is before the scores: its thesis first, "Draft" while
+// the gate blocks it, the day it was exported, and where it came from; on
+// paper, nothing is left out and records break between pages, not sections.
+test.describe('Report provenance and print', () => {
+  test('a Strategic report leads with its thesis and shows each record as the app does', async ({ page }, testInfo) => {
+    const data = await strategicFixture('sample-analysis-en.json');
+    data.quality_gate.weakest_layer = 'results';
+    delete data.assumptions.items[0].implication_if_wrong;
+    const html = await exportImportedStrategic(page, testInfo, data, 'provenance');
+    const body = html.replace(/<script[\s\S]*?<\/script>/g, '');
+    expect(body).toContain(`<title>${data.subject.title} — Strategic Analysis Report</title>`);
+    const at = (needle) => body.indexOf(needle);
+    expect(at('class="draftBanner"')).toBeGreaterThan(-1);
+    expect(at('class="draftBanner"')).toBeLessThan(at('<section class="hero">'));
+    expect(at('<section class="block thesis">')).toBeLessThan(at('<section class="formula">'));
+    expect(body).toContain('Weakest layer: Results · Publication risk: medium');
+    // Severity on its scale; an assumption with no consequence stated has no empty row.
+    expect(body).toContain(`Severity ${data.contradictions.items[0].severity}/10`);
+    expect(body).not.toContain('If wrong');
+    // Every record keeps its ID, and a result its own figures.
+    const ids = [...['interests', 'actors', 'tools', 'narrative', 'results', 'feedback'].flatMap((layer) => data[layer]),
+      ...data.contradictions.items, ...data.scenarios.items, ...data.evidence.items, ...data.assumptions.items].map((item) => item.id);
+    for (const id of ids) expect(body).toContain(`<code class="rid">${id}</code>`);
+    const [result] = data.results;
+    expect(body).toContain(`<dt>Goal achieved</dt><dd><bdi>${result.goal_achieved_pct}%</bdi></dd>`);
+
+    await page.goto(pathToFileURL(testInfo.outputPath('provenance.html')).href);
+    await expect(page.locator('.reportDate time')).toHaveAttribute('datetime', /^\d{4}-\d\d-\d\dT/);
+    const footer = page.locator('footer[data-report-provenance]');
+    await expect(footer.locator('dt')).toHaveText(['Exported', 'Answer dated', 'Analysis ID', 'Schema version', 'App version']);
+    await expect(footer.locator('dd').nth(1)).toHaveText('April 27, 2026');
+    await expect(footer.locator('dd').nth(2)).toHaveText(data.analysis_id);
+    await expect(footer.locator('dd').last()).toHaveText(EXPECTED_VERSION);
+    await page.emulateMedia({ media: 'print' });
+    const breaks = await page.evaluate(() => ({
+      layer: getComputedStyle(document.querySelector('.block:has(.item)')).breakInside,
+      record: getComputedStyle(document.querySelector('.item')).breakInside,
+    }));
+    expect(breaks.layer).toBe('auto');
+    expect(breaks.record).not.toBe('auto');
+  });
+
+  test('a Biopolitical report prints every section, open or not', async ({ page }, testInfo) => {
+    await exportSampleReport(page, testInfo, 'biopolitical');
+    await page.goto(pathToFileURL(testInfo.outputPath('en-biopolitical-export.html')).href);
+    await expect(page.locator('.draftBanner')).toContainText('Not publication-ready');
+    await expect(page.locator('footer[data-report-provenance] div', { hasText: 'Schema version' }).locator('dd')).toHaveText('2.1.0');
+    // The contract's code stays in the metadata, not in the text.
+    expect(await page.locator('body').innerText()).not.toContain('biopolitical-training-map-v2');
+
+    const closed = page.locator('.reportSection:not([open]) .recordCard').first();
+    await expect(closed).toBeHidden();
+    // Printing opens what is closed and closes it again afterwards.
+    const opened = await page.evaluate(() => {
+      dispatchEvent(new Event('beforeprint'));
+      const open = [...document.querySelectorAll('.reportSection')].every((section) => section.open);
+      dispatchEvent(new Event('afterprint'));
+      return open;
+    });
+    expect(opened).toBe(true);
+    await expect(closed).toBeHidden();
+    // Where the browser prints without that event, the print styles lay it
+    // out (an engine without ::details-content relies on the event). Read from
+    // the page: Playwright counts anything in a closed details as hidden in WebKit.
+    if (await page.evaluate(() => CSS.supports('selector(::details-content)'))) {
+      await page.emulateMedia({ media: 'print' });
+      expect(await closed.evaluate((card) => card.checkVisibility() && card.getBoundingClientRect().height > 0)).toBe(true);
+    }
   });
 });
