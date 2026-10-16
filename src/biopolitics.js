@@ -2904,6 +2904,11 @@ ${schema}${interchangeGuide}`;
       lists: arr(lists).filter((item) => item && arr(item.items).length),
     };
   }
+  // Records of an analysis's items keep each item's ID: a record lists its
+  // connections, and the inspector's "Open full record" lands on it.
+  function recordsOf(items, build) {
+    return arr(items).map((item) => ({ ...build(item), id: str(item?.id) }));
+  }
   function pair(label, value) {
     return {
       label: str(label),
@@ -3032,7 +3037,7 @@ ${schema}${interchangeGuide}`;
             ),
           ],
         ),
-        ...a.international_comparison.map((item) =>
+        ...recordsOf(a.international_comparison, (item) =>
           record(
             item.jurisdiction_or_context,
             item.comparison_basis,
@@ -3050,7 +3055,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.capture_levels.map((item) =>
+        ...recordsOf(a.capture_levels, (item) =>
           record(
             labelFor(lang, "Capture level", "مستوى الاستحواذ", "Niveau de capture") + `: ${displayToken(lang, item.level)}`,
             item.finding,
@@ -3063,7 +3068,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.theoretical_comparison.map((item) =>
+        ...recordsOf(a.theoretical_comparison, (item) =>
           record(
             item.tradition,
             item.contribution,
@@ -3096,7 +3101,7 @@ ${schema}${interchangeGuide}`;
           : []),
       ];
     if (key === "human_functions")
-      return a.human_functions.map((item) =>
+      return recordsOf(a.human_functions, (item) =>
         record(
           item.name,
           item.lived_context,
@@ -3143,7 +3148,7 @@ ${schema}${interchangeGuide}`;
       );
     if (key === "actors_institutions")
       return [
-        ...a.power_map.actors.map((item) =>
+        ...recordsOf(a.power_map.actors, (item) =>
           record(
             item.name,
             item.formal_mandate,
@@ -3224,7 +3229,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.power_map.affected_populations.map((item) =>
+        ...recordsOf(a.power_map.affected_populations, (item) =>
           record(
             item.name,
             item.classification,
@@ -3260,7 +3265,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.power_map.institutions.map((item) =>
+        ...recordsOf(a.power_map.institutions, (item) =>
           record(
             item.name,
             item.mandate,
@@ -3274,7 +3279,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.power_map.power_asymmetries.map((item) =>
+        ...recordsOf(a.power_map.power_asymmetries, (item) =>
           record(
             displayCode(lang, item.resource),
             item.effect,
@@ -3285,7 +3290,7 @@ ${schema}${interchangeGuide}`;
       ];
     if (key === "mechanisms_infrastructure")
       return [
-        ...a.mechanisms.instruments.map((item) =>
+        ...recordsOf(a.mechanisms.instruments, (item) =>
           record(
             item.name,
             item.mechanism,
@@ -3307,7 +3312,7 @@ ${schema}${interchangeGuide}`;
             [list(labelFor(lang, "Scale", "المقياس", "Échelle"), displayCodes(lang, item.scale))],
           ),
         ),
-        ...a.mechanisms.infrastructures.map((item) =>
+        ...recordsOf(a.mechanisms.infrastructures, (item) =>
           record(
             item.name,
             item.dependency_created,
@@ -3340,7 +3345,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.mechanisms.political_economy.map((item) =>
+        ...recordsOf(a.mechanisms.political_economy, (item) =>
           record(
             labelFor(
               lang,
@@ -3398,7 +3403,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.mechanisms.power_modes.map((item) =>
+        ...recordsOf(a.mechanisms.power_modes, (item) =>
           record(
             displayCode(lang, item.mode),
             item.mechanism,
@@ -3416,7 +3421,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.links.map((item) =>
+        ...recordsOf(a.links, (item) =>
           record(
             // Both ends read in the analysis's direction; the marks keep IDs
             // that name no record, left as Latin text, right to left. A missing
@@ -3431,7 +3436,7 @@ ${schema}${interchangeGuide}`;
       ];
     if (key === "meaning_classification")
       return [
-        ...a.meaning_systems.norms.map((item) =>
+        ...recordsOf(a.meaning_systems.norms, (item) =>
           record(
             item.name,
             item.definition,
@@ -3464,7 +3469,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.meaning_systems.regimes_of_truth.map((item) =>
+        ...recordsOf(a.meaning_systems.regimes_of_truth, (item) =>
           record(
             item.claim,
             item.validation_procedure,
@@ -3511,7 +3516,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.meaning_systems.classifications.map((item) =>
+        ...recordsOf(a.meaning_systems.classifications, (item) =>
           record(
             item.category,
             item.definition,
@@ -3549,7 +3554,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.meaning_systems.looping_effects.map((item) =>
+        ...recordsOf(a.meaning_systems.looping_effects, (item) =>
           record(
             item.id,
             item.institutional_response,
@@ -3608,7 +3613,7 @@ ${schema}${interchangeGuide}`;
     if (key === "intervention_capture") {
       const capture = a.intervention_assessment.capture_assessment;
       return [
-        ...a.intervention_assessment.interventions.map((item) =>
+        ...recordsOf(a.intervention_assessment.interventions, (item) =>
           record(
             item.name,
             item.stated_benefit,
@@ -3781,7 +3786,7 @@ ${schema}${interchangeGuide}`;
             ),
           ],
         ),
-        ...a.intervention_assessment.care_control_tensions.map((item) =>
+        ...recordsOf(a.intervention_assessment.care_control_tensions, (item) =>
           record(
             item.care_claim,
             item.interpretation,
@@ -3809,7 +3814,7 @@ ${schema}${interchangeGuide}`;
     }
     if (key === "distribution_effects")
       return [
-        ...a.distribution.items.map((item) =>
+        ...recordsOf(a.distribution.items, (item) =>
           record(
             item.name || item.population_id,
             item.burdens?.join(" · "),
@@ -3895,7 +3900,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.distribution.inequality_dimensions.map((item) =>
+        ...recordsOf(a.distribution.inequality_dimensions, (item) =>
           record(
             displayCode(lang, item.axis),
             item.mechanism,
@@ -3924,7 +3929,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.distribution.necropolitical_dimensions.map((item) =>
+        ...recordsOf(a.distribution.necropolitical_dimensions, (item) =>
           record(
             item.exposure,
             item.protection_gap,
@@ -4008,7 +4013,7 @@ ${schema}${interchangeGuide}`;
             ),
           ],
         ),
-        ...a.scale_time.future_feedback_loops.map((item) =>
+        ...recordsOf(a.scale_time.future_feedback_loops, (item) =>
           record(
             item.name,
             item.rationale,
@@ -4027,7 +4032,7 @@ ${schema}${interchangeGuide}`;
       ];
     if (key === "evidence_explanations")
       return [
-        ...a.competing_explanations.map((item) =>
+        ...recordsOf(a.competing_explanations, (item) =>
           record(
             item.claim || displayToken(lang, item.type),
             item.mechanism,
@@ -4065,7 +4070,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.evidence.items.map((item) =>
+        ...recordsOf(a.evidence.items, (item) =>
           record(
             item.claim,
             item.limitations,
@@ -4172,7 +4177,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.assumptions.items.map((item) =>
+        ...recordsOf(a.assumptions.items, (item) =>
           record(
             item.assumption,
             item.implication_if_wrong,
@@ -4193,7 +4198,7 @@ ${schema}${interchangeGuide}`;
       ];
     if (key === "agency_alternatives")
       return [
-        ...a.resistance_agency.items.map((item) =>
+        ...recordsOf(a.resistance_agency.items, (item) =>
           record(
             displayCode(lang, item.form),
             item.mechanism,
@@ -4226,7 +4231,7 @@ ${schema}${interchangeGuide}`;
             ],
           ),
         ),
-        ...a.alternatives.items.map((item) =>
+        ...recordsOf(a.alternatives.items, (item) =>
           record(
             item.proposal,
             item.lower_harm_rationale,

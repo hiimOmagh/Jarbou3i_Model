@@ -56,7 +56,7 @@
       blocking: "Blocking findings",
       migration: "Migration warnings",
       auditNotes: "Self-audit notes",
-      namedRelationships: "Named relationships",
+      linksTo: "Links to", linkedFrom: "Linked from", connected: "Records with connections: {connected} of {records}. Each record lists its links.",
       source: "Open source",
       evidenceRecord: "Evidence record",
       sourceUnavailable: "No portable source link supplied",
@@ -113,7 +113,7 @@
       blocking: "العوائق",
       migration: "تحذيرات الترحيل",
       auditNotes: "ملاحظات التدقيق الذاتي",
-      namedRelationships: "العلاقات المسماة",
+      linksTo: "يُشير إلى", linkedFrom: "تُشير إليه", connected: "سجلات لها روابط: {connected} من {records}. يسرد كل سجل روابطه.",
       source: "فتح المصدر",
       evidenceRecord: "سجل دليل",
       sourceUnavailable: "لم يُقدَّم رابط مصدر قابل للنقل",
@@ -170,7 +170,7 @@
       blocking: "Blocages",
       migration: "Alertes de migration",
       auditNotes: "Notes d’auto-audit",
-      namedRelationships: "Relations nommées",
+      linksTo: "Renvoie à", linkedFrom: "Référencé par", connected: "Fiches reliées : {connected} sur {records}. Chaque fiche indique ses liens.",
       source: "Ouvrir la source",
       evidenceRecord: "Élément de preuve",
       sourceUnavailable: "Aucun lien de source portable fourni",
@@ -201,8 +201,6 @@
     const locale = ["ar", "en", "fr"].includes(lang) ? lang : "en";
     const c = COPY[locale];
     const dir = locale === "ar" ? "rtl" : "ltr";
-    // A relationship reads right to left in Arabic, so its arrow points left.
-    const arrow = dir === "rtl" ? "←" : "→";
     const a = bio.sanitizePortableValue(bio.normalize(analysis));
     const score = bio.scores(a);
     const health = bio.health(a, locale);
@@ -269,7 +267,19 @@
           return `<div><dt>${escapeHtml(item.label)}</dt><dd>${isUrl ? sourceLink(item.value) : renderValue(item.value)}</dd></div>`;
         }).join("")}</dl>` : ""}
         ${record.lists.map((group) => renderList(group.label, group.items)).join("")}
+        ${renderConnections(record.id ? graph.resolve(record.id) : null)}
       </article>`;
+    };
+    // A record's connections that its facts do not already name, as the app
+    // lists them: the links it authors, then every record that points to it.
+    const renderConnections = (node) => {
+      if (!node) return "";
+      const group = (title, edges, line) => edges.length
+        ? `<div class="recordList" data-record-connections><h4>${escapeHtml(title)}</h4><ul>${edges.map((edge) => `<li>${line(edge)}</li>`).join("")}</ul></div>`
+        : "";
+      const { authored, incoming } = graph.cardConnections(node.id);
+      return group(c.linksTo, authored, (edge) => `${display(edge.relation)} · ${renderValue(edge.target)}`)
+        + group(c.linkedFrom, incoming, (edge) => `${display(edge.relation)} · ${renderValue(edge.source)}`);
     };
 
     const pillarSections = bio.PILLARS.map((pillar, index) => {
@@ -294,19 +304,18 @@
     </details>`;
 
     const familyLabels = { explicit: c.authored, evidence: c.evidence, structural: c.structural };
-    const relationshipGroups = ["explicit", "evidence", "structural"].map((family) => {
-      const edges = graph.edges.filter((edge) => edge.family === family);
-      return `<details class="subsection" data-relationship-family="${family}"><summary><strong>${escapeHtml(familyLabels[family])}</strong><span>${edges.length}</span></summary>${edges.length ? `<ol class="edgeList">${edges.map((edge) => `<li>${renderValue(edge.source)} <span aria-hidden="true">${arrow}</span> ${renderValue(edge.target)} <span class="relation">${display(edge.relation)}</span>${edge.mechanism ? `<p>${renderValue(edge.mechanism)}</p>` : ""}</li>`).join("")}</ol>` : `<p class="empty">${escapeHtml(c.noRecords)}</p>`}</details>`;
-    }).join("");
+    // Every connection is listed on its records; the atlas says how many
+    // records have one, and how many connections each family holds.
+    const connected = graph.nodes.filter((node) => graph.incoming(node.id).length || graph.outgoing(node.id).length).length;
+    const relationshipSummary = `<p>${escapeHtml(c.connected.replace("{connected}", connected).replace("{records}", graph.nodes.length))}</p><div class="tags">${["explicit", "evidence", "structural"].map((family) => `<span data-relationship-family="${family}">${escapeHtml(familyLabels[family])} · ${graph.edges.filter((edge) => edge.family === family).length}</span>`).join("")}</div>`;
     const temporal = graphApi.temporalProjection(a);
     const temporalLabels = { historical: c.historical, dated: c.dated, immediate: c.immediate, medium: c.medium, future: c.future };
     const temporalHtml = `<section data-temporal-projection="canonical"><h3>${escapeHtml(c.time)}</h3><p class="caution">${escapeHtml(c.timeCaution)}</p><div class="projectionGrid">${temporal.map((band) => `<article><h4>${escapeHtml(temporalLabels[band.key])} <span>${band.items.length}</span></h4>${band.items.length ? `<ul>${band.items.map((item) => `<li>${renderValue(item.label)}${item.detail ? ` — ${renderValue(item.detail)}` : ""}${item.id ? ` <small>[${escapeHtml(item.id)}]</small>` : ""}</li>`).join("")}</ul>` : `<p class="empty">—</p>`}</article>`).join("")}</div></section>`;
     const comparisons = graphApi.comparativeProjection(a);
     const comparisonHtml = `<section data-comparative-projection="canonical"><h3>${escapeHtml(c.comparisons)}</h3>${comparisons.length ? comparisons.map((item) => `<article class="recordCard" data-comparison-id="${escapeHtml(item.id)}"><h3>${renderValue(item.context || item.id)}</h3><p><strong>${escapeHtml(c.basis)}:</strong> ${renderValue(item.basis)}</p>${renderList(c.similarities, item.similarities)}${renderList(c.differences, item.differences)}${renderList(c.transfer, item.transferLimits)}</article>`).join("") : `<p class="empty">—</p>`}</section>`;
-    const atlas = `<details class="reportSection" id="relationships" data-relationship-atlas="complete"><summary><span class="sectionNumber">11</span><span class="sectionHeading"><strong>${escapeHtml(c.atlas)}</strong><small>${escapeHtml(c.atlasHint)}</small></span><span class="recordCount">${graph.edges.length}</span></summary><div class="sectionBody">${relationshipGroups}${temporalHtml}${comparisonHtml}</div></details>`;
+    const atlas = `<details class="reportSection" id="relationships" data-relationship-atlas="complete"><summary><span class="sectionNumber">11</span><span class="sectionHeading"><strong>${escapeHtml(c.atlas)}</strong><small>${escapeHtml(c.atlasHint)}</small></span><span class="recordCount">${graph.edges.length}</span></summary><div class="sectionBody">${relationshipSummary}${temporalHtml}${comparisonHtml}</div></details>`;
 
-    const explicitEdges = graph.edges.filter((edge) => edge.provenance === "explicit");
-    const directory = `<details class="reportSection" id="references" data-reference-directory="named"><summary><span class="sectionNumber">12</span><span class="sectionHeading"><strong>${escapeHtml(c.references)}</strong><small>${escapeHtml(c.referencesHint)}</small></span><span class="recordCount">${graph.nodes.length}</span></summary><div class="sectionBody"><div class="referenceIndex">${graph.nodes.map((node) => `<article id="ref-${anchorId(node.id)}" tabindex="-1" data-reference-id="${escapeHtml(node.id)}"><span>${escapeHtml(graph.typeLabel(node.type))}</span><h3>${escapeHtml(`${node.label} [${node.id}]`)}</h3>${node.subtitle && node.subtitle !== node.label ? `<p>${escapeHtml(bio.displayCode(locale, node.subtitle))}</p>` : ""}</article>`).join("")}</div>${explicitEdges.length ? `<section><h3>${escapeHtml(c.namedRelationships)}</h3><ol class="edgeList">${explicitEdges.map((edge) => `<li>${renderValue(edge.source)} <span aria-hidden="true">${arrow}</span> ${renderValue(edge.target)} <span class="relation">${display(edge.relation)}</span>${edge.mechanism ? `<p>${renderValue(edge.mechanism)}</p>` : ""}</li>`).join("")}</ol></section>` : ""}</div></details>`;
+    const directory = `<details class="reportSection" id="references" data-reference-directory="named"><summary><span class="sectionNumber">12</span><span class="sectionHeading"><strong>${escapeHtml(c.references)}</strong><small>${escapeHtml(c.referencesHint)}</small></span><span class="recordCount">${graph.nodes.length}</span></summary><div class="sectionBody"><div class="referenceIndex">${graph.nodes.map((node) => `<article id="ref-${anchorId(node.id)}" tabindex="-1" data-reference-id="${escapeHtml(node.id)}"><span>${escapeHtml(graph.typeLabel(node.type))}</span><h3>${escapeHtml(`${node.label} [${node.id}]`)}</h3>${node.subtitle && node.subtitle !== node.label ? `<p>${escapeHtml(bio.displayCode(locale, node.subtitle))}</p>` : ""}</article>`).join("")}</div></div></details>`;
 
     const blockerList = renderList(c.blocking, health.missing);
     const migrationList = renderList(c.migration, a.migration?.warnings);
@@ -371,7 +380,7 @@
       .summary{max-width:72ch;color:var(--j-fg)}
       .eyebrow{display:block;margin-bottom:.35rem;color:var(--j-signal);font:600 var(--j-t-12)/1.4 var(--j-font-data);text-transform:uppercase}
       .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin:.75rem 0}
-      .tags span,.relation{padding:.15rem .55rem;border:1px solid var(--j-line-strong);border-radius:999px;background:var(--j-panel);font-size:var(--j-t-12);font-weight:600}
+      .tags span{padding:.15rem .55rem;border:1px solid var(--j-line-strong);border-radius:999px;background:var(--j-panel);font-size:var(--j-t-12);font-weight:600}
       .sourceLink{display:inline-flex;align-items:center;gap:.35rem;flex:0 0 auto;min-height:44px;padding:0 .8rem;border:1px solid var(--j-line-strong);border-radius:var(--j-r-2);background:var(--j-panel);color:var(--j-signal);font-weight:600;text-decoration:none}.sourceLink:hover{border-color:var(--j-signal)}
       .sourceMissing{color:var(--j-warn);font-size:var(--j-t-13)}
       dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
@@ -382,11 +391,8 @@
       .recordList h4{margin:.9rem 0 .25rem}.recordList ul{margin:.25rem 0}
       .referenceChip{display:inline-flex;flex-wrap:wrap;gap:.25rem;margin:.1rem;padding:.08rem .35rem;border-radius:var(--j-r-1);background:var(--j-signal-wash);color:var(--j-signal-strong);text-decoration:none}
       .referenceChip small{font-family:var(--j-font-data)}
-      .subsection{margin:.7rem 0;border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel)}
-      .subsection>summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:44px;padding:.5rem .85rem;cursor:pointer}
-      .subsection>summary>span,.projectionGrid h4>span{flex:none;min-width:2rem;padding:.1rem .5rem;border:1px solid var(--j-line);border-radius:999px;background:var(--j-panel-2);color:var(--j-fg);font:600 var(--j-t-12)/1.4 var(--j-font-data);font-variant-numeric:tabular-nums;text-align:center}
+      .projectionGrid h4>span{flex:none;min-width:2rem;padding:.1rem .5rem;border:1px solid var(--j-line);border-radius:999px;background:var(--j-panel-2);color:var(--j-fg);font:600 var(--j-t-12)/1.4 var(--j-font-data);font-variant-numeric:tabular-nums;text-align:center}
       .projectionGrid h4{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
-      .edgeList{padding-inline-start:2rem}.edgeList li{margin:.5rem 0}.edgeList p{margin:.25rem 0;color:var(--j-fg-muted)}
       .projectionGrid,.conclusionGrid,.referenceIndex{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
       .projectionGrid article h4,.referenceIndex h3{margin:0}
       .referenceIndex article>span{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);text-transform:uppercase}
@@ -403,7 +409,7 @@
 
       @media(max-width:800px){.shell{width:min(100% - 2rem,1180px);padding-top:.5rem}.heroGrid,.overviewGrid{grid-template-columns:1fr}.reportToc ol,.projectionGrid,.conclusionGrid,.referenceIndex,dl{grid-template-columns:1fr}.recordCard>header{display:block}.sourceLink,.sourceMissing{margin-top:.65rem}.toolbar{position:static;justify-content:stretch;width:auto;margin-inline:0}.toolbar button{flex:1 1 auto}.reportSection>summary{gap:.65rem}.recordCount{display:none}}
 
-      @media print{body{background:#fff;font-size:10.5pt}.shell{width:100%;padding:0}.hero{padding:1.2rem;border-radius:0;box-shadow:none}.toolbar,.reportToc,.skipLink{display:none!important}.overviewGrid{grid-template-columns:1fr}.reportSection{box-shadow:none;break-inside:auto}.reportSection>summary{break-after:avoid-page}.reportSection>summary:after{display:none}details::details-content{display:block;content-visibility:visible}.recordCard,.conclusionGroup,.projectionGrid article,.referenceIndex article{break-inside:auto}.recordCard>header,.tags,dl div,.auditList li,.edgeList li,.referenceIndex article{break-inside:avoid-page}h2,h3,h4,.recordCard>header,.subsection>summary{break-after:avoid-page}p,li{orphans:3;widows:3}.canonicalAppendix .jsonInspector{display:none}}
+      @media print{body{background:#fff;font-size:10.5pt}.shell{width:100%;padding:0}.hero{padding:1.2rem;border-radius:0;box-shadow:none}.toolbar,.reportToc,.skipLink{display:none!important}.overviewGrid{grid-template-columns:1fr}.reportSection{box-shadow:none;break-inside:auto}.reportSection>summary{break-after:avoid-page}.reportSection>summary:after{display:none}details::details-content{display:block;content-visibility:visible}.recordCard,.conclusionGroup,.projectionGrid article,.referenceIndex article{break-inside:auto}.recordCard>header,.tags,dl div,.auditList li,.recordList li,.referenceIndex article{break-inside:avoid-page}h2,h3,h4,.recordCard>header{break-after:avoid-page}p,li{orphans:3;widows:3}.canonicalAppendix .jsonInspector{display:none}}
     `;
     const script = `(function(){const sections=[...document.querySelectorAll('.reportSection')];document.querySelector('[data-expand-all]').addEventListener('click',()=>sections.forEach(s=>s.open=true));document.querySelector('[data-collapse-all]').addEventListener('click',()=>sections.forEach(s=>s.open=false));document.querySelector('[data-print]').addEventListener('click',()=>window.print());document.addEventListener('click',event=>{const link=event.target.closest('.referenceChip');if(!link)return;const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();let parent=target.closest('details');while(parent){parent.open=true;parent=parent.parentElement.closest('details')}history.replaceState(null,'',link.getAttribute('href'));target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});let closed=[];addEventListener('beforeprint',()=>{closed=[...document.querySelectorAll('details:not([open])')].filter(d=>!d.closest('.jsonInspector'));closed.forEach(d=>d.open=true)});addEventListener('afterprint',()=>{closed.forEach(d=>d.open=false);closed=[]});const inspector=document.querySelector('.jsonInspector');inspector.addEventListener('toggle',()=>{if(!inspector.open)return;const target=document.getElementById('canonical-json-view');if(target.textContent)return;try{target.textContent=JSON.stringify(JSON.parse(document.getElementById('canonical-analysis').textContent),null,2)}catch(error){target.textContent='Unable to render canonical JSON.'}});})();`;
 

@@ -201,6 +201,15 @@
       resolve(id) { return byId.get(text(id)) || null; },
       incoming(id) { return Object.freeze([...(incoming.get(text(id)) || [])]); },
       outgoing(id) { return Object.freeze([...(outgoing.get(text(id)) || [])]); },
+      // What a record's card lists besides its facts, which already name the
+      // records it references: the links it authors, and every record that
+      // points to it.
+      cardConnections(id) {
+        return Object.freeze({
+          authored: Object.freeze((outgoing.get(text(id)) || []).filter((edge) => edge.family === "explicit")),
+          incoming: Object.freeze([...(incoming.get(text(id)) || [])]),
+        });
+      },
       typeLabel(type) { return TYPE_LABELS[locale][type] || TYPE_LABELS.en[type] || type; },
     });
   }

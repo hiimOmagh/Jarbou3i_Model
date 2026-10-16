@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+### Connections on every record (UIX-5 slice G1)
+
+Biopolitical connections are now listed on the records they join, in the app
+and the report, instead of in a separate listing a reader had to match back
+to the records (walkthrough D3). The two real Biopolitical answers connect 7
+of 26 and 27 of 55 records; a map of so few, mostly two-step connections says
+less than the records themselves.
+
+- Each card lists **Links to**, the links the record authors, and **Linked
+  from**, every record that points to it. Each line reads "relation ·
+  record", and the record opens in the inspector. The records a card already
+  names in its facts (an intervention's target functions, actors, instruments
+  and evidence) are not repeated. Arabic: يُشير إلى / تُشير إليه; French:
+  Renvoie à / Référencé par. The inspector uses the same words.
+- The inspector's **Open full record** lands on the record's own card. It
+  used to focus the first chip anywhere that named the record, which could
+  be in another record or in a closed layer. An evidence record, drawn in its
+  layer and in the evidence section, lands in the evidence section.
+- The report's relationship atlas no longer lists every connection by family
+  (and the reference directory no longer lists the authored links again):
+  each record lists its own, and the atlas says how many records are
+  connected ("Records with connections: 7 of 26") and how many connections
+  each family holds. Its time bands and comparisons are unchanged.
+
 ### Sources
 
 - With *Sources supplied in context*, the prompt now covers files attached in

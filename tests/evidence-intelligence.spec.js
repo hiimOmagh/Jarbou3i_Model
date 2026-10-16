@@ -120,13 +120,31 @@ test("biopolitical records read as record cards in each pillar and the evidence 
   // are one description list.
   await expect(record.locator(".j-chip")).toHaveText(["Infrastructure", "High"]);
   await expect(record.locator(".j-rec-title")).toHaveText("QR credential and verification rule");
-  await expect(record.locator("dt")).toHaveText(["Stated purpose", "Ownership", "Oversight", "Scale"]);
-  await expect(record.locator("dd li")).toHaveText(["Individual", "Institutional", "National"]);
+  await expect(record.locator("dt")).toHaveText(["Stated purpose", "Ownership", "Oversight", "Scale", "Links to", "Linked from"]);
+  // Then its connections: the link it authors, and the records that point to
+  // it, each "relation · record".
+  await expect(record.locator("dd li")).toHaveText([
+    "Individual", "Institutional", "National",
+    /^Classifies · Eligible/, /^Enables · Mobility/, /^Uses · Conditional access/,
+  ]);
+  await expect(record.locator("dd li .j-ref")).toHaveText([/CLASS1$/, /HF1$/, /IV1$/]);
+  // A record it names opens in the inspector, whose "Open full record" lands
+  // on that record's own card.
+  await record.locator('dd li .j-ref[data-reference-id="IV1"]').click();
+  await page.locator("#referenceOpenRecord").click();
+  await expect(page.locator('[data-records="bio"] [data-inspection-id="IV1"]')).toBeFocused();
   // The evidence section draws the same cards, their references live.
   await page.locator('[data-bio-review="evidence"]').click();
   const explanation = page.locator('#case-evidence [data-records="bio"] > li').first();
   await expect(explanation.locator(".j-ref").first()).toBeVisible();
   await expectKernel(page, "#case-evidence");
+  // An evidence record is drawn in its pillar and here; opened from the
+  // inspector, it lands here.
+  const cited = explanation.locator('.j-ref[data-reference-type="evidence"]').first();
+  const evidenceId = await cited.getAttribute("data-reference-id");
+  await cited.click();
+  await page.locator("#referenceOpenRecord").click();
+  await expect(page.locator(`#case-evidence [data-inspection-id="${evidenceId}"]`)).toBeFocused();
 });
 
 test("strategic claim–evidence matrix exports an explicitly derived audit artifact", async ({ page }) => {

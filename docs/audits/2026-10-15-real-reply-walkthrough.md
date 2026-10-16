@@ -87,7 +87,7 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 |---|---|---|
 | D1 | The import details repeated one message 13 times and silently stopped at 12 lines | D1 |
 | D2 | The review queue is not grouped; empty columns span screens; traceability tables can be all dashes | open |
-| D3 | A record appears 4–9 times across views; the report lists relations two or three times | open |
+| D3 | A record appears 4–9 times across views; the report lists relations two or three times | report: done (UIX-5 G1, each record lists its connections); records across views: open |
 | D4 | Walls of "not applicable"; the inspector repeats "not provided" five times | open |
 
 ### E. Language
@@ -152,6 +152,15 @@ nothing; on a phone the controls end about 300px sooner.
    - B, the explorer (G);
    - a report-and-print slice (F);
    - a language slice (E2–E6, AR/EN/FR and the prototype).
+4. **Biopolitical connections (2026-10-16): record-centred.** Not a mind
+   map: the answers have no single root, records have several parents
+   (3–8 per answer), and the real answers connect 7 of 26 and 27 of 55
+   records, mostly in two-step paths. In three slices: G1, each record
+   lists its connections in the app and the report (done); G2, one
+   Connections view (coverage, every connection as a sentence by layer,
+   a one-step diagram of the chosen record) replaces the explorer; G3, a
+   "Connect the gaps" prompt for unconnected records. Revisit if answers
+   bring 50 or more connections in one cluster.
 
 ## Evidence
 

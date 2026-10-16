@@ -306,7 +306,7 @@ test.describe('Strategic HTML report content', () => {
     expect(html).toContain('dir="rtl"');
     await page.setContent(html);
     await page.evaluate(() => document.querySelectorAll('details').forEach((details) => { details.open = true; }));
-    const reported = await linkDirections('.edgeList li, .recordCard h3');
+    const reported = await linkDirections('.recordCard h3');
     expect(reported.length).toBeGreaterThan(0);
     expect(reported.filter(([, forward]) => !forward)).toEqual([]);
 

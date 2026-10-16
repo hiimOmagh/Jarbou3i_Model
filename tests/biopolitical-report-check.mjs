@@ -138,15 +138,17 @@ for (const lang of ["ar", "fr"]) {
   }
 }
 
-// A relationship arrow points from the source to the target as the report reads:
-// right to left in Arabic.
-for (const [lang, arrow] of [["ar", "←"], ["en", "→"], ["fr", "→"]]) {
+// Each connection is listed on its records: on the record it points to, and an
+// authored link on the record that authors it as well.
+for (const lang of ["ar", "en", "fr"]) {
   const localized = reportApi.build({ analysis: fixture, lang, version: PRODUCT_VERSION, bio, graphApi });
-  const arrows = [...localized.matchAll(/<ol class="edgeList">[\s\S]*?<\/ol>/g)].flatMap((list) =>
-    [...list[0].matchAll(/<span aria-hidden="true">([^<]*)<\/span>/g)].map((match) => match[1]),
-  );
-  assert.ok(arrows.length, `${lang} report lists no relationships`);
-  assert.deepEqual([...new Set(arrows)], [arrow], `${lang} relationship arrows point the wrong way`);
+  const graph = graphApi.build(bio.sanitizePortableValue(bio.normalize(fixture)), lang);
+  const listed = [...localized.matchAll(/<div class="recordList" data-record-connections>[\s\S]*?<\/div>/g)]
+    .reduce((count, list) => count + list[0].split("<li>").length - 1, 0);
+  const expected = graph.edges.filter((edge) => graph.resolve(edge.target)).length
+    + graph.edges.filter((edge) => edge.family === "explicit" && graph.resolve(edge.source)).length;
+  assert.ok(expected, `${lang} fixture has no connections`);
+  assert.equal(listed, expected, `${lang} report lists ${listed} connections on its records, not ${expected}`);
 }
 
 // Values the contract codes ("institutional", "litigation", true) read in

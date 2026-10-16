@@ -5472,8 +5472,8 @@ function renderPillars() {
     return layerAccordion({ prefix: "acc", key: p, index, color: COLORS[p], label: labels[p], count: items.length, body });
   }).join("")}</div>`;
 }
-// A Strategic record card's anchor for the inspector's "Open full record", and
-// its ID.
+// A record card's anchor for the inspector's "Open full record", and a
+// Strategic card's ID.
 function recordAnchor(item) {
   return item?.id ? ` data-inspection-id="${escapeHtml(item.id)}" tabindex="-1"` : "";
 }
@@ -6067,9 +6067,11 @@ function wireInspectionDirectory() {
 }
 function focusInspectionRecord(node, fallbackSelector) {
   requestAnimationFrame(() => {
-    const target = document.querySelector(
-      `[data-inspection-id="${CSS.escape(node.id)}"]`,
-    ) || document.querySelector(fallbackSelector) || $("reviewContent");
+    // A record drawn in two sections (a Biopolitical evidence record) lands in
+    // the one the review moved to.
+    const anchor = `[data-inspection-id="${CSS.escape(node.id)}"]`;
+    const target = document.querySelector(`#case-${CSS.escape(state.activeReview)} ${anchor}`)
+      || document.querySelector(anchor) || document.querySelector(fallbackSelector) || $("reviewContent");
     target?.scrollIntoView({ behavior: "auto", block: "center" });
     target?.focus?.({ preventScroll: true });
   });
@@ -6170,10 +6172,28 @@ function mountRelationshipExplorer() {
       return null;
     });
 }
+// A record's connections that its facts do not already name: the links it
+// authors, then every record that points to it. Each reads "relation ·
+// record", so the relation stays in view beside a long name.
+function bioConnectionFacts(node, graph) {
+  const relation = (edge) => escapeHtml(BIO.displayToken(state.lang, edge.relation));
+  const list = (edges, line) => `<ul>${edges.map((edge) => `<li>${line(edge)}</li>`).join("")}</ul>`;
+  const { authored, incoming } = graph.cardConnections(node.id);
+  return [
+    authored.length
+      ? recordFact(labelText("Links to", "يُشير إلى", "Renvoie à"), list(authored, (edge) => `${relation(edge)} · ${namedBioText(edge.target, graph)}`))
+      : "",
+    incoming.length
+      ? recordFact(labelText("Linked from", "تُشير إليه", "Référencé par"), list(incoming, (edge) => `${relation(edge)} · ${namedBioText(edge.source, graph)}`))
+      : "",
+  ].join("");
+}
 // A Biopolitical record as a kernel card: its qualifiers, its statement, its
-// summary, then its facts and lists. Every pillar and the evidence view use it.
+// summary, then its facts, lists and connections. Every pillar and the
+// evidence view use it.
 function bioRecordHtml(item) {
   const graph = currentBiopoliticalGraph();
+  const node = item.id ? graph.resolve(item.id) : null;
   const chips = arr(item.meta)
     .map((value) => kernelChip(BIO.displayToken(state.lang, value)))
     .join("");
@@ -6189,8 +6209,9 @@ function bioRecordHtml(item) {
           .join("")}</ul>`,
       ),
     ),
+    node ? bioConnectionFacts(node, graph) : "",
   ].join("");
-  return `<li><article class="j-rec">${chips ? `<header class="j-rec-head">${chips}</header>` : ""}<p class="j-rec-title">${namedBioText(item.title || "—", graph)}</p>${item.summary ? `<p class="j-rec-text">${namedBioText(item.summary, graph)}</p>` : ""}${facts ? `<dl class="j-rec-facts" data-prose>${facts}</dl>` : ""}</article></li>`;
+  return `<li><article class="j-rec"${node ? recordAnchor(item) : ""}>${chips ? `<header class="j-rec-head">${chips}</header>` : ""}<p class="j-rec-title">${namedBioText(item.title || "—", graph)}</p>${item.summary ? `<p class="j-rec-text">${namedBioText(item.summary, graph)}</p>` : ""}${facts ? `<dl class="j-rec-facts" data-prose>${facts}</dl>` : ""}</article></li>`;
 }
 function bioRecordsHtml(records) {
   return records.length

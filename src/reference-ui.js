@@ -12,7 +12,7 @@
   const copyByLanguage = {
     en: {
       close: "Close inspection details", details: "Inspection details",
-      connections: "Linked records", incoming: "Referenced by", outgoing: "References",
+      connections: "Linked records", incoming: "Linked from", outgoing: "Links to",
       none: "No indexed connections", open: "Open full record", showMap: "Show in map",
       identity: "Canonical identity", type: "Record type", pillar: "Analysis pillar",
       canonicalId: "Canonical ID", path: "Canonical path", confidence: "Confidence",
@@ -66,7 +66,7 @@
     },
     fr: {
       close: "Fermer les détails d’inspection", details: "Détails d’inspection",
-      connections: "Fiches liées", incoming: "Référencé par", outgoing: "Références",
+      connections: "Fiches liées", incoming: "Référencé par", outgoing: "Renvoie à",
       none: "Aucune connexion indexée", open: "Ouvrir la fiche complète", showMap: "Afficher sur la carte",
       identity: "Identité canonique", type: "Type de fiche", pillar: "Pilier d’analyse",
       canonicalId: "Identifiant canonique", path: "Chemin canonique", confidence: "Confiance",
