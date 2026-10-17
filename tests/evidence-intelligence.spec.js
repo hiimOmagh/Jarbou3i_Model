@@ -89,7 +89,7 @@ test("the engine map and the strategic layers read as steps and record cards", a
   const record = page.locator('#acc-panel-actors [data-records="layer"] > li').first();
   await expect(record.locator(".j-chip")).toHaveText(["State", "High confidence"]);
   await expect(record.locator(".j-rec-title")).toHaveText("United States");
-  await expect(record.locator("dt")).toHaveText("Actor Power Index (API)");
+  await expect(record.locator("dt")).toHaveText("Actor Power Index");
   await expect(record.locator("dd")).toHaveText("18/20");
   // A result states its goal, cost-benefit and effect on the balance of power.
   await page.locator('[data-pillar-card="results"]').click();

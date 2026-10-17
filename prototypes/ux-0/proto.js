@@ -67,6 +67,9 @@ function t(key, vars) {
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const $ = (selector, root = document) => root.querySelector(selector);
 const fmtNum = (n) => new Intl.NumberFormat(state.lang === "ar" ? "ar" : state.lang).format(n);
+// French sets ":" and "%" apart with a space that does not break.
+const colon = () => (state.lang === "fr" ? "\u00A0:" : ":");
+const pct = (n) => (state.lang === "fr" ? `${fmtNum(n)}\u202F%` : `${fmtNum(n)}%`);
 const humanize = (key) => String(key).replace(/_/g, " ");
 // Display name for a schema section key (a layer, a phase or a record kind), else the raw key.
 const sectionName = (key) => lookup(`layers.${key}`)?.[0] ?? lookup(`phases.${key}`)?.[0] ?? lookup(`kinds.${key}`) ?? humanize(key ?? "—");
@@ -949,7 +952,7 @@ function causalMap(a, m) {
     const share = items.length ? items.filter((it) => it.confidence === "high").length / items.length : 0;
     const C = 2 * Math.PI * (R + 6);
     const [name] = t(`layers.${key}`);
-    const label = `${name}: ${t("items", { n: fmtNum(items.length) })}`;
+    const label = `${name}${colon()} ${t("items", { n: fmtNum(items.length) })}`;
     return `<g class="node ${items.length ? "" : "empty"} ${selectedLayer === key ? "selected" : ""}" style="--i:${i}" role="button" tabindex="0" aria-label="${esc(label)}" aria-pressed="${selectedLayer === key}" data-action="selectLayer" data-value="${key}">
       <circle class="ring-bg" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R + 6}"/>
       <circle class="ring" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R + 6}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - share)).toFixed(1)}" transform="rotate(-90 ${x.toFixed(1)} ${y.toFixed(1)})"/>
@@ -990,7 +993,7 @@ function evidenceView(a) {
     </table></div></div>
     <div class="panelBox"><span class="label">${esc(t("asTitle"))}</span>
       <div class="cards">${as.map((x) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(x.id)}" aria-pressed="${selectedId === x.id}">
-        <div class="recHead"><span class="mono help">${esc(x.id)}</span><span class="chip ${x.risk === "high" ? "low" : x.risk === "low" ? "high" : "medium"}">${esc(t("risk"))}: ${esc(x.risk)}</span></div>
+        <div class="recHead"><span class="mono help">${esc(x.id)}</span><span class="chip ${x.risk === "high" ? "low" : x.risk === "low" ? "high" : "medium"}">${esc(t("risk"))}${colon()} ${esc(x.risk)}</span></div>
         <h3 ${contentLang(a)}>${esc(x.assumption)}</h3>
         <dl class="kv"><dt>${esc(t("disprovenBy"))}</dt><dd ${contentLang(a)}>${esc(x.disproving_test)}</dd>${x.implication_if_wrong ? `<dt>${esc(t("ifWrong"))}</dt><dd ${contentLang(a)}>${esc(x.implication_if_wrong)}</dd>` : ""}</dl>
       </button>`).join("")}</div>
@@ -1018,8 +1021,8 @@ function futuresView(a) {
     <div class="cards">${items.map((s) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(s.id)}" aria-pressed="${selectedId === s.id}">
       <div class="recHead"><span class="mono help">${esc(s.id)} · ${esc(s.timeframe)}</span></div>
       <h3 ${contentLang(a)}>${esc(s.name)}</h3>
-      <div class="prob"><span class="label">${esc(t("probability"))} <span class="mono">${fmtNum(s.probability)}%</span></span>
-        <div class="probBar" role="img" aria-label="${esc(`${t("probability")} ${s.probability}%`)}"><i style="width:${Math.max(0, Math.min(100, s.probability))}%"></i></div>
+      <div class="prob"><span class="label">${esc(t("probability"))} <span class="mono">${pct(s.probability)}</span></span>
+        <div class="probBar" role="img" aria-label="${esc(`${t("probability")} ${pct(s.probability)}`)}"><i style="width:${Math.max(0, Math.min(100, s.probability))}%"></i></div>
         <div class="probScale" aria-hidden="true"><span>0</span><span>50</span><span>100</span></div></div>
       <dl class="kv">
         <dt>${esc(t("drivers"))}</dt><dd ${contentLang(a)}>${esc((s.drivers || []).join(" · "))}</dd>
@@ -1133,7 +1136,7 @@ function pillarMap(a) {
     const share = rated.length ? rated.filter((r) => r.data.confidence === "high").length / rated.length : 0;
     const C = 2 * Math.PI * (R + 5);
     const name = pillarName(key);
-    return `<g class="node ${items.length ? "" : "empty"} ${selected === key ? "selected" : ""}" style="--i:${i}" role="button" tabindex="0" aria-label="${esc(`${name}: ${t("items", { n: fmtNum(items.length) })}`)}" aria-pressed="${selected === key}" data-action="selectPillar" data-value="${key}">
+    return `<g class="node ${items.length ? "" : "empty"} ${selected === key ? "selected" : ""}" style="--i:${i}" role="button" tabindex="0" aria-label="${esc(`${name}${colon()} ${t("items", { n: fmtNum(items.length) })}`)}" aria-pressed="${selected === key}" data-action="selectPillar" data-value="${key}">
       <circle class="ring-bg" cx="${X}" cy="${Y}" r="${R + 5}"/>
       <circle class="ring" cx="${X}" cy="${Y}" r="${R + 5}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - share)).toFixed(1)}" transform="rotate(-90 ${X} ${Y})"/>
       <circle class="disc" cx="${X}" cy="${Y}" r="${R}"/>
@@ -1185,7 +1188,7 @@ function explanationsView(a, m) {
     <div class="cards">${(a.competing_explanations || []).map((x) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(x.id)}" aria-pressed="${selectedId === x.id}">
       <div class="recHead"><span class="mono help">${esc(x.id)} · ${esc(token(x.type))}</span>${confChip(x.confidence)}</div>
       <h3 ${contentLang(a)}>${esc(x.claim)}</h3>
-      <div class="tags"><span class="chip">${esc(t("relevance"))}: ${esc(token(x.relevance))}</span>${statusTag(x.evidentiary_status === "not_assessed" ? "warn" : "idle", token(x.evidentiary_status))}</div>
+      <div class="tags"><span class="chip">${esc(t("relevance"))}${colon()} ${esc(token(x.relevance))}</span>${statusTag(x.evidentiary_status === "not_assessed" ? "warn" : "idle", token(x.evidentiary_status))}</div>
       <dl class="kv">
         <dt>${esc(t("mechanism"))}</dt><dd ${contentLang(a)}>${esc(x.mechanism)}</dd>
         <dt>${esc(t("falsifiedIf"))}</dt><dd ${contentLang(a)}>${esc(joined(x.falsified_if))}</dd>

@@ -105,13 +105,13 @@
       <div class="j-flow-guide" id="flowGuide" data-mood="idle">
         <div class="j-flow-mascot">
           <img src="assets/jarbou3i-mascot-192.png" width="72" height="72" decoding="sync" fetchpriority="high" alt="">
-          <p class="j-flow-say" id="flowSay">أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى برومبت دقيق لمساعدك الذكي.</p>
+          <p class="j-flow-say" id="flowSay">أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى موجِّه دقيق لمساعدك الذكي.</p>
         </div>
         <ol class="j-flow-steps">
           <li><button class="j-flow-step" type="button" data-flow-step="topic" aria-current="step"><span class="j-flow-step-n" aria-hidden="true">1</span><span data-i18n="flowStepTopic">الموضوع</span></button></li>
           <li><button class="j-flow-step" type="button" data-flow-step="lens"><span class="j-flow-step-n" aria-hidden="true">2</span><span data-i18n="flowStepLens">العدسة</span></button></li>
           <li><button class="j-flow-step" type="button" data-flow-step="settings"><span class="j-flow-step-n" aria-hidden="true">3</span><span data-i18n="flowStepSettings">الإعدادات</span></button></li>
-          <li><button class="j-flow-step" type="button" data-flow-step="prompt"><span class="j-flow-step-n" aria-hidden="true">4</span><span data-i18n="flowStepPrompt">البرومبت</span></button></li>
+          <li><button class="j-flow-step" type="button" data-flow-step="prompt"><span class="j-flow-step-n" aria-hidden="true">4</span><span data-i18n="flowStepPrompt">الموجِّه</span></button></li>
           <li><button class="j-flow-step" type="button" data-flow-step="answer"><span class="j-flow-step-n" aria-hidden="true">5</span><span data-i18n="flowStepAnswer">الإجابة</span></button></li>
         </ol>
         <button class="j-btn" data-variant="ghost" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
@@ -139,14 +139,14 @@
         <div class="j-flow-panel" data-flow-panel="lens" hidden>
           <div class="j-flow-choices" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
             <button class="j-flow-choice active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0"><b data-i18n="lensStrategic">استراتيجي</b><span data-i18n="lensStrategicDesc">يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.</span></button>
-            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">حيوسياسي</b><span data-i18n="lensBiopoliticalDesc">يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.</span></button>
+            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">السياسة الحيوية</b><span data-i18n="lensBiopoliticalDesc">يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.</span></button>
           </div>
           <p class="j-flow-note" id="analysisLensHint">مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.</p>
         </div>
         <div class="j-flow-panel" data-flow-panel="settings" hidden>
           <div class="j-flow-grid">
             <div class="j-field">
-              <label for="promptMode" data-i18n="promptMode">نمط البرومبت</label>
+              <label for="promptMode" data-i18n="promptMode">نمط الموجِّه</label>
               <select id="promptMode" class="j-input"><option value="simple" data-i18n-option="modeSimple">مركّز</option><option value="expert" data-i18n-option="modeExpert">خبير</option><option value="research" data-i18n-option="modeResearch">بحثي</option></select>
             </div>
             <div class="j-field">
@@ -161,21 +161,21 @@
           <div class="j-field" id="sourcesField" hidden>
             <label for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
             <textarea id="sourcesInput" class="j-input" rows="4" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها." aria-describedby="sourcesHelp"></textarea>
-            <p class="j-help" id="sourcesHelp" data-i18n="sourcesHelp">الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب البرومبت من المساعد قراءتها والاستشهاد بكل ملف باسمه.</p>
+            <p class="j-help" id="sourcesHelp" data-i18n="sourcesHelp">الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب الموجِّه من المساعد قراءتها والاستشهاد بكل ملف باسمه.</p>
           </div>
         </div>
         <div class="j-flow-panel" data-flow-panel="prompt" hidden>
           <ol class="j-flow-howto">
             <li data-i18n="flowHowTo1">افتح مساعدك الذكي في تبويب آخر.</li>
-            <li data-i18n="flowHowTo2">الصق البرومبت وأرسله.</li>
+            <li data-i18n="flowHowTo2">الصق الموجِّه وأرسله.</li>
             <li data-i18n="flowHowTo3">انتظر الإجابة كاملة ثم عد إلى هنا.</li>
           </ol>
           <div class="j-flow-row">
-            <button class="j-btn" data-variant="primary" data-size="lg" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ البرومبت</button>
-            <button class="j-btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة البرومبت</button>
+            <button class="j-btn" data-variant="primary" data-size="lg" id="copyPromptBtn" type="button" data-i18n="copyPrompt">انسخ الموجِّه</button>
+            <button class="j-btn" id="previewPromptBtn" type="button" data-i18n="previewPrompt">معاينة الموجِّه</button>
             <button class="j-btn hide" data-variant="ghost" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
           </div>
-          <p class="j-note" data-tone="idle" id="topicStatus" role="status" aria-live="polite">أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.</p>
+          <p class="j-note" data-tone="idle" id="topicStatus" role="status" aria-live="polite">أدخل موضوعًا واضحًا ثم انسخ الموجِّه إلى مساعدك المفضل.</p>
         </div>
         <div class="j-flow-panel" id="pasteCard" data-flow-panel="answer" hidden>
           <div class="j-field">
@@ -188,7 +188,7 @@
           </div>
           <div class="j-flow-row">
             <button class="j-btn" data-variant="primary" data-size="lg" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button>
-            <button class="j-btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">برومبت إصلاح JSON</button>
+            <button class="j-btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">موجِّه إصلاح JSON</button>
             <button class="j-btn" data-variant="ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
           </div>
           <p class="j-note" data-tone="idle" id="jsonStatus" role="status" aria-live="polite">الصق نتيجة JSON للتحقق.</p>

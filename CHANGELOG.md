@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### Arabic terms, French typography, metric names (UIX-5 slice E, part 1)
+
+Walkthrough E4–E6, in the app and the prototype.
+
+- **Arabic:** "prompt" is موجِّه, not the transliteration برومبت
+  (58 places), and the Biopolitical lens has one name, السياسة الحيوية,
+  where it had three (حيوسياسي, البيوسياسي, حيوية سياسية). "Targeted
+  completion prompt" reads موجِّه استكمال محدَّد, so two forms of the same
+  word do not meet. A review of all 1,902 Arabic strings fixed nine
+  agreement errors: a verb's gender and number, an adjective's
+  definiteness, and the draft's "not committed" status (غير معتمدة).
+- **French:** a colon and a percent sign stand apart from the word before
+  them, with a space that does not break ("Contre-preuve : …", "86 %"),
+  where the app joins a label and a value or writes a percentage: the case
+  file, both reports and the prototype. A source's full date reads in the
+  page's language ("17 juillet 2026"); a partial one ("2026-07") stays as
+  written.
+- **Layer metrics** read by name, each over the model's own scale:
+  "Actor Power Index 14/20", not "Actor Power Index (API)". The scales
+  (/20, /15, /100) are the model's (docs/model-alignment-review.md).
+
 ### Connect the gaps (UIX-5 slice G3)
 
 The Connections view lists the records no connection reaches (12 of 32 in

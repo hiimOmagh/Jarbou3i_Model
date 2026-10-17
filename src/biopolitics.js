@@ -238,23 +238,23 @@
       changeEvidence: "Evidence that would change the conclusion",
     },
     ar: {
-      appTitle: "مساحة عمل التحليل الحيوسياسي",
+      appTitle: "مساحة عمل تحليل السياسة الحيوية",
       appSubtitle:
         "نظام قائم على الأسئلة لتتبّع كيفية إخضاع وظائف الإنسان والمؤسسات والبنى التحتية والتصنيفات والمعاني للحكم.",
       workflowSubtitle:
-        "حدّد السؤال، أنشئ برومبت النموذج الحيوسياسي 2، استورد JSON منضبطًا بالأدلة، ثم افحص سلسلة الآليات كاملة.",
+        "حدّد السؤال، أنشئ موجِّه نموذج السياسة الحيوية 2، استورد JSON منضبطًا بالأدلة، ثم افحص سلسلة الآليات كاملة.",
       topicPlaceholder:
         "مثال: كيف تحكم مشروطية الإعانات التبعية والعمل والكرامة والوصول؟",
       lensBiopoliticalHint:
         "وظائف الإنسان، الفاعلون، البنى التحتية، المعنى، اختبار الاستحواذ، التوزيع، الأدلة، الفاعلية والبدائل.",
-      engineTitle: "البروتوكول التحليلي الحيوسياسي",
+      engineTitle: "بروتوكول تحليل السياسة الحيوية",
       engineSubtitle:
         "تنتقل تسع ركائز مترابطة من سؤال قابل للاختبار إلى حكم مُعاير دون افتراض الهيمنة مسبقًا.",
-      reviewTitle: "مراجعة التحليل الحيوسياسي",
+      reviewTitle: "مراجعة تحليل السياسة الحيوية",
       reviewSubtitle:
         "افحص الآلية والتفسيرات المتنافسة وجودة الأدلة والآثار غير المتكافئة والمقاومة والبدائل الواقعية.",
-      engine: "ركائز التحليل الحيوسياسي",
-      generatedReport: "تقرير التحليل الحيوسياسي — خريطة التدريب 2",
+      engine: "ركائز تحليل السياسة الحيوية",
+      generatedReport: "تقرير تحليل السياسة الحيوية — خريطة التدريب 2",
       reportSubtitle:
         "السؤال ← الوظيفة الإنسانية ← منظومة القوة ← الآلية ← المعنى/التصنيف ← اختبار التدخل ← التوزيع ← الأدلة ← الفاعلية/البدائل.",
       scoreGuide:
@@ -341,7 +341,7 @@
       conclusion: "الحكم المُعاير",
       selfAudit: "المراجعة الذاتية للنموذج",
       selfAuditNote: "فحوص الذكاء الاصطناعي لإجابته: «ناجح» ادعاء منه وليس تحققًا.",
-      migration: "تمت ترقية الاستيراد الحيوسياسي القديم إلى الإصدار 2",
+      migration: "تمت ترقية استيراد السياسة الحيوية القديم إلى الإصدار 2",
       noRecords: "لا توجد سجلات منظّمة في هذه الركيزة.",
       sourceTier: "رتبة المصدر",
       counterEvidence: "دليل مضاد",
@@ -607,7 +607,7 @@
     security: ["أمني", "Sécuritaire"],
     cultural: ["ثقافي", "Culturel"],
     technological: ["تقني", "Technologique"],
-    critical_biopolitical: ["نقد حيوسياسي", "Critique biopolitique"],
+    critical_biopolitical: ["نقد من منظور السياسة الحيوية", "Critique biopolitique"],
     actor_error_unintended_consequence: ["خطأ فاعل أو أثر غير مقصود", "Erreur d’acteur ou conséquence imprévue"],
     verified_fact: ["واقعة متحققة", "Fait vérifié"],
     quantitative_estimate: ["تقدير كمي", "Estimation quantitative"],
@@ -774,6 +774,14 @@
       .replaceAll("_", " ")
       .replace(/(?<![\p{L}\p{N}'’])\p{L}/gu, (character) => character.toUpperCase());
   }
+
+  // French sets a colon apart with a space that does not break.
+  const colonFor = (lang) => (lang === "fr" ? "\u00A0: " : ": ");
+  // A full source date reads in the language; a partial one stays as written.
+  const sourceDateFor = (lang, value) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(str(value)) && root.Jarbou3iReportTheme
+      ? root.Jarbou3iReportTheme.dateText(lang, value, { utc: true })
+      : value;
 
   function displayToken(lang, value) {
     const token = str(value).trim();
@@ -1754,7 +1762,7 @@
           : mode === "expert"
             ? "استخدم أدلة وافتراضات وتفسيرات منافسة وشروط إبطال وروابط سببية صريحة."
             : "عمق مركّز للمساعدات ذات حدود الإخراج الصغيرة: سجل واحد لكل مجموعة مطلوبة ما لم يكن سجل ثانٍ ضروريًا، وجملة واحدة قصيرة لكل قيمة نصية، وعنصر دليل واحد لكل مصدر متميز. أكمل مع ذلك كل الاختبارات والمجموعات الثابتة الإلزامية. إذا بلغت حد الإخراج فتوقف ببساطة دون اختصار أو علامات حذف؛ ستطلب منصة العمل المتابعة.";
-      return `أنت نموذج تحليل حيوسياسي صارم تحكمه خريطة تدريب جربوعي 2.1. حلّل كيف تصبح وظائف الإنسان والأجساد والسكان والعلاقات والبيئات وأنظمة المعنى موضوعًا للحكم والمعرفة والتحسين والتسليع والانضباط والحماية والإقصاء والمقاومة.
+      return `أنت نموذج صارم لتحليل السياسة الحيوية تحكمه خريطة تدريب جربوعي 2.1. حلّل كيف تصبح وظائف الإنسان والأجساد والسكان والعلاقات والبيئات وأنظمة المعنى موضوعًا للحكم والمعرفة والتحسين والتسليع والانضباط والحماية والإقصاء والمقاومة.
 
 لغة الإخراج الإلزامية: العربية. اكتب جميع القيم التحليلية المقروءة بالعربية؛ أبقِ مفاتيح JSON والمعرّفات وقيم التعداد النظامية كما يحددها المخطط، وأبقِ كل source_title كما يرد في المصدر نفسه دون ترجمة.
 
@@ -1982,7 +1990,7 @@ ${schema}${interchangeGuide}`;
           "قد تعيش البنية القابلة لإعادة الاستخدام أطول من الطارئ الذي بررها.",
         disputed:
           "اختلف صافي المنفعة الوبائية والتكلفة التوزيعية حسب الولاية والفترة.",
-        unknown: "لا يمكن استنتاج التطبيع بعيد المدى من التبني القصير وحده.",
+        unknown: "لا يمكن استنتاج التطبيع البعيد المدى من التبني القصير وحده.",
         change:
           "دليل مقارن يثبت إعادة استخدام دائمة عبر مجالات أخرى أو تفكيكًا مؤسسيًا كاملًا.",
       },
@@ -2973,7 +2981,7 @@ ${schema}${interchangeGuide}`;
               ),
               a.framing.contested_terms.map(
                 (item) =>
-                  `${item.term}: ${item.working_definition || arr(item.definitions)[0] || ""}${item.stakes ? ` — ${item.stakes}` : ""}`,
+                  `${item.term}${colonFor(lang)}${item.working_definition || arr(item.definitions)[0] || ""}${item.stakes ? ` — ${item.stakes}` : ""}`,
               ),
             ),
             list(
@@ -2985,7 +2993,7 @@ ${schema}${interchangeGuide}`;
               ),
               a.framing.contested_terms.flatMap((item) =>
                 arr(item.definitions).map(
-                  (definition) => `${item.term}: ${definition}`,
+                  (definition) => `${item.term}${colonFor(lang)}${definition}`,
                 ),
               ),
             ),
@@ -3716,7 +3724,7 @@ ${schema}${interchangeGuide}`;
               labelFor(lang, "Criteria", "المعايير", "Critères"),
               capture.criteria.map(
                 (item) =>
-                  `${displayToken(lang, item.criterion)}: ${displayToken(lang, item.status)} — ${item.reason || ""}${arr(item.evidence_ids).length ? ` [${item.evidence_ids.join(", ")}]` : ""}`,
+                  `${displayToken(lang, item.criterion)}${colonFor(lang)}${displayToken(lang, item.status)} — ${item.reason || ""}${arr(item.evidence_ids).length ? ` [${item.evidence_ids.join(", ")}]` : ""}`,
               ),
             ),
             list(
@@ -4095,7 +4103,7 @@ ${schema}${interchangeGuide}`;
                   "التاريخ والجغرافيا",
                   "Date et géographie",
                 ),
-                [item.source_date, item.geography].filter(Boolean).join(" · "),
+                [sourceDateFor(lang, item.source_date), item.geography].filter(Boolean).join(" · "),
               ),
               pair(
                 labelFor(lang, "Measurement", "القياس", "Mesure"),
@@ -4545,7 +4553,7 @@ ${schema}${interchangeGuide}`;
         a.analysis_contract === APP_CONTRACT &&
         a.schema_version === SCHEMA_VERSION,
       "Complete the canonical Biopolitical v2.1 contract; migrated drafts cannot be published.",
-      "أكمل عقد التحليل الحيوسياسي 2.1 النظامي؛ لا يمكن نشر المسودات المُرحّلة.",
+      "أكمل عقد تحليل السياسة الحيوية 2.1 النظامي؛ لا يمكن نشر المسودات المُرحّلة.",
       "Complétez le contrat canonique Biopolitique 2.1 ; un brouillon migré ne peut pas être publié.",
     );
     add(

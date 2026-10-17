@@ -205,7 +205,7 @@ export const BIO_LABELS = {
    "classifies": "يصنّف",
    "concern": "موضع قلق",
    "consent_failure": "فشل الموافقة",
-   "critical_biopolitical": "نقد حيوسياسي",
+   "critical_biopolitical": "نقد من منظور السياسة الحيوية",
    "cultural": "ثقافي",
    "data_repurposing": "إعادة توظيف البيانات",
    "datafication": "تحويل إلى بيانات",

@@ -56,12 +56,12 @@ const I18N = {
   ar: {
     appTitle: "مساحة عمل التحليل الاستراتيجي",
     appSubtitle:
-      "مساحة تحليل استراتيجية منظّمة: برومبت ذكي، استيراد واضح، ومراجعة قابلة للتصفح.",
+      "مساحة تحليل استراتيجية منظّمة: موجِّه ذكي، استيراد واضح، ومراجعة قابلة للتصفح.",
     topicLabel: "موضوع التحليل",
     topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا 2022–2026",
     analysisLang: "لغة التحليل",
     assistantPreset: "المساعد المفضل",
-    promptMode: "نمط البرومبت",
+    promptMode: "نمط الموجِّه",
     modeSimple: "مركّز",
     modeExpert: "خبير",
     modeResearch: "بحثي",
@@ -77,7 +77,7 @@ const I18N = {
     skipToWorkspace: "انتقل إلى مساحة العمل",
     productEyebrow: "Jarbou3i / استخبارات بحثية",
     lensContextStrategic: "العدسة الاستراتيجية",
-    lensContextBiopolitical: "العدسة البيوسياسية",
+    lensContextBiopolitical: "عدسة السياسة الحيوية",
     densityTitle: "تبديل كثافة العرض",
     densityComfortable: "مريح",
     densityCompact: "مضغوط",
@@ -101,7 +101,7 @@ const I18N = {
     shellActionTopic: "ابدأ بالموضوع",
     shellActionLens: "اختر العدسة",
     shellActionSettings: "راجع الإعدادات",
-    shellActionPrompt: "انسخ البرومبت",
+    shellActionPrompt: "انسخ الموجِّه",
     shellActionImport: "تابع إلى الاستيراد",
     shellActionReview: "راجع التحليل",
     shellMovedToSetup: "تم الانتقال إلى إعداد التحليل.",
@@ -114,21 +114,21 @@ const I18N = {
     timeframePlaceholder: "اختياري: 2022–2026، أوروبا",
     sourcesLabel: "المصادر المقدمة",
     sourcesPlaceholder: "الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها.",
-    sourcesHelp: "الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب البرومبت من المساعد قراءتها والاستشهاد بكل ملف باسمه.",
-    copyPrompt: "انسخ البرومبت",
-    previewPrompt: "معاينة البرومبت",
+    sourcesHelp: "الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب الموجِّه من المساعد قراءتها والاستشهاد بكل ملف باسمه.",
+    copyPrompt: "انسخ الموجِّه",
+    previewPrompt: "معاينة الموجِّه",
     editTopic: "تعديل الموضوع",
     caseOutline: "المخطط",
     caseOutlineReturn: "العودة إلى المخطط",
     flowStepTopic: "الموضوع",
     flowStepLens: "العدسة",
     flowStepSettings: "الإعدادات",
-    flowStepPrompt: "البرومبت",
+    flowStepPrompt: "الموجِّه",
     flowStepAnswer: "الإجابة",
     flowStepOf: "الخطوة {n} من {total}",
-    flowTitles: ["ما الذي تريد فهمه؟","أي عدسة تناسب سؤالك؟","كيف يجب أن يعمل الذكاء الاصطناعي؟","انسخ البرومبت إلى مساعدك الذكي","الصق إجابة الذكاء الاصطناعي"],
-    flowHints: ["جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.","لست متأكدًا؟ ابدأ بالعدسة الاستراتيجية، ويمكنك تشغيل الأخرى لاحقًا.","هذه الخيارات تشكّل البرومبت. الإعدادات الافتراضية تناسب معظم الأسئلة.","يعمل مع ChatGPT وClaude وGemini أو أي مساعد يكتب JSON.","الصق كل ما كتبه. لا بأس بوجود نص حول JSON، سأجده."],
-    flowSay: ["أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى برومبت دقيق لمساعدك الذكي.","الاستراتيجي يتتبع المصالح حتى النتائج. الحيوسياسي يتتبع كيف يُحكم الناس.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","الصق الإجابة كاملة. سأتحقق منها قبل استيراد أي شيء."],
+    flowTitles: ["ما الذي تريد فهمه؟","أي عدسة تناسب سؤالك؟","كيف يجب أن يعمل الذكاء الاصطناعي؟","انسخ الموجِّه إلى مساعدك الذكي","الصق إجابة الذكاء الاصطناعي"],
+    flowHints: ["جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.","لست متأكدًا؟ ابدأ بالعدسة الاستراتيجية، ويمكنك تشغيل الأخرى لاحقًا.","هذه الخيارات تشكّل الموجِّه. الإعدادات الافتراضية تناسب معظم الأسئلة.","يعمل مع ChatGPT وClaude وGemini أو أي مساعد يكتب JSON.","الصق كل ما كتبه. لا بأس بوجود نص حول JSON، سأجده."],
+    flowSay: ["أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى موجِّه دقيق لمساعدك الذكي.","العدسة الاستراتيجية تتتبع المصالح حتى النتائج، وعدسة السياسة الحيوية تتتبع كيف يُحكم الناس.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","الصق الإجابة كاملة. سأتحقق منها قبل استيراد أي شيء."],
     flowSay_ok: "تبدو مكتملة. جاهز متى شئت.",
     flowSay_warn: "أستطيع قراءتها مع بعض الملاحظات. راجعها أدناه قبل الاستيراد.",
     flowSay_trunc: "انقطعت الإجابة. يحدث هذا مع الإجابات الطويلة.",
@@ -140,36 +140,36 @@ const I18N = {
     flowExamplesLabel: "جرّب مثالًا:",
     flowExamples: [["ضوابط تصدير أشباه الموصلات","2022–2026، الولايات المتحدة، الاتحاد الأوروبي، الصين"],["صعود العمل عن بُعد","2020–2024، عالميًا"],["حقوق المياه في حوض النيل","2011–2025، إثيوبيا، السودان، مصر"]],
     flowHowTo1: "افتح مساعدك الذكي في تبويب آخر.",
-    flowHowTo2: "الصق البرومبت وأرسله.",
+    flowHowTo2: "الصق الموجِّه وأرسله.",
     flowHowTo3: "انتظر الإجابة كاملة ثم عد إلى هنا.",
     lensStrategicDesc: "يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.",
     lensBiopoliticalDesc: "يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.",
-    topicStatusStart: "أدخل موضوعًا واضحًا ثم انسخ البرومبت إلى مساعدك المفضل.",
+    topicStatusStart: "أدخل موضوعًا واضحًا ثم انسخ الموجِّه إلى مساعدك المفضل.",
     topicNeeded: "أدخل موضوع التحليل أولًا.",
     promptCopied:
-      "تم نسخ البرومبت. افتح مساعدك، الصقه، ثم انسخ JSON الناتج إلى خانة الاستيراد.",
+      "تم نسخ الموجِّه. افتح مساعدك، الصقه، ثم انسخ JSON الناتج إلى خانة الاستيراد.",
     tripRestored: "استُعيد التحليل الذي كنت تُعدّه قبل إعادة تحميل الصفحة.",
-    promptPreview: "معاينة البرومبت",
+    promptPreview: "معاينة الموجِّه",
     copyShownText: "نسخ النص المعروض",
     copied: "تم النسخ.",
     copyFailed: "تعذّر النسخ تلقائيًا. انسخ النص من نافذة المعاينة.",
     jsonLabel: "نتيجة JSON",
     jsonPlaceholder: "الصق JSON هنا...",
     importAnalysis: "استيراد التحليل",
-    repairPrompt: "برومبت إصلاح JSON",
-    completionPrompt: "برومبت استكمال موجّه",
+    repairPrompt: "موجِّه إصلاح JSON",
+    completionPrompt: "موجِّه استكمال محدَّد",
     clear: "مسح",
     jsonWaiting: "الصق نتيجة JSON للتحقق.",
     jsonValid: "JSON صالح. يمكنك الآن استيراد التحليل.",
     jsonImported: "مستورد: هذا هو التحليل قيد المراجعة. الصق إجابة جديدة لتستبدله.",
-    jsonInvalid: "JSON غير صالح أو غير مكتمل. استخدم برومبت الإصلاح إذا لزم.",
+    jsonInvalid: "JSON غير صالح أو غير مكتمل. استخدم موجِّه الإصلاح إذا لزم.",
     analysisImported: "تم استيراد التحليل. ابدأ بالخلاصة.",
-    repairCopied: "تم نسخ برومبت الإصلاح.",
-    completionCopied: "تم نسخ برومبت الاستكمال.",
-    continuePrompt: "برومبت متابعة النتيجة المقطوعة",
-    continueCopied: "تم نسخ برومبت المتابعة. أرسله في المحادثة نفسها ثم الصق الرد في خانة المتابعة.",
+    repairCopied: "تم نسخ موجِّه الإصلاح.",
+    completionCopied: "تم نسخ موجِّه الاستكمال.",
+    continuePrompt: "موجِّه متابعة النتيجة المقطوعة",
+    continueCopied: "تم نسخ موجِّه المتابعة. أرسله في المحادثة نفسها ثم الصق الرد في خانة المتابعة.",
     continuationLabel: "تابع النتيجة المقطوعة",
-    continuationPlaceholder: "الصق هنا رد المساعد على برومبت المتابعة؛ سيُضم تلقائيًا إلى النتيجة أعلاه.",
+    continuationPlaceholder: "الصق هنا رد المساعد على موجِّه المتابعة؛ سيُضم تلقائيًا إلى النتيجة أعلاه.",
     engineTitle: "خريطة محرك التحليل",
     engineSubtitle:
       "المسار السببي للنموذج: من الحوافز إلى التكيف. بعد الاستيراد تصبح كل طبقة قابلة للفحص.",
@@ -259,7 +259,7 @@ const I18N = {
     healthMissingEvidence: "اطلب أدلة/افتراضات أو استخدم نمط الخبير.",
     healthMissingFeedback: "أضف حلقات تغذية راجعة تربط النتائج بالتكيّف.",
     jsonAutoRecovered: "تم تنظيف النص واستخراج JSON صالح تلقائيًا.",
-    jsonParseProblem: "لم يُعثر على تحليل في هذا النص. انسخ إجابة الذكاء الاصطناعي كاملة (كتلة كود JSON) والصقها هنا. وإذا أجاب بنص عادي، فاستخدم برومبت الإصلاح لتطلب منه JSON.",
+    jsonParseProblem: "لم يُعثر على تحليل في هذا النص. انسخ إجابة الذكاء الاصطناعي كاملة (كتلة كود JSON) والصقها هنا. وإذا أجاب بنص عادي، فاستخدم موجِّه الإصلاح لتطلب منه JSON.",
     reportSubtitle:
       "تقرير قابل للمشاركة مبني على نموذج المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة.",
     itemsWord: "عناصر",
@@ -287,25 +287,25 @@ const I18N = {
     sectionSummary: "خلاصة القسم",
     compactView: "عرض مركز",
     detailedView: "عرض تفصيلي",
-    appTitleBiopolitical: "مساحة عمل التحليل الحيوسياسي",
+    appTitleBiopolitical: "مساحة عمل تحليل السياسة الحيوية",
     appSubtitleBiopolitical:
       "مساحة تحليل لفهم كيف تُدار الأجساد والسكان والمعايير والمخاطر والسلوك.",
     topicPlaceholderBiopolitical:
       "مثال: جوازات الصحة الرقمية وتصنيف مخاطر السكان 2020–2022",
     analysisLens: "عدسة التحليل",
     lensStrategic: "استراتيجي",
-    lensBiopolitical: "حيوسياسي",
+    lensBiopolitical: "السياسة الحيوية",
     lensStrategicHint: "مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.",
     lensBiopoliticalHint:
       "إشكلة، سكان/ذوات، تقنيات حكم، معايير، آثار جسدية/اجتماعية، مقاومة.",
-    engineTitleBiopolitical: "خريطة المحرك الحيوسياسي",
+    engineTitleBiopolitical: "خريطة محرك السياسة الحيوية",
     engineSubtitleBiopolitical:
       "مسار الحكم في النموذج: من تحويل الحياة إلى مشكلة عامة، إلى تصنيف السكان، والتطبيع، والآثار الجسدية، والمقاومة.",
-    reviewTitleBiopolitical: "مراجعة التحليل الحيوسياسي",
+    reviewTitleBiopolitical: "مراجعة تحليل السياسة الحيوية",
     reviewSubtitleBiopolitical:
       "تنقل بين الخلاصة، طبقات الحكم، التناقضات، السيناريوهات، الأدلة، والتصدير.",
     engineBiopolitical: "طبقات الحكم",
-    generatedReportBiopolitical: "تقرير تحليل حيوسياسي",
+    generatedReportBiopolitical: "تقرير تحليل السياسة الحيوية",
     reportSubtitleBiopolitical:
       "تقرير قابل للمشاركة مبني على نموذج الإشكلة ← السكان ← التقنيات ← المعايير/تكوين الذات ← الآثار ← المقاومة/التغذية الراجعة.",
     scoreCoherenceBiopolitical: "تماسك الحكم",
@@ -313,17 +313,17 @@ const I18N = {
       "مدى اتصال الإشكلة والسكان والتقنيات والمعايير والآثار الجسدية والتغذية الراجعة.",
     scoreContradictionsHintBiopolitical:
       "مدى وضوح الفصل بين ادعاءات الحماية وآثار التصنيف أو الانضباط أو الإقصاء أو التطبيع.",
-    healthMissingPillarsBiopolitical: "أكمل طبقات الحكم الحيوسياسي أولًا.",
+    healthMissingPillarsBiopolitical: "أكمل طبقات تحليل السياسة الحيوية أولًا.",
     healthMissingFeedbackBiopolitical:
       "أضف حلقات مقاومة أو تكيف أو تطبيع أو سلوك مضاد.",
     warningsBiopolitical: {
-      missingPillars: "بعض طبقات الحكم الحيوسياسي فارغة.",
+      missingPillars: "بعض طبقات تحليل السياسة الحيوية فارغة.",
       noContradictions: "لم يتم استخراج تناقض واضح بين الحماية والسيطرة.",
       noScenarios: "لا يوجد سيناريو حكم قابل للاختبار.",
       noFalsifiers: "السيناريوهات تحتاج شروط إضعاف/إبطال واضحة.",
       thinEvidence:
         "الأدلة أو الافتراضات حول السكان أو التقنيات أو الآثار الجسدية ضعيفة.",
-      good: "البنية الحيوسياسية الأساسية مكتملة.",
+      good: "البنية الأساسية لتحليل السياسة الحيوية مكتملة.",
     },
     pillarsBiopolitical: {
       interests: [
@@ -352,7 +352,7 @@ const I18N = {
       ],
     },
     sampleLoadedBiopolitical:
-      "تم تحميل مثال حيوسياسي. راجع طبقات الحكم أو استبدله بموضوعك.",
+      "تم تحميل مثال للسياسة الحيوية. راجع طبقات الحكم أو استبدله بموضوعك.",
   },
   en: {
     appTitle: "Strategic Analysis Workbench",
@@ -1932,14 +1932,14 @@ function localizedImportIssueMessage(issue = {}, lang = state.lang) {
       UNJUSTIFIED_VERIFIED_EVIDENCE: "يتطلب الدليل المتحقق منه تقييمًا واضحًا لمدى ملاءمة المصدر للادعاء.",
       UNREFERENCED_EVIDENCE: "سجل الدليل غير مستشهد به في ادعاء خضع للتقييم.",
       QUANTITATIVE_METADATA_MISSING: "تتطلب الأدلة الكمية استكمال بيانات التصميم والقياس قبل النشر.",
-      MIGRATED_DRAFT_NOT_CANONICAL: "تحافظ هذه المسودة المُرحَّلة على المادة القديمة، لكنها ليست بيانات حيوية سياسية نظامية مكتملة.",
+      MIGRATED_DRAFT_NOT_CANONICAL: "تحافظ هذه المسودة المُرحَّلة على المادة القديمة، لكنها ليست بيانات مكتملة لتحليل السياسة الحيوية.",
       GENERATED_DRAFT_NOT_CANONICAL: "حُفظت المادة التحليلية كمسودة مولّدة قابلة للمراجعة، لكنها ليست نظامية بعد.",
       MISSING_EXPLANATION_FALSIFIER: "يلزم معيار قابل للاختبار يمكنه دحض هذا التفسير قبل النشر.",
       MISSING_EXPLANATION_CLAIM: "هذا التفسير ذو صلة لكنه لا يذكر ادعاءً؛ وضّح ما يفسّره قبل النشر.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "أزيلت علامات استشهاد خاصة بواجهة المساعد من النسخة المطبّعة.",
       DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف نظامي فريدًا في كامل التحليل.",
       UNSUPPORTED_CONTRACT: "إصدار عقد التحليل غير مدعوم في هذه النسخة من الأداة.",
-      LEGACY_CONTRACT: "تستخدم هذه الإجابة صيغة التحليل الحيوسياسي القديمة ذات الطبقات الست، ولم تعد تُستورد. أنشئ برومبتًا جديدًا واطلب من الذكاء الاصطناعي مجددًا.",
+      LEGACY_CONTRACT: "تستخدم هذه الإجابة صيغة تحليل السياسة الحيوية القديمة ذات الطبقات الست، ولم تعد تُستورد. أنشئ موجِّهًا جديدًا واطلب من الذكاء الاصطناعي مجددًا.",
       VALIDATOR_UNAVAILABLE: "مدقق عقد التحليل غير متاح.",
       MIXED_LANGUAGE_TEXT: "جزء من هذا النص بلغة أخرى؛ أعد كتابته بلغة التحليل قبل النشر.",
     },
@@ -1997,7 +1997,7 @@ function importErrorText(error) {
   if (error?.code === "PROMPT_PASTED") {
     return labelText(
       "This is the prompt, not the AI’s reply. Paste it into your AI chat first, wait for the full answer, then copy the AI’s answer and paste it here.",
-      "هذا هو البرومبت، وليس رد الذكاء الاصطناعي. الصقه أولًا في محادثة الذكاء الاصطناعي، وانتظر حتى تكتمل الإجابة، ثم انسخ إجابته والصقها هنا.",
+      "هذا هو الموجِّه، وليس رد الذكاء الاصطناعي. الصقه أولًا في محادثة الذكاء الاصطناعي، وانتظر حتى تكتمل الإجابة، ثم انسخ إجابته والصقها هنا.",
       "Ceci est le prompt, pas la réponse de l’IA. Collez-le d’abord dans votre conversation avec l’IA, attendez la réponse complète, puis copiez la réponse de l’IA et collez-la ici.",
     );
   }
@@ -2056,7 +2056,7 @@ function importErrorText(error) {
   if (first.code === "LEGACY_CONTRACT") {
     return labelText(
       "This answer uses an old analysis format that the app no longer imports. Generate a new prompt, paste it into your AI chat, then paste the new answer here.",
-      "تستخدم هذه الإجابة صيغة تحليل قديمة لم يعد التطبيق يستوردها. أنشئ برومبتًا جديدًا والصقه في محادثة الذكاء الاصطناعي، ثم الصق الإجابة الجديدة هنا.",
+      "تستخدم هذه الإجابة صيغة تحليل قديمة لم يعد التطبيق يستوردها. أنشئ موجِّهًا جديدًا والصقه في محادثة الذكاء الاصطناعي، ثم الصق الإجابة الجديدة هنا.",
       "Cette réponse utilise un ancien format d’analyse que l’application n’importe plus. Générez un nouveau prompt, collez-le dans votre conversation avec l’IA, puis collez ici la nouvelle réponse.",
     );
   }
@@ -2067,7 +2067,7 @@ function importErrorText(error) {
   );
   const plain = labelText(
     "This answer does not match the analysis format. Use the repair prompt to ask the AI to fix it.",
-    "هذه الإجابة لا تطابق صيغة التحليل. استخدم برومبت الإصلاح لتطلب من الذكاء الاصطناعي تصحيحها.",
+    "هذه الإجابة لا تطابق صيغة التحليل. استخدم موجِّه الإصلاح لتطلب من الذكاء الاصطناعي تصحيحها.",
     "Cette réponse ne correspond pas au format de l’analyse. Utilisez le prompt de réparation pour demander à l’IA de la corriger.",
   );
   return `${plain} (${prefix}: ${first.path || "/"} — ${localizedImportIssueMessage(first)})`;
@@ -2695,7 +2695,7 @@ function validateJsonInput() {
             )
           : labelText(
               "This is not a complete analysis, so it is not imported. Paste the AI’s full answer to the current prompt, or generate a new prompt.",
-              "هذا ليس تحليلًا مكتملًا، لذا لم يُستورد. الصق إجابة الذكاء الاصطناعي الكاملة على البرومبت الحالي، أو أنشئ برومبتًا جديدًا.",
+              "هذا ليس تحليلًا مكتملًا، لذا لم يُستورد. الصق إجابة الذكاء الاصطناعي الكاملة على الموجِّه الحالي، أو أنشئ موجِّهًا جديدًا.",
               "Ce n’est pas une analyse complète ; elle n’est donc pas importée. Collez la réponse complète de l’IA au prompt actuel, ou générez un nouveau prompt.",
             );
     // The answer in the box is the analysis already imported: say that, not that it can be imported.
@@ -3045,7 +3045,7 @@ ${evidenceRule}
 - goal_achieved_pct في النتائج وprobability في السيناريوهات نسبتان مئويتان من 0 إلى 100 (0–100)، لا كسور.
 - لا تستخدم علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم روابط HTTP(S) عامة وملاحظات مصادر قابلة للنقل فقط.
 - فرّق بين الملاحظة والاستنتاج والتقدير عندما يكون ذلك مطلوبًا.
-- في التناقضات: إذا كانت نفس السردية/الخطاب ينتج عدة أفعال متناقضة، اجعلها مجموعة واحدة تحتوي actions متعددة.
+- في التناقضات: إذا كانت نفس السردية/الخطاب تنتج عدة أفعال متناقضة، اجعلها مجموعة واحدة تحتوي actions متعددة.
 - في السيناريوهات: أضف شروطًا واضحة تُضعف أو تُبطل السيناريو.
 - قبل إخراج JSON النهائي، راجع داخليًا: الفاعلين المفقودين، السببية الأحادية، الافتراضات غير المدعومة، ضعف الأدلة، غياب الأدلة المضادة، وغياب شروط الإبطال.
 - لا تكتب مراجعتك الداخلية؛ أخرج JSON المصحح فقط.
@@ -3408,7 +3408,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               media_influence: 3,
               confidence: "high",
               rationale:
-                "سيطرته على شرق أوروبا وقوته العسكرية جعلت تأثيره بنيويًا.",
+                "سيطرته على شرق أوروبا وقوته العسكرية جعلتا تأثيره بنيويًا.",
             },
           ],
           tools: [
@@ -3422,7 +3422,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
               reversibility: 2,
               deniability: 1,
               confidence: "high",
-              rationale: "الأمم المتحدة وبريتون وودز وفّرت أدوات تنسيق وشرعية.",
+              rationale: "الأمم المتحدة وبريتون وودز وفّرتا أدوات تنسيق وشرعية.",
             },
             {
               id: "T2",
@@ -3506,7 +3506,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
             items: [
               {
                 id: "S1",
-                name: "ترسيخ النظام ثنائي القطبية",
+                name: "ترسيخ النظام الثنائي القطبية",
                 probability: 70,
                 timeframe: "1947–1955",
                 drivers: [
@@ -3832,14 +3832,11 @@ function interestWeightScore(x) {
     Math.min(100, ((intensity / 5) * 100 * stake * horizon) / 2.06),
   );
 }
-function modelMetricLabel(kind) {
-  return { api: "API", nsi: "NSI", tps: "TPS", iw: "IW" }[kind] || kind;
-}
-// A layer record's model score as a fact: its name and acronym, then the score
-// over its scale. Facts are [label, text] pairs: the app and the report show
-// the same ones.
-function modelMetricFact(label, value, max, sub) {
-  return [[`${sub} (${label})`, `${value}${max ? `/${max}` : ""}`]];
+// A layer record's model score as a fact: its name, then the score over the
+// model's own scale for it (/20, /15, /100). Facts are [label, text] pairs:
+// the app and the report show the same ones.
+function modelMetricFact(name, value, max) {
+  return [[name, `${value}/${max}`]];
 }
 // A result's own figures: how far its goal was met, its cost-benefit and its
 // effect on the balance of power.
@@ -3852,7 +3849,7 @@ function resultFacts(obj) {
     weakened: labelText("Weakened", "ضعُف", "Affaibli"),
   }[normalizeToken(balance)] || balance;
   return [
-    has(obj.goal_achieved_pct) && [labelText("Goal achieved", "تحقق الهدف", "Objectif atteint"), Number.isFinite(Number(obj.goal_achieved_pct)) ? `${Math.round(valuePct(obj.goal_achieved_pct))}%` : String(obj.goal_achieved_pct)],
+    has(obj.goal_achieved_pct) && [labelText("Goal achieved", "تحقق الهدف", "Objectif atteint"), Number.isFinite(Number(obj.goal_achieved_pct)) ? pctText(Math.round(valuePct(obj.goal_achieved_pct))) : String(obj.goal_achieved_pct)],
     has(obj.cost_benefit) && [labelText("Cost-benefit", "الكلفة والعائد", "Coût-bénéfice"), `${obj.cost_benefit}/5`],
     balanceText && [labelText("Power balance", "ميزان القوة", "Rapport de force"), balanceText],
   ].filter(Boolean);
@@ -3863,39 +3860,31 @@ function recordFactsHtml(facts) {
 }
 function modelMetricsFor(p, obj) {
   if (p === "actors") {
-    const v = actorPowerScore(obj);
     return modelMetricFact(
-      "API",
-      v,
-      20,
       labelText("Actor Power Index", "مؤشر قوة الفاعل", "Indice de puissance de l’acteur"),
+      actorPowerScore(obj),
+      20,
     );
   }
   if (p === "narrative") {
-    const v = narrativeStrengthScore(obj);
     return modelMetricFact(
-      "NSI",
-      v,
-      15,
       labelText("Narrative Strength Index", "مؤشر قوة السردية", "Indice de force du récit"),
+      narrativeStrengthScore(obj),
+      15,
     );
   }
   if (p === "tools") {
-    const v = toolPressureScore(obj);
     return modelMetricFact(
-      "TPS",
-      v,
-      100,
       labelText("Tool Pressure Score", "مؤشر ضغط الأداة", "Score de pression de l’outil"),
+      toolPressureScore(obj),
+      100,
     );
   }
   if (p === "interests") {
-    const v = interestWeightScore(obj);
     return modelMetricFact(
-      "IW",
-      v,
-      100,
       labelText("Interest Weight", "وزن المصلحة", "Poids de l’intérêt"),
+      interestWeightScore(obj),
+      100,
     );
   }
   if (p === "results") return resultFacts(obj);
@@ -3945,7 +3934,7 @@ function qualityGateHtml(a = state.analysis) {
 }
 // The gate's verdict as a heading, why, then what blocks it.
 function gateNoteHtml(tone, status, summary, issues) {
-  return `<div class="j-note" data-tone="${tone}" data-diagnostic="gate"><h4>${escapeHtml(t("qualityGate"))}: ${escapeHtml(status)}</h4><p>${escapeHtml(summary)}</p>${issues.length ? `<ul>${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>` : ""}</div>`;
+  return `<div class="j-note" data-tone="${tone}" data-diagnostic="gate"><h4>${escapeHtml(t("qualityGate"))}${colonMark()} ${escapeHtml(status)}</h4><p>${escapeHtml(summary)}</p>${issues.length ? `<ul>${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>` : ""}</div>`;
 }
 function schemaHealth(a = state.analysis) {
   if (!a) return { pct: 0, missing: [], next: t("healthMissingPillars") };
@@ -4286,6 +4275,19 @@ function labelText(en, ar, fr) {
     : state.lang === "fr"
       ? fr || frMap[en] || en
       : en;
+}
+// French sets a colon and a percent sign apart from the word before them,
+// with a space that does not break; English and Arabic do not.
+function colonMark() {
+  return state.lang === "fr" ? "\u00A0:" : ":";
+}
+function pctText(value) {
+  return state.lang === "fr" ? `${value}\u202F%` : `${value}%`;
+}
+// A full source date reads in the page's language; a partial one ("2026",
+// "2026-07") stays as written.
+function sourceDateText(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value ?? "")) ? REPORT_THEME.dateText(state.lang, value, { utc: true }) : value;
 }
 // Source types are free text; only the codes the samples and assistants use need words.
 function sourceTypeLabel(value) {
@@ -4714,7 +4716,7 @@ function scoreDiagnostic(key, val, a = state.analysis) {
             val < 70
               ? labelText(
                   "Some biopolitical layers are thin or empty.",
-                  "بعض طبقات الحكم الحيوسياسي ضعيفة أو فارغة.",
+                  "بعض طبقات تحليل السياسة الحيوية ضعيفة أو فارغة.",
                   "Certaines couches biopolitiques sont faibles ou vides.",
                 )
               : labelText(
@@ -4745,7 +4747,7 @@ function scoreDiagnostic(key, val, a = state.analysis) {
                 )
               : labelText(
                   "The biopolitical governance chain is visible.",
-                  "سلسلة الحكم الحيوسياسي واضحة.",
+                  "سلسلة الحكم في تحليل السياسة الحيوية واضحة.",
                   "La chaîne de gouvernement biopolitique est visible.",
                 ),
           action:
@@ -4844,7 +4846,7 @@ function scoreDiagnostic(key, val, a = state.analysis) {
             val < 70
               ? labelText(
                   "The report is not yet publishable as biopolitical analysis.",
-                  "التقرير ليس جاهزًا للنشر كتحليل حيوسياسي.",
+                  "التقرير ليس جاهزًا للنشر كتحليل للسياسة الحيوية.",
                   "Le rapport n’est pas encore publiable comme analyse biopolitique.",
                 )
               : labelText(
@@ -5054,7 +5056,7 @@ function metricCard(kind, label, value, hint) {
 function scoreFormulaHtml() {
   const weights = scoreWeights();
   const entries = Object.keys(weights)
-    .map((k) => `<span><b>${weights[k]}%</b>${escapeHtml(scoreWeightLabel(k))}</span>`)
+    .map((k) => `<span><b>${pctText(weights[k])}</b>${escapeHtml(scoreWeightLabel(k))}</span>`)
     .join("");
   return `<div class="j-rec"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p class="j-brief-desc">${escapeHtml(scoreFormulaText())}</p><span class="j-stats">${entries}</span>${scoreBandsHtml()}</div>`;
 }
@@ -5069,7 +5071,7 @@ function scoreBandsHtml() {
 // The caps on decision readiness, and how many items are still missing.
 function healthStatsHtml(structural, provenance, missing) {
   const stat = (value, label, tone) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`;
-  return `<span class="j-stats" data-cols="4">${stat(`${structural}%`, labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"), pctTone(structural))}${stat(`${provenance.sourceTraceability}%`, labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"), pctTone(provenance.sourceTraceability))}${stat(`${provenance.humanReview}%`, labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"), pctTone(provenance.humanReview))}${stat(missing, t("missingItems"), missing ? "warn" : "ok")}</span>`;
+  return `<span class="j-stats" data-cols="4">${stat(pctText(structural), labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"), pctTone(structural))}${stat(pctText(provenance.sourceTraceability), labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"), pctTone(provenance.sourceTraceability))}${stat(pctText(provenance.humanReview), labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"), pctTone(provenance.humanReview))}${stat(missing, t("missingItems"), missing ? "warn" : "ok")}</span>`;
 }
 function nextActionHtml(text) {
   return `<div class="j-brief-signal" data-diagnostic="next"><span class="j-label">${escapeHtml(t("nextBestAction"))}</span><p>${escapeHtml(text)}</p></div>`;
@@ -5103,7 +5105,7 @@ function briefBar(value) {
   return `<span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:${valuePct(value)}%" aria-hidden="true"></span>`;
 }
 function briefFigure(label, value) {
-  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${value}%</b>${briefBar(value)}</dd></div>`;
+  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
@@ -5140,7 +5142,7 @@ function explanationCopy(key) {
       label: labelText("Evidence & counter-evidence", "الأدلة والأدلة المضادة", "Preuves et contre-preuves"),
       description: labelText(
         "Which claims are supported, challenged, or still unverified.",
-        "ما الادعاءات المدعومة أو المطعون فيها أو التي لم تُتحقق بعد.",
+        "ما الادعاءات المدعومة أو المطعون فيها أو التي لم يُتحقَّق منها بعد.",
         "Quels énoncés sont étayés, contestés ou restent à vérifier.",
       ),
     },
@@ -5183,7 +5185,7 @@ function strategicResultsExplanation(a) {
     name: authoredText(item.source_title, item.claim),
     summary: authoredText(
       item.counter_evidence
-        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}: ${item.counter_evidence}`
+        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}${colonMark()} ${item.counter_evidence}`
         : item.claim,
       item.source_note,
       item.uncertainty,
@@ -5275,7 +5277,7 @@ function biopoliticalResultsExplanation(a) {
     name: authoredText(item.source_title, item.claim),
     summary: authoredText(
       item.counter_evidence
-        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}: ${item.counter_evidence}`
+        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}${colonMark()} ${item.counter_evidence}`
         : item.claim,
       item.limitations,
       item.uncertainty,
@@ -5449,7 +5451,7 @@ function renderScenarios() {
   const items = state.analysis.scenarios.items;
   const scenarioRecord = (s) => {
     const pct = Math.round(valuePct(Number(s.probability)));
-    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}<span class="j-chip">${escapeHtml(t("probability"))} <bdi>${pct}%</bdi></span>${kernelChip(s.timeframe ? `${t("timeframe")}: ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
+    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}<span class="j-chip">${escapeHtml(t("probability"))} <bdi>${pctText(pct)}</bdi></span>${kernelChip(s.timeframe ? `${t("timeframe")}${colonMark()} ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
   };
   return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
@@ -5458,7 +5460,7 @@ function renderEvidence() {
     as = normalizeArray(state.analysis.assumptions.items);
   const empty = `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`;
   const evidenceRecord = (e) => {
-    const source = [e.source_title, sourceTypeLabel(e.source_type), e.source_date]
+    const source = [e.source_title, sourceTypeLabel(e.source_type), sourceDateText(e.source_date)]
       .filter(Boolean)
       .join(" · ");
     const counter = e.counter_evidence || e.counterEvidence || "";
@@ -5564,7 +5566,7 @@ function htmlReport() {
     scoreWeights(),
   )
     .map(
-      ([k, w]) => `<span><b>${w}%</b>${escapeHtml(scoreWeightLabel(k))}</span>`,
+      ([k, w]) => `<span><b>${pctText(w)}</b>${escapeHtml(scoreWeightLabel(k))}</span>`,
     )
     .join("")}</div></section>`;
   // A record's ID and its facts, as the app's record cards give them.
@@ -5601,13 +5603,13 @@ function htmlReport() {
           affectedLayers(c)
             .map((p) => t("pillars")[p][0])
             .join(" · ") || labelText("Cross-layer", "عابر للطبقات");
-        return `<article class="conflict"><header><div><small>${escapeHtml(contradictionTypeLabel(c.contradiction_type || c.type))}</small><h3>${escapeHtml(c.rhetoric || "—")}</h3></div><div class="chips">${rid(c)}<em>${escapeHtml(confidenceInfo(c.confidence).label)}</em>${severityText(c) ? `<em>${escapeHtml(severityText(c))}</em>` : ""}</div></header><div class="signal"><b>${escapeHtml(analysisSignalLabel())}</b><span>${escapeHtml(contradictionMeaning(c))}</span><small>${escapeHtml(labelText("Affected layers", "الطبقات المتأثرة"))}: ${escapeHtml(layers)}</small></div><ul>${arr(
+        return `<article class="conflict"><header><div><small>${escapeHtml(contradictionTypeLabel(c.contradiction_type || c.type))}</small><h3>${escapeHtml(c.rhetoric || "—")}</h3></div><div class="chips">${rid(c)}<em>${escapeHtml(confidenceInfo(c.confidence).label)}</em>${severityText(c) ? `<em>${escapeHtml(severityText(c))}</em>` : ""}</div></header><div class="signal"><b>${escapeHtml(analysisSignalLabel())}</b><span>${escapeHtml(contradictionMeaning(c))}</span><small>${escapeHtml(labelText("Affected layers", "الطبقات المتأثرة"))}${colonMark()} ${escapeHtml(layers)}</small></div><ul>${arr(
           c.actions,
         )
           .map((x) => `<li>${escapeHtml(x)}</li>`)
           .join(
             "",
-          )}</ul><p><b>${escapeHtml(t("interpretation"))}:</b> ${escapeHtml(c.interpretation || "")}</p></article>`;
+          )}</ul><p><b>${escapeHtml(t("interpretation"))}${colonMark()}</b> ${escapeHtml(c.interpretation || "")}</p></article>`;
       })
       .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
   const scenarios =
@@ -5636,20 +5638,20 @@ function htmlReport() {
         const source = [e.source_title, sourceTypeLabel(e.source_type)]
           .filter(Boolean)
           .map(escapeHtml)
-          .concat(e.source_date ? `<span class="ltr">${escapeHtml(e.source_date)}</span>` : [])
+          .concat(e.source_date ? `<bdi>${escapeHtml(sourceDateText(e.source_date))}</bdi>` : [])
           .join(" · ");
         const sourceLines = [source, e.source_note && escapeHtml(e.source_note)].filter(Boolean).join("<br>") || "—";
         const counter = e.counter_evidence || e.counterEvidence || "";
-        const uncertainty = e.uncertainty ? `<br><span class="muted">${escapeHtml(labelText("Uncertainty", "عدم اليقين", "Incertitude"))}: ${escapeHtml(e.uncertainty)}</span>` : "";
-        const strength = e.evidence_strength ? `<br><span class="muted">${escapeHtml(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"))}: ${escapeHtml(e.evidence_strength)}/5</span>` : "";
-        return `<tr><td>${rid(e)}<b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}: ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
+        const uncertainty = e.uncertainty ? `<br><span class="muted">${escapeHtml(labelText("Uncertainty", "عدم اليقين", "Incertitude"))}${colonMark()} ${escapeHtml(e.uncertainty)}</span>` : "";
+        const strength = e.evidence_strength ? `<br><span class="muted">${escapeHtml(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"))}${colonMark()} ${escapeHtml(e.evidence_strength)}/5</span>` : "";
+        return `<tr><td>${rid(e)}<b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}${colonMark()} ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
       })
       .join("") || `<tr><td colspan="4">${escapeHtml(t("noItems"))}</td></tr>`;
   const assumptions =
     normalizeArray(a.assumptions?.items)
       .map(
         (x) =>
-          `<article class="assumption"><h3>${escapeHtml(x.assumption || x.name || "—")}</h3><div class="chips">${rid(x)}<em>${escapeHtml(riskInfo(x.risk || x.risk_level).label)}</em>${x.confidence ? `<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>` : ""}</div><p><b>${escapeHtml(t("test"))}:</b> ${escapeHtml(x.disproving_test || x.test || "—")}</p>${x.implication_if_wrong ? `<p><b>${escapeHtml(labelText("If wrong", "إذا كان خاطئًا"))}:</b> ${escapeHtml(x.implication_if_wrong)}</p>` : ""}</article>`,
+          `<article class="assumption"><h3>${escapeHtml(x.assumption || x.name || "—")}</h3><div class="chips">${rid(x)}<em>${escapeHtml(riskInfo(x.risk || x.risk_level).label)}</em>${x.confidence ? `<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>` : ""}</div><p><b>${escapeHtml(t("test"))}${colonMark()}</b> ${escapeHtml(x.disproving_test || x.test || "—")}</p>${x.implication_if_wrong ? `<p><b>${escapeHtml(labelText("If wrong", "إذا كان خاطئًا"))}${colonMark()}</b> ${escapeHtml(x.implication_if_wrong)}</p>` : ""}</article>`,
       )
       .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
   const gate = qualityGate(a);
@@ -5726,7 +5728,7 @@ function htmlReport() {
   const exportedAt = new Date();
   const docTitle = a.subject.title ? `${a.subject.title} — ${exportContract.title}` : exportContract.title;
   const assessment = strategicSelfAssessment(a);
-  const thesisHtml = `<section class="block thesis"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}:</b> ${escapeHtml(strategicNextAction(a, h))}</p>${assessment ? `<p class="muted"><b>${escapeHtml(assessment.title)}:</b> ${escapeHtml(assessment.text)}</p>` : ""}</section>`;
+  const thesisHtml = `<section class="block thesis"><h2>${escapeHtml(t("thesis"))}</h2><p>${escapeHtml(a.subject.executive_thesis || "—")}</p><p class="muted"><b>${escapeHtml(t("nextBestAction"))}${colonMark()}</b> ${escapeHtml(strategicNextAction(a, h))}</p>${assessment ? `<p class="muted"><b>${escapeHtml(assessment.title)}${colonMark()}</b> ${escapeHtml(assessment.text)}</p>` : ""}</section>`;
   const draftHtml = gate.tone === "ok" ? "" : REPORT_THEME.draftHtml(state.lang, gate.tone, gate.summary);
   const provenanceHtml = REPORT_THEME.provenanceHtml(state.lang, {
     exportedAt,
@@ -5735,7 +5737,7 @@ function htmlReport() {
     schemaVersion: a.schema_version,
     version: reportVersion,
   });
-  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(docTitle)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}${REPORT_THEME.printCss(state.lang, docTitle, Boolean(draftHtml))}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}">${draftHtml}<section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p>${REPORT_THEME.exportedHtml(state.lang, exportedAt)}<p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}: ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}: <bdi>${b.analyticalCoverage}%</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}: ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${thesisHtml}${formulaHtml}<section class="grid">${metricHtml}</section>${exportContractHtml}${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section>${provenanceHtml}</main></body></html>`;
+  return `<!doctype html><html lang="${state.lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(docTitle)}</title><meta name="app-version" content="${escapeHtml(reportVersion)}"><meta name="analysis-lens" content="${escapeHtml(reportLens)}"><style>${REPORT_THEME.css}${css}${REPORT_THEME.printCss(state.lang, docTitle, Boolean(draftHtml))}</style></head><body><main class="shell" data-analysis-lens="${escapeHtml(reportLens)}" data-app-version="${escapeHtml(reportVersion)}">${draftHtml}<section class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || exportContract.title)}</h1><p>${escapeHtml(exportContract.title)}</p>${REPORT_THEME.exportedHtml(state.lang, exportedAt)}<p>${escapeHtml(t("reportSubtitle"))}</p>${[a.subject.question && `${labelText("Research question", "سؤال البحث", "Question de recherche")}${colonMark()} ${a.subject.question}`, a.subject.context].filter(Boolean).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div><div class="overall">${reportRing(b.overall)}<strong>${escapeHtml(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"))}</strong><small>${escapeHtml(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"))}${colonMark()} <bdi>${pctText(b.analyticalCoverage)}</bdi></small><small class="gate" data-tone="${gate.tone}">${escapeHtml(t("qualityGate"))}${colonMark()} ${escapeHtml(gate.status)}</small><small>${escapeHtml(labelText("Decision readiness is capped by source traceability and independent review.", "تُقيَّد جاهزية القرار بقابلية تتبع المصادر والمراجعة المستقلة.", "La préparation à la décision est plafonnée par la traçabilité et la revue indépendante."))}</small></div></div></section>${thesisHtml}${formulaHtml}<section class="grid">${metricHtml}</section>${exportContractHtml}${pillarsHtml}<section class="block"><h2>${escapeHtml(t("contradictions"))}</h2>${contradictions}</section><section class="block"><h2>${escapeHtml(t("scenarios"))}</h2>${scenarios}</section><section class="evidenceTable"><h2>${escapeHtml(t("evidence"))}</h2><table><thead><tr><th>${escapeHtml(t("claim"))}</th><th>${escapeHtml(t("basis"))}</th><th>${escapeHtml(t("confidence"))}</th><th>${escapeHtml(t("sourceNote"))}</th></tr></thead><tbody>${evidence}</tbody></table></section><section class="block"><h2>${escapeHtml(t("assumption"))}</h2>${assumptions}</section>${provenanceHtml}</main></body></html>`;
 }
 
 function buildLosslessStrategicReport() {
@@ -6271,7 +6273,7 @@ function connectionsGapsHtml(graph, loose) {
     "Ask the AI that wrote this answer to connect them. Its reply is checked and imported as a new answer; this one stays as it is.",
     "اطلب من الذكاء الاصطناعي الذي كتب هذه الإجابة أن يربطها. يُفحص رده ويُستورد إجابةً جديدة، وتبقى هذه الإجابة كما هي.",
     "Demandez à l’IA qui a rédigé cette réponse de les relier. Sa réponse est vérifiée et importée comme une nouvelle réponse ; celle-ci reste telle quelle.",
-  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ برومبت لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the answer box", "الانتقال إلى مربع الإجابة", "Aller à la zone de réponse"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
+  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ موجِّه لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the answer box", "الانتقال إلى مربع الإجابة", "Aller à la zone de réponse"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
 }
 // The prompt is in the answer's language, like the answer it adds to.
 async function copyConnectionsPrompt(event) {
@@ -6294,7 +6296,7 @@ async function copyConnectionsPrompt(event) {
   }
   const copied = labelText(
     "Prompt copied. Paste it into the same AI chat, then paste the AI’s reply into the answer box.",
-    "نُسخ البرومبت. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رده في مربع الإجابة.",
+    "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رده في مربع الإجابة.",
     "Prompt copié. Collez-le dans la même conversation avec l’IA, puis collez sa réponse dans la zone de réponse.",
   );
   // Said beside the button, where the next step is, not in a toast too.
@@ -6557,7 +6559,7 @@ function renderBiopoliticalReview() {
     $("reviewNav").innerHTML = "";
     $("reviewContent").setAttribute("aria-labelledby", "reviewTitle");
     $("reviewContent").innerHTML =
-      `<div class="j-note" data-tone="idle" role="status">${escapeHtml(labelText("Loading the biopolitical graph…", "جارٍ تحميل الرسم البياني البيوسياسي…", "Chargement du graphe biopolitique…"))}</div>`;
+      `<div class="j-note" data-tone="idle" role="status">${escapeHtml(labelText("Loading the biopolitical graph…", "جارٍ تحميل الرسم البياني للسياسة الحيوية…", "Chargement du graphe biopolitique…"))}</div>`;
     loadBiopoliticalGraph()
       .then(() => {
         if (
@@ -6575,7 +6577,7 @@ function renderBiopoliticalReview() {
           return;
         }
         $("reviewContent").innerHTML =
-          `<div class="j-note" data-tone="warn" role="alert"><p>${escapeHtml(labelText("The biopolitical graph could not be loaded.", "تعذّر تحميل الرسم البياني البيوسياسي.", "Impossible de charger le graphe biopolitique."))}</p><button type="button" class="j-btn" data-retry-biopolitical-graph>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
+          `<div class="j-note" data-tone="warn" role="alert"><p>${escapeHtml(labelText("The biopolitical graph could not be loaded.", "تعذّر تحميل الرسم البياني للسياسة الحيوية.", "Impossible de charger le graphe biopolitique."))}</p><button type="button" class="j-btn" data-retry-biopolitical-graph>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
         $("reviewContent")
           .querySelector("[data-retry-biopolitical-graph]")
           ?.addEventListener("click", renderBiopoliticalReview, { once: true });
@@ -6662,7 +6664,7 @@ async function exportBiopoliticalReport() {
     if (status) {
       status.dataset.tone = "warn";
       status.setAttribute("role", "alert");
-      status.innerHTML = `<p>${escapeHtml(labelText("The biopolitical report renderer could not be loaded.", "تعذّر تحميل مُصيّر التقرير الحيوسياسي.", "Impossible de charger le moteur de rendu du rapport biopolitique."))}</p><button type="button" class="j-btn" data-retry-biopolitical-report>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button>`;
+      status.innerHTML = `<p>${escapeHtml(labelText("The biopolitical report renderer could not be loaded.", "تعذّر تحميل مُصيّر تقرير السياسة الحيوية.", "Impossible de charger le moteur de rendu du rapport biopolitique."))}</p><button type="button" class="j-btn" data-retry-biopolitical-report>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button>`;
       status
         .querySelector("[data-retry-biopolitical-report]")
         ?.addEventListener("click", exportBiopoliticalReport, { once: true });
@@ -8013,14 +8015,14 @@ function lifeText(key, values = {}) {
     snapshot: ["Recovery found", "استرداد متاح", "Récupération"],
     snapNone: ["None. No unsaved work was interrupted.", "لا توجد. لم يُقاطَع أي عمل غير محفوظ.", "Aucun. Aucun travail non enregistré n’a été interrompu."],
     draftTitle: ["Working draft", "مسودة العمل", "Brouillon de travail"],
-    notCommitted: ["Not committed", "غير معتمد", "Non validé"],
+    notCommitted: ["Not committed", "غير معتمدة", "Non validé"],
     uncommitted: ["Draft saved locally, not committed yet. Revision {n} is the current head.", "المسودة محفوظة محليًا ولم تُعتمد بعد. النسخة {n} هي النسخة الحالية.", "Brouillon enregistré localement, pas encore validé. La révision {n} est la tête actuelle."],
     matchesHead: ["Matches revision {n}, the current head.", "تطابق النسخة {n}، وهي النسخة الحالية.", "Identique à la révision {n}, la tête actuelle."],
     reviewCommit: ["Review and commit", "مراجعة واعتماد", "Examiner et valider"],
     damagedOne: ["One saved workspace failed its integrity check. Nothing was loaded from it.", "فشلت مساحة عمل محفوظة في فحص السلامة. لم يُحمَّل منها أي شيء.", "Un espace enregistré a échoué au contrôle d’intégrité. Rien n’en a été chargé."],
     damagedMany: ["Saved workspaces that failed their integrity check: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة فشلت في فحص السلامة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés ayant échoué au contrôle d’intégrité : {n}. Rien n’en a été chargé."],
     reviewWorkspaces: ["Review workspaces", "مراجعة مساحات العمل", "Examiner les espaces"],
-    offline: ["You are offline. Everything here runs on this device; only the AI chat you paste the prompt into needs a connection.", "أنت غير متصل. كل ما هنا يعمل على هذا الجهاز؛ وحدها محادثة الذكاء الاصطناعي التي تلصق فيها البرومبت تحتاج إلى اتصال.", "Vous êtes hors ligne. Tout fonctionne sur cet appareil ; seul le chat d’IA où vous collez le prompt a besoin d’une connexion."],
+    offline: ["You are offline. Everything here runs on this device; only the AI chat you paste the prompt into needs a connection.", "أنت غير متصل. كل ما هنا يعمل على هذا الجهاز؛ وحدها محادثة الذكاء الاصطناعي التي تلصق فيها الموجِّه تحتاج إلى اتصال.", "Vous êtes hors ligne. Tout fonctionne sur cet appareil ; seul le chat d’IA où vous collez le prompt a besoin d’une connexion."],
     workspaces: ["Workspaces", "مساحات العمل", "Espaces de travail"],
     conflict: ["Conflict", "تعارض", "Conflit"],
     reopen: ["Reopen workspace", "إعادة فتح مساحة العمل", "Rouvrir l’espace"],
@@ -8565,7 +8567,7 @@ $("repairPromptBtn").onclick = async (event) => {
   const copied = language
     ? labelText(
         "Prompt copied. Paste it into the same AI chat.",
-        "نُسخ البرومبت. الصقه في محادثة الذكاء الاصطناعي نفسها.",
+        "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها.",
         "Prompt copié. Collez-le dans la même conversation avec l’IA.",
       )
     : t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied");

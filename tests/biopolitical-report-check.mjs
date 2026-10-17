@@ -30,7 +30,7 @@ fixture.evidence.items[0].source_url = "https://example.org/evidence/E1";
 
 const localeContracts = {
   en: ["ltr", "Biopolitical Analysis Report — Training Map v2"],
-  ar: ["rtl", "تقرير التحليل الحيوسياسي — خريطة التدريب 2"],
+  ar: ["rtl", "تقرير تحليل السياسة الحيوية — خريطة التدريب 2"],
   fr: ["ltr", "Rapport d’analyse biopolitique — Carte d’entraînement v2"],
 };
 
