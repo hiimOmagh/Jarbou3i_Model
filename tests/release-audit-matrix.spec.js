@@ -5,9 +5,9 @@ import path from "node:path";
 import { openStep } from "./helpers/guided-flow.js";
 
 const LOCALES = [
-  { id: "ar", dir: "rtl", validationPrefix: "فشل التحقق من العقد" },
-  { id: "en", dir: "ltr", validationPrefix: "Contract validation failed" },
-  { id: "fr", dir: "ltr", validationPrefix: "Échec de validation du contrat" },
+  { id: "ar", dir: "rtl", validationPrefix: "فشل فحص الصيغة" },
+  { id: "en", dir: "ltr", validationPrefix: "Format check failed" },
+  { id: "fr", dir: "ltr", validationPrefix: "Échec du contrôle de format" },
 ];
 const THEMES = ["light", "dark"];
 

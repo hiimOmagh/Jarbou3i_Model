@@ -262,7 +262,7 @@ test.describe("Structured canonical editor", () => {
     await page.locator("#langAr").click();
     await page.locator("#workspaceSaveState").click();
     await page.locator("#workLife").getByRole("button", { name: "تعديل المسودة" }).click();
-    await expect(page.locator("#editorTitle")).toHaveText("محرر التحليل النظامي");
+    await expect(page.locator("#editorTitle")).toHaveText("محرر التحليل");
     await expect(page.locator("#editorResolve")).toHaveText("مراجعة واعتماد");
     await expect(page.locator("#editorSections")).toHaveAttribute("aria-label", "أقسام التحليل");
     await expect(page.locator("#editorClose")).toHaveAttribute("aria-label", "إغلاق المحرر");

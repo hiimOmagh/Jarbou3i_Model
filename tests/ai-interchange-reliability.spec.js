@@ -222,7 +222,7 @@ test.describe("AI interchange reliability", () => {
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     await expect(audit).toContainText(/Automatic structural repair/i);
-    await expect(audit).toContainText(/required by the contract/i);
+    await expect(audit).toContainText(/the list the format requires/i);
     await expect(audit).toContainText(/Publication blockers/i);
     await openStep(page, "answer");
     await page.locator("#importBtn").click();
@@ -283,7 +283,7 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(reply));
     await expect(page.locator("#jsonStatus")).toHaveAttribute("data-tone", "warn");
-    await expect(page.locator("#jsonStatus")).toContainText("1 value the contract does not allow was set aside");
+    await expect(page.locator("#jsonStatus")).toContainText("1 value the format does not allow was set aside");
   });
 
   test("lists every gap at once and each review item once", async ({ page }) => {
@@ -331,7 +331,7 @@ test.describe("AI interchange reliability", () => {
       "/theoretical_comparison/0/confidence",
     );
     await expect(page.locator("#importAuditDetails")).toContainText(
-      "preserved in the import audit",
+      "kept in the import details",
     );
 
     await openStep(page, "answer");
@@ -389,7 +389,7 @@ test.describe("AI interchange reliability", () => {
       "/theoretical_comparison/0/confidence",
     );
     await expect(audit).toContainText(
-      /preserved as targeted completion work/i,
+      /kept as work to complete/i,
     );
 
     await openStep(page, "answer");
@@ -403,7 +403,7 @@ test.describe("AI interchange reliability", () => {
     await page.locator("#jsonInput").fill(JSON.stringify(data));
     await expect(page.locator("#importBtn")).toBeDisabled();
     await expect(audit).toContainText(
-      "/evidence/items/0/counter_evidence was reformatted to the contract type",
+      "/evidence/items/0/counter_evidence was rewritten in the type",
     );
   });
 

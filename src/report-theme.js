@@ -52,9 +52,9 @@
     + `@media print{.provenance{break-inside:avoid-page}}`;
 
   const COPY = Object.freeze({
-    en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Schema version", version: "App version" },
-    ar: { draft: "مسودة", exportedOn: "صُدِّر في {date}", about: "عن هذا التقرير", exported: "تاريخ التصدير", answerDated: "تاريخ الإجابة", analysisId: "معرّف التحليل", schema: "إصدار المخطط", version: "إصدار التطبيق" },
-    fr: { draft: "Brouillon", exportedOn: "Exporté le {date}", about: "À propos de ce rapport", exported: "Exporté le", answerDated: "Date de la réponse", analysisId: "Identifiant de l’analyse", schema: "Version du schéma", version: "Version de l’application" },
+    en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Format version", version: "App version" },
+    ar: { draft: "مسودة", exportedOn: "صُدِّر في {date}", about: "عن هذا التقرير", exported: "تاريخ التصدير", answerDated: "تاريخ الإجابة", analysisId: "معرّف التحليل", schema: "إصدار الصيغة", version: "إصدار التطبيق" },
+    fr: { draft: "Brouillon", exportedOn: "Exporté le {date}", about: "À propos de ce rapport", exported: "Exporté le", answerDated: "Date de la réponse", analysisId: "Identifiant de l’analyse", schema: "Version du format", version: "Version de l’application" },
   });
   const copy = (lang) => COPY[lang] || COPY.en;
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);

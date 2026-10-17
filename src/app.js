@@ -75,7 +75,7 @@ const I18N = {
     themeTitle: "تبديل الوضع",
     languageLabel: "اختيار اللغة",
     skipToWorkspace: "انتقل إلى مساحة العمل",
-    productEyebrow: "Jarbou3i / استخبارات بحثية",
+    productEyebrow: "Jarbou3i / أداة بحث وتحليل",
     lensContextStrategic: "العدسة الاستراتيجية",
     lensContextBiopolitical: "عدسة السياسة الحيوية",
     densityTitle: "تبديل كثافة العرض",
@@ -227,7 +227,7 @@ const I18N = {
     context: "السياق",
     actions: "الإجراءات",
     downloadHtml: "تصدير تقرير HTML",
-    downloadJson: "تصدير JSON النظامي",
+    downloadJson: "تصدير التحليل بصيغة JSON",
     generatedReport: "تقرير تحليل استراتيجي",
     confidence: "الثقة",
     type: "النوع",
@@ -357,7 +357,7 @@ const I18N = {
   en: {
     appTitle: "Strategic Analysis Workbench",
     appSubtitle:
-      "An intelligence-style workspace for structured prompts, clean import, and navigable analysis review.",
+      "A structured analysis workspace: a clear prompt, a clean import, and a review you can navigate.",
     topicLabel: "Analysis topic",
     topicPlaceholder: "Example: Rise of the far right in Europe, 2022–2026",
     analysisLang: "Analysis language",
@@ -376,7 +376,7 @@ const I18N = {
     themeTitle: "Toggle theme",
     languageLabel: "Language selector",
     skipToWorkspace: "Skip to workspace",
-    productEyebrow: "Jarbou3i / Research Intelligence",
+    productEyebrow: "Jarbou3i / Research workbench",
     lensContextStrategic: "Strategic lens",
     lensContextBiopolitical: "Biopolitical lens",
     densityTitle: "Toggle display density",
@@ -530,7 +530,7 @@ const I18N = {
     context: "Context",
     actions: "Actions",
     downloadHtml: "Export HTML report",
-    downloadJson: "Export canonical JSON",
+    downloadJson: "Export analysis as JSON",
     generatedReport: "Strategic Analysis Report",
     confidence: "Confidence",
     type: "Type",
@@ -688,7 +688,7 @@ const I18N = {
     themeTitle: "Changer de thème",
     languageLabel: "Sélecteur de langue",
     skipToWorkspace: "Aller à l’espace de travail",
-    productEyebrow: "Jarbou3i / Intelligence de recherche",
+    productEyebrow: "Jarbou3i / Atelier de recherche",
     lensContextStrategic: "Perspective stratégique",
     lensContextBiopolitical: "Perspective biopolitique",
     densityTitle: "Changer la densité d’affichage",
@@ -847,7 +847,7 @@ const I18N = {
     context: "Contexte",
     actions: "Actions",
     downloadHtml: "Exporter le rapport HTML",
-    downloadJson: "Exporter le JSON canonique",
+    downloadJson: "Exporter l’analyse en JSON",
     generatedReport: "Rapport d’analyse stratégique",
     confidence: "Confiance",
     type: "Type",
@@ -1933,14 +1933,14 @@ function localizedImportIssueMessage(issue = {}, lang = state.lang) {
       UNREFERENCED_EVIDENCE: "سجل الدليل غير مستشهد به في ادعاء خضع للتقييم.",
       QUANTITATIVE_METADATA_MISSING: "تتطلب الأدلة الكمية استكمال بيانات التصميم والقياس قبل النشر.",
       MIGRATED_DRAFT_NOT_CANONICAL: "تحافظ هذه المسودة المُرحَّلة على المادة القديمة، لكنها ليست بيانات مكتملة لتحليل السياسة الحيوية.",
-      GENERATED_DRAFT_NOT_CANONICAL: "حُفظت المادة التحليلية كمسودة مولّدة قابلة للمراجعة، لكنها ليست نظامية بعد.",
+      GENERATED_DRAFT_NOT_CANONICAL: "حُفظت المادة التحليلية كمسودة مولّدة قابلة للمراجعة، لكنها تبقى مسودة حتى تُستكمل فجواتها.",
       MISSING_EXPLANATION_FALSIFIER: "يلزم معيار قابل للاختبار يمكنه دحض هذا التفسير قبل النشر.",
       MISSING_EXPLANATION_CLAIM: "هذا التفسير ذو صلة لكنه لا يذكر ادعاءً؛ وضّح ما يفسّره قبل النشر.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "أزيلت علامات استشهاد خاصة بواجهة المساعد من النسخة المطبّعة.",
-      DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف نظامي فريدًا في كامل التحليل.",
-      UNSUPPORTED_CONTRACT: "إصدار عقد التحليل غير مدعوم في هذه النسخة من الأداة.",
+      DUPLICATE_GLOBAL_ID: "يجب أن يكون كل معرّف فريدًا في التحليل كله.",
+      UNSUPPORTED_CONTRACT: "إصدار صيغة التحليل هذا غير مدعوم في هذه النسخة من الأداة.",
       LEGACY_CONTRACT: "تستخدم هذه الإجابة صيغة تحليل السياسة الحيوية القديمة ذات الطبقات الست، ولم تعد تُستورد. أنشئ موجِّهًا جديدًا واطلب من الذكاء الاصطناعي مجددًا.",
-      VALIDATOR_UNAVAILABLE: "مدقق عقد التحليل غير متاح.",
+      VALIDATOR_UNAVAILABLE: "مدقق صيغة التحليل غير متاح.",
       MIXED_LANGUAGE_TEXT: "جزء من هذا النص بلغة أخرى؛ أعد كتابته بلغة التحليل قبل النشر.",
     },
     fr: {
@@ -1952,23 +1952,23 @@ function localizedImportIssueMessage(issue = {}, lang = state.lang) {
       UNJUSTIFIED_VERIFIED_EVIDENCE: "Une preuve vérifiée exige une évaluation explicite de l’adéquation entre la source et l’affirmation.",
       UNREFERENCED_EVIDENCE: "Cette preuve n’est citée par aucune affirmation évaluée.",
       QUANTITATIVE_METADATA_MISSING: "Les preuves quantitatives exigent des métadonnées complètes de conception et de mesure avant publication.",
-      MIGRATED_DRAFT_NOT_CANONICAL: "Ce brouillon migré conserve le contenu historique, mais ne constitue pas encore des données biopolitiques canoniques complètes.",
-      GENERATED_DRAFT_NOT_CANONICAL: "Le contenu analytique est conservé comme brouillon généré révisable, mais il n’est pas encore canonique.",
+      MIGRATED_DRAFT_NOT_CANONICAL: "Ce brouillon migré conserve le contenu historique, mais ne constitue pas encore une analyse biopolitique complète.",
+      GENERATED_DRAFT_NOT_CANONICAL: "Le contenu analytique est conservé comme brouillon généré révisable, mais il reste un brouillon tant que ses lacunes ne sont pas comblées.",
       MISSING_EXPLANATION_FALSIFIER: "Un critère testable susceptible de réfuter cette explication est requis avant publication.",
       MISSING_EXPLANATION_CLAIM: "Cette explication pertinente n’énonce aucune affirmation ; précisez ce qu’elle explique avant publication.",
       NON_PORTABLE_CITATION_MARKERS_REMOVED: "Les marqueurs de citation propres à l’interface de l’assistant ont été retirés de la copie normalisée.",
-      DUPLICATE_GLOBAL_ID: "Chaque identifiant canonique doit être unique dans l’ensemble de l’analyse.",
-      UNSUPPORTED_CONTRACT: "Cette version du contrat d’analyse n’est pas prise en charge par cette version de l’outil.",
+      DUPLICATE_GLOBAL_ID: "Chaque identifiant doit être unique dans toute l’analyse.",
+      UNSUPPORTED_CONTRACT: "Cette version du format d’analyse n’est pas prise en charge par cette version de l’outil.",
       LEGACY_CONTRACT: "Cette réponse utilise l’ancien format biopolitique à six couches, qui n’est plus importé. Générez un nouveau prompt et redemandez à l’IA.",
-      VALIDATOR_UNAVAILABLE: "Le validateur du contrat d’analyse n’est pas disponible.",
+      VALIDATOR_UNAVAILABLE: "Le validateur du format d’analyse n’est pas disponible.",
       MIXED_LANGUAGE_TEXT: "Une partie de ce texte est dans une autre langue ; réécrivez-la dans la langue de l’analyse avant publication.",
     },
   };
   if (messages[lang]?.[code]) return messages[lang][code];
   if (code.startsWith("SCHEMA_")) {
     return lang === "ar"
-      ? "لا تطابق القيمة بنية عقد التحليل المطلوبة."
-      : "La valeur ne respecte pas la structure requise par le contrat d’analyse.";
+      ? "لا تطابق القيمة البنية التي تتطلبها صيغة التحليل."
+      : "La valeur ne respecte pas la structure requise par le format d’analyse.";
   }
   return lang === "ar"
     ? "تتطلب هذه المسألة مراجعة قبل النشر."
@@ -2061,9 +2061,9 @@ function importErrorText(error) {
     );
   }
   const prefix = labelText(
-    "Contract validation failed",
-    "فشل التحقق من العقد",
-    "Échec de validation du contrat",
+    "Format check failed",
+    "فشل فحص الصيغة",
+    "Échec du contrôle de format",
   );
   const plain = labelText(
     "This answer does not match the analysis format. Use the repair prompt to ask the AI to fix it.",
@@ -2149,7 +2149,7 @@ function renderImportAuditDetails({
             `<li>${escapeHtml(message)}${paths.map((path) => ` <span class="j-audit-path" dir="ltr">${escapeHtml(path)}</span>`).join("")}</li>`,
         )
         .join("")}${hiddenGroups ? `<li>${escapeHtml(labelText(`and ${hiddenGroups} more`, `و${hiddenGroups} غيرها`, `et ${hiddenGroups} de plus`))}</li>` : ""}</ul>`
-    : `<p>${escapeHtml(labelText("No contract or integrity warnings.", "لا توجد تنبيهات عقد أو نزاهة.", "Aucun avertissement de contrat ou d’intégrité."))}</p>`;
+    : `<p>${escapeHtml(labelText("No format or consistency warnings.", "لا توجد تنبيهات تخص الصيغة أو الاتساق.", "Aucun avertissement de format ou de cohérence."))}</p>`;
   const repairs = [
     parsed?.recovered
       ? labelText(
@@ -2182,9 +2182,9 @@ function renderImportAuditDetails({
         );
       if (repair.code === "SCALAR_TO_ARRAY")
         return labelText(
-          `${repair.path} was wrapped in the array required by the contract.`,
-          `وُضعت قيمة ${repair.path} داخل المصفوفة التي يتطلبها العقد.`,
-          `${repair.path} a été placé dans le tableau exigé par le contrat.`,
+          `${repair.path} was wrapped in the list the format requires.`,
+          `وُضعت قيمة ${repair.path} داخل القائمة التي تتطلبها الصيغة.`,
+          `${repair.path} a été placé dans la liste exigée par le format.`,
         );
       if (repair.code === "MISPLACED_CONFIDENCE_RECOVERED")
         return labelText(
@@ -2194,21 +2194,21 @@ function renderImportAuditDetails({
         );
       if (repair.code === "UNKNOWN_PROPERTY_QUARANTINED")
         return labelText(
-          `${repair.path} was excluded from the canonical payload and preserved in the import audit.`,
-          `استُبعد ${repair.path} من الحمولة النظامية وحُفظ في تدقيق الاستيراد.`,
-          `${repair.path} a été exclu de la charge canonique et conservé dans l’audit d’importation.`,
+          `${repair.path} was left out of the analysis and kept in the import details.`,
+          `استُبعد ${repair.path} من التحليل وحُفظ في تفاصيل الاستيراد.`,
+          `${repair.path} a été exclu de l’analyse et conservé dans les détails de l’import.`,
         );
       if (repair.code === "INVALID_VALUE_QUARANTINED")
         return labelText(
-          `${repair.path} held a value the contract does not allow; it was preserved in the import audit and the field is listed for completion.`,
-          `احتوى ${repair.path} على قيمة لا يسمح بها العقد؛ حُفظت في تدقيق الاستيراد وأُدرج الحقل للاستكمال.`,
-          `${repair.path} contenait une valeur non autorisée par le contrat ; elle est conservée dans l’audit et le champ est listé pour complétion.`,
+          `${repair.path} held a value the format does not allow; it was kept in the import details and the field is listed for completion.`,
+          `احتوى ${repair.path} على قيمة لا تسمح بها الصيغة؛ حُفظت في تفاصيل الاستيراد وأُدرج الحقل للاستكمال.`,
+          `${repair.path} contenait une valeur non autorisée par le format ; elle est conservée dans les détails de l’import et le champ est listé pour complétion.`,
         );
       if (repair.code === "NULL_TO_EMPTY")
         return labelText(
-          `${repair.path} was null; it was left empty and listed for completion if the contract requires it.`,
-          `كانت قيمة ${repair.path} فارغة (null)؛ تُركت فارغة وأُدرجت للاستكمال إذا كان العقد يتطلبها.`,
-          `${repair.path} valait null ; le champ est laissé vide et listé pour complétion si le contrat l’exige.`,
+          `${repair.path} was null; it was left empty and listed for completion if the format requires it.`,
+          `كانت قيمة ${repair.path} فارغة (null)؛ تُركت فارغة وأُدرجت للاستكمال إذا كانت الصيغة تتطلبها.`,
+          `${repair.path} valait null ; le champ est laissé vide et listé pour complétion si le format l’exige.`,
         );
       if (repair.code === "SUBJECT_TEXT_TO_TITLE")
         return labelText(
@@ -2242,9 +2242,9 @@ function renderImportAuditDetails({
         );
       if (repair.code === "SCHEMA_VERSION_NORMALIZED")
         return labelText(
-          `Schema version "${repair.value}" was read as the single Strategic contract 1.1.0.`,
-          `قُرئ إصدار المخطط "${repair.value}" على أنه عقد التحليل الاستراتيجي الوحيد 1.1.0.`,
-          `La version de schéma « ${repair.value} » a été lue comme l’unique contrat stratégique 1.1.0.`,
+          `Format version "${repair.value}" was read as 1.1.0, the only Strategic format.`,
+          `قُرئ إصدار الصيغة "${repair.value}" على أنه 1.1.0، الصيغة الاستراتيجية الوحيدة.`,
+          `La version de format « ${repair.value} » a été lue comme 1.1.0, l’unique format stratégique.`,
         );
       if (
         [
@@ -2257,9 +2257,9 @@ function renderImportAuditDetails({
         ].includes(repair.code)
       )
         return labelText(
-          `${repair.path} was reformatted to the contract type or spelling without changing its meaning.`,
-          `أُعيد تنسيق ${repair.path} وفق نوع العقد أو صيغته دون تغيير معناه.`,
-          `${repair.path} a été reformaté selon le type ou l’écriture du contrat sans en changer le sens.`,
+          `${repair.path} was rewritten in the type or spelling the format expects, without changing its meaning.`,
+          `أُعيد تنسيق ${repair.path} وفق النوع أو الكتابة التي تتطلبها الصيغة دون تغيير معناه.`,
+          `${repair.path} a été reformaté selon le type ou l’écriture attendus par le format, sans en changer le sens.`,
         );
       return labelText(
         `${repair.path || "/"} received a conservative structural repair.`,
@@ -2282,9 +2282,9 @@ function renderImportAuditDetails({
         );
       if (repair.code === "REVIEWABLE_GAPS_RECLASSIFIED")
         return labelText(
-          `${repair.count || 1} contract gap${repair.count === 1 ? " was" : "s were"} preserved as targeted completion work; no analytical value was invented.`,
-          `حُفظت ${repair.count || 1} ${repair.count === 1 ? "فجوة في العقد" : "فجوات في العقد"} كعمل استكمال موجّه دون اختلاق أي قيمة تحليلية.`,
-          `${repair.count || 1} lacune${repair.count === 1 ? " du contrat a été conservée" : "s du contrat ont été conservées"} comme travail de complétion ciblée ; aucune valeur analytique n’a été inventée.`,
+          `${repair.count || 1} missing part${(repair.count || 1) === 1 ? " was" : "s were"} kept as work to complete; no analytical value was invented.`,
+          `حُفظت ${repair.count || 1} ${(repair.count || 1) === 1 ? "فجوة" : "فجوات"} لاستكمالها لاحقًا دون اختلاق أي قيمة تحليلية.`,
+          `${repair.count || 1} lacune${(repair.count || 1) === 1 ? " a été conservée" : "s ont été conservées"} pour être complétée${(repair.count || 1) === 1 ? "" : "s"} ; aucune valeur analytique n’a été inventée.`,
         );
       if (repair.code === "RESULT_WRAPPER_REMOVED")
         return labelText(
@@ -2294,9 +2294,9 @@ function renderImportAuditDetails({
         );
       if (repair.code === "AI_INTERCHANGE_CONTRACT_INFERRED")
         return labelText(
-          "The AI Interchange contract was recognized from the result's structure.",
-          "تم التعرّف على عقد التبادل من بنية النتيجة.",
-          "Le contrat AI Interchange a été reconnu à partir de la structure du résultat.",
+          "The answer's format was recognized from its structure.",
+          "تم التعرّف على صيغة الإجابة من بنيتها.",
+          "Le format de la réponse a été reconnu à partir de sa structure.",
         );
       if (repair.code === "SUBJECT_TEXT_TO_TITLE")
         return labelText(
@@ -2331,7 +2331,7 @@ function renderImportAuditDetails({
       : "",
   ].filter(Boolean);
   const quarantineHtml = quarantined.length
-    ? `<section class="j-audit-group"><h3>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h3><p>${escapeHtml(labelText("Unknown properties and invalid values were not silently discarded. They are excluded from the canonical payload and preserved below for review.", "لم تُحذف الخصائص غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من الحمولة النظامية وحُفظت أدناه للمراجعة.", "Les propriétés inconnues et les valeurs invalides n’ont pas été supprimées silencieusement. Elles sont exclues de la charge canonique et conservées ci-dessous pour révision."))}</p><ul>${quarantined
+    ? `<section class="j-audit-group"><h3>${escapeHtml(labelText("Preserved extensions", "الامتدادات المحفوظة", "Extensions conservées"))}</h3><p>${escapeHtml(labelText("Unknown fields and invalid values were not silently dropped. They are left out of the analysis and kept below for review.", "لم تُحذف الحقول غير المعروفة والقيم غير الصالحة بصمت. استُبعدت من التحليل وحُفظت أدناه للمراجعة.", "Les champs inconnus et les valeurs invalides n’ont pas été supprimés silencieusement. Ils sont exclus de l’analyse et conservés ci-dessous pour révision."))}</p><ul>${quarantined
         .slice(0, 20)
         .map(
           (item) =>
@@ -2556,9 +2556,9 @@ function validateJsonInput() {
     );
     const citationNotice = citationRepair
       ? labelText(
-          `${citationRepair.count || 1} non-portable assistant citation marker${citationRepair.count === 1 ? " was" : "s were"} removed; canonical evidence IDs and source URLs were preserved.`,
-          `تمت إزالة ${citationRepair.count || 1} من علامات استشهاد المساعد غير القابلة للنقل؛ وحُفظت معرّفات الأدلة وروابط المصادر النظامية.`,
-          `${citationRepair.count || 1} marqueur${citationRepair.count === 1 ? " interne non portable a été supprimé" : "s internes non portables ont été supprimés"} ; les identifiants de preuve et URL de source canoniques ont été préservés.`,
+          `${citationRepair.count || 1} non-portable assistant citation marker${(citationRepair.count || 1) === 1 ? " was" : "s were"} removed; evidence IDs and source URLs were kept.`,
+          `تمت إزالة ${citationRepair.count || 1} من علامات استشهاد المساعد غير القابلة للنقل؛ وحُفظت معرّفات الأدلة وروابط المصادر.`,
+          `${citationRepair.count || 1} marqueur${(citationRepair.count || 1) === 1 ? " interne non portable a été supprimé" : "s internes non portables ont été supprimés"} ; les identifiants de preuve et les URL de source ont été préservés.`,
         )
       : "";
     state.importAudit = Object.freeze({
@@ -2624,9 +2624,9 @@ function validateJsonInput() {
           )
       : needsIndependentReview
         ? labelText(
-            `Reviewable draft. Evidence awaiting independent approval: ${provenance.total - provenance.approved} of ${provenance.total}. Review: ${problems.length} contract or integrity warning${problems.length === 1 ? "" : "s"}. You can import it; publication stays blocked.`,
-            `مسودة قابلة للمراجعة. أدلة تنتظر اعتمادًا مستقلًا: ${provenance.total - provenance.approved} من ${provenance.total}. المراجعة: ${problems.length} ${problems.length === 1 ? "تنبيه عقد أو نزاهة" : "تنبيهات عقد أو نزاهة"}. يمكنك استيرادها، ويظل النشر محظورًا.`,
-            `Brouillon révisable. Preuves en attente d’approbation indépendante : ${provenance.total - provenance.approved} sur ${provenance.total}. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de contrat ou d’intégrité. Vous pouvez l’importer ; la publication reste bloquée.`,
+            `Reviewable draft. Evidence awaiting independent approval: ${provenance.total - provenance.approved} of ${provenance.total}. Review: ${problems.length} format or consistency warning${problems.length === 1 ? "" : "s"}. You can import it; publication stays blocked.`,
+            `مسودة قابلة للمراجعة. أدلة تنتظر اعتمادًا مستقلًا: ${provenance.total - provenance.approved} من ${provenance.total}. المراجعة: ${problems.length} ${problems.length === 1 ? "تنبيه يخص الصيغة أو الاتساق" : "تنبيهات تخص الصيغة أو الاتساق"}. يمكنك استيرادها، ويظل النشر محظورًا.`,
+            `Brouillon révisable. Preuves en attente d’approbation indépendante : ${provenance.total - provenance.approved} sur ${provenance.total}. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de format ou de cohérence. Vous pouvez l’importer ; la publication reste bloquée.`,
           )
         : warnings.length
           ? labelText(
@@ -2636,9 +2636,9 @@ function validateJsonInput() {
             )
         : setAside
         ? labelText(
-            `Valid analysis. ${setAside} value${setAside === 1 ? "" : "s"} the contract does not allow ${setAside === 1 ? "was" : "were"} set aside and kept in the import details; the analysis is imported without ${setAside === 1 ? "it" : "them"}.`,
-            `التحليل صالح. نُحّيت ${setAside} من القيم التي لا يسمح بها العقد وحُفظت في تفاصيل الاستيراد؛ ويُستورد التحليل من دونها.`,
-            `Analyse valide. ${setAside} valeur${setAside === 1 ? "" : "s"} non autorisée${setAside === 1 ? "" : "s"} par le contrat ${setAside === 1 ? "a été mise" : "ont été mises"} de côté et conservée${setAside === 1 ? "" : "s"} dans les détails de l’import ; l’analyse est importée sans ${setAside === 1 ? "elle" : "elles"}.`,
+            `Valid analysis. ${setAside} value${setAside === 1 ? "" : "s"} the format does not allow ${setAside === 1 ? "was" : "were"} set aside and kept in the import details; the analysis is imported without ${setAside === 1 ? "it" : "them"}.`,
+            `التحليل صالح. نُحّيت ${setAside} من القيم التي لا تسمح بها الصيغة وحُفظت في تفاصيل الاستيراد؛ ويُستورد التحليل من دونها.`,
+            `Analyse valide. ${setAside} valeur${setAside === 1 ? "" : "s"} non autorisée${setAside === 1 ? "" : "s"} par le format ${setAside === 1 ? "a été mise" : "ont été mises"} de côté et conservée${setAside === 1 ? "" : "s"} dans les détails de l’import ; l’analyse est importée sans ${setAside === 1 ? "elle" : "elles"}.`,
           )
         : parsed.recovered
         ? t("jsonAutoRecovered")
@@ -3943,9 +3943,9 @@ function schemaHealth(a = state.analysis) {
   if (!validateStrategicAnalysis(a).canonical)
     missing.push(
       labelText(
-        "Complete the contract gaps listed in the import audit; this is a reviewable draft.",
-        "أكمل فجوات العقد المدرجة في سجل الاستيراد؛ هذه مسودة قابلة للمراجعة.",
-        "Complétez les lacunes du contrat listées dans l’audit d’import ; ceci est un brouillon révisable.",
+        "Complete the missing parts listed in the import details; this is a draft you can review.",
+        "أكمل الفجوات المدرجة في تفاصيل الاستيراد؛ هذه مسودة قابلة للمراجعة.",
+        "Complétez les lacunes listées dans les détails de l’import ; ceci est un brouillon révisable.",
       ),
     );
   const pillarFilled = PILLARS.filter(
@@ -5785,23 +5785,23 @@ function inspectionCopy() {
   return {
     title: labelText("Inspection directory", "دليل الفحص", "Répertoire d’inspection"),
     intro: labelText(
-      "Open a canonical record to inspect provenance, confidence, evidence balance, linked records, audit details, and every indexed occurrence.",
-      "افتح سجلًا نظاميًا لفحص المصدر والثقة وتوازن الأدلة والسجلات المرتبطة وتفاصيل التدقيق وكل موضع ظهور مفهرس.",
-      "Ouvrez une fiche canonique pour examiner la provenance, la confiance, l’équilibre des preuves, les fiches liées, l’audit et chaque occurrence indexée.",
+      "Open a record to inspect provenance, confidence, evidence balance, linked records, audit details, and every indexed occurrence.",
+      "افتح سجلًا لفحص المصدر والثقة وتوازن الأدلة والسجلات المرتبطة وتفاصيل التدقيق وكل موضع ظهور مفهرس.",
+      "Ouvrez une fiche pour examiner la provenance, la confiance, l’équilibre des preuves, les fiches liées, l’audit et chaque occurrence indexée.",
     ),
-    records: labelText("Canonical records", "السجلات النظامية", "Fiches canoniques"),
+    records: labelText("Records", "السجلات", "Fiches"),
     occurrences: labelText("Indexed occurrences", "مواضع الظهور المفهرسة", "Occurrences indexées"),
     concerns: labelText("Audit concerns", "ملاحظات التدقيق", "Points d’audit"),
     search: labelText("Search records", "ابحث في السجلات", "Rechercher des fiches"),
     searchHint: labelText(
-      "Search by human name, canonical ID, type, or pillar",
-      "ابحث بالاسم أو المعرّف النظامي أو النوع أو المحور",
-      "Rechercher par nom, identifiant canonique, type ou pilier",
+      "Search by name, ID, type, or pillar",
+      "ابحث بالاسم أو المعرّف أو النوع أو المحور",
+      "Rechercher par nom, identifiant, type ou pilier",
     ),
     empty: labelText(
-      "No canonical identifiers were authored for this analysis. Inspection never invents identifiers.",
-      "لم تُؤلف معرّفات نظامية لهذا التحليل. لا ينشئ الفحص معرّفات من تلقاء نفسه.",
-      "Aucun identifiant canonique n’a été rédigé pour cette analyse. L’inspection n’en invente jamais.",
+      "This analysis has no record IDs, and the app never invents them.",
+      "لا يتضمن هذا التحليل معرّفات للسجلات، ولا تخترع الأداة معرّفات من عندها.",
+      "Cette analyse ne comporte aucun identifiant de fiche, et l’outil n’en invente jamais.",
     ),
     noMatch: labelText("No records match this search.", "لا توجد سجلات تطابق البحث.", "Aucune fiche ne correspond à cette recherche."),
     open: labelText("Inspect record", "افحص السجل", "Inspecter la fiche"),
@@ -5840,7 +5840,7 @@ function evidenceIntelligenceCopy() {
       counter_only: labelText("counter only", "أدلة مضادة فقط", "contre-preuves seulement"),
       unreferenced: labelText("unreferenced", "بلا مراجع", "sans référence"),
     },
-    export: labelText("Export intelligence JSON", "تصدير JSON للاستخبارات", "Exporter le JSON d’intelligence"),
+    export: labelText("Export the evidence review (JSON)", "تصدير مراجعة الأدلة (JSON)", "Exporter la revue des preuves (JSON)"),
     reviewQueue: labelText("Evidence review queue", "قائمة مراجعة الأدلة", "File de revue des preuves"),
     reviewQueueIntro: labelText(
       "Deterministic tasks from existing diagnostics, ordered by dependency. Completing them does not validate a conclusion.",
@@ -5852,7 +5852,7 @@ function evidenceIntelligenceCopy() {
     resolveReferences: labelText("Resolve references", "حلّ الإحالات", "Résoudre les références"),
     verifyProvenance: labelText("Verify provenance", "التحقق من المصدر", "Vérifier la provenance"),
     strengthenCoverage: labelText("Strengthen coverage", "تعزيز التغطية", "Renforcer la couverture"),
-    derivedNote: labelText("Derived audit artifact — not canonical transport", "أثر تدقيق مشتق — ليس نقلًا نظاميًا", "Artefact d’audit dérivé — pas un transport canonique"),
+    derivedNote: labelText("A summary for review — not for re-import", "ملخص للمراجعة — لا يصلح لإعادة الاستيراد", "Un résumé pour la revue — pas pour un réimport"),
     empty: labelText("No authored evidence records are available.", "لا تتوفر سجلات أدلة مؤلفة.", "Aucune fiche de preuve rédigée n’est disponible."),
     gapLabels: {
       missingIdentity: labelText("Missing source identity", "هوية المصدر مفقودة", "Identité de source manquante"),
@@ -5864,7 +5864,7 @@ function evidenceIntelligenceCopy() {
       concentratedClusters: labelText("Multiple evidence records share one exact source identity", "عدة سجلات أدلة تشترك في هوية مصدر متطابقة", "Plusieurs preuves partagent une identité de source exacte"),
     },
     reasonLabels: {
-      duplicate_record_id: labelText("Duplicate canonical identifier", "معرّف نظامي مكرر", "Identifiant canonique dupliqué"),
+      duplicate_record_id: labelText("Duplicate ID", "معرّف مكرر", "Identifiant en double"),
       unresolved_relationship_endpoint: labelText("Unresolved relationship endpoint", "طرف علاقة غير محلول", "Extrémité de relation non résolue"),
       unresolved_evidence_reference: labelText("Unresolved evidence reference", "إحالة دليل غير محلولة", "Référence probatoire non résolue"),
       missing_source_identity: labelText("Add an authored source identity", "أضف هوية مصدر مؤلفة", "Ajouter une identité de source rédigée"),
@@ -5875,7 +5875,7 @@ function evidenceIntelligenceCopy() {
       missing_source_date: labelText("Add or confirm the source date", "أضف تاريخ المصدر أو أكّده", "Ajouter ou confirmer la date de source"),
       exact_source_concentration: labelText("Review exact-source concentration", "راجع تركّز المصدر المتطابق", "Examiner la concentration de source exacte"),
       unsupported_declared_high_confidence: labelText("Review unsupported declared high confidence", "راجع الثقة العالية المعلنة غير المدعومة", "Examiner la confiance élevée déclarée sans appui"),
-      isolated_record: labelText("Review an isolated canonical record", "راجع سجلًا نظاميًا معزولًا", "Examiner une fiche canonique isolée"),
+      isolated_record: labelText("Review a record with no connections", "راجع سجلًا بلا روابط", "Examiner une fiche sans lien"),
     },
   };
 }
@@ -6130,9 +6130,9 @@ function bioGateHtml(a) {
   const { status, tone } = bioGateVerdict(a, scores, health);
   const summary = ready
     ? labelText(
-        "The analysis satisfies the canonical, semantic, and evidence-verification gates.",
-        "يستوفي التحليل بوابات العقد النظامي والنزاهة الدلالية والتحقق من الأدلة.",
-        "L’analyse satisfait les contrôles canonique, sémantique et de vérification des preuves.",
+        "The analysis passes the format, consistency, and evidence checks.",
+        "يجتاز التحليل فحوص الصيغة والاتساق والأدلة.",
+        "L’analyse passe les contrôles de format, de cohérence et de preuves.",
       )
     : review
       ? labelText(
@@ -6141,9 +6141,9 @@ function bioGateHtml(a) {
           "L’analyse est utilisable pour la révision mais n’est pas prête à être publiée ; elle exige une correction épistémique ciblée.",
         )
       : labelText(
-          "This analysis is not publication-ready; resolve the contract and evidence blockers first.",
-          "هذا التحليل غير جاهز للنشر؛ عالج عوائق العقد والأدلة أولًا.",
-          "Cette analyse n’est pas publiable ; corrigez d’abord les blocages contractuels et probatoires.",
+          "This analysis is not publication-ready; resolve the format and evidence blockers first.",
+          "هذا التحليل غير جاهز للنشر؛ عالج عوائق الصيغة والأدلة أولًا.",
+          "Cette analyse n’est pas publiable ; corrigez d’abord les blocages de format et de preuves.",
         );
   return gateNoteHtml(tone, status, summary, health.missing);
 }
@@ -6696,12 +6696,12 @@ function buildLosslessBiopoliticalReport(reportRenderer) {
 }
 function renderExports() {
   const d = {
-    ar: "تقرير HTML مستقل للمراجعة البشرية، وملف JSON نظامي يحفظ العقد كاملًا دون فقد أي حقل.",
-    en: "A standalone HTML report for human review plus canonical JSON that preserves the complete contract without field loss.",
-    fr: "Un rapport HTML autonome pour la revue humaine et un JSON canonique qui préserve l’intégralité du contrat sans perte de champ.",
+    ar: "تقرير HTML مستقل للقراءة، والتحليل كاملًا بصيغة JSON دون فقد أي حقل.",
+    en: "A standalone HTML report to read, plus the full analysis as JSON with every field kept.",
+    fr: "Un rapport HTML autonome à lire, et l’analyse complète en JSON, sans perte de champ.",
   };
   const canonicalInspector = state.analysis
-    ? `<details class="j-disclosure j-export-raw"><summary>${escapeHtml(labelText("Inspect the complete canonical contract", "افحص العقد النظامي الكامل", "Inspecter le contrat canonique complet"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
+    ? `<details class="j-disclosure j-export-raw"><summary>${escapeHtml(labelText("Show the full analysis JSON", "اعرض JSON التحليل كاملًا", "Afficher le JSON complet de l’analyse"))}</summary><pre tabindex="0" dir="ltr">${escapeHtml(JSON.stringify(state.analysis, null, 2))}</pre></details>`
     : "";
   return `<h3>${t("exports")}</h3><div class="j-root j-export"><div class="j-card"><h4>${t("downloadHtml")}</h4><p>${d[state.lang] || d.en}</p><button class="j-btn" data-variant="primary" id="exportHtml" type="button" aria-describedby="exportHtmlStatus">${t("downloadHtml")}</button><div id="exportHtmlStatus" class="j-note" data-tone="idle" aria-live="polite"></div></div><div class="j-card"><h4>${t("downloadJson")}</h4><p>${escapeHtml(labelText("Lossless machine-readable analysis for verification, re-import, and archival.", "تحليل آلي كامل للتحقق وإعادة الاستيراد والأرشفة.", "Analyse lisible par machine, sans perte, pour vérification, réimport et archivage."))}</p><button class="j-btn" id="exportJson" type="button">${t("downloadJson")}</button></div></div>${canonicalInspector}`;
 }
@@ -6931,7 +6931,7 @@ function showOperationFailure(error, operation, invoker) {
 const EDITOR_META_KEYS = new Set(["schema_version", "analysis_contract", "contract_status", "analysis_id", "generated_at", "language", "model_mode", "analysis_lens"]);
 function editorText(key) {
   const copy = {
-    title: ["Structured canonical editor", "محرر التحليل النظامي", "Éditeur canonique structuré"],
+    title: ["Analysis editor", "محرر التحليل", "Éditeur de l’analyse"],
     hint: ["Edits affect only the working draft. Imported and committed revisions remain immutable.", "تؤثر التعديلات في مسودة العمل فقط. تبقى النسخ المستوردة والمعتمدة غير قابلة للتغيير.", "Les modifications concernent uniquement le brouillon. Les révisions importées et validées restent immuables."],
     edit: ["Edit draft", "تعديل المسودة", "Modifier le brouillon"],
     undo: ["Undo", "تراجع", "Annuler"], redo: ["Redo", "إعادة", "Rétablir"],
@@ -6943,11 +6943,11 @@ function editorText(key) {
       "هل تغلق المحرر وتتجاهل التغييرات غير المحفوظة في المسودة؟",
       "Fermer l’éditeur et abandonner les modifications non enregistrées du brouillon ?",
     ],
-    valid: ["Field parsed. Contract validation passed.", "تم تحليل الحقل واجتاز التحقق من العقد.", "Champ analysé et contrat validé."],
+    valid: ["Field read. The format check passed.", "قُرئ الحقل واجتاز فحص الصيغة.", "Champ lu, contrôle de format réussi."],
     draftValid: ["Field parsed. This draft can be saved; parts are still missing before the analysis is complete.", "تم تحليل الحقل. يمكن حفظ هذه المسودة، لكن ما زالت أجزاء ناقصة قبل اكتمال التحليل.", "Champ analysé. Ce brouillon peut être enregistré, mais des parties manquent encore avant que l’analyse soit complète."],
-    parse: ["Enter valid JSON for this canonical field.", "أدخل JSON صالحًا لهذا الحقل النظامي.", "Saisissez un JSON valide pour ce champ canonique."],
+    parse: ["Enter valid JSON for this field.", "أدخل JSON صالحًا لهذا الحقل.", "Saisissez un JSON valide pour ce champ."],
     saved: ["Working draft saved locally.", "تم حفظ مسودة العمل محليًا.", "Brouillon enregistré localement."],
-    invalid: ["Resolve contract errors before saving.", "أصلح أخطاء العقد قبل الحفظ.", "Corrigez les erreurs de contrat avant l’enregistrement."],
+    invalid: ["Fix the format errors before saving.", "أصلح أخطاء الصيغة قبل الحفظ.", "Corrigez les erreurs de format avant l’enregistrement."],
     recoveryTitle: ["Unsaved recovery snapshot found", "تم العثور على لقطة استرداد غير محفوظة", "Un instantané de récupération non enregistré a été trouvé"],
     recoveryHint: ["It matches this exact saved draft. Restore it or discard it before continuing.", "تطابق هذه اللقطة المسودة المحفوظة نفسها. استعدها أو تجاهلها قبل المتابعة.", "Il correspond exactement à ce brouillon enregistré. Restaurez-le ou supprimez-le avant de continuer."],
     restore: ["Restore snapshot", "استعادة اللقطة", "Restaurer l’instantané"],
@@ -6955,7 +6955,7 @@ function editorText(key) {
     recovered: ["Unsaved editor state restored.", "تمت استعادة حالة المحرر غير المحفوظة.", "L’état non enregistré de l’éditeur a été restauré."],
     discarded: ["Recovery snapshot discarded.", "تم تجاهل لقطة الاسترداد.", "L’instantané de récupération a été supprimé."],
     review: ["Review & commit", "مراجعة واعتماد", "Vérifier et valider"],
-    sections: ["Canonical sections", "أقسام التحليل", "Sections canoniques"],
+    sections: ["Analysis sections", "أقسام التحليل", "Sections de l’analyse"],
     close: ["Close editor", "إغلاق المحرر", "Fermer l’éditeur"],
     metadata: ["Identity and metadata", "الهوية والبيانات الوصفية", "Identité et métadonnées"],
     toFix: ["{n} to fix", "{n} للإصلاح", "{n} à corriger"],
@@ -7261,11 +7261,11 @@ function revisionText(key, values = {}) {
     created: ["Created", "تاريخ الإنشاء", "Créée"],
     kind: ["Kind", "النوع", "Type"],
     parent: ["Parent", "الأصل", "Parent"],
-    checksum: ["Payload checksum", "بصمة المحتوى", "Empreinte du contenu"],
+    checksum: ["Content fingerprint", "بصمة المحتوى", "Empreinte du contenu"],
     restore: ["Prepare safe restore", "تحضير استعادة آمنة", "Préparer la restauration sûre"],
     dirtyBlocked: ["Restore is blocked because the working draft has uncommitted changes. Commit or remove that draft first.", "الاستعادة محظورة لأن مسودة العمل تحتوي تغييرات غير معتمدة. اعتمد المسودة أو أزل تغييراتها أولًا.", "La restauration est bloquée car le brouillon contient des modifications non validées. Validez-les ou supprimez-les d’abord."],
     headBlocked: ["This revision is already the current head.", "هذه النسخة هي الحالية بالفعل.", "Cette révision est déjà la tête actuelle."],
-    identicalBlocked: ["This revision has the same canonical payload as the current head; no restore transaction is needed.", "محتوى هذه النسخة مطابق للنسخة الحالية؛ لا حاجة إلى معاملة استعادة.", "Cette révision possède le même contenu canonique que la tête actuelle ; aucune restauration n’est nécessaire."],
+    identicalBlocked: ["This revision has the same content as the current one; there is nothing to restore.", "محتوى هذه النسخة مطابق للنسخة الحالية؛ لا حاجة إلى معاملة استعادة.", "Cette révision a le même contenu que la version actuelle ; il n’y a rien à restaurer."],
     preparing: ["Preparing verified restore transaction…", "جارٍ تحضير معاملة الاستعادة المتحقق منها…", "Préparation de la restauration vérifiée…"],
     error: ["Revision operation failed safely: {message}", "فشلت عملية النسخة بأمان: {message}", "L’opération de révision a échoué sans altération : {message}"],
   }[key] || [key, key, key];
@@ -7402,7 +7402,7 @@ let resolutionCommitPending = false;
 function resolutionText(key) {
   const copy = {
     title: ["Resolution transaction", "معاملة اعتماد التعديلات", "Transaction de résolution"],
-    hint: ["Inspect the exact canonical diff, whole-document validation, and local approval before creating an immutable revision.", "افحص الفرق النظامي الدقيق والتحقق من المستند كاملًا والموافقة المحلية قبل إنشاء نسخة غير قابلة للتغيير.", "Inspectez le diff canonique exact, la validation intégrale et l’approbation locale avant de créer une révision immuable."],
+    hint: ["Inspect the exact changes, whole-document validation, and local approval before creating an immutable revision.", "افحص التغييرات بدقة والتحقق من المستند كاملًا والموافقة المحلية قبل إنشاء نسخة غير قابلة للتغيير.", "Inspectez les modifications exactes, la validation intégrale et l’approbation locale avant de créer une révision immuable."],
     trust: ["Commit creates a new immutable revision · it never rewrites imported or earlier committed history", "ينشئ الاعتماد نسخة جديدة غير قابلة للتغيير · ولا يعيد كتابة النسخ المستوردة أو المعتمدة سابقًا", "La validation crée une nouvelle révision immuable sans réécrire l’historique importé ou déjà validé"],
     diff: ["Exact proposed changes", "التغييرات المقترحة الدقيقة", "Modifications exactes proposées"],
     base: ["Base revision", "النسخة الأساس", "Révision de base"],
@@ -7610,8 +7610,8 @@ let ledgerEventPending = false;
 function ledgerText(key) {
   const copy = {
     title: ["Operational review ledger", "سجل المراجعة التشغيلي", "Registre opérationnel de revue"],
-    hint: ["Append-only decisions for the current local workspace. Canonical analysis is never changed by review actions.", "قرارات متسلسلة غير قابلة لإعادة الكتابة لمساحة العمل المحلية الحالية. لا تغيّر إجراءات المراجعة التحليل النظامي.", "Décisions ajoutées sans réécriture pour l’espace local actuel. Les actions de revue ne modifient jamais l’analyse canonique."],
-    trust: ["Hash-chained local audit trail · completion does not validate conclusions", "سجل تدقيق محلي مترابط بالتجزئة · الإنجاز لا يثبت صحة الاستنتاجات", "Piste locale chaînée par empreinte · l’achèvement ne valide pas les conclusions"],
+    hint: ["Append-only decisions for the current local workspace. Review actions never change the analysis.", "قرارات متسلسلة غير قابلة لإعادة الكتابة لمساحة العمل المحلية الحالية. لا تغيّر إجراءات المراجعة التحليل.", "Décisions ajoutées sans réécriture pour l’espace local actuel. Les actions de revue ne modifient jamais l’analyse."],
+    trust: ["Tamper-evident local audit trail · completion does not validate conclusions", "سجل تدقيق محلي يكشف أي تلاعب · الإنجاز لا يثبت صحة الاستنتاجات", "Piste d’audit locale qui révèle toute altération · l’achèvement ne valide pas les conclusions"],
     reviewer: ["Reviewer display name", "اسم المراجع", "Nom affiché du réviseur"],
     identityHint: ["Locally asserted identity; no account verification is claimed.", "هوية مصرّح بها محليًا؛ لا يُدّعى التحقق عبر حساب.", "Identité déclarée localement ; aucune vérification de compte n’est revendiquée."],
     tasks: ["Review tasks", "مهام المراجعة", "Tâches de revue"],

@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### Plain words for the app's jargon (UIX-5 slice E, part 2)
+
+Walkthrough E2, in AR/EN/FR, the app, both reports and the prototype.
+
+- **"Canonical"** (نظامي, canonique) is gone from what readers see: a
+  record, its ID, "the analysis", "Analysis editor", "Export analysis as
+  JSON", "Path in the analysis". A complete answer's status reads Complete
+  (مكتمل, Complet).
+- **"Contract"** (عقد, contrat) is the answer's **format** (الصيغة):
+  "Format check failed", "Format version". The import's "contract gaps"
+  are its missing parts (الفجوات, lacunes).
+- **"Intelligence"** read as espionage in Arabic (استخبارات). The header
+  now says "Research workbench" (أداة بحث وتحليل, Atelier de recherche).
+  The evidence export is "Export the evidence review (JSON)", and the
+  note under it says it is a summary for review, not for re-import.
+- **"Hash-chained"** is "tamper-evident" (يكشف أي تلاعب, qui révèle toute
+  altération). "Payload" is the content, and "schema fields" are fields.
+  In Arabic, "integrity" (نزاهة, probity) is consistency (الاتساق) in the
+  import messages.
+- The prompts sent to the AI keep their technical terms, and so do the
+  JSON keys, codes and file names.
+
 ### Arabic terms, French typography, metric names (UIX-5 slice E, part 1)
 
 Walkthrough E4–E6, in the app and the prototype.

@@ -671,7 +671,7 @@
     };
     if (!value.migration.warnings.length) {
       value.migration.warnings.push(
-        "Canonical completion and semantic review are required.",
+        "Complete the missing parts, then review the content.",
       );
     }
     return value;

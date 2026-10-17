@@ -441,8 +441,8 @@
             : "MIGRATED_DRAFT_NOT_CANONICAL",
           "/contract_status",
           generated
-            ? "This AI-generated draft preserves recoverable analytical material but remains non-canonical until its structural and semantic gaps are resolved."
-            : "This migrated draft preserves legacy material but is not canonical Biopolitical v2.1 data.",
+            ? "This AI-generated draft preserves recoverable analytical material but stays a draft until its structural and semantic gaps are resolved."
+            : "This migrated draft preserves legacy material but is not yet a complete Biopolitical 2.1 analysis.",
           "warning",
         ),
       );
@@ -462,7 +462,7 @@
           issue(
             "VALIDATOR_UNAVAILABLE",
             "/",
-            "The Biopolitical schema validator is unavailable.",
+            "The Biopolitical format check is unavailable.",
           ),
         ],
         warnings: [],
@@ -486,7 +486,7 @@
             : issue(
                 "UNSUPPORTED_CONTRACT",
                 "/schema_version",
-                `Unsupported Biopolitical contract/schema: ${routed.analysis_contract || "missing"} / ${routed.schema_version || "missing"}.`,
+                `Unsupported Biopolitical format: ${routed.analysis_contract || "missing"} / ${routed.schema_version || "missing"}.`,
               ),
         ],
         warnings: [],

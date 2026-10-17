@@ -139,7 +139,7 @@ for (const token of [
   'appTitleBiopolitical: "مساحة عمل تحليل السياسة الحيوية"',
   "رابط المصدر ليس رابط HTTP(S) مطلقًا",
   "L’URL de la source n’est pas une URL HTTP(S) absolue",
-  "لا تطابق القيمة بنية عقد التحليل المطلوبة",
+  "لا تطابق القيمة البنية التي تتطلبها صيغة التحليل",
   "La valeur ne respecte pas la structure requise",
   'class="j-audit-path" dir="ltr"',
 ]) {

@@ -457,7 +457,7 @@ test.describe('Report provenance and print', () => {
     await page.goto(pathToFileURL(testInfo.outputPath('provenance.html')).href);
     await expect(page.locator('.reportDate time')).toHaveAttribute('datetime', /^\d{4}-\d\d-\d\dT/);
     const footer = page.locator('footer[data-report-provenance]');
-    await expect(footer.locator('dt')).toHaveText(['Exported', 'Answer dated', 'Analysis ID', 'Schema version', 'App version']);
+    await expect(footer.locator('dt')).toHaveText(['Exported', 'Answer dated', 'Analysis ID', 'Format version', 'App version']);
     await expect(footer.locator('dd').nth(1)).toHaveText('April 27, 2026');
     await expect(footer.locator('dd').nth(2)).toHaveText(data.analysis_id);
     await expect(footer.locator('dd').last()).toHaveText(EXPECTED_VERSION);
@@ -474,7 +474,7 @@ test.describe('Report provenance and print', () => {
     await exportSampleReport(page, testInfo, 'biopolitical');
     await page.goto(pathToFileURL(testInfo.outputPath('en-biopolitical-export.html')).href);
     await expect(page.locator('.draftBanner')).toContainText('Not publication-ready');
-    await expect(page.locator('footer[data-report-provenance] div', { hasText: 'Schema version' }).locator('dd')).toHaveText('2.1.0');
+    await expect(page.locator('footer[data-report-provenance] div', { hasText: 'Format version' }).locator('dd')).toHaveText('2.1.0');
     // The contract's code stays in the metadata, not in the text.
     expect(await page.locator('body').innerText()).not.toContain('biopolitical-training-map-v2');
 

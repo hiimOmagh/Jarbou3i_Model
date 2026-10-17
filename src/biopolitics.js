@@ -475,7 +475,7 @@
     pass: ["مستوفى", "Satisfait"],
     concern: ["موضع قلق", "À vérifier"],
     not_applicable: ["غير منطبق", "Non applicable"],
-    canonical: ["نظامي", "Canonique"],
+    canonical: ["مكتمل", "Complet", "Complete"],
     migrated_draft: ["مسودة مُرحّلة", "Brouillon migré"],
     assessed: ["مُقيّم", "Évalué"],
     unknown: ["غير معلوم", "Inconnu"],
@@ -1124,7 +1124,7 @@
       return normalizeV2(source);
     }
     const error = new Error(
-      `Unsupported Biopolitical contract or schema version: ${routed.analysis_contract || "missing"} / ${routed.schema_version || "missing"}`,
+      `Unsupported Biopolitical format version: ${routed.analysis_contract || "missing"} / ${routed.schema_version || "missing"}`,
     );
     error.code = "BIOPOLITICAL_CONTRACT_UNSUPPORTED";
     error.route = routed;
@@ -4552,9 +4552,9 @@ ${schema}${interchangeGuide}`;
       a.contract_status === "canonical" &&
         a.analysis_contract === APP_CONTRACT &&
         a.schema_version === SCHEMA_VERSION,
-      "Complete the canonical Biopolitical v2.1 contract; migrated drafts cannot be published.",
-      "أكمل عقد تحليل السياسة الحيوية 2.1 النظامي؛ لا يمكن نشر المسودات المُرحّلة.",
-      "Complétez le contrat canonique Biopolitique 2.1 ; un brouillon migré ne peut pas être publié.",
+      "Complete the Biopolitical 2.1 format; migrated drafts cannot be published.",
+      "أكمل صيغة تحليل السياسة الحيوية 2.1؛ لا يمكن نشر المسودات المُرحّلة.",
+      "Complétez le format Biopolitique 2.1 ; un brouillon migré ne peut pas être publié.",
     );
     add(
       filled(a.subject.research_question),
@@ -4717,9 +4717,9 @@ ${schema}${interchangeGuide}`;
         };
     block(
       semantic.valid,
-      "Resolve schema references, duplicate IDs, and semantic-integrity errors.",
-      "عالج مراجع المخطط والمعرّفات المكررة وأخطاء النزاهة الدلالية.",
-      "Corrigez les références, les identifiants dupliqués et les erreurs d’intégrité sémantique.",
+      "Fix broken references, duplicate IDs, and consistency errors.",
+      "أصلح المراجع المكسورة والمعرّفات المكررة وأخطاء الاتساق.",
+      "Corrigez les références cassées, les identifiants en double et les erreurs de cohérence.",
     );
     block(
       semantic.warnings.length === 0,
@@ -4743,9 +4743,9 @@ ${schema}${interchangeGuide}`;
         missing[0] ||
         labelFor(
           lang,
-          "Canonical structure and evidence checks passed; complete final editorial verification.",
-          "اجتازت البنية النظامية وفحوص الأدلة؛ أكمل التحقق التحريري النهائي.",
-          "La structure canonique et les contrôles probatoires sont satisfaits ; effectuez la vérification éditoriale finale.",
+          "Structure and evidence checks passed; complete the final editorial check.",
+          "اجتازت فحوص البنية والأدلة؛ أكمل التحقق التحريري النهائي.",
+          "Les contrôles de structure et de preuves sont satisfaits ; effectuez la vérification éditoriale finale.",
         ),
     };
   }

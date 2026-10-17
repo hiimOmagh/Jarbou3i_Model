@@ -44,7 +44,7 @@ test.describe("Runtime import validation", () => {
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     await expect(audit).toContainText(
-      "/evidence/items/0/sample_size was reformatted to the contract type",
+      "/evidence/items/0/sample_size was rewritten in the type",
     );
   });
 
@@ -169,7 +169,7 @@ test.describe("Runtime import validation", () => {
         button: "#langAr",
         fixture: "sample-analysis-bio-ar.json",
         warning: "رابط المصدر ليس رابط HTTP(S) مطلقًا",
-        schema: "لا تطابق القيمة بنية عقد التحليل المطلوبة",
+        schema: "لا تطابق القيمة البنية التي تتطلبها صيغة التحليل",
         // Two blockers take the dual form.
         blockers: "عائقا نشر",
       },

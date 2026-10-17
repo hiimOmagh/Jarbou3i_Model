@@ -95,7 +95,7 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 | # | Finding | Status |
 |---|---|---|
 | E1 | Plural errors: "1 of 1 evidence records", "1 preuves sur 1", Arabic counts | D1/D2 for the import status and summary; open elsewhere |
-| E2 | Jargon: canonical/canonique/نظامي, contract/عقد, intelligence/استخبارات, hash-chained | open |
+| E2 | Jargon: canonical/canonique/نظامي, contract/عقد, intelligence/استخبارات, hash-chained | done (UIX-5 E part 2): plain words in what readers see; the AI prompts keep the terms |
 | E3 | Raw editor keys, paths, hashes and permalinks; the report prints the contract slug | report: done (UIX-5 F); open elsewhere |
 | E4 | French typography: no space before ":" and "%", ISO dates | done (UIX-5 E part 1) |
 | E5 | Arabic: "برومبت", three names for the lens, gender agreement | done (UIX-5 E part 1): موجِّه, السياسة الحيوية, nine agreement fixes |

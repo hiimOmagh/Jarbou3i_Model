@@ -96,7 +96,7 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
   await expect(page.locator("#referenceInspectorTitle")).toHaveText(
     "Historical power distribution reference",
   );
-  await expect(inspector.locator('[data-inspection-section="identity"]')).toContainText("Canonical ID");
+  await expect(inspector.locator('[data-inspection-section="identity"]')).toContainText("Record ID");
   await expect(inspector.locator('[data-inspection-section="identity"]')).toContainText("/evidence/items/0");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("Historical power distribution reference");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("unreviewed");

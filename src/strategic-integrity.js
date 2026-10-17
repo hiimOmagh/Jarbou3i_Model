@@ -90,7 +90,7 @@ export function validateStrategicAnalysis(raw) {
       ok: false,
       canonical: false,
       analysis: null,
-      errors: [issue("VALIDATOR_UNAVAILABLE", "/", "The Strategic schema validator is unavailable.")],
+      errors: [issue("VALIDATOR_UNAVAILABLE", "/", "The Strategic format check is unavailable.")],
       warnings: [],
     };
   }
