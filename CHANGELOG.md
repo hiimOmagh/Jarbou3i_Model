@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Connect the gaps (UIX-5 slice G3)
+
+The Connections view lists the records no connection reaches (12 of 32 in
+the sample) and asks the AI that wrote the answer to connect them.
+
+- **Copy a prompt to connect them** copies a prompt, in the answer's
+  language, that names each unconnected record and asks the same chat for
+  new links only, never the whole analysis again. A link must join records of
+  the answer, use the contract's relations, and be supported by the analysis:
+  a record is left unconnected rather than given an invented connection.
+- **Go to the answer box** opens it with the answer selected. The AI's reply
+  is added after the answer's own links, checked like any answer ("Added 2
+  connections to your analysis."), and imported as a new answer; the one it
+  started from stays as it is.
+- A reply's links can sit under `/links/-` or under `links`; one link alone
+  is read as a list of one. Gaps in the reply (an ID that names no record)
+  get the usual completion prompt.
+
 ### Connections view (UIX-5 slice G2)
 
 The Biopolitical Connections section is one view instead of the relationship

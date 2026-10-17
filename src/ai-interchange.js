@@ -1350,6 +1350,48 @@ Parties manquantes :`,
     return `${copy.intro}\n${[...new Set(lines)].join("\n")}${evidenceList}`;
   }
 
+  // Records an answer leaves unconnected: asks the same chat for new links
+  // only, added after the answer's own ("/links/-"), never for the whole
+  // analysis again.
+  const LINK_FILL_TARGET = "/links/-";
+  const LINK_COPY = {
+    en: {
+      intro: (shape) => `Some records in your previous answer are not connected to any other record. Do not resend the whole analysis. Reply with only new links that connect them, as one JSON object inside a single \`\`\`json code block:
+{"fill":{"${LINK_FILL_TARGET}":[<link>, …]}}
+Each link is shaped like ${shape}, where "from" and "to" are the IDs of records in your analysis and at least one of them is a record listed below. Write "mechanism" in English, saying how the one record acts on the other, consistent with the rest of your analysis. Add a link only where your analysis supports it: leave a record unconnected rather than invent a connection. Do not repeat or change the existing links.
+
+Records with no connection:`,
+    },
+    ar: {
+      intro: (shape) => `بعض السجلات في إجابتك السابقة غير مرتبطة بأي سجل آخر. لا تُعد إرسال التحليل كاملًا. أجب بروابط جديدة تربطها فقط، في كائن JSON واحد داخل كتلة كود واحدة \`\`\`json:
+{"fill":{"${LINK_FILL_TARGET}":[<رابط>, …]}}
+يكون كل رابط بالشكل ${shape}، حيث "from" و"to" معرّفا سجلين في تحليلك، وأحدهما على الأقل من السجلات المدرجة أدناه. اكتب "mechanism" بالعربية، مبيّنًا كيف يؤثر أحد السجلين في الآخر، متسقًا مع بقية تحليلك. لا تُضف رابطًا إلا حيث يدعمه تحليلك: اترك السجل دون رابط بدل اختلاق علاقة. لا تكرر الروابط الموجودة ولا تغيّرها.
+
+السجلات غير المرتبطة:`,
+    },
+    fr: {
+      intro: (shape) => `Certains éléments de votre réponse précédente ne sont reliés à aucun autre. Ne renvoyez pas toute l’analyse. Répondez uniquement avec de nouveaux liens qui les relient, en un seul objet JSON dans un unique bloc de code \`\`\`json :
+{"fill":{"${LINK_FILL_TARGET}":[<lien>, …]}}
+Chaque lien a la forme ${shape}, où "from" et "to" sont les identifiants d’éléments de votre analyse, dont au moins un figure ci-dessous. Rédigez "mechanism" en français, en disant comment l’un agit sur l’autre, en cohérence avec le reste de votre analyse. N’ajoutez un lien que là où votre analyse le justifie : laissez un élément sans lien plutôt que d’inventer une relation. Ne répétez ni ne modifiez les liens existants.
+
+Éléments sans lien :`,
+    },
+  };
+
+  // records: [{id, label, layer}], each listed once; shape: the template's link.
+  function buildLinkPrompt(records = [], lang = "en", shape = {}) {
+    const copy = LINK_COPY[lang] || LINK_COPY.en;
+    const lines = array(records)
+      .filter((record) => text(object(record).id))
+      .slice(0, 50)
+      .map((record) => {
+        const label = clip(text(record.label));
+        const layer = text(record.layer);
+        return `${text(record.id)}${label ? ` — ${label}` : ""}${layer ? ` (${layer})` : ""}`;
+      });
+    return `${copy.intro(JSON.stringify(shape))}\n${lines.join("\n")}`;
+  }
+
   // A reply that holds only the missing parts: {"fill": {"/path": value}}.
   // Models often leave out the leading "/" ("feedback/1/speed"); the path
   // means the same.
@@ -1364,7 +1406,9 @@ Parties manquantes :`,
   }
 
   // Writes each value into a copy of the analysis. A path the completion
-  // prompt did not ask for is reported as ignored, never applied.
+  // prompt did not ask for is reported as ignored, never applied. A path
+  // ending in "/-" adds to that list: the record, or each record, the reply
+  // gives under it or under the list's own path goes after the others.
   function applyCompletion(base, reply, targets = []) {
     const value = clone(base);
     const asked = new Set(targets);
@@ -1379,6 +1423,16 @@ Parties manquantes :`,
     };
     for (const [key, next] of Object.entries(object(object(reply).fill))) {
       const target = fillTarget(key);
+      const list = asked.has(`${target}/-`) ? target : target.endsWith("/-") && asked.has(target) ? target.slice(0, -2) : "";
+      if (list) {
+        const owner = pointerKeys(list).reduce((node, part) => node?.[part], value);
+        const added = (Array.isArray(next) ? next : [next]).filter((item) => item !== null && item !== undefined);
+        if (Array.isArray(owner) && added.length) {
+          owner.push(...clone(added));
+          applied += added.length;
+        } else ignored.push(target);
+        continue;
+      }
       // Models also answer one level up, keyed by the record or list that
       // holds the missing parts; only the parts asked for are read from it.
       // A list there may hold only the missing records, in order ([B, D] for
@@ -1434,6 +1488,8 @@ Parties manquantes :`,
     buildChecklist,
     buildCompletionPrompt,
     completionTargets,
+    LINK_FILL_TARGET,
+    buildLinkPrompt,
     isCompletionReply,
     applyCompletion,
     isCopiedPrompt,

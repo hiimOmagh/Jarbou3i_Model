@@ -15,6 +15,13 @@
 .j-conn select.j-input { contain: layout; }
 .j-conn .j-help { margin: 0; }
 
+/* Records no connection reaches, and the prompt that asks for links. */
+.j-conn-gaps { display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-conn-gaps > p { margin: 0; color: var(--j-fg-muted); line-height: 1.6; }
+.j-conn-loose { display: flex; flex-wrap: wrap; gap: var(--j-s-2); margin: 0; padding: var(--j-s-2) var(--j-s-3) var(--j-s-3); list-style: none; }
+.j-conn-act { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
+.j-conn-act > [hidden] { display: none; }
+
 /* The map: what points to the record, the record, what it points to. Read in
    the page's direction; stacked when narrow. */
 .j-conn-map {

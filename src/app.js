@@ -2395,9 +2395,10 @@ function validateJsonInput() {
         parsed.value,
         completionBase.targets,
       );
+      const links = completionBase.targets.includes(AI_INTERCHANGE.LINK_FILL_TARGET);
       completionBase = null;
       const mergedText = JSON.stringify(merged.value);
-      completionNotice = { text: mergedText, applied: merged.applied, ignored: merged.ignored.length };
+      completionNotice = { text: mergedText, applied: merged.applied, ignored: merged.ignored.length, links };
       $("jsonInput").value = mergedText;
       return validateJsonInput();
     }
@@ -2647,6 +2648,14 @@ function validateJsonInput() {
     const completionMessage =
       added === null
         ? ""
+        : completionNotice.links
+          ? added === 0
+            ? labelText(
+                "No connection was added to your analysis.",
+                "لم يُضف أي رابط إلى تحليلك.",
+                "Aucune connexion n’a été ajoutée à votre analyse.",
+              )
+            : pluralText(added, LINKS_ADDED)
         : added === 0
           ? labelText(
               "No missing part was added to your analysis.",
@@ -6250,6 +6259,57 @@ function connectionsMapHtml(graph, node) {
   const arrow = `<span class="j-conn-arrow" aria-hidden="true">→</span>`;
   return `<div class="j-conn-map" id="connMap">${side("in", labelText("Linked from", "تُشير إليه", "Référencé par"), graph.incoming(node.id), (edge) => edge.source)}${arrow}<div class="j-conn-centre" id="connCentre" tabindex="-1"><span class="j-label">${escapeHtml(graph.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><code>${escapeHtml(node.id)}</code><button class="j-btn" type="button" data-reference-id="${escapeHtml(node.id)}">${escapeHtml(labelText("Open record", "فتح السجل", "Ouvrir la fiche"))}</button></div>${arrow}${side("out", labelText("Links to", "يُشير إلى", "Renvoie à"), graph.outgoing(node.id), (edge) => edge.target)}</div>`;
 }
+// Records no connection reaches: the same AI chat is asked for new links
+// only; its reply, pasted in the answer box, is checked and imported as a new
+// answer.
+function unconnectedRecords(graph) {
+  return graph.nodes.filter((node) => !graph.incoming(node.id).length && !graph.outgoing(node.id).length);
+}
+function connectionsGapsHtml(graph, loose) {
+  if (!loose.length) return "";
+  return `<section class="j-conn-gaps" aria-labelledby="connGapsTitle"><h4 id="connGapsTitle">${escapeHtml(labelText("Records with no connection", "سجلات بلا روابط", "Fiches sans connexion"))} <span class="j-chip">${loose.length}</span></h4><p>${escapeHtml(labelText(
+    "Ask the AI that wrote this answer to connect them. Its reply is checked and imported as a new answer; this one stays as it is.",
+    "اطلب من الذكاء الاصطناعي الذي كتب هذه الإجابة أن يربطها. يُفحص رده ويُستورد إجابةً جديدة، وتبقى هذه الإجابة كما هي.",
+    "Demandez à l’IA qui a rédigé cette réponse de les relier. Sa réponse est vérifiée et importée comme une nouvelle réponse ; celle-ci reste telle quelle.",
+  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ برومبت لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the answer box", "الانتقال إلى مربع الإجابة", "Aller à la zone de réponse"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
+}
+// The prompt is in the answer's language, like the answer it adds to.
+async function copyConnectionsPrompt(event) {
+  const button = event.currentTarget;
+  const lang = ["ar", "en", "fr"].includes(state.analysis?.language) ? state.analysis.language : state.analysisLang;
+  const graph = currentBiopoliticalGraph(lang);
+  const records = unconnectedRecords(graph).map((node) => ({
+    id: node.id,
+    label: node.label,
+    layer: BIO.ui(lang, `pillars.${node.pillar}.0`),
+  }));
+  const shape = JSON.parse(BIO.buildSchemaTemplate(lang, "research", "web")).links[0];
+  const prompt = AI_INTERCHANGE.buildLinkPrompt(records, lang, shape);
+  completionBase = { value: structuredClone(state.analysis), targets: [AI_INTERCHANGE.LINK_FILL_TARGET] };
+  keepTrip();
+  if (!(await copyText(prompt))) {
+    toast(t("copyFailed"), "crit");
+    showModal(button.textContent, prompt, button);
+    return;
+  }
+  const copied = labelText(
+    "Prompt copied. Paste it into the same AI chat, then paste the AI’s reply into the answer box.",
+    "نُسخ البرومبت. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رده في مربع الإجابة.",
+    "Prompt copié. Collez-le dans la même conversation avec l’IA, puis collez sa réponse dans la zone de réponse.",
+  );
+  // Said beside the button, where the next step is, not in a toast too.
+  $("connGapsStatus").textContent = copied;
+  $("connGapsAnswer").hidden = false;
+}
+function openAnswerBox() {
+  state.shellSection = "workflow";
+  GUIDED_FLOW.go("answer");
+  renderAll();
+  const answer = $("jsonInput");
+  answer.focus();
+  // The answer on screen is replaced by the reply pasted over it.
+  answer.select();
+}
 function connectionsShownText(shown, total) {
   return labelText("Shown: {shown} of {total}", "المعروض: {shown} من {total}", "Affichées : {shown} sur {total}")
     .replace("{shown}", shown)
@@ -6267,12 +6327,13 @@ function renderBiopoliticalConnections() {
     "Les liens que la réponse établit entre ses fiches : les fiches autour d’une fiche, puis chaque connexion par couche.",
   ))}</p><span class="j-stats">${stat(`${connected}/${graph.nodes.length}`, labelText("Records connected", "سجلات مرتبطة", "Fiches reliées"))}${stat(graph.edges.length, labelText("Connections", "الروابط", "Connexions"))}${stat(cited, labelText("Citing evidence", "تستشهد بالأدلة", "Citant des preuves"), cited ? "" : "warn")}</span>`;
   const focus = connectionsFocus(graph);
+  const gaps = connectionsGapsHtml(graph, unconnectedRecords(graph));
   if (!graph.edges.length || !focus) {
     return `<div class="j-conn" id="connectionsView">${head}<p class="j-note" data-tone="idle">${escapeHtml(labelText(
       "This answer draws no connections between its records.",
       "لا ترسم هذه الإجابة أي روابط بين سجلاتها.",
       "Cette réponse n’établit aucune connexion entre ses fiches.",
-    ))}</p></div>`;
+    ))}</p>${gaps}</div>`;
   }
   // A long record name is cut in the list of records, not in the map.
   const short = (value) => {
@@ -6308,9 +6369,11 @@ function renderBiopoliticalConnections() {
     ? `<div data-conn-layer><h5>${escapeHtml(title)} <span class="j-chip">${rows.length}</span></h5><ol class="j-conn-list">${rows.join("")}</ol></div>`
     : "";
   const list = `<section class="j-conn-all" aria-labelledby="connAllTitle"><h4 id="connAllTitle">${escapeHtml(labelText("Every connection", "كل العلاقات", "Toutes les connexions"))}</h4><div class="j-field"><label for="connSearch">${escapeHtml(labelText("Find a record or relation", "ابحث عن سجل أو علاقة", "Rechercher une fiche ou une relation"))}</label><input class="j-input" type="search" id="connSearch" autocomplete="off" spellcheck="false" aria-describedby="connShown"><p class="j-help" id="connShown" role="status">${escapeHtml(connectionsShownText(graph.edges.length, graph.edges.length))}</p></div>${[...groups].map(([key, rows]) => group(layers[key]?.[0] || key, rows)).join("")}${group(labelText("Naming no record", "لا تسمّي سجلًا", "Ne nommant aucune fiche"), loose)}<p class="j-note" data-tone="idle" id="connNoMatch" hidden>${escapeHtml(labelText("No connection matches.", "لا توجد علاقة مطابقة.", "Aucune connexion ne correspond."))}</p></section>`;
-  return `<div class="j-conn" id="connectionsView">${head}${hop}${list}</div>`;
+  return `<div class="j-conn" id="connectionsView">${head}${gaps}${hop}${list}</div>`;
 }
 function wireConnectionsView() {
+  $("connGapsCopy")?.addEventListener("click", copyConnectionsPrompt);
+  $("connGapsAnswer")?.addEventListener("click", openAnswerBox);
   const view = $("connectionsView");
   const select = $("connFocus");
   if (!view || !select) return;
@@ -7395,6 +7458,11 @@ const BLOCKER_COUNT = {
   en: { one: "{count} publication blocker", other: "{count} publication blockers" },
   ar: { zero: "لا عوائق نشر", one: "عائق نشر واحد", two: "عائقا نشر", few: "{count} عوائق نشر", many: "{count} عائقًا للنشر", other: "{count} عائق نشر" },
   fr: { one: "{count} blocage de publication", other: "{count} blocages de publication" },
+};
+const LINKS_ADDED = {
+  en: { one: "Added {count} connection to your analysis.", other: "Added {count} connections to your analysis." },
+  ar: { one: "أُضيف رابط واحد إلى تحليلك.", two: "أُضيف رابطان إلى تحليلك.", few: "أُضيفت {count} روابط إلى تحليلك.", many: "أُضيف {count} رابطًا إلى تحليلك.", other: "أُضيف {count} رابط إلى تحليلك." },
+  fr: { one: "{count} connexion a été ajoutée à votre analyse.", other: "{count} connexions ont été ajoutées à votre analyse." },
 };
 const REPAIR_COUNT = {
   en: { one: "{count} repaired", other: "{count} repaired" },

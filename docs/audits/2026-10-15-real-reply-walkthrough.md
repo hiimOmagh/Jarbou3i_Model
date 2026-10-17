@@ -159,8 +159,8 @@ nothing; on a phone the controls end about 300px sooner.
    lists its connections in the app and the report (done); G2, one
    Connections view (coverage, every connection as a sentence by layer,
    a one-step diagram of the chosen record) replaces the explorer (done);
-   G3, a
-   "Connect the gaps" prompt for unconnected records. Revisit if answers
+   G3, a "Connect the gaps" prompt for unconnected records (done). Revisit
+   if answers
    bring 50 or more connections in one cluster.
 
 ## Evidence

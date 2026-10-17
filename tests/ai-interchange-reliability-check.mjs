@@ -1086,6 +1086,33 @@ for (const lang of ["ar", "en", "fr"]) {
   }
 }
 
+// New links for records no connection reaches: the prompt names each record
+// and the path to add under; the reply's links, under that path or the list's
+// own, go after the answer's links, which stay as they are.
+{
+  const records = [{ id: "INF1", label: "Network", layer: "Mechanisms" }, { id: "ALT1", label: "Alternative" }];
+  for (const lang of ["en", "ar", "fr"]) {
+    const prompt = compiler.buildLinkPrompt(records, lang, { from: "id", to: "id" });
+    for (const needle of [`"${compiler.LINK_FILL_TARGET}"`, '{"from":"id","to":"id"}', "\nINF1 — Network (Mechanisms)", "\nALT1 — Alternative"]) {
+      if (!prompt.includes(needle)) fail(`${lang}: the link prompt lacks ${needle}`);
+    }
+  }
+  const base = { links: [{ from: "A", to: "B" }] };
+  const targets = [compiler.LINK_FILL_TARGET];
+  const ends = (result) => result.value.links.map((link) => `${link.from}>${link.to}`).join();
+  for (const fill of [{ "/links/-": [{ from: "C", to: "A" }, { from: "D", to: "C" }] }, { links: [{ from: "C", to: "A" }, { from: "D", to: "C" }] }]) {
+    const added = compiler.applyCompletion(base, { fill }, targets);
+    if (ends(added) !== "A>B,C>A,D>C" || added.applied !== 2 || added.ignored.length) fail(`new links were not added after the others: ${ends(added)}`);
+  }
+  const one = compiler.applyCompletion(base, { fill: { "links/-": { from: "C", to: "A" } } }, targets);
+  if (ends(one) !== "A>B,C>A" || one.applied !== 1) fail(`a single new link was not added: ${ends(one)}`);
+  const none = compiler.applyCompletion(base, { fill: { "/links/-": [] } }, targets);
+  if (none.applied !== 0 || none.ignored.join() !== "/links/-") fail("an empty list of links was not reported");
+  const unasked = compiler.applyCompletion(base, { fill: { "/actors/-": [{ id: "X" }] } }, targets);
+  if (unasked.applied !== 0 || unasked.ignored.join() !== "/actors/-") fail("a list the prompt did not ask for was added to");
+  if (ends({ value: base }) !== "A>B") fail("adding links changed the answer they were added to");
+}
+
 // A list answered one level up may hold only the missing records, in order;
 // each lands in the record it was asked for. A list of any other length that
 // does not reach every record asked for is not guessed at: it is reported.

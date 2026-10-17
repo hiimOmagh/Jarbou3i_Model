@@ -77,6 +77,39 @@ test("finds a connection by record, ID or relation", async ({ page }) => {
   await expect(page.locator("#connNoMatch")).toBeHidden();
 });
 
+test("asks the AI to connect the records no connection reaches", async ({ page }) => {
+  await openConnections(page);
+  // What the page copies, so the test reads the prompt it would paste.
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator.clipboard, "writeText", { configurable: true, value: async (text) => { window.__copied.push(text); } });
+  });
+  const gaps = page.locator(".j-conn-gaps");
+  await expect(gaps.locator("h4 .j-chip")).toHaveText("12");
+  await gaps.locator("summary").click();
+  const loose = await gaps.locator(".j-conn-loose .j-ref").evaluateAll((chips) => chips.map((chip) => chip.dataset.referenceId));
+  expect(loose).toHaveLength(12);
+
+  await expect(page.locator("#connGapsAnswer")).toBeHidden();
+  await page.locator("#connGapsCopy").click();
+  await expect(page.locator("#connGapsStatus")).toHaveText(/^Prompt copied/);
+  const prompt = await page.evaluate(() => window.__copied.at(-1));
+  expect(prompt).toContain('{"fill":{"/links/-":');
+  for (const id of loose) expect(prompt).toContain(`\n${id} — `);
+
+  // The reply goes in the answer box: its links join the answer, which is
+  // checked and imported as a new one.
+  await page.locator("#connGapsAnswer").click();
+  await expect(page.locator("#jsonInput")).toBeFocused();
+  const link = (from, to) => ({ from, to, relation: "enables", mechanism: `${from} makes ${to} possible.`, confidence: "medium" });
+  await page.locator("#jsonInput").fill(`\`\`\`json\n${JSON.stringify({ fill: { "/links/-": [link(loose[0], "E1"), link(loose[1], loose[2])] } })}\n\`\`\``);
+  await expect(page.locator("#jsonStatus")).toContainText("Added 2 connections to your analysis.");
+  await page.locator("#importBtn").click();
+  await page.locator('#reviewNav [data-bio-review="connections"]').click();
+  await expect(page.locator("#connectionsView .j-stats > span")).toHaveText(["23/32Records connected", "30Connections", "17Citing evidence"]);
+  await expect(page.locator(".j-conn-gaps h4 .j-chip")).toHaveText("9");
+});
+
 test("the inspector puts a record in the middle of the view", async ({ page }) => {
   await openConnections(page);
   await page.locator('#reviewNav [data-bio-review="evidence"]').click();

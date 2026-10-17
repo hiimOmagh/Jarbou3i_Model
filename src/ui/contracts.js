@@ -152,7 +152,7 @@ const FREE_CLASSES = [
   "j-evi", "j-evi-title", "j-evi-body", "j-evi-sec", "j-evi-head", "j-evi-acts", "j-evi-counts",
   "j-evi-phases", "j-evi-tasks", "j-evi-seq", "j-evi-target",
   "j-conn", "j-conn-hop", "j-conn-all", "j-conn-map", "j-conn-side", "j-conn-arrow", "j-conn-centre", "j-conn-node",
-  "j-conn-rel", "j-conn-list", "j-conn-line", "j-conn-why",
+  "j-conn-rel", "j-conn-list", "j-conn-line", "j-conn-why", "j-conn-gaps", "j-conn-loose", "j-conn-act",
 ];
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());
 
