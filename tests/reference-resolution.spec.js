@@ -48,18 +48,22 @@ test("a one-line reference chip is still a 44px target", async ({ page }) => {
 });
 
 // WebKit's focus() does not apply a removed inert while a stylesheet is still
-// loading, so focus fell to the page: the relationship map's stylesheet, held
-// back here, as it arrives late on a slow CI runner.
+// loading, so focus fell to the page: a stylesheet held back here, as one that
+// arrives late on a slow CI runner.
 test("closing the inspector gives focus back while a stylesheet is still loading", async ({ page }) => {
   let release;
   const held = new Promise((resolve) => { release = resolve; });
-  await page.route("**/relationship-explorer.css*", async (route) => {
+  await page.route("**/held-stylesheet.css", async (route) => {
     await held;
-    await route.continue();
+    await route.fulfill({ contentType: "text/css", body: "" });
   });
   const reference = await evidenceReference(page);
-  await page.locator('[data-bio-review="connections"]').click();
-  await page.locator('[data-bio-review="evidence"]').click();
+  await page.evaluate(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "held-stylesheet.css";
+    document.head.append(link);
+  });
   await expect.poll(() => page.evaluate(() =>
     [...document.querySelectorAll('link[rel="stylesheet"]')].some((link) => !link.sheet),
   )).toBe(true);

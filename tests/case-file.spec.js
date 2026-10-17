@@ -53,31 +53,6 @@ test.describe("Case file", () => {
     await expect(entry("pillars")).toHaveAttribute("aria-current", "location");
   });
 
-  test("the relationship map loads only once its section is in view", async ({ page }) => {
-    await page.goto("./");
-    await page.locator("#langEn").click();
-    await openStep(page, "lens");
-    await page.locator('[data-lens="biopolitical"]').click();
-    await page.locator("#loadSampleBtn").click();
-    await expect(page.locator("#case-connections")).toBeAttached();
-    expect(await page.locator('link[data-relationship-explorer-styles="true"]').count()).toBe(0);
-    await page.locator('#reviewNav [data-bio-review="connections"]').click();
-    await expect(page.locator(".relationshipExplorer")).toBeVisible();
-  });
-
-  test("Show in map opens the record in the relationship map", async ({ page }) => {
-    await page.goto("./");
-    await page.locator("#langEn").click();
-    await openStep(page, "lens");
-    await page.locator('[data-lens="biopolitical"]').click();
-    await page.locator("#loadSampleBtn").click();
-    await page.locator('#reviewNav [data-bio-review="evidence"]').click();
-    await page.locator('#case-evidence [data-reference-id="E1"]').first().click();
-    await page.locator("#referenceShowMap").click();
-    await expect(page.locator('#case-connections [data-map-node="E1"]')).toBeFocused();
-    await expect(page.locator('#reviewNav [data-bio-review="connections"]')).toHaveAttribute("aria-current", "location");
-  });
-
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langAr").click();

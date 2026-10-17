@@ -40,24 +40,13 @@ assert.deepEqual([...comparisons[0].evidenceIds], ["E1", "E2"]);
 assert.match(comparisons[0].transferLimits[0], /cannot be inferred/i);
 assert.equal(JSON.stringify(analysis), before, "projections must not mutate canonical analysis");
 
-const spatial = api.spatialProjection(graph);
-assert.equal(spatial.nodes.length, 32, "spatial projection must preserve every visible canonical record");
-assert.equal(spatial.edges.length, 28, "spatial projection must preserve every indexed connection");
-assert.equal(spatial.clusters.length, 9, "spatial projection must preserve all nine analytical pillars");
-assert.ok(Object.isFrozen(spatial) && Object.isFrozen(spatial.nodes) && spatial.nodes.every(Object.isFrozen));
-assert.deepEqual(
-  { ...spatial.nodes.find((node) => node.id === "HF1") },
-  { id: "HF1", pillar: "human_functions", x: 0, y: -280, z: -59 },
-  "spatial coordinates must remain deterministic",
-);
-const spatialSubset = api.spatialProjection(graph, ["HF1", "INS1"]);
-assert.deepEqual(
-  { ...spatialSubset.nodes.find((node) => node.id === "HF1") },
-  { ...spatial.nodes.find((node) => node.id === "HF1") },
-  "filtering must not move surviving spatial records",
-);
-assert.equal(spatialSubset.edges.length, 1);
-assert.equal(JSON.stringify(analysis), before, "spatial projection must not mutate canonical analysis");
+// A card lists the links its record authors and every record that points
+// to it; the records it references are already its facts.
+const card = graph.cardConnections("INS1");
+assert.deepEqual(Array.from(card.authored, (edge) => `${edge.relation}:${edge.target}`), ["classifies:CLASS1"]);
+assert.deepEqual(Array.from(card.incoming, (edge) => `${edge.source}:${edge.relation}`), ["HF1:enables", "IV1:uses"]);
+assert.ok(Object.isFrozen(card) && Object.isFrozen(card.authored) && Object.isFrozen(card.incoming));
+assert.equal(graph.cardConnections("IV1").authored.length, 0, "an intervention's references are its facts, not authored links");
 
 const canonicalPillars = [
   "question_context",

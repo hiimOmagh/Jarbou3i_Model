@@ -20,7 +20,7 @@ if (metadata.visual_assets_decoded !== true) fail("critical visual assets were n
 if (metadata.transient_ui_cleared !== true) fail("transient UI was not cleared before capture");
 if (metadata.deterministic_viewport_anchors !== true) fail("viewport captures were not deterministically anchored");
 if (metadata.report_top_anchor_verified !== true) fail("standalone report hero was not verified at the top anchor");
-if (metadata.connections_target !== "relationshipExplorerMount") fail("Connections evidence does not target the explorer");
+if (metadata.connections_target !== "connectionsView") fail("Connections evidence does not target the Connections view");
 if (metadata.generated_by !== "tests/visual-audit-evidence.spec.js") fail("unexpected evidence generator");
 if (metadata.case_count !== 18 || metadata.report_case_count !== 6 || metadata.report_surface_count !== 6 || metadata.strategic_report_case_count !== 6 || metadata.strategic_report_surface_count !== 3 || metadata.screenshot_count !== 198) fail("visual evidence counts must be 18 matrix cases, 6 Biopolitical report cases of 6 surfaces, 6 Strategic report cases of 3 surfaces, and 198 screenshots");
 if (!Array.isArray(metadata.required_files) || metadata.required_files.length !== 217) fail("required_files must contain 217 artifacts");
@@ -44,10 +44,9 @@ for (const locale of ["ar", "en", "fr"]) {
       if (value.page_scroll_width > value.page_client_width + 1) fail(`${fileName} records horizontal overflow`);
       if (!Number.isInteger(value.body_text_length) || value.body_text_length < 1000) fail(`${fileName} lacks substantial visible text`);
       if (!Number.isInteger(value.visible_buttons) || value.visible_buttons < 10) fail(`${fileName} lacks visible controls`);
-      if (!Array.isArray(value.story_geometry) || value.story_geometry.length < 1) fail(`${fileName} lacks story geometry evidence`);
-      for (const flow of value.story_geometry) {
-        const exposesScroll = ["auto", "scroll"].includes(flow.overflowX) && flow.scrollWidth > flow.clientWidth;
-        if (flow.childrenOutside > 0 && !exposesScroll) fail(`${fileName} contains clipped story nodes without a scroll surface`);
+      if (!Array.isArray(value.map_geometry) || value.map_geometry.length !== 1) fail(`${fileName} lacks connections map geometry evidence`);
+      for (const map of value.map_geometry) {
+        if (map.childrenOutside > 0) fail(`${fileName} draws parts of the connections map outside it`);
       }
     }
   }

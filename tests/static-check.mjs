@@ -14,8 +14,6 @@ const integrity = read("src/biopolitics-integrity.js");
 const graph = read("src/biopolitics-graph.js");
 const bioReport = read("src/biopolitical-report.js");
 const referenceUi = read("src/reference-ui.js");
-const explorer = read("src/relationship-explorer.js");
-const explorerStyles = read("src/relationship-explorer.css");
 const styles = read("src/styles.css");
 // The modern shell (UIX-2) is styled by the kernel and its own sheet.
 const shellStyles = read("src/ui/kernel.css") + read("src/ui/shell.css");
@@ -62,7 +60,6 @@ for (const [file, source] of [
   ["src/biopolitics-graph.js", graph],
   ["src/biopolitical-report.js", bioReport],
   ["src/reference-ui.js", referenceUi],
-  ["src/relationship-explorer.js", explorer],
   ["src/json-parser.js", parser],
   ["src/ai-interchange.js", aiInterchange],
   ["src/core/platform-state.js", platformState],
@@ -121,7 +118,7 @@ for (const file of [
   "tests/biopolitical-graph-check.mjs",
   "tests/biopolitical-report-check.mjs",
   "tests/reference-resolution.spec.js",
-  "tests/relationship-explorer.spec.js",
+  "tests/connections-view.spec.js",
   "tests/json-parser-check.mjs",
   "tests/ai-interchange-reliability-check.mjs",
   "tests/ai-interchange-reliability.spec.js",
@@ -266,23 +263,6 @@ for (const token of [
 ]) {
   if (!app.includes(token)) fail(`browser hotfix token missing: ${token}`);
 }
-for (const token of [
-  "data-focus-toggle",
-  "data-tour-toggle",
-  "relationshipWalkthroughProgress",
-  "data-reveal-selection",
-  "function deactivate()",
-]) {
-  if (!explorer.includes(token)) fail(`Phase 2 relationship contract missing: ${token}`);
-}
-for (const token of [
-  "data-map-overlay",
-  "data-save-view",
-  "viewSnapshot",
-  "loadSavedViews",
-]) {
-  if (!explorer.includes(token)) fail(`Phase 3 relationship contract missing: ${token}`);
-}
 for (const token of ["temporalProjection", "comparativeProjection"]) {
   if (!graph.includes(token)) fail(`Phase 3 projection contract missing: ${token}`);
 }
@@ -303,43 +283,11 @@ for (const token of [
 if (app.includes('import "./biopolitical-report.js";')) {
   fail("standalone report renderer still has an eager side-effect import");
 }
-for (const token of [
-  "data-relationship-spatial",
-  "data-spatial-control",
-  "detectSpatialCapability",
-  "relationshipSpatialViewport",
-  "spatialRecordSelect",
-  "onpointerdown",
-]) {
-  if (!explorer.includes(token)) fail(`Phase 4 spatial contract missing: ${token}`);
-}
-if (!graph.includes("spatialProjection")) {
-  fail("Phase 4 deterministic spatial projection missing");
-}
-if (!explorer.includes('event.code === "Space"')) {
-  fail("cross-browser Space-key activation contract missing");
-}
 for (const token of ["@media (forced-colors:active)", ":focus,:focus-visible", "color-scheme:light", "HighlightText"]) {
   if (!styles.includes(token)) fail(`final audit visual resilience contract missing: ${token}`);
 }
 // A closed toast waits below the view, still a live region.
 if (!shellStyles.includes('.j-toast[data-open="false"]')) fail("final audit visual resilience contract missing: the closed toast");
-if (index.includes('rel="stylesheet" href="src/relationship-explorer.css"')) {
-  fail("relationship explorer stylesheet remains in the initial document");
-}
-for (const token of [
-  '"./relationship-explorer.css"',
-  'new URL("./relationship-explorer.css", import.meta.url)',
-  'stylesheetUrl.searchParams.set("retry", String(attempt))',
-  "relationshipExplorerStylesPromise",
-  "loadRelationshipExplorerStyles",
-  'stylesheet.dataset.relationshipExplorerStyles = "true"',
-  "relationshipExplorerStyles.attempts",
-]) {
-  if (!app.includes(token)) {
-    fail(`relationship stylesheet capability loader missing: ${token}`);
-  }
-}
 if (app.includes('import "./biopolitics-graph.js";')) {
   fail("biopolitical graph still has an eager side-effect import");
 }
@@ -351,22 +299,6 @@ for (const token of [
   "data-retry-biopolitical-graph",
 ]) {
   if (!app.includes(token)) fail(`biopolitical graph capability loader missing: ${token}`);
-}
-if (app.includes('import "./relationship-explorer.js";')) {
-  fail("relationship explorer still has an eager side-effect import");
-}
-for (const token of [
-  '"./relationship-explorer.js"',
-  "import(specifier)",
-  "?retry=${attempt}",
-  "relationshipExplorerPromise",
-  "Jarbou3iCapabilityLoads",
-  "data-retry-relationship-explorer",
-]) {
-  if (!app.includes(token)) fail(`relationship capability loader missing: ${token}`);
-}
-for (const token of ["syncSearchDraft", "preserveSearchDraft = true", "preserveSearchDraft: false"]) {
-  if (!explorer.includes(token)) fail(`relationship live-draft synchronization contract missing: ${token}`);
 }
 for (const token of [
   '"./biopolitical-report.js"',
@@ -468,29 +400,6 @@ if (/html,body\{[^}]*scroll-behavior:smooth/.test(styles)) {
 const staticServer = read("scripts/static-server.mjs");
 for (const token of ["const parentPid = process.ppid", "process.kill(parentPid, 0)", "process.once(\"SIGTERM\", shutdown)"]) {
   if (!staticServer.includes(token)) fail(`static server lifecycle contract missing: ${token}`);
-}
-for (const token of ["function focusAfterRender", "epoch !== renderEpoch", "force: true", "active !== document.body", "active !== document.documentElement"]) {
-  if (!explorer.includes(token)) fail(`deferred focus ownership contract missing: ${token}`);
-}
-for (const token of ["let searchRenderFrame = 0", "function renderSearchResults", "data-relationship-results", "state.query !== value", "renderEpoch !== epoch"]) {
-  if (!explorer.includes(token)) fail(`non-destructive explorer search contract missing: ${token}`);
-}
-for (const token of ["const bindClick = (selector, handler)", "if (element) element.onclick = handler"]) {
-  if (!explorer.includes(token)) fail(`idempotent explorer event contract missing: ${token}`);
-}
-if (explorer.includes('.addEventListener("click"')) {
-  fail("relationship explorer click handlers must remain idempotent across partial renders");
-}
-for (const token of ["requestAnimationFrame(() => container.querySelector", "requestAnimationFrame(() => container?.querySelector"]) {
-  if (explorer.includes(token)) fail(`unguarded deferred focus path remains: ${token}`);
-}
-// The inspection's close button is a kernel icon button, which never shrinks
-// (src/ui/kernel.css: .j-btn[data-size="icon"] is flex: none).
-for (const token of ['data-size="icon" type="button" data-clear-selection']) {
-  if (!explorer.includes(token)) fail(`Firefox reflow target contract missing: ${token}`);
-}
-for (const token of ["minmax(116px,1fr)", "overflow-x:auto", "scrollbar-width:thin", "scroll-snap-type:inline proximity"]) {
-  if (!explorerStyles.includes(token)) fail(`story-path visibility contract missing: ${token}`);
 }
 for (const token of ['rel="preload" as="image" href="assets/jarbou3i-mascot-192.png"', 'decoding="sync"']) {
   if (!index.includes(token)) fail(`critical visual asset contract missing: ${token}`);

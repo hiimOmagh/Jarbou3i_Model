@@ -1020,8 +1020,6 @@ const REPORT_THEME = window.Jarbou3iReportTheme;
 if (!REPORT_THEME) throw new Error("Report theme failed to load.");
 const capabilityLoads = {
   biopoliticalGraph: { attempts: 0, fulfilled: 0, failures: 0 },
-  relationshipExplorer: { attempts: 0, fulfilled: 0, failures: 0 },
-  relationshipExplorerStyles: { attempts: 0, fulfilled: 0, failures: 0 },
   biopoliticalReportRenderer: { attempts: 0, fulfilled: 0, failures: 0 },
 };
 window.Jarbou3iCapabilityLoads = capabilityLoads;
@@ -1049,68 +1047,6 @@ function loadBiopoliticalGraph() {
       });
   }
   return biopoliticalGraphPromise;
-}
-let relationshipExplorerStylesPromise = null;
-function loadRelationshipExplorerStyles() {
-  if (!relationshipExplorerStylesPromise) {
-    capabilityLoads.relationshipExplorerStyles.attempts += 1;
-    const attempt = capabilityLoads.relationshipExplorerStyles.attempts;
-    const stylesheetUrl = new URL("./relationship-explorer.css", import.meta.url);
-    if (attempt > 1) stylesheetUrl.searchParams.set("retry", String(attempt));
-    relationshipExplorerStylesPromise = new Promise((resolve, reject) => {
-      const stylesheet = document.createElement("link");
-      stylesheet.rel = "stylesheet";
-      stylesheet.href = stylesheetUrl.href;
-      stylesheet.dataset.relationshipExplorerStyles = "true";
-      stylesheet.addEventListener(
-        "load",
-        () => {
-          capabilityLoads.relationshipExplorerStyles.fulfilled += 1;
-          resolve(stylesheet);
-        },
-        { once: true },
-      );
-      stylesheet.addEventListener(
-        "error",
-        () => {
-          capabilityLoads.relationshipExplorerStyles.failures += 1;
-          relationshipExplorerStylesPromise = null;
-          stylesheet.remove();
-          reject(new Error("Relationship explorer styles failed to load."));
-        },
-        { once: true },
-      );
-      document.head.append(stylesheet);
-    });
-  }
-  return relationshipExplorerStylesPromise;
-}
-let relationshipExplorerPromise = null;
-function loadRelationshipExplorer() {
-  if (!relationshipExplorerPromise) {
-    capabilityLoads.relationshipExplorer.attempts += 1;
-    const attempt = capabilityLoads.relationshipExplorer.attempts;
-    const specifier =
-      attempt === 1
-        ? "./relationship-explorer.js"
-        : `./relationship-explorer.js?retry=${attempt}`;
-    relationshipExplorerPromise = import(specifier)
-      .then(() => {
-        const explorer = window.Jarbou3iRelationshipExplorer;
-        if (!explorer) throw new Error("Relationship explorer failed to register.");
-        capabilityLoads.relationshipExplorer.fulfilled += 1;
-        return explorer;
-      })
-      .catch((error) => {
-        capabilityLoads.relationshipExplorer.failures += 1;
-        relationshipExplorerPromise = null;
-        throw error;
-      });
-  }
-  return Promise.all([
-    relationshipExplorerPromise,
-    loadRelationshipExplorerStyles(),
-  ]).then(([explorer]) => explorer);
 }
 let biopoliticalReportRendererPromise = null;
 function loadBiopoliticalReportRenderer() {
@@ -6099,7 +6035,7 @@ function bindResultsInspection(lens) {
   REFERENCE_UI.bind(index, {
     lang: state.lang,
     onOpenRecord: lens === "biopolitical" ? openBiopoliticalRecord : openStrategicInspectionRecord,
-    onShowInMap: lens === "biopolitical" ? showBiopoliticalNodeInMap : null,
+    onShowConnections: lens === "biopolitical" ? showBiopoliticalConnections : null,
     onOpenOccurrence: (node, occurrence) => openInspectionOccurrence(lens, node, occurrence),
   });
   wireInspectionDirectory();
@@ -6121,56 +6057,6 @@ function openBiopoliticalRecord(node) {
     node.pillar === "evidence_explanations" ? "evidence" : "pillars";
   renderBiopoliticalReview();
   focusInspectionRecord(node, `[data-reference-id="${CSS.escape(node.id)}"]`);
-}
-function showBiopoliticalNodeInMap(node) {
-  state.activeReview = "connections";
-  renderBiopoliticalReview();
-  // Mounted here, not by the section coming into view: a second mount would
-  // re-render the map and drop the node's focus.
-  relationshipMountObserver?.disconnect();
-  relationshipMountObserver = null;
-  $("case-connections")?.scrollIntoView({ block: "start" });
-  mountRelationshipExplorer()?.then((explorer) => explorer?.focusNode(node.id));
-}
-// Set while the map waits for its section to come into view.
-let relationshipMountObserver = null;
-function mountPendingRelationshipExplorer() {
-  if (!relationshipMountObserver) return;
-  relationshipMountObserver.disconnect();
-  relationshipMountObserver = null;
-  mountRelationshipExplorer();
-}
-// Resolves with the mounted explorer, or nothing when it could not load.
-function mountRelationshipExplorer() {
-  const target = $("relationshipExplorerMount");
-  if (!target) return null;
-  return loadRelationshipExplorer()
-    .then((explorer) => {
-      const currentTarget = $("relationshipExplorerMount");
-      if (!currentTarget) return null;
-      explorer.mount(
-        currentTarget,
-        currentBiopoliticalGraph(),
-        {
-          lang: state.lang,
-          analysis: state.analysis,
-          analysisScope:
-            state.analysis?.analysis_id || state.analysis?.subject?.title,
-          mobileDefault: window.matchMedia("(max-width: 760px)").matches,
-          onOpenNode: (node, trigger) => REFERENCE_UI.open(node.id, trigger),
-        },
-      );
-      return explorer;
-    })
-    .catch(() => {
-      const currentTarget = $("relationshipExplorerMount");
-      if (!currentTarget) return null;
-      currentTarget.innerHTML = `<div class="j-note" data-tone="warn" role="alert"><p>${escapeHtml(labelText("The relationship explorer could not be loaded.", "تعذّر تحميل مستكشف العلاقات.", "Impossible de charger l’explorateur de relations."))}</p><button type="button" class="j-btn" data-retry-relationship-explorer>${escapeHtml(labelText("Try again", "إعادة المحاولة", "Réessayer"))}</button></div>`;
-      currentTarget
-        .querySelector("[data-retry-relationship-explorer]")
-        ?.addEventListener("click", mountRelationshipExplorer, { once: true });
-      return null;
-    });
 }
 // A record's connections that its facts do not already name: the links it
 // authors, then every record that points to it. Each reads "relation ·
@@ -6332,8 +6218,144 @@ function renderBiopoliticalEvidence() {
   );
   return `<h3>${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.0"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "pillars.evidence_explanations.1"))}</p>${bioRecordsHtml(records)}`;
 }
+// The Connections view (UIX-5 slice G2): how much of the answer is connected,
+// the records around one record, then every connection as a line, by layer.
+// The record in the middle stays across renders.
+let connectionsFocusId = "";
+function connectionsFocus(graph) {
+  const kept = graph.resolve(connectionsFocusId);
+  if (kept) return kept;
+  const degree = (node) => graph.incoming(node.id).length + graph.outgoing(node.id).length;
+  return graph.nodes.reduce((best, node) => (!best || degree(node) > degree(best) ? node : best), null);
+}
+// One record in the middle, the records that point to it on one side and
+// those it points to on the other, each side by relation; a neighbour moves
+// to the middle.
+function connectionsMapHtml(graph, node) {
+  const side = (key, title, edges, otherEnd) => {
+    const byRelation = new Map();
+    for (const edge of edges) byRelation.set(edge.relation, [...(byRelation.get(edge.relation) || []), otherEnd(edge)]);
+    // A neighbour, tabbed to, says its relation.
+    const neighbour = (relationId) => (id) => {
+      const other = graph.resolve(id);
+      return `<li>${other
+        ? `<button class="j-conn-node" type="button" data-conn-focus="${escapeHtml(id)}" aria-describedby="${relationId}"><span>${escapeHtml(other.label)} <code>${escapeHtml(id)}</code></span></button>`
+        : `<span class="j-conn-node"><code>${escapeHtml(id)}</code></span>`}</li>`;
+    };
+    const groups = [...byRelation].map(([relation, ids], index) =>
+      `<li><span class="j-conn-rel" id="connRel-${key}-${index}">${escapeHtml(BIO.displayToken(state.lang, relation))}</span><ul>${ids.map(neighbour(`connRel-${key}-${index}`)).join("")}</ul></li>`,
+    ).join("");
+    return `<div class="j-conn-side" data-side="${key}"><h5>${escapeHtml(title)} <span class="j-chip">${edges.length}</span></h5>${groups ? `<ul>${groups}</ul>` : `<p class="j-help">${escapeHtml(labelText("None", "لا يوجد", "Aucune"))}</p>`}</div>`;
+  };
+  const arrow = `<span class="j-conn-arrow" aria-hidden="true">→</span>`;
+  return `<div class="j-conn-map" id="connMap">${side("in", labelText("Linked from", "تُشير إليه", "Référencé par"), graph.incoming(node.id), (edge) => edge.source)}${arrow}<div class="j-conn-centre" id="connCentre" tabindex="-1"><span class="j-label">${escapeHtml(graph.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><code>${escapeHtml(node.id)}</code><button class="j-btn" type="button" data-reference-id="${escapeHtml(node.id)}">${escapeHtml(labelText("Open record", "فتح السجل", "Ouvrir la fiche"))}</button></div>${arrow}${side("out", labelText("Links to", "يُشير إلى", "Renvoie à"), graph.outgoing(node.id), (edge) => edge.target)}</div>`;
+}
+function connectionsShownText(shown, total) {
+  return labelText("Shown: {shown} of {total}", "المعروض: {shown} من {total}", "Affichées : {shown} sur {total}")
+    .replace("{shown}", shown)
+    .replace("{total}", total);
+}
 function renderBiopoliticalConnections() {
-  return `<div id="relationshipExplorerMount" aria-live="polite"><div class="j-note" data-tone="idle" role="status">${escapeHtml(labelText("Loading relationship explorer…", "جارٍ تحميل مستكشف العلاقات…", "Chargement de l’explorateur de relations…"))}</div></div>`;
+  const graph = currentBiopoliticalGraph();
+  const layers = t("pillars");
+  const connected = graph.nodes.filter((node) => graph.incoming(node.id).length || graph.outgoing(node.id).length).length;
+  const cited = graph.edges.filter((edge) => edge.family === "evidence").length;
+  const stat = (value, label, tone) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`;
+  const head = `<h3>${escapeHtml(labelText("Connections", "العلاقات", "Connexions"))}</h3><p class="j-lede">${escapeHtml(labelText(
+    "The links the answer draws between its records: the records around one record, then every connection by layer.",
+    "الروابط التي ترسمها الإجابة بين سجلاتها: السجلات المحيطة بسجل واحد، ثم كل علاقة حسب الطبقة.",
+    "Les liens que la réponse établit entre ses fiches : les fiches autour d’une fiche, puis chaque connexion par couche.",
+  ))}</p><span class="j-stats">${stat(`${connected}/${graph.nodes.length}`, labelText("Records connected", "سجلات مرتبطة", "Fiches reliées"))}${stat(graph.edges.length, labelText("Connections", "الروابط", "Connexions"))}${stat(cited, labelText("Citing evidence", "تستشهد بالأدلة", "Citant des preuves"), cited ? "" : "warn")}</span>`;
+  const focus = connectionsFocus(graph);
+  if (!graph.edges.length || !focus) {
+    return `<div class="j-conn" id="connectionsView">${head}<p class="j-note" data-tone="idle">${escapeHtml(labelText(
+      "This answer draws no connections between its records.",
+      "لا ترسم هذه الإجابة أي روابط بين سجلاتها.",
+      "Cette réponse n’établit aucune connexion entre ses fiches.",
+    ))}</p></div>`;
+  }
+  // A long record name is cut in the list of records, not in the map.
+  const short = (value) => {
+    const chars = Array.from(value);
+    return chars.length > 80 ? `${chars.slice(0, 79).join("")}…` : value;
+  };
+  const options = BIO.PILLARS.map((pillar) => {
+    const nodes = graph.nodes.filter((node) => node.pillar === pillar.key);
+    return nodes.length
+      ? `<optgroup label="${escapeHtml(layers[pillar.key]?.[0] || pillar.key)}">${nodes.map((node) => `<option value="${escapeHtml(node.id)}"${node.id === focus.id ? " selected" : ""}>${escapeHtml(`${short(node.label)} (${node.id})`)}</option>`).join("")}</optgroup>`
+      : "";
+  }).join("");
+  const hop = `<section class="j-conn-hop" aria-labelledby="connHopTitle"><h4 id="connHopTitle">${escapeHtml(labelText("Around one record", "حول سجل واحد", "Autour d’une fiche"))}</h4><div class="j-field"><label for="connFocus">${escapeHtml(labelText("Record", "السجل", "Fiche"))}</label><select class="j-input" id="connFocus" aria-describedby="connMapHint">${options}</select><p class="j-help" id="connMapHint">${escapeHtml(labelText(
+    "Choose a record here, or a linked one in the map, to put it in the middle.",
+    "اختر سجلًا هنا، أو سجلًا مرتبطًا في الخريطة، لوضعه في الوسط.",
+    "Choisissez une fiche ici, ou une fiche liée dans la carte, pour la placer au centre.",
+  ))}</p></div>${connectionsMapHtml(graph, focus)}</section>`;
+  // Every connection as "record · relation · record", under the layer of the
+  // record it starts from; the search reads names, IDs, relations and why.
+  const groups = new Map(BIO.PILLARS.map((pillar) => [pillar.key, []]));
+  const loose = [];
+  for (const edge of graph.edges) {
+    const source = graph.resolve(edge.source);
+    const target = graph.resolve(edge.target);
+    const relation = BIO.displayToken(state.lang, edge.relation);
+    const search = [source?.label, edge.source, relation, target?.label, edge.target, BIO_GRAPH.plainText(edge.mechanism, graph)]
+      .filter(Boolean).join(" ").toLocaleLowerCase();
+    const row = `<li data-conn-text="${escapeHtml(search)}"><p class="j-conn-line">${namedBioText(edge.source, graph)} <span class="j-conn-rel">${escapeHtml(relation)}</span> ${namedBioText(edge.target, graph)}</p>${edge.mechanism ? `<p class="j-conn-why">${namedBioText(edge.mechanism, graph)}</p>` : ""}</li>`;
+    const layer = source?.pillar || target?.pillar;
+    (groups.get(layer) || loose).push(row);
+  }
+  const group = (title, rows) => rows.length
+    ? `<div data-conn-layer><h5>${escapeHtml(title)} <span class="j-chip">${rows.length}</span></h5><ol class="j-conn-list">${rows.join("")}</ol></div>`
+    : "";
+  const list = `<section class="j-conn-all" aria-labelledby="connAllTitle"><h4 id="connAllTitle">${escapeHtml(labelText("Every connection", "كل العلاقات", "Toutes les connexions"))}</h4><div class="j-field"><label for="connSearch">${escapeHtml(labelText("Find a record or relation", "ابحث عن سجل أو علاقة", "Rechercher une fiche ou une relation"))}</label><input class="j-input" type="search" id="connSearch" autocomplete="off" spellcheck="false" aria-describedby="connShown"><p class="j-help" id="connShown" role="status">${escapeHtml(connectionsShownText(graph.edges.length, graph.edges.length))}</p></div>${[...groups].map(([key, rows]) => group(layers[key]?.[0] || key, rows)).join("")}${group(labelText("Naming no record", "لا تسمّي سجلًا", "Ne nommant aucune fiche"), loose)}<p class="j-note" data-tone="idle" id="connNoMatch" hidden>${escapeHtml(labelText("No connection matches.", "لا توجد علاقة مطابقة.", "Aucune connexion ne correspond."))}</p></section>`;
+  return `<div class="j-conn" id="connectionsView">${head}${hop}${list}</div>`;
+}
+function wireConnectionsView() {
+  const view = $("connectionsView");
+  const select = $("connFocus");
+  if (!view || !select) return;
+  const graph = currentBiopoliticalGraph();
+  const show = (id, focusCentre) => {
+    const node = graph.resolve(id);
+    if (!node) return;
+    connectionsFocusId = node.id;
+    $("connMap").outerHTML = connectionsMapHtml(graph, node);
+    select.value = node.id;
+    if (focusCentre) $("connCentre").focus();
+  };
+  select.addEventListener("change", () => show(select.value, false));
+  view.addEventListener("click", (event) => {
+    const neighbour = event.target.closest("[data-conn-focus]");
+    if (neighbour) show(neighbour.dataset.connFocus, true);
+  });
+  const search = $("connSearch");
+  search.addEventListener("input", () => {
+    const query = search.value.trim().toLocaleLowerCase();
+    let shown = 0;
+    view.querySelectorAll("[data-conn-layer]").forEach((layer) => {
+      let matches = 0;
+      layer.querySelectorAll("li[data-conn-text]").forEach((row) => {
+        row.hidden = Boolean(query) && !row.dataset.connText.includes(query);
+        if (!row.hidden) matches += 1;
+      });
+      layer.hidden = !matches;
+      shown += matches;
+    });
+    $("connShown").textContent = connectionsShownText(shown, graph.edges.length);
+    $("connNoMatch").hidden = shown > 0;
+  });
+}
+// The inspector's "Show its connections": the record goes in the middle of
+// the Connections view.
+function showBiopoliticalConnections(node) {
+  connectionsFocusId = node.id;
+  state.activeReview = "connections";
+  renderBiopoliticalReview();
+  requestAnimationFrame(() => {
+    const target = $("connCentre") || $("case-connections");
+    target?.scrollIntoView({ block: "center" });
+    target?.focus({ preventScroll: true });
+  });
 }
 function renderBiopoliticalConclusion() {
   const a = state.analysis;
@@ -6419,9 +6441,6 @@ function wireCaseOutline(selector, datasetKey) {
       // An instant jump: the document is long.
       section.scrollIntoView({ block: "start" });
       section.focus({ preventScroll: true });
-      // Asked for by name: the map loads now, not on the next observer turn,
-      // which comes late in Firefox and WebKit.
-      if (section.contains($("relationshipExplorerMount"))) mountPendingRelationshipExplorer();
     };
   });
   markCaseLocation();
@@ -6527,15 +6546,7 @@ function renderBiopoliticalReview() {
   wireCaseOutline("[data-bio-review]", "bioReview");
   wireResultsExplanation("biopolitical");
   bindResultsInspection("biopolitical");
-  // The explorer's code and styles load once its section is near the view.
-  relationshipMountObserver?.disconnect();
-  const explorerMount = $("relationshipExplorerMount");
-  if (explorerMount) {
-    relationshipMountObserver = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) mountPendingRelationshipExplorer();
-    }, { rootMargin: "200px 0px" });
-    relationshipMountObserver.observe(explorerMount);
-  }
+  wireConnectionsView();
   document.querySelectorAll("[data-bio-acc]").forEach(
     (button) =>
       (button.onclick = () => {

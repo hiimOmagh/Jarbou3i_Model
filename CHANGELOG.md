@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+### Connections view (UIX-5 slice G2)
+
+The Biopolitical Connections section is one view instead of the relationship
+explorer's three modes, two reading levels, overlays and 3D graph. It answers
+what a reader asks of a few dozen connections: how connected the answer is,
+what is around a record, and which connections there are.
+
+- **Coverage first**: how many records have a connection ("20/32 Records
+  connected" in the sample), how many connections there are, and how many
+  cite evidence, flagged when none do. An answer with no connections says so.
+- **Around one record**: the record in the middle, what points to it on one
+  side and what it points to on the other, grouped by relation and read in
+  the page's direction; stacked on a narrow screen. A neighbour, pressed,
+  moves to the middle and takes the focus; a record list, grouped by layer,
+  chooses any record. The record with the most connections starts there.
+- **Every connection**: each one as a line, "record · relation · record",
+  with the answer's reason, under the layer of the record it starts from. A
+  search finds a record, an ID or a relation and says how many lines it shows.
+- The inspector's **Show its connections** (Arabic: إظهار روابطه; French:
+  Afficher ses connexions) opens the view on the record, in place of "Show in
+  map".
+- English relation labels read as words: "Supported by", "Countered by",
+  "Governed by", "Feeds back", not `supported_by`.
+- Removed with the explorer (`src/relationship-explorer.js` and its 28 KB
+  stylesheet): the Story, Evidence Trail and Network modes, the Guided and
+  Analyst levels, the focus workspace, the walkthroughs, the time and
+  comparison overlays, the spatial 3D view, and saved views. Views saved
+  under `jarbou3i.relationshipViews.v1.*` in the browser are no longer read;
+  the time bands and comparisons stay in the report.
+- The view is plain HTML on the kernel (`src/ui/connections.css`, classes
+  `.j-conn*`), so it loads with the page instead of on demand, and reads the
+  same to a screen reader as on screen.
+
 ### Connections on every record (UIX-5 slice G1)
 
 Biopolitical connections are now listed on the records they join, in the app

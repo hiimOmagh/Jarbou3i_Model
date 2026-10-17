@@ -25,7 +25,7 @@ themes, on desktop, tablet, and phone.
   [AI interchange contract](docs/ai-interchange-contract-v1.md).
 - **Results and evidence.** Results are presented as orientation, explanation,
   and full record inspection, with relationship and evidence intelligence, a
-  Connections explorer, and a deterministic evidence review queue. See
+  Connections view, and a deterministic evidence review queue. See
   [Results and evidence](docs/features/results-and-evidence.md).
 - **Local workspace.** Analyses are saved in the browser with immutable
   revisions, a structured editor, crash recovery, a review ledger, approved

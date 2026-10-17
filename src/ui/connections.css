@@ -1,0 +1,70 @@
+/* Jarbou3i connections (UIX-5 slice G2): a Biopolitical answer's connections,
+   the records around one record (.j-conn-map) and every connection as a line
+   (.j-conn-list). Classes are .j-conn*. */
+
+/* One column that never grows past the page: WebKit sizes a select to its
+   longest option and, even in a narrower box, counts that width as overflow
+   unless the select contains its layout. */
+.j-conn { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--j-s-4); min-width: 0; }
+.j-conn > h3, .j-conn > .j-lede { margin: 0; }
+.j-conn-hop, .j-conn-all { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--j-s-3); min-width: 0; }
+.j-conn-hop { container-type: inline-size; }
+.j-conn :is(h4, h5) { margin: 0; }
+.j-conn h5 { display: flex; align-items: center; gap: var(--j-s-2); color: var(--j-fg); font-size: var(--j-t-14); }
+.j-conn .j-field { grid-template-columns: minmax(0, 1fr); max-width: 36rem; }
+.j-conn select.j-input { contain: layout; }
+.j-conn .j-help { margin: 0; }
+
+/* The map: what points to the record, the record, what it points to. Read in
+   the page's direction; stacked when narrow. */
+.j-conn-map {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(12rem, .9fr) auto minmax(0, 1fr);
+  align-items: center; gap: var(--j-s-3);
+  padding: var(--j-s-4); border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+}
+.j-conn-side { display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; }
+.j-conn-side ul { display: grid; gap: var(--j-s-2); margin: 0; padding: 0; list-style: none; }
+.j-conn-side > ul > li { display: grid; gap: var(--j-s-1); }
+.j-conn-arrow { color: var(--j-fg-faint); font-size: var(--j-t-22); line-height: 1; }
+[dir="rtl"] .j-conn-arrow { transform: scaleX(-1); }
+.j-conn-centre {
+  display: grid; gap: var(--j-s-1); justify-items: start; min-width: 0; padding: var(--j-s-3) var(--j-s-4);
+  border: 2px solid var(--j-signal); border-radius: var(--j-r-2); background: var(--j-signal-wash);
+}
+.j-conn-centre:focus { outline: none; }
+.j-conn-centre:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 3px; }
+.j-conn-centre strong { color: var(--j-fg); font-size: var(--j-t-16); line-height: 1.4; overflow-wrap: anywhere; }
+.j-conn-centre .j-btn { margin-top: var(--j-s-2); }
+:is(.j-conn-centre, .j-conn-node) code { color: var(--j-signal); font: 600 var(--j-t-12)/1.3 var(--j-font-data); }
+
+/* A neighbour under its relation to the record: its name and ID; pressed, it
+   moves to the middle. */
+.j-conn-node {
+  display: flex; align-items: center; width: 100%; min-height: var(--j-control); padding: var(--j-s-2) var(--j-s-3);
+  border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel);
+  color: var(--j-fg); font: inherit; font-size: var(--j-t-14); line-height: 1.4; text-align: start; overflow-wrap: anywhere;
+}
+button.j-conn-node { cursor: pointer; }
+button.j-conn-node:hover { border-color: var(--j-signal); }
+button.j-conn-node:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-conn-rel { color: var(--j-fg-muted); font-size: var(--j-t-13); font-weight: 600; }
+
+@container (max-width: 40rem) {
+  .j-conn-map { grid-template-columns: minmax(0, 1fr); justify-items: stretch; }
+  .j-conn-arrow { justify-self: center; transform: rotate(90deg); }
+  [dir="rtl"] .j-conn-arrow { transform: rotate(90deg); }
+}
+
+/* Every connection: "record · relation · record", then why, if the answer
+   says. */
+.j-conn [data-conn-layer] { display: grid; gap: var(--j-s-2); }
+.j-conn [data-conn-layer][hidden], .j-conn-list > li[hidden] { display: none; }
+.j-conn-list { display: grid; gap: var(--j-s-2); margin: 0; padding: 0; list-style: none; }
+.j-conn-list > li { padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2); }
+.j-conn-line { margin: 0; line-height: 1.9; overflow-wrap: anywhere; }
+.j-conn-line > .j-conn-rel { margin-inline: var(--j-s-1); }
+.j-conn-why { margin: var(--j-s-1) 0 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.55; overflow-wrap: anywhere; }
+
+@media (forced-colors: active) {
+  .j-conn-centre, .j-conn-node { border-color: CanvasText; }
+}

@@ -57,8 +57,6 @@ input,select{width:100%;border:1px solid var(--line);background:var(--surface-so
 @media (forced-colors:active){
   :focus,:focus-visible{outline:3px solid Highlight!important;outline-offset:3px!important;box-shadow:none!important}
   [aria-pressed="true"],[aria-checked="true"]{forced-color-adjust:none;background:Highlight!important;color:HighlightText!important;border-color:Highlight!important}
-  .relationshipExplorer,.relationshipNode{border-color:CanvasText}
-  .relationshipSpatialEdge{forced-color-adjust:auto}
 }
 
 body{letter-spacing:-.003em}

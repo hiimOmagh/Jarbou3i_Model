@@ -158,7 +158,8 @@ nothing; on a phone the controls end about 300px sooner.
    records, mostly in two-step paths. In three slices: G1, each record
    lists its connections in the app and the report (done); G2, one
    Connections view (coverage, every connection as a sentence by layer,
-   a one-step diagram of the chosen record) replaces the explorer; G3, a
+   a one-step diagram of the chosen record) replaces the explorer (done);
+   G3, a
    "Connect the gaps" prompt for unconnected records. Revisit if answers
    bring 50 or more connections in one cluster.
 

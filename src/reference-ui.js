@@ -13,7 +13,7 @@
     en: {
       close: "Close inspection details", details: "Inspection details",
       connections: "Linked records", incoming: "Linked from", outgoing: "Links to",
-      none: "No indexed connections", open: "Open full record", showMap: "Show in map",
+      none: "No indexed connections", open: "Open full record", showConnections: "Show its connections",
       identity: "Canonical identity", type: "Record type", pillar: "Analysis pillar",
       canonicalId: "Canonical ID", path: "Canonical path", confidence: "Confidence",
       provenance: "Provenance", sourceTitle: "Source", sourceLocator: "Locator",
@@ -40,7 +40,7 @@
     ar: {
       close: "إغلاق تفاصيل الفحص", details: "تفاصيل الفحص",
       connections: "السجلات المرتبطة", incoming: "تُشير إليه", outgoing: "يُشير إلى",
-      none: "لا توجد علاقات مفهرسة", open: "فتح السجل الكامل", showMap: "إظهار في الخريطة",
+      none: "لا توجد علاقات مفهرسة", open: "فتح السجل الكامل", showConnections: "إظهار روابطه",
       identity: "الهوية النظامية", type: "نوع السجل", pillar: "محور التحليل",
       canonicalId: "المعرّف النظامي", path: "المسار النظامي", confidence: "الثقة",
       provenance: "المصدر والتتبّع", sourceTitle: "المصدر", sourceLocator: "موضع المصدر",
@@ -67,7 +67,7 @@
     fr: {
       close: "Fermer les détails d’inspection", details: "Détails d’inspection",
       connections: "Fiches liées", incoming: "Référencé par", outgoing: "Renvoie à",
-      none: "Aucune connexion indexée", open: "Ouvrir la fiche complète", showMap: "Afficher sur la carte",
+      none: "Aucune connexion indexée", open: "Ouvrir la fiche complète", showConnections: "Afficher ses connexions",
       identity: "Identité canonique", type: "Type de fiche", pillar: "Pilier d’analyse",
       canonicalId: "Identifiant canonique", path: "Chemin canonique", confidence: "Confiance",
       provenance: "Provenance", sourceTitle: "Source", sourceLocator: "Localisation",
@@ -96,7 +96,7 @@
   let graph = null;
   let lang = "en";
   let onOpenRecord = null;
-  let onShowInMap = null;
+  let onShowConnections = null;
   let onOpenOccurrence = null;
   let returnFocus = null;
   let activeNode = null;
@@ -166,7 +166,7 @@
     rootElement.dataset.variant = "sheet";
     rootElement.setAttribute("aria-hidden", "true");
     // A dialog, built from divs: aside, header and footer would add landmarks inside it.
-    rootElement.innerHTML = `<div class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><div class="j-insp-head"><div><p class="j-label" id="referenceInspectorType"></p><h2 id="referenceInspectorTitle"></h2></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close></button></div><div class="j-insp-body" id="referenceInspectorBody"></div><div class="j-insp-foot"><button class="j-btn" id="referenceShowMap" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></div></div>`;
+    rootElement.innerHTML = `<div class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><div class="j-insp-head"><div><p class="j-label" id="referenceInspectorType"></p><h2 id="referenceInspectorTitle"></h2></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close></button></div><div class="j-insp-body" id="referenceInspectorBody"></div><div class="j-insp-foot"><button class="j-btn" id="referenceShowConnections" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></div></div>`;
     document.body.append(rootElement);
     return rootElement;
   }
@@ -286,10 +286,10 @@
     openButton.textContent = copy.open;
     openButton.dataset.referenceOpenRecord = node.id;
     openButton.hidden = typeof onOpenRecord !== "function";
-    const mapButton = rootElement.querySelector("#referenceShowMap");
-    mapButton.textContent = copy.showMap;
-    mapButton.dataset.referenceShowMap = node.id;
-    mapButton.hidden = typeof onShowInMap !== "function";
+    const connectionsButton = rootElement.querySelector("#referenceShowConnections");
+    connectionsButton.textContent = copy.showConnections;
+    connectionsButton.dataset.referenceShowConnections = node.id;
+    connectionsButton.hidden = typeof onShowConnections !== "function";
   }
 
   function open(id, trigger) {
@@ -380,11 +380,11 @@
         if (node) onOpenRecord(node);
         return;
       }
-      const mapButton = event.target.closest?.("[data-reference-show-map]");
-      if (mapButton && typeof onShowInMap === "function") {
-        const node = graph?.resolve(mapButton.dataset.referenceShowMap);
+      const connectionsButton = event.target.closest?.("[data-reference-show-connections]");
+      if (connectionsButton && typeof onShowConnections === "function") {
+        const node = graph?.resolve(connectionsButton.dataset.referenceShowConnections);
         close({ restoreFocus: false });
-        if (node) onShowInMap(node);
+        if (node) onShowConnections(node);
       }
     });
     document.addEventListener("keydown", handleKeydown);
@@ -399,7 +399,7 @@
     graph = nextGraph;
     lang = copyByLanguage[options.lang] ? options.lang : "en";
     onOpenRecord = options.onOpenRecord || null;
-    onShowInMap = options.onShowInMap || null;
+    onShowConnections = options.onShowConnections || null;
     onOpenOccurrence = options.onOpenOccurrence || null;
     wire();
     requestAnimationFrame(() => {

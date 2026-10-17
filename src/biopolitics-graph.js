@@ -7,11 +7,6 @@
     value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const text = (value) =>
     value === null || value === undefined ? "" : String(value).trim();
-  const SPATIAL_PILLARS = Object.freeze([
-    "question_context", "human_functions", "actors_institutions",
-    "mechanisms_infrastructure", "meaning_classification", "intervention_capture",
-    "distribution_effects", "evidence_explanations", "agency_alternatives",
-  ]);
 
   const TYPE_LABELS = {
     en: {
@@ -283,61 +278,7 @@
     })));
   }
 
-  function spatialProjection(graph, nodeIds) {
-    const requested = nodeIds === undefined
-      ? new Set(graph?.nodes?.map((node) => node.id) || [])
-      : new Set(arr(nodeIds).map(text));
-    const positions = new Map();
-    const clusters = [];
-    SPATIAL_PILLARS.forEach((pillar, pillarIndex) => {
-      const members = arr(graph?.nodes)
-        .filter((node) => node.pillar === pillar)
-        .sort((a, b) => a.id.localeCompare(b.id));
-      if (!members.length) return;
-      const columns = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(members.length))));
-      const rows = Math.ceil(members.length / columns);
-      const clusterColumn = pillarIndex % 3;
-      const clusterRow = Math.floor(pillarIndex / 3);
-      const clusterX = (clusterColumn - 1) * 480;
-      const clusterY = (clusterRow - 1) * 280;
-      const clusterZ = (clusterColumn - 1) * 110 + (clusterRow - 1) * 35;
-      clusters.push(Object.freeze({
-        pillar, x: clusterX, y: clusterY - rows * 48 - 48, z: clusterZ,
-        count: members.filter((node) => requested.has(node.id)).length,
-      }));
-      members.forEach((node, index) => {
-        const column = index % columns;
-        const row = Math.floor(index / columns);
-        positions.set(node.id, Object.freeze({
-          id: node.id, pillar,
-          x: clusterX + Math.round((column - (columns - 1) / 2) * 176),
-          y: clusterY + Math.round((row - (rows - 1) / 2) * 92),
-          z: clusterZ + ((index % 3) - 1) * 24,
-        }));
-      });
-    });
-    const nodes = Object.freeze(
-      arr(graph?.nodes)
-        .filter((node) => requested.has(node.id) && positions.has(node.id))
-        .map((node) => positions.get(node.id)),
-    );
-    const visible = new Set(nodes.map((node) => node.id));
-    const edges = Object.freeze(
-      arr(graph?.edges)
-        .filter((edge) => visible.has(edge.source) && visible.has(edge.target))
-        .map((edge) => Object.freeze({
-          id: edge.id, source: edge.source, target: edge.target, family: edge.family,
-          from: positions.get(edge.source), to: positions.get(edge.target),
-        })),
-    );
-    return Object.freeze({
-      nodes,
-      edges,
-      clusters: Object.freeze(clusters.filter((cluster) => cluster.count > 0)),
-    });
-  }
-
   root.Jarbou3iBiopoliticsGraph = Object.freeze({
-    build, plainText, replaceReferences, temporalProjection, comparativeProjection, spatialProjection,
+    build, plainText, replaceReferences, temporalProjection, comparativeProjection,
   });
 })(typeof window !== "undefined" ? window : globalThis);

@@ -23,8 +23,8 @@ async function expectNoPageOverflow(page) {
   expect(overflow).toBe(false);
 }
 
-async function clippedRelationshipControls(page) {
-  return page.locator(".relationshipCommandBar button:visible").evaluateAll((buttons) =>
+async function clippedConnectionControls(page) {
+  return page.locator("#connectionsView button:visible").evaluateAll((buttons) =>
     buttons
       .map((button) => {
         const rect = button.getBoundingClientRect();
@@ -84,14 +84,13 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await connectionsTab.focus();
           await connectionsTab.press("Enter");
           await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-current", "location");
-          await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-checked", "true");
-          await expect(page.locator('[data-map-view="spatial"]')).toHaveCount(0);
+          await expect(page.locator("#connMap")).toBeVisible();
           await expectNoPageOverflow(page);
 
-          const clippedControls = await clippedRelationshipControls(page);
+          const clippedControls = await clippedConnectionControls(page);
           expect(clippedControls, JSON.stringify(clippedControls, null, 2)).toEqual([]);
 
-          const visibleRecord = page.locator('.relationshipList [data-map-node]').first();
+          const visibleRecord = page.locator("#connectionsView .j-conn-list .j-ref").first();
           await expect(visibleRecord).toBeVisible();
           await visibleRecord.focus();
           await visibleRecord.press("Enter");

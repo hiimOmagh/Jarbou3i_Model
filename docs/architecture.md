@@ -52,10 +52,9 @@ in deterministic dependency order and calls `createPlatformRuntime`
 Measurements stay in memory and are never transmitted or persisted. Visible
 rendering stays synchronous to avoid focus and interaction races.
 
-Three heavy features load only when a view needs them, with a retry on failure:
-the Biopolitical graph (`src/biopolitics-graph.js`), the relationship explorer
-(`src/relationship-explorer.js` with its stylesheet `src/relationship-explorer.css`), and the Biopolitical report renderer
-(`src/biopolitical-report.js`).
+Two heavy features load only when a view needs them, with a retry on failure:
+the Biopolitical graph (`src/biopolitics-graph.js`) and the Biopolitical report
+renderer (`src/biopolitical-report.js`).
 
 ## Module map
 
@@ -70,7 +69,7 @@ the Biopolitical graph (`src/biopolitics-graph.js`), the relationship explorer
 | Evidence intelligence | `src/core/relationship-intelligence.js`, `evidence-intelligence.js`, `evidence-traceability.js`, `evidence-review-plan.js` |
 | Workspace | `src/core/workspace-contract.js`, `workspace-storage.js`, `storage-health.js`, `canonical-editor.js`, `revision-history.js`, `recovery-journal.js` |
 | Review | `src/core/review-ledger.js`, `resolution-transaction.js` |
-| On demand | `src/biopolitics-graph.js`, `src/relationship-explorer.js`, `src/biopolitical-report.js` |
+| On demand | `src/biopolitics-graph.js`, `src/biopolitical-report.js` |
 
 Feature behavior is described in [Results and Evidence](features/results-and-evidence.md),
 [Workspace](features/workspace.md), and the

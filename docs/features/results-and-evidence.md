@@ -56,33 +56,30 @@ restoration. Source links render only for valid HTTP(S) URLs and open with
 
 ## Connections
 
-The Connections review tab offers three deterministic views:
+The Biopolitical Connections section shows how much of the answer is
+connected: how many records have a connection, how many connections there are,
+and how many cite evidence. Below it:
 
-- **Story**: numbered causal paths;
-- **Evidence Trail**: supporting and counter-evidence grouped around a claim or record;
-- **Network**: the complete nine-pillar topology.
+- **Around one record**: the chosen record in the middle, the records that
+  point to it on one side and those it points to on the other, grouped by
+  relation, read in the page's direction and stacked on a narrow screen. A
+  neighbour, chosen, moves to the middle; the record list chooses any record,
+  and the inspector's **Show its connections** opens the view on a record. The
+  record with the most connections starts in the middle.
+- **Every connection**: each connection as a line, "record · relation ·
+  record", under the layer of the record it starts from, with the reason the
+  answer gives. A search finds records, IDs and relations, and says how many
+  lines it shows.
 
-Guided mode leads with names and plain-language "Why connected?" explanations;
-Analyst mode shows canonical IDs, confidence, provenance, source paths, filters,
-and layer controls. An equivalent accessible list is always available.
-
-A Focus workspace, guided walkthroughs, and a persistent inspection dock keep a
-selected record in context across Story, Evidence Trail, Network, Map, and List;
-when a filter hides it, the interface says so and can reveal it in Network.
-Canonical time and international-comparison overlays group only authored
-chronology and comparisons. Saved views keep only presentation state (filters,
-mode, overlay, selection, zoom) in the local browser.
-
-An optional **Spatial** view projects the same records into deterministic 3D
-geometry on capable desktop browsers, with orbit, zoom, keyboard equivalents,
-reduced-motion support, and a record picker for occluded cards. Unsupported or
-narrow displays keep it disabled with an explanation. It uses no WebGL, external
-dependency, force simulation, or inferred relationship.
+Both are plain HTML lists and buttons, so the view reads the same to a screen
+reader as on screen. Each Biopolitical record also lists its own connections
+("Links to", "Linked from").
 
 Biopolitical review cards show a referenced record's name next to its stable ID;
 selecting it opens its type, pillar, confidence, and relationships. Standalone
-HTML reports expand the same names and include a reference directory, a
-relationship atlas, the temporal projection, and comparison limits, while their
+HTML reports expand the same names, list each record's connections, and
+include a reference directory, a relationship atlas (how many records are
+connected), the temporal projection, and comparison limits, while their
 embedded canonical JSON stays equivalent to the imported analysis.
 
 ## Relationship intelligence
@@ -169,4 +166,4 @@ cannot be re-imported.
 | Source clusters and gaps | `npm run test:evidence:intelligence` | `tests/results-inspection.spec.js` |
 | Traceability and export | `npm run test:evidence:traceability` | `tests/evidence-intelligence.spec.js` |
 | Review queue and export | `npm run test:evidence:review-plan` | `tests/evidence-review-plan.spec.js` |
-| Connections | | `tests/relationship-explorer.spec.js`, `tests/reference-resolution.spec.js` |
+| Connections | | `tests/connections-view.spec.js`, `tests/reference-resolution.spec.js` |

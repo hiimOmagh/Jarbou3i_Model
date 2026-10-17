@@ -69,7 +69,7 @@ async function synchronizeAuditState(page, locale, theme) {
 test.describe("Final release language, theme, viewport, and resilience audit", () => {
   for (const locale of LOCALES) {
     for (const theme of THEMES) {
-      test(`${locale.id} ${theme} remains accessible, responsive, and failure-safe`, async ({ page }, testInfo) => {
+      test(`${locale.id} ${theme} remains accessible, responsive, and failure-safe`, async ({ page }) => {
         await page.emulateMedia({
           colorScheme: theme,
           reducedMotion: theme === "dark" ? "reduce" : "no-preference",
@@ -117,7 +117,7 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
         await expect(connectionsTab).toBeFocused();
         await connectionsTab.press("Enter");
         await expect(connectionsTab).toHaveAttribute("aria-current", "location");
-        await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
+        await expect(page.locator("#connMap")).toBeVisible();
 
         const duplicateIds = await page.locator("[id]").evaluateAll((elements) => {
           const counts = new Map();
@@ -125,18 +125,6 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
           return [...counts.entries()].filter(([, count]) => count > 1).map(([id]) => id);
         });
         expect(duplicateIds).toEqual([]);
-
-        const mobile = testInfo.project.name === "mobile-chrome";
-        if (mobile) {
-          await expect(page.locator('[data-map-view="list"]')).toHaveAttribute("aria-checked", "true");
-          // Spatial is not offered where it cannot be drawn; the view options say why.
-          await expect(page.locator('[data-map-view="spatial"]')).toHaveCount(0);
-          await page.locator(".relationshipOptions > summary").click();
-          await expect(page.locator(".relationshipCapabilityNote")).toBeVisible();
-        } else {
-          await expect(page.locator('[data-map-view="map"]')).toHaveAttribute("aria-checked", "true");
-          await expect(page.locator('[data-map-view="spatial"]')).toBeEnabled();
-        }
 
         await expectNoPageOverflow(page);
         await expectNoSeriousViolations(page);

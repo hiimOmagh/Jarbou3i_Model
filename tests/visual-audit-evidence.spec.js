@@ -173,13 +173,13 @@ test.describe("Release Candidate visual audit evidence", () => {
       await saveScreenshot(page, testInfo, `biopolitical-results-${key}.png`);
 
       await page.locator('[data-bio-review="connections"]').click();
-      await expect(page.locator("#relationshipExplorerMount")).toBeVisible();
+      await expect(page.locator("#connMap")).toBeVisible();
       await clearTransientUi(page);
-      // Connections opens inside the case file: anchor the explorer, not the file's top.
-      await anchorViewport(page, "#relationshipExplorerMount", 12);
+      // Connections opens inside the case file: anchor the view, not the file's top.
+      await anchorViewport(page, "#connectionsView", 12);
       await saveScreenshot(page, testInfo, `connections-${key}.png`);
 
-      const clippedRelationshipControls = await page.locator(".relationshipCommandBar button:visible").evaluateAll((buttons) =>
+      const clippedConnectionControls = await page.locator("#connectionsView button:visible").evaluateAll((buttons) =>
         buttons
           .map((button) => {
             const rect = button.getBoundingClientRect();
@@ -196,32 +196,19 @@ test.describe("Release Candidate visual audit evidence", () => {
           .filter(({ rect, visibleLeft, visibleRight }) => rect.left < visibleLeft - 1 || rect.right > visibleRight + 1)
           .map(({ label, rect, visibleLeft, visibleRight }) => ({ label, left: rect.left, right: rect.right, visibleLeft, visibleRight })),
       );
-      expect(clippedRelationshipControls, JSON.stringify(clippedRelationshipControls, null, 2)).toEqual([]);
+      expect(clippedConnectionControls, JSON.stringify(clippedConnectionControls, null, 2)).toEqual([]);
 
-      // Phone evidence intentionally captures the accessible list. Open Map
-      // only after that screenshot so every measurement still audits Story
-      // geometry instead of treating the correct list fallback as missing data.
-      if (await page.locator(".relationshipStoryFlow").count() === 0) {
-        const mapView = page.locator('[data-map-view="map"]');
-        await mapView.focus();
-        await expect(mapView).toBeFocused();
-        await mapView.press("Enter");
-        await expect(mapView).toHaveAttribute("aria-checked", "true");
-        await expect(page.locator(".relationshipStoryFlow").first()).toBeVisible();
-      }
-      const storyGeometry = await page.locator(".relationshipStoryFlow").evaluateAll((flows) => flows.map((flow) => {
-        const rect = flow.getBoundingClientRect();
-        const overflowX = getComputedStyle(flow).overflowX;
-        const childrenOutside = [...flow.children].filter((child) => {
+      // The map's parts stay inside it, side by side or stacked.
+      const mapGeometry = await page.locator(".j-conn-map").evaluateAll((maps) => maps.map((map) => {
+        const rect = map.getBoundingClientRect();
+        const childrenOutside = [...map.children].filter((child) => {
           const childRect = child.getBoundingClientRect();
           return childRect.left < rect.left - 1 || childRect.right > rect.right + 1;
         }).length;
-        return { overflowX, scrollWidth: flow.scrollWidth, clientWidth: flow.clientWidth, childrenOutside };
+        return { overflowX: getComputedStyle(map).overflowX, scrollWidth: map.scrollWidth, clientWidth: map.clientWidth, childrenOutside };
       }));
-      for (const flow of storyGeometry) {
-        const exposesScrollSurface = ["auto", "scroll"].includes(flow.overflowX) && flow.scrollWidth > flow.clientWidth;
-        expect(flow.childrenOutside === 0 || exposesScrollSurface, JSON.stringify(flow)).toBe(true);
-      }
+      expect(mapGeometry.length).toBe(1);
+      expect(mapGeometry[0].childrenOutside, JSON.stringify(mapGeometry)).toBe(0);
 
       const activeBadge = page.locator('[data-bio-review="connections"] .j-case-count');
       const activeBadgeContrast = await activeBadge.evaluate((badge) => {
@@ -247,13 +234,13 @@ test.describe("Release Candidate visual audit evidence", () => {
       });
       expect(activeBadgeContrast).toBeGreaterThanOrEqual(4.5);
 
-      const relationshipText = await page.locator("#relationshipExplorerMount").innerText();
+      const relationshipText = await page.locator("#connectionsView").innerText();
       if (locale.id !== "en") {
-        expect(relationshipText).not.toMatch(/\b(?:Enables|Classifies|Distributes|Resists)\b/);
+        expect(relationshipText).not.toMatch(/\b(?:Enables|Classifies|Distributes|Resists|Supported|Countered)\b/i);
         expect(relationshipText).not.toContain("litigation");
       }
 
-      const measurement = await page.evaluate(({ clippedControlCount, story }) => ({
+      const measurement = await page.evaluate(({ clippedControlCount, map }) => ({
         app_version: document.querySelector('meta[name="app-version"]')?.content,
         html_lang: document.documentElement.lang,
         html_dir: document.documentElement.dir,
@@ -262,9 +249,9 @@ test.describe("Release Candidate visual audit evidence", () => {
         page_client_width: document.documentElement.clientWidth,
         body_text_length: document.body.innerText.length,
         visible_buttons: [...document.querySelectorAll("button")].filter((button) => button.getClientRects().length).length,
-        clipped_relationship_controls: clippedControlCount,
-        story_geometry: story,
-      }), { clippedControlCount: clippedRelationshipControls.length, story: storyGeometry });
+        clipped_connection_controls: clippedControlCount,
+        map_geometry: map,
+      }), { clippedControlCount: clippedConnectionControls.length, map: mapGeometry });
       expect(measurement.page_scroll_width).toBeLessThanOrEqual(measurement.page_client_width + 1);
       expect(measurement.body_text_length).toBeGreaterThan(1000);
       await writeJson(testInfo, `measurement-${key}.json`, measurement);
@@ -357,7 +344,7 @@ test.describe("Release Candidate visual audit evidence", () => {
       transient_ui_cleared: true,
       deterministic_viewport_anchors: true,
       report_top_anchor_verified: true,
-      connections_target: "relationshipExplorerMount",
+      connections_target: "connectionsView",
       generated_by: "tests/visual-audit-evidence.spec.js",
       projects: ["chromium"],
       locales: LOCALES.map(({ id, dir }) => ({ id, dir })),
