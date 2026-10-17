@@ -42,7 +42,7 @@
       expand: "Expand all",
       collapse: "Collapse all",
       print: "Print / Save PDF",
-      records: "records",
+      records: { one: "{count} item", other: "{count} items" },
       noRecords: "No authored records.",
       conclusion: "Calibrated conclusion and self-audit",
       conclusionHint: "What is supported, disputed, unknown, or capable of changing the judgment.",
@@ -99,7 +99,7 @@
       expand: "توسيع الكل",
       collapse: "طي الكل",
       print: "طباعة / حفظ PDF",
-      records: "سجلات",
+      records: { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" },
       noRecords: "لا توجد سجلات مؤلفة.",
       conclusion: "الخلاصة المُعايرة والمراجعة الذاتية",
       conclusionHint: "ما هو مدعوم أو متنازع عليه أو مجهول أو قادر على تغيير الحكم.",
@@ -156,7 +156,7 @@
       expand: "Tout développer",
       collapse: "Tout réduire",
       print: "Imprimer / Enregistrer en PDF",
-      records: "éléments",
+      records: { one: "{count} élément", other: "{count} éléments" },
       noRecords: "Aucun élément rédigé.",
       conclusion: "Conclusion calibrée et auto-audit",
       conclusionHint: "Ce qui est étayé, contesté, inconnu ou susceptible de modifier le jugement.",
@@ -202,6 +202,7 @@
     // French sets ":" and "%" apart with a space that does not break.
     const colon = locale === "fr" ? "\u00A0:" : ":";
     const pct = (value) => (locale === "fr" ? `${value}\u202F%` : `${value}%`);
+    const count = (value, forms) => (forms[new Intl.PluralRules(locale).select(value)] || forms.other).replace("{count}", value);
     const c = COPY[locale];
     const dir = locale === "ar" ? "rtl" : "ltr";
     const a = bio.sanitizePortableValue(bio.normalize(analysis));
@@ -289,7 +290,7 @@
       const records = bio.recordsFor(pillar.key, a, locale);
       const sectionId = `pillar-${safeId(pillar.key)}`;
       return `<details class="reportSection" id="${sectionId}" data-biopolitical-pillar="${escapeHtml(pillar.key)}"${index === 0 ? " open" : ""}>
-        <summary><span class="sectionNumber">${String(index + 1).padStart(2, "0")}</span><span class="sectionHeading"><strong>${escapeHtml(labels[pillar.key][0])}</strong><small>${escapeHtml(labels[pillar.key][1])}</small></span><span class="recordCount">${records.length} ${escapeHtml(c.records)}</span></summary>
+        <summary><span class="sectionNumber">${String(index + 1).padStart(2, "0")}</span><span class="sectionHeading"><strong>${escapeHtml(labels[pillar.key][0])}</strong><small>${escapeHtml(labels[pillar.key][1])}</small></span><span class="recordCount">${escapeHtml(count(records.length, c.records))}</span></summary>
         <div class="sectionBody">${records.length ? records.map((record, recordIndex) => renderRecord(record, recordIndex, pillar.key)).join("") : `<p class="empty">${escapeHtml(c.noRecords)}</p>`}</div>
       </details>`;
     }).join("");

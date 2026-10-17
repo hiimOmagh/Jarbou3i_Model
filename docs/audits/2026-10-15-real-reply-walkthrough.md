@@ -94,9 +94,9 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 
 | # | Finding | Status |
 |---|---|---|
-| E1 | Plural errors: "1 of 1 evidence records", "1 preuves sur 1", Arabic counts | D1/D2 for the import status and summary; open elsewhere |
+| E1 | Plural errors: "1 of 1 evidence records", "1 preuves sur 1", Arabic counts | done (D1/D2 for the import; UIX-5 E part 3 for the rest) |
 | E2 | Jargon: canonical/canonique/نظامي, contract/عقد, intelligence/استخبارات, hash-chained | done (UIX-5 E part 2): plain words in what readers see; the AI prompts keep the terms |
-| E3 | Raw editor keys, paths, hashes and permalinks; the report prints the contract slug | report: done (UIX-5 F); open elsewhere |
+| E3 | Raw editor keys, paths, hashes and permalinks; the report prints the contract slug | done (report: UIX-5 F; app: UIX-5 E part 3) |
 | E4 | French typography: no space before ":" and "%", ISO dates | done (UIX-5 E part 1) |
 | E5 | Arabic: "برومبت", three names for the lens, gender agreement | done (UIX-5 E part 1): موجِّه, السياسة الحيوية, nine agreement fixes |
 | E6 | Layer metrics as acronyms (IW, API, TPS, NSI) on mixed scales | done (UIX-5 E part 1): names, each over the model's own scale |
@@ -136,8 +136,8 @@ nothing; on a phone the controls end about 300px sooner.
 |---|---|---|
 | H1 | The reference inspector used `aside`/`header`/`footer` inside a dialog (axe: aria-allowed-role, duplicate banner) | D1 |
 | H2 | The import details skipped from the step's h2 to h4 | D1 |
-| H3 | The ledger shows a raw hash and an empty history without an empty state | open |
-| H4 | Counts in the outline differ from the sections they name | open |
+| H3 | The ledger shows a raw hash and an empty history without an empty state | done (UIX-5 E part 3) |
+| H4 | Counts in the outline differ from the sections they name | done (UIX-5 E part 3): the counts matched; their unit was missing |
 
 ## Decisions (2026-10-15)
 

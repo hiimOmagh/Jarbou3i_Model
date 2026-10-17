@@ -13,7 +13,7 @@ test.describe("Case file", () => {
     await page.locator("#loadSampleBtn").click();
     await expect(page.locator("#case-exports")).toBeAttached();
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "contradictions", "scenarios", "evidence", "inspection", "exports"].map((key) => `case-${key}`));
-    await expect(page.locator("#case-evidence")).toHaveAttribute("aria-label", "Evidence");
+    await expect(page.locator("#case-evidence")).toHaveAttribute("aria-label", "Evidence & assumptions");
 
     await openStep(page, "lens");
     await page.locator('[data-lens="biopolitical"]').click();

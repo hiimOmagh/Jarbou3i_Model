@@ -54,9 +54,9 @@ test.describe("Work panel", () => {
     const panel = page.locator("#workLife");
     await expect(panel.locator(".j-life-card")).toHaveCount(3);
     await expect(panel).toContainText("None. No unsaved work was interrupted.");
-    await expect(panel).toContainText("Matches revision 1, the current head.");
+    await expect(panel).toContainText("Matches revision 1, the current version.");
     await expect(panel.locator(".j-life-revs li")).toHaveCount(1);
-    await expect(panel.locator(".j-life-revs li")).toContainText("Current head");
+    await expect(panel.locator(".j-life-revs li")).toContainText("Current version");
     await panel.getByRole("button", { name: "Revision history" }).click();
     await expect(page.locator("#revisionDialog")).toBeVisible();
   });
@@ -70,7 +70,7 @@ test.describe("Work panel", () => {
     await expect(light(page)).toHaveText("Not committed");
     await expect(light(page)).toHaveAttribute("data-life", "uncommitted");
     await light(page).click();
-    await expect(page.locator("#workLife")).toContainText("Draft saved locally, not committed yet. Revision 1 is the current head.");
+    await expect(page.locator("#workLife")).toContainText("Draft saved locally, not committed yet. Revision 1 is the current version.");
     await page.locator("#workLife").getByRole("button", { name: "Review and commit" }).click();
     await expect(page.locator("#resolutionDialog")).toBeVisible();
   });

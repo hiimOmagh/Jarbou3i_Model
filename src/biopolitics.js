@@ -173,7 +173,7 @@
       nav: {
         overview: "Overview",
         pillars: "Protocol",
-        evidence: "Evidence test",
+        evidence: "Evidence & explanations",
         conclusion: "Judgment",
         inspection: "Inspection",
         exports: "Export",
@@ -287,7 +287,7 @@
       nav: {
         overview: "الخلاصة",
         pillars: "البروتوكول",
-        evidence: "اختبار الأدلة",
+        evidence: "الأدلة والتفسيرات",
         conclusion: "الحكم",
         inspection: "الفحص",
         exports: "التصدير",
@@ -402,7 +402,7 @@
       nav: {
         overview: "Vue d’ensemble",
         pillars: "Protocole",
-        evidence: "Test des preuves",
+        evidence: "Preuves et explications",
         conclusion: "Jugement",
         inspection: "Inspection",
         exports: "Export",

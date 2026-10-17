@@ -74,7 +74,7 @@ test.describe("Revision history and safe restore", () => {
     await page.locator("#revisionRestore").click();
     await expect(page.locator("#resolutionDialog")).toBeVisible();
     await expect(page.locator("#resolutionTitle")).toHaveText("Safe revision restore");
-    await expect(page.locator("#resolutionTrust")).toContainText(/new immutable child/i);
+    await expect(page.locator("#resolutionTrust")).toContainText(/adds a new revision/i);
     await expect(page.locator("#resolutionSummary")).toContainText("Historical source");
     await expect(page.locator("#resolutionDiff")).toContainText(importedTitle);
     await approveOpenTransaction(page, "Restore the imported state after reviewing every canonical change.");

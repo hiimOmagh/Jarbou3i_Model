@@ -34,7 +34,7 @@
       evidenceTrail: "Evidence trail", trailSupporting: "Authored support",
       trailCounter: "Authored counter-records", backReferences: "Evidence back-references",
       citedAsSupport: "Cited as support", citedAsCounter: "Cited as counter-evidence",
-      permanentLink: "Permanent record link",
+      permanentLink: "Permanent link", permanentLinkText: "Link to this record",
       yes: "Yes", no: "No",
     },
     ar: {
@@ -61,7 +61,7 @@
       evidenceTrail: "مسار الأدلة", trailSupporting: "الدعم المؤلف",
       trailCounter: "سجلات الأدلة المضادة المؤلفة", backReferences: "الإحالات العكسية للأدلة",
       citedAsSupport: "مذكور كدليل داعم", citedAsCounter: "مذكور كدليل مضاد",
-      permanentLink: "رابط السجل الدائم",
+      permanentLink: "رابط دائم", permanentLinkText: "رابط هذا السجل",
       yes: "نعم", no: "لا",
     },
     fr: {
@@ -88,7 +88,7 @@
       evidenceTrail: "Parcours probatoire", trailSupporting: "Appuis rédigés",
       trailCounter: "Fiches de contre-preuve rédigées", backReferences: "Rétro-références probatoires",
       citedAsSupport: "Cité comme appui", citedAsCounter: "Cité comme contre-preuve",
-      permanentLink: "Lien permanent de la fiche",
+      permanentLink: "Lien permanent", permanentLinkText: "Lien vers cette fiche",
       yes: "Oui", no: "Non",
     },
   };
@@ -98,6 +98,7 @@
   let onOpenRecord = null;
   let onShowConnections = null;
   let onOpenOccurrence = null;
+  let sectionLabel = null;
   let returnFocus = null;
   let activeNode = null;
   let activeInspection = null;
@@ -105,8 +106,10 @@
 
   const humanize = (value) => String(value || "—").replaceAll("_", " ");
   // Codes the drawer names itself: provenance states, Strategic layers and
-  // sample relations, and the app's own source types.
+  // sample relations, and the app's own source types. English needs only the
+  // format status; the Biopolitical lens names it in Arabic and French.
   const CODE_LABELS = {
+    en: { canonical: "Complete" },
     ar: {
       missing: "غير متوفر", provided: "مذكور", traceable: "قابل للتتبع",
       unassessed: "لم يُقيَّم", mismatched: "غير مطابق", contextual: "سياقي",
@@ -238,10 +241,31 @@
     const facts = [
       fact(copy.schemaVersion, audit.schemaVersion), fact(copy.contractStatus, audit.contractStatus, { code: true }),
       fact(copy.modelStatus, audit.modelStatus, { code: true }), fact(copy.analysisId, audit.analysisId),
+      fact(copy.path, inspection?.path, { raw: true }),
       fact(copy.uncertainty, audit.uncertainty), fact(copy.limitations, audit.limitations),
       fact(copy.evidenceStrength, audit.evidenceStrength), fact(copy.unresolvedLinks, audit.unresolvedLinks),
     ].filter(Boolean).join("");
     return `<section class="j-insp-sec" data-inspection-section="audit"><h3>${escapeHtml(copy.audit)}</h3>${facts ? `<dl class="j-insp-facts">${facts}</dl>` : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`}</section>`;
+  }
+
+  // Where a record appears, by the record that holds it: a connection names
+  // its relation and the record at the other end; the path is the last resort.
+  function occurrencePlace(occurrence, id) {
+    if (occurrence.kind === "canonical") return "";
+    if (occurrence.kind === "relationship") {
+      const edge = [...graph.incoming(id), ...graph.outgoing(id)]
+        .find((item) => item.path && (occurrence.path === item.path || occurrence.path.startsWith(`${item.path}/`)));
+      if (edge) {
+        const otherId = edge.source === id ? edge.target : edge.source;
+        return `${codeLabel(edge.relation || "related_to")} · ${graph.resolve(otherId)?.label || otherId}`;
+      }
+    }
+    const owner = occurrence.ownerId && occurrence.ownerId !== id ? graph.resolve(occurrence.ownerId) : null;
+    if (owner) return `${owner.label} · ${occurrence.ownerId}`;
+    // Outside any record: the section's name, and the item's number when it has one.
+    const [section, item] = occurrence.path.split("/").slice(1);
+    if (!section || typeof sectionLabel !== "function") return occurrence.path;
+    return /^\d+$/.test(item || "") ? `${sectionLabel(section)} · ${Number(item) + 1}` : sectionLabel(section);
   }
 
   function occurrencesHtml(inspection, copy) {
@@ -252,7 +276,11 @@
     };
     const occurrences = inspection?.occurrences || [];
     const content = occurrences.length
-      ? `<ol class="j-insp-list j-insp-occ">${occurrences.map((occurrence, index) => `<li><button class="j-insp-rec" type="button" data-reference-occurrence="${index}" aria-label="${escapeHtml(`${copy.occurrenceOpen}: ${occurrence.path}`)}"><span>${escapeHtml(kindLabel[occurrence.kind] || copy.occurrenceReference)}</span><code>${escapeHtml(occurrence.path)}</code></button></li>`).join("")}</ol>`
+      ? `<ol class="j-insp-list j-insp-occ">${occurrences.map((occurrence, index) => {
+        const kind = kindLabel[occurrence.kind] || copy.occurrenceReference;
+        const place = occurrencePlace(occurrence, inspection.canonicalId);
+        return `<li><button class="j-insp-rec" type="button" data-reference-occurrence="${index}" aria-label="${escapeHtml([`${copy.occurrenceOpen}: ${kind}`, place].filter(Boolean).join(" — "))}"><span>${escapeHtml(kind)}</span>${place ? `<small>${escapeHtml(place)}</small>` : ""}</button></li>`;
+      }).join("")}</ol>`
       : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`;
     return `<section class="j-insp-sec" data-inspection-section="occurrences"><h3>${escapeHtml(copy.occurrences)} <span class="j-chip">${occurrences.length}</span></h3>${content}</section>`;
   }
@@ -278,9 +306,9 @@
       ? `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4 class="j-label">${escapeHtml(copy.incoming)}</h4><ul class="j-insp-list">${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4 class="j-label">${escapeHtml(copy.outgoing)}</h4><ul class="j-insp-list">${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
       : `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3><p class="j-note" data-tone="idle">${escapeHtml(copy.none)}</p></section>`;
     const permanentLink = inspection.relationship?.deepLink
-      ? `<div><dt>${escapeHtml(copy.permanentLink)}</dt><dd><a data-permanent-link href="${escapeHtml(inspection.relationship.deepLink)}"><code>${escapeHtml(inspection.relationship.deepLink)}</code></a></dd></div>`
+      ? `<div><dt class="j-label">${escapeHtml(copy.permanentLink)}</dt><dd><a data-permanent-link href="${escapeHtml(inspection.relationship.deepLink)}">${escapeHtml(copy.permanentLinkText)}</a></dd></div>`
       : "";
-    const identity = `<section class="j-insp-sec" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="j-insp-facts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar, { code: true })}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.path, inspection.path, { raw: true })}${fact(copy.confidence, inspection.confidence, { code: true })}${permanentLink}</dl></section>`;
+    const identity = `<section class="j-insp-sec" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="j-insp-facts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar, { code: true })}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.confidence, inspection.confidence, { code: true })}${permanentLink}</dl></section>`;
     rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="j-insp-summary">${escapeHtml(root.Jarbou3iBiopolitics?.displayCode?.(lang, inspection.summary) ?? inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
     const openButton = rootElement.querySelector("#referenceOpenRecord");
     openButton.textContent = copy.open;
@@ -401,6 +429,7 @@
     onOpenRecord = options.onOpenRecord || null;
     onShowConnections = options.onShowConnections || null;
     onOpenOccurrence = options.onOpenOccurrence || null;
+    sectionLabel = options.sectionLabel || null;
     wire();
     requestAnimationFrame(() => {
       const node = graph?.resolveDeepLink?.(window.location.hash);

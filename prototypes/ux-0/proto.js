@@ -61,7 +61,9 @@ const state = {
 const dig = (dict, key) => key.split(".").reduce((node, part) => (node == null ? node : node[part]), dict);
 const lookup = (key) => dig(I18N[state.lang], key) ?? dig(I18N.en, key);
 function t(key, vars) {
-  const text = lookup(key) ?? key;
+  let text = lookup(key) ?? key;
+  // Counted text has one form per plural category ("one", "other"…).
+  if (text && typeof text === "object" && vars && "count" in vars) text = text[new Intl.PluralRules(state.lang).select(vars.count)] ?? text.other;
   return typeof text === "string" && vars ? text.replace(/\{(\w+)\}/g, (_, name) => (name in vars ? vars[name] : `{${name}}`)) : text;
 }
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -464,7 +466,7 @@ function caseFile(a, m) {
       <dt>${esc(t("thesis"))}</dt><dd ${contentLang(a)}>${esc(s.executive_thesis || s.executive_finding)}</dd>
       <dt>${esc(t("context"))}</dt><dd ${contentLang(a)}>${esc(s.context)}</dd></dl>`)}
     ${sec("findings", t("cb.findings"), caseGroups(a).map((g) => `<section class="grp" id="grp-${esc(g.id)}" aria-labelledby="h-grp-${esc(g.id)}">
-      <h3 id="h-grp-${esc(g.id)}" tabindex="-1">${esc(g.title)} <small>${esc(t("items", { n: fmtNum(g.records.length) }))}</small></h3>
+      <h3 id="h-grp-${esc(g.id)}" tabindex="-1">${esc(g.title)} <small>${esc(t("items", { n: fmtNum(g.records.length), count: g.records.length }))}</small></h3>
       ${g.desc ? `<p class="help">${esc(g.desc)}</p>` : ""}
       ${g.records.length ? `<ul class="items">${g.records.map((r) => caseItemRow(a, r)).join("")}</ul>` : `<p class="note${g.required ? " warn" : ""}">${esc(t("cb.emptyGroup", { x: g.title }))}</p>`}</section>`).join(""))}
     ${sec("work", t("cb.needsWork"), issues.length ? `<ul class="checklist tasks">${issues.map((x) => `<li><span class="status ${x.tone}" aria-hidden="true"></span><span>${esc(x.text)}<span class="srOnly"> — ${esc(t(x.tone === "crit" ? "blocked" : "attention"))}</span>${x.note ? `<small ${x.content ? contentLang(a) : ""}>${esc(x.note)}</small>` : ""}</span><span class="acts">${actionBtn("jump", t("cb.show"), { value: x.jump })}</span></li>`).join("")}</ul>` : `<p class="note">${esc(t(m.gate ? "real.noWork" : "cb.noWork"))}</p>`)}
@@ -533,7 +535,7 @@ function checkView(check) {
   const m = check.data ? metrics(check.data) : null;
   switch (check.status) {
     case "valid": return { tone: "ok", text: t(m.bio ? "vValidBio" : "vValid", { n: m.populated, layers: m.populated, links: m.links, evidence: m.evidence }), mood: "ok", say: t("mValid") };
-    case "partial": return { tone: "warn", text: t(m.bio ? "vPartialBio" : "vPartial", { n: check.missing.length, list: check.missing.map((k) => (m.bio ? pillarName(k) : t(`layers.${k}`)[0])).join(", ") }), mood: "warn", say: t("mPartial") };
+    case "partial": return { tone: "warn", text: t(m.bio ? "vPartialBio" : "vPartial", { n: check.missing.length, count: check.missing.length, list: check.missing.map((k) => (m.bio ? pillarName(k) : t(`layers.${k}`)[0])).join(", ") }), mood: "warn", say: t("mPartial") };
     case "truncated": return { tone: "warn", text: t("vTruncated"), mood: "warn", say: t("mTrunc") };
     case "invalid": return { tone: "crit", text: check.message, mood: "crit", say: t("mInvalid") };
     default: return { tone: "idle", text: t("vEmpty"), mood: "idle", say: t("mWait") };
@@ -952,7 +954,7 @@ function causalMap(a, m) {
     const share = items.length ? items.filter((it) => it.confidence === "high").length / items.length : 0;
     const C = 2 * Math.PI * (R + 6);
     const [name] = t(`layers.${key}`);
-    const label = `${name}${colon()} ${t("items", { n: fmtNum(items.length) })}`;
+    const label = `${name}${colon()} ${t("items", { n: fmtNum(items.length), count: items.length })}`;
     return `<g class="node ${items.length ? "" : "empty"} ${selectedLayer === key ? "selected" : ""}" style="--i:${i}" role="button" tabindex="0" aria-label="${esc(label)}" aria-pressed="${selectedLayer === key}" data-action="selectLayer" data-value="${key}">
       <circle class="ring-bg" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R + 6}"/>
       <circle class="ring" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${R + 6}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - share)).toFixed(1)}" transform="rotate(-90 ${x.toFixed(1)} ${y.toFixed(1)})"/>
@@ -1136,7 +1138,7 @@ function pillarMap(a) {
     const share = rated.length ? rated.filter((r) => r.data.confidence === "high").length / rated.length : 0;
     const C = 2 * Math.PI * (R + 5);
     const name = pillarName(key);
-    return `<g class="node ${items.length ? "" : "empty"} ${selected === key ? "selected" : ""}" style="--i:${i}" role="button" tabindex="0" aria-label="${esc(`${name}${colon()} ${t("items", { n: fmtNum(items.length) })}`)}" aria-pressed="${selected === key}" data-action="selectPillar" data-value="${key}">
+    return `<g class="node ${items.length ? "" : "empty"} ${selected === key ? "selected" : ""}" style="--i:${i}" role="button" tabindex="0" aria-label="${esc(`${name}${colon()} ${t("items", { n: fmtNum(items.length), count: items.length })}`)}" aria-pressed="${selected === key}" data-action="selectPillar" data-value="${key}">
       <circle class="ring-bg" cx="${X}" cy="${Y}" r="${R + 5}"/>
       <circle class="ring" cx="${X}" cy="${Y}" r="${R + 5}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - share)).toFixed(1)}" transform="rotate(-90 ${X} ${Y})"/>
       <circle class="disc" cx="${X}" cy="${Y}" r="${R}"/>
@@ -1281,7 +1283,7 @@ function inspector(a, m) {
     const [name, desc] = bioLabel("pillars", sel.key) || [humanize(sel.key), ""];
     const records = bioRecords(a).filter((r) => r.pillar === sel.key);
     const groups = PILLAR_LISTS[sel.key].map((list) => [list, records.filter((r) => r.list === list)]).filter(([, recs]) => recs.length);
-    body = `<div class="idLine"><span>${esc(t("kinds.pillar"))}</span><span class="mono">${esc(t("items", { n: fmtNum(records.length) }))}</span></div>
+    body = `<div class="idLine"><span>${esc(t("kinds.pillar"))}</span><span class="mono">${esc(t("items", { n: fmtNum(records.length), count: records.length }))}</span></div>
       <h2>${esc(name)}</h2><p class="help">${esc(desc)}</p>
       ${groups.map(([list, recs]) => `<div class="inspSection"><button type="button" class="pathBtn" data-action="copyPath" data-value="/${esc(list)}">/${esc(list)}</button>
         ${recs.map((r) => `<button type="button" class="itemBtn" data-action="selectRecord" data-value="${esc(r.id)}"><small>${esc(r.data.id || r.path)}</small><span ${contentLang(a)}>${esc(r.title)}</span></button>`).join("")}</div>`).join("") || `<p class="help">${esc(t("noneYet"))}</p>`}`;
@@ -1290,7 +1292,7 @@ function inspector(a, m) {
     const [name, desc] = t(`layers.${sel.key}`);
     body = `<div class="idLine"><span>${esc(t("kinds.layer"))}</span><button type="button" class="pathBtn" data-action="copyPath" data-value="/${esc(sel.key)}">/${esc(sel.key)}</button></div>
       <h2>${esc(name)}</h2><p class="help">${esc(desc)}</p>
-      <div class="inspSection"><span class="label">${esc(t("items", { n: fmtNum(items.length) }))}</span>
+      <div class="inspSection"><span class="label">${esc(t("items", { n: fmtNum(items.length), count: items.length }))}</span>
         ${items.length ? items.map((it) => `<button type="button" class="itemBtn" data-action="selectRecord" data-value="${esc(it.id)}"><small>${esc(it.id)}</small><span ${contentLang(a)}>${esc(it.name || it.description)}</span></button>`).join("") : `<p class="help">${esc(t("noItems"))}</p>`}
       </div>`;
   } else {

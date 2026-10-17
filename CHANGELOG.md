@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+### Readable details and counts (UIX-5 slice E, part 3)
+
+Walkthrough E1, E3, H3 and H4, in AR/EN/FR, the app, the Biopolitical
+report and the prototype.
+
+- **The outline's counts name their unit** ("10 items", "14 records"),
+  and the evidence entries name what they hold: "Evidence & assumptions",
+  "Evidence & explanations". A count like "28" beside "Evidence test" read
+  as a test result, not as a number of records.
+- **Counts agree with their number** in every language, including all six
+  Arabic forms: layer and pillar counts, the evidence clusters ("1
+  evidence record", "cited by 2 records"), the report's section counts and
+  the prototype's ("1 layer is empty").
+- **The editor names each part** ("Legal framework", not
+  `legal_framework`); the JSON path stays under the field.
+- **Revision history:** rows lose the revision's internal ID; the parent
+  reads "Revision 1" or "—"; the fingerprint shows its first 12 characters
+  (the bundle keeps all 64). "Current head" is the current version.
+- **Review ledger:** the event hash and the task's internal key are gone,
+  and a task with no events says so instead of an empty list.
+- **Record inspector:** the path moves to Audit details; the permanent link
+  reads "Link to this record", not the URL; each occurrence names where the
+  record appears ("resists · Workers and residents…", "Capture levels · 4")
+  instead of a JSON path. In English, the format status reads Complete,
+  not "canonical".
+
 ### Plain words for the app's jargon (UIX-5 slice E, part 2)
 
 Walkthrough E2, in AR/EN/FR, the app, both reports and the prototype.

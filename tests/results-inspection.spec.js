@@ -97,16 +97,14 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
     "Historical power distribution reference",
   );
   await expect(inspector.locator('[data-inspection-section="identity"]')).toContainText("Record ID");
-  await expect(inspector.locator('[data-inspection-section="identity"]')).toContainText("/evidence/items/0");
+  await expect(inspector.locator('[data-inspection-section="audit"]')).toContainText("/evidence/items/0");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("Historical power distribution reference");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("unreviewed");
   await expect(inspector.locator('[data-inspection-section="evidence"]')).toContainText(
     "Some European states retained substantial institutional and economic capacity",
   );
   await expect(inspector.locator('[data-inspection-section="audit"]')).toContainText("1.1.0");
-  await expect(inspector.locator('[data-inspection-section="occurrences"]')).toContainText(
-    "/evidence/items/0/id",
-  );
+  await expect(inspector.locator('[data-inspection-section="occurrences"]')).toContainText("The record itself");
 
   await inspector.locator("[data-reference-occurrence]").first().click();
   await expect(inspector).toBeHidden();
@@ -135,7 +133,7 @@ test("biopolitical inspection traverses linked records without losing return foc
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("primary legal policy");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("unverified");
   await expect(inspector.locator('[data-inspection-section="evidence"]')).toContainText("sunset clauses");
-  await expect(inspector.locator('[data-inspection-section="audit"]')).toContainText("canonical");
+  await expect(inspector.locator('[data-inspection-section="audit"]')).toContainText("Complete");
   await expect(inspector.locator('[data-inspection-section="occurrences"] [data-reference-occurrence]')).not.toHaveCount(0);
 
   const originalTitle = await page.locator("#referenceInspectorTitle").textContent();

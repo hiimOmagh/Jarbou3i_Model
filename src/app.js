@@ -202,7 +202,7 @@ const I18N = {
       pillars: "الطبقات",
       contradictions: "التناقضات",
       scenarios: "السيناريوهات",
-      evidence: "الأدلة",
+      evidence: "الأدلة والافتراضات",
       inspection: "الفحص",
       exports: "التصدير",
     },
@@ -262,7 +262,6 @@ const I18N = {
     jsonParseProblem: "لم يُعثر على تحليل في هذا النص. انسخ إجابة الذكاء الاصطناعي كاملة (كتلة كود JSON) والصقها هنا. وإذا أجاب بنص عادي، فاستخدم موجِّه الإصلاح لتطلب منه JSON.",
     reportSubtitle:
       "تقرير قابل للمشاركة مبني على نموذج المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة.",
-    itemsWord: "عناصر",
     scoreSystem: "نظام التقييم",
     scoreCompleteness: "اكتمال الطبقات",
     scoreCompletenessHint: "مدى امتلاء الطبقات الست والبنية الأساسية.",
@@ -505,7 +504,7 @@ const I18N = {
       pillars: "Layers",
       contradictions: "Contradictions",
       scenarios: "Scenarios",
-      evidence: "Evidence",
+      evidence: "Evidence & assumptions",
       inspection: "Inspection",
       exports: "Exports",
     },
@@ -566,7 +565,6 @@ const I18N = {
     jsonParseProblem: "No analysis was found in this text. Copy the AI’s whole answer (the JSON code block) and paste it here. If the AI answered in plain text, use the repair prompt to ask it for the JSON.",
     reportSubtitle:
       "A shareable report built on the Interests → Actors → Tools → Narrative → Results → Feedback model.",
-    itemsWord: "items",
     scoreSystem: "Scoring system",
     scoreCompleteness: "Layer completeness",
     scoreCompletenessHint:
@@ -822,7 +820,7 @@ const I18N = {
       pillars: "Couches",
       contradictions: "Contradictions",
       scenarios: "Scénarios",
-      evidence: "Preuves",
+      evidence: "Preuves & hypothèses",
       inspection: "Inspection",
       exports: "Export",
     },
@@ -888,7 +886,6 @@ const I18N = {
       "Aucune analyse n’a été trouvée dans ce texte. Copiez toute la réponse de l’IA (le bloc de code JSON) et collez-la ici. Si l’IA a répondu en texte simple, utilisez le prompt de réparation pour lui demander le JSON.",
     reportSubtitle:
       "Rapport partageable fondé sur le modèle Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.",
-    itemsWord: "éléments",
     scoreSystem: "Système de score",
     scoreCompleteness: "Complétude des couches",
     scoreCompletenessHint:
@@ -4034,14 +4031,14 @@ function countFor(p) {
 function engineStep({ attr, key, index, color, label, count, max }) {
   const depth = Math.round((count / Math.max(1, max)) * 100);
   const current = state.activePillar === key ? ' aria-current="true"' : "";
-  return `<li><button class="j-engine-step" type="button" ${attr}="${escapeHtml(key)}" style="--j-layer:${color};--j-depth:${depth}%"${current}><span class="j-engine-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-engine-name">${escapeHtml(label[0])}</span><span class="j-engine-text">${escapeHtml(label[1])}</span><span class="j-engine-count"><b>${count}</b> ${escapeHtml(itemsWord())}</span><span class="j-engine-depth" aria-hidden="true"></span></button></li>`;
+  return `<li><button class="j-engine-step" type="button" ${attr}="${escapeHtml(key)}" style="--j-layer:${color};--j-depth:${depth}%"${current}><span class="j-engine-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-engine-name">${escapeHtml(label[0])}</span><span class="j-engine-text">${escapeHtml(label[1])}</span><span class="j-engine-count">${countHtml(count, ITEM_COUNT)}</span><span class="j-engine-depth" aria-hidden="true"></span></button></li>`;
 }
 // A layer of the case file: a heading whose button opens its records (the
 // WAI-ARIA accordion pattern). The prefix names its ids and data attribute.
 function layerAccordion({ prefix, key, index, color, label, count, body }) {
   const open = state.activePillar === key;
   const id = escapeHtml(key);
-  return `<section class="j-layer" style="--j-layer:${color}"><h4 class="j-layer-h"><button id="${prefix}-head-${id}" class="j-layer-head" data-${prefix}="${id}" type="button" aria-expanded="${open}" aria-controls="${prefix}-panel-${id}"><span class="j-layer-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-layer-name">${escapeHtml(label[0])}</span><span class="j-layer-count"><b>${count}</b> ${escapeHtml(itemsWord())}</span><span class="j-layer-chev" aria-hidden="true"></span><span class="j-layer-text">${escapeHtml(label[1])}</span></button></h4><div id="${prefix}-panel-${id}" class="j-layer-body" role="region" aria-labelledby="${prefix}-head-${id}"${open ? "" : " hidden"}>${body}</div></section>`;
+  return `<section class="j-layer" style="--j-layer:${color}"><h4 class="j-layer-h"><button id="${prefix}-head-${id}" class="j-layer-head" data-${prefix}="${id}" type="button" aria-expanded="${open}" aria-controls="${prefix}-panel-${id}"><span class="j-layer-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-layer-name">${escapeHtml(label[0])}</span><span class="j-layer-count">${countHtml(count, ITEM_COUNT)}</span><span class="j-layer-chev" aria-hidden="true"></span><span class="j-layer-text">${escapeHtml(label[1])}</span></button></h4><div id="${prefix}-panel-${id}" class="j-layer-body" role="region" aria-labelledby="${prefix}-head-${id}"${open ? "" : " hidden"}>${body}</div></section>`;
 }
 function renderEngineNav() {
   const labels = t("pillars");
@@ -4503,9 +4500,6 @@ function scoreMeter(value, label = "") {
   const score = Math.max(0, Math.min(5, Number(value) || 0));
   const name = `${label ? `${label}: ` : ""}${score}/5`;
   return `<span class="j-meter" role="img" aria-label="${escapeHtml(name)}">${Array.from({ length: 5 }, (_, i) => `<i${i < Math.round(score) ? " data-on" : ""}></i>`).join("")}<span>${score}/5</span></span>`;
-}
-function itemsWord() {
-  return t("itemsWord") || (state.lang === "ar" ? "عناصر" : "items");
 }
 function contradictionTypeLabel(v) {
   return displayEnum(v || "") || labelText("Contradiction", "تناقض");
@@ -5328,7 +5322,7 @@ function resultsExplanationHtml(model) {
             })
             .join("")}</ol>`
         : `<p class="j-brief-desc">${escapeHtml(section.emptyLabel)}</p>`;
-      return `<li><article class="j-rec" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header class="j-rec-head"><span class="j-rec-id" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><h5 class="j-rec-title" id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h5><span class="j-chip">${section.total}<span class="j-sr-only"> ${escapeHtml(itemsWord())}</span></span></header><p class="j-brief-desc">${escapeHtml(section.description)}</p>${items}<button class="j-btn j-brief-open" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article></li>`;
+      return `<li><article class="j-rec" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header class="j-rec-head"><span class="j-rec-id" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><h5 class="j-rec-title" id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h5><span class="j-chip"><span aria-hidden="true">${section.total}</span><span class="j-sr-only">${escapeHtml(pluralText(section.total, ITEM_COUNT))}</span></span></header><p class="j-brief-desc">${escapeHtml(section.description)}</p>${items}<button class="j-btn j-brief-open" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article></li>`;
     })
     .join("");
   return `<section class="j-brief" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Explanation", "الشرح", "Explication"))}</span><h4 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h4><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></div></header><ol class="j-brief-steps">${cards}</ol></section>`;
@@ -5575,7 +5569,7 @@ function htmlReport() {
     facts.length ? `<dl class="facts">${facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl>` : "";
   const pillarsHtml = PILLARS.map(
     (p) =>
-      `<section class="block"><header><h2>${escapeHtml(t("pillars")[p][0])}</h2><span>${normalizeArray(a[p]).length} ${escapeHtml(t("itemsWord"))}</span></header>${
+      `<section class="block"><header><h2>${escapeHtml(t("pillars")[p][0])}</h2><span>${escapeHtml(pluralText(normalizeArray(a[p]).length, ITEM_COUNT))}</span></header>${
         normalizeArray(a[p])
           .map(
             (x) =>
@@ -5818,8 +5812,6 @@ function evidenceIntelligenceCopy() {
     clusters: labelText("Source clusters", "عناقيد المصادر", "Groupes de sources"),
     cited: labelText("Cited evidence", "الأدلة المُحال إليها", "Preuves citées"),
     gaps: labelText("Coverage signals", "إشارات التغطية", "Signaux de couverture"),
-    records: labelText("Evidence records", "سجلات الأدلة", "Fiches de preuve"),
-    citations: labelText("Cited by records", "سجلات مُحيلة", "Cité par des fiches"),
     identity: labelText("Identity basis", "أساس الهوية", "Base d’identité"),
     identityBases: {
       url: labelText("source URL", "رابط المصدر", "URL de la source"),
@@ -5888,11 +5880,11 @@ function renderEvidenceIntelligence(index) {
   const clusterCards = intelligence.clusters.map((cluster) => {
     const members = cluster.memberIds.map((id) => `<li>${recordButton(id, index.resolve(id)?.label || id)}</li>`).join("");
     const counts = [
-      [cluster.memberIds.length, copy.records],
-      [cluster.citedByIds.length, copy.citations],
-      [cluster.traceableCount, copy.traceable],
-      [cluster.verifiedCount, copy.verified],
-    ].map(([count, label]) => `<span><b>${count}</b> ${escapeHtml(label)}</span>`).join("");
+      countHtml(cluster.memberIds.length, EVIDENCE_RECORD_COUNT),
+      countHtml(cluster.citedByIds.length, CITED_BY_COUNT),
+      `<b>${cluster.traceableCount}</b> ${escapeHtml(copy.traceable)}`,
+      `<b>${cluster.verifiedCount}</b> ${escapeHtml(copy.verified)}`,
+    ].map((count) => `<span>${count}</span>`).join("");
     return `<li><article class="j-rec" data-source-cluster="${escapeHtml(cluster.id)}"><header class="j-rec-head"><code class="j-rec-id">${escapeHtml(cluster.id)}</code><span class="j-label" data-cluster-basis>${escapeHtml(copy.identity)} · ${escapeHtml(copy.identityBases[cluster.identityBasis] || String(cluster.identityBasis).replaceAll("_", " "))}</span></header><h5 class="j-rec-title">${escapeHtml(cluster.label)}</h5><p class="j-evi-counts">${counts}</p><ul class="j-insp-list">${members}</ul></article></li>`;
   }).join("");
   const gapGroups = Object.entries(intelligence.gaps)
@@ -6048,6 +6040,7 @@ function bindResultsInspection(lens) {
     onOpenRecord: lens === "biopolitical" ? openBiopoliticalRecord : openStrategicInspectionRecord,
     onShowConnections: lens === "biopolitical" ? showBiopoliticalConnections : null,
     onOpenOccurrence: (node, occurrence) => openInspectionOccurrence(lens, node, occurrence),
+    sectionLabel: editorKeyLabel,
   });
   wireInspectionDirectory();
   return index;
@@ -6454,9 +6447,9 @@ function renderBiopoliticalReviewNav() {
   );
   const counts = {
     overview: "",
-    pillars: BIO.PILLARS.reduce(
-      (sum, pillar) => sum + BIO.pillarCount(state.analysis, pillar.key),
-      0,
+    pillars: pluralText(
+      BIO.PILLARS.reduce((sum, pillar) => sum + BIO.pillarCount(state.analysis, pillar.key), 0),
+      ITEM_COUNT,
     ),
     connections: currentBiopoliticalGraph().edges.length,
     evidence:
@@ -6466,7 +6459,7 @@ function renderBiopoliticalReviewNav() {
       (sum, group) => sum + group.items.length,
       0,
     ),
-    inspection: currentResultsInspectionIndex("biopolitical").nodes.length,
+    inspection: pluralText(currentResultsInspectionIndex("biopolitical").nodes.length, RECORD_COUNT),
     exports: "",
   };
   const items = [
@@ -6483,7 +6476,7 @@ function renderBiopoliticalReviewNav() {
   $("reviewNav").innerHTML = items
     .map(
       (key) =>
-        `<button class="j-case-link" data-bio-review="${key}" type="button"><strong>${escapeHtml(key === "connections" ? connectionLabel : labels[key])}</strong><small>${escapeHtml(key === "connections" ? connectionHint : hints[key] || "")}</small>${counts[key] !== "" ? `<span class="j-case-count">${counts[key]}</span>` : ""}</button>`,
+        `<button class="j-case-link" data-bio-review="${key}" type="button"><strong>${escapeHtml(key === "connections" ? connectionLabel : labels[key])}</strong><small>${escapeHtml(key === "connections" ? connectionHint : hints[key] || "")}</small>${counts[key] !== "" ? `<span class="j-case-count">${escapeHtml(String(counts[key]))}</span>` : ""}</button>`,
     )
     .join("");
 }
@@ -6708,13 +6701,13 @@ function renderExports() {
 function renderReviewNav() {
   const counts = {
     overview: "",
-    pillars: PILLARS.reduce((n, p) => n + countFor(p), 0),
+    pillars: pluralText(PILLARS.reduce((n, p) => n + countFor(p), 0), ITEM_COUNT),
     contradictions: state.analysis.contradictions.items.length,
     scenarios: state.analysis.scenarios.items.length,
     evidence:
       normalizeArray(state.analysis.evidence.items).length +
       normalizeArray(state.analysis.assumptions.items).length,
-    inspection: currentResultsInspectionIndex("strategic").nodes.length,
+    inspection: pluralText(currentResultsInspectionIndex("strategic").nodes.length, RECORD_COUNT),
     exports: "",
   };
   const items = [
@@ -6729,7 +6722,7 @@ function renderReviewNav() {
   $("reviewNav").innerHTML = items
     .map(
       (k) =>
-        `<button class="j-case-link" data-review="${k}" type="button"><strong>${t("nav")[k]}</strong><small>${t("navHints")?.[k] || ""}</small>${counts[k] !== "" ? `<span class="j-case-count">${counts[k]}</span>` : ""}</button>`,
+        `<button class="j-case-link" data-review="${k}" type="button"><strong>${t("nav")[k]}</strong><small>${t("navHints")?.[k] || ""}</small>${counts[k] !== "" ? `<span class="j-case-count">${escapeHtml(String(counts[k]))}</span>` : ""}</button>`,
     )
     .join("");
 }
@@ -6928,6 +6921,49 @@ function showOperationFailure(error, operation, invoker) {
 }
 
 // The analysis's identity and metadata, listed after its content in the editor.
+// The editor names each part of the analysis; its JSON path stays under the field.
+const EDITOR_KEY_LABELS = {
+  subject: ["Subject", "الموضوع", "Sujet"],
+  contradictions: ["Contradictions", "التناقضات", "Contradictions"],
+  scenarios: ["Scenarios", "السيناريوهات", "Scénarios"],
+  evidence: ["Evidence", "الأدلة", "Preuves"],
+  assumptions: ["Assumptions", "الافتراضات", "Hypothèses"],
+  links: ["Connections", "العلاقات", "Connexions"],
+  quality_gate: ["Quality gate", "بوابة الجودة", "Contrôle qualité"],
+  framing: ["Framing", "التأطير", "Cadrage"],
+  legal_framework: ["Legal framework", "الإطار القانوني", "Cadre juridique"],
+  international_comparison: ["International comparison", "مقارنة دولية", "Comparaison internationale"],
+  capture_levels: ["Capture levels", "مستويات الاستحواذ", "Niveaux de capture"],
+  theoretical_comparison: ["Theoretical comparison", "مقارنة نظرية", "Comparaison théorique"],
+  human_functions: ["Human functions", "وظائف الإنسان", "Fonctions humaines"],
+  power_map: ["Power map", "خريطة السلطة", "Carte du pouvoir"],
+  mechanisms: ["Mechanisms", "الآليات", "Mécanismes"],
+  meaning_systems: ["Meaning systems", "أنظمة المعنى", "Systèmes de sens"],
+  intervention_assessment: ["Intervention assessment", "تقييم التدخل", "Évaluation de l’intervention"],
+  scale_time: ["Scale and time", "المقياس والزمن", "Échelle et temps"],
+  distribution: ["Distribution", "التوزيع", "Distribution"],
+  consent_exit: ["Consent and exit", "الموافقة والخروج", "Consentement et sortie"],
+  competing_explanations: ["Competing explanations", "التفسيرات المتنافسة", "Explications concurrentes"],
+  resistance_agency: ["Resistance and agency", "المقاومة والفاعلية", "Résistance et agentivité"],
+  alternatives: ["Alternatives", "البدائل", "Alternatives"],
+  calibrated_conclusion: ["Calibrated conclusion", "الخلاصة المُعايرة", "Conclusion calibrée"],
+  self_audit: ["Self-audit", "التدقيق الذاتي", "Auto-audit"],
+  self_audit_notes: ["Self-audit notes", "ملاحظات التدقيق الذاتي", "Notes d’auto-audit"],
+  migration: ["Migration", "الترحيل", "Migration"],
+  schema_version: ["Format version", "إصدار الصيغة", "Version du format"],
+  analysis_contract: ["Analysis format", "صيغة التحليل", "Format d’analyse"],
+  contract_status: ["Format status", "حالة الصيغة", "Statut du format"],
+  analysis_id: ["Analysis ID", "معرّف التحليل", "Identifiant de l’analyse"],
+  generated_at: ["Generated", "تاريخ الإنشاء", "Généré le"],
+  language: ["Language", "اللغة", "Langue"],
+  model_mode: ["Prompt mode", "نمط الموجِّه", "Mode du prompt"],
+  analysis_lens: ["Lens", "العدسة", "Lentille"],
+};
+function editorKeyLabel(key) {
+  const layer = tFor(state.lang, "pillars", "strategic")?.[key]?.[0];
+  const label = EDITOR_KEY_LABELS[key];
+  return layer || (label ? label[state.lang === "ar" ? 1 : state.lang === "fr" ? 2 : 0] : key);
+}
 const EDITOR_META_KEYS = new Set(["schema_version", "analysis_contract", "contract_status", "analysis_id", "generated_at", "language", "model_mode", "analysis_lens"]);
 function editorText(key) {
   const copy = {
@@ -7042,7 +7078,7 @@ function renderCanonicalEditor() {
   const issues = snapshot.validation.errors || [];
   const section = (key) => {
     const count = issues.filter((issue) => String(issue.path || "/").split("/")[1] === key).length;
-    return `<button class="j-editor-sec" type="button" data-editor-path="/${escapeHtml(key)}"${state.editorPath === `/${key}` ? ' aria-current="true"' : ""}${state.editorRecovery ? " disabled" : ""}><span class="j-mono" dir="ltr">${escapeHtml(key)}</span>${count ? `<span class="j-chip" data-tone="crit">${escapeHtml(editorText("toFix").replace("{n}", count))}</span>` : ""}</button>`;
+    return `<button class="j-editor-sec" type="button" data-editor-path="/${escapeHtml(key)}"${state.editorPath === `/${key}` ? ' aria-current="true"' : ""}${state.editorRecovery ? " disabled" : ""}><span>${escapeHtml(editorKeyLabel(key))}</span>${count ? `<span class="j-chip" data-tone="crit">${escapeHtml(editorText("toFix").replace("{n}", count))}</span>` : ""}</button>`;
   };
   $("editorSections").innerHTML = content.map(section).join("")
     + (meta.length ? `<p class="j-label">${escapeHtml(editorText("metadata"))}</p>${meta.map(section).join("")}` : "");
@@ -7054,7 +7090,7 @@ function renderCanonicalEditor() {
     };
   });
   const key = state.editorPath.slice(1);
-  $("editorFieldLabel").textContent = key;
+  $("editorFieldLabel").textContent = editorKeyLabel(key);
   $("editorPath").textContent = state.editorPath;
   const editorField = $("editorField");
   editorField.disabled = Boolean(state.editorRecovery);
@@ -7249,14 +7285,14 @@ let revisionRestorePending = false;
 function revisionText(key, values = {}) {
   const copy = {
     title: ["Revision history", "سجل النسخ", "Historique des révisions"],
-    hint: ["Browse immutable local revisions, compare any historical state with the current head, and restore only through reviewed append-only history.", "تصفح النسخ المحلية غير القابلة للتغيير، وقارن أي حالة تاريخية بالنسخة الحالية، واستعدها فقط عبر سجل إضافي خاضع للمراجعة.", "Parcourez les révisions locales immuables, comparez un état historique à la tête actuelle et restaurez-le uniquement par ajout contrôlé."],
-    trust: ["Read-only history · restore never overwrites a revision or moves the head backward", "سجل للقراءة فقط · لا تستبدل الاستعادة أي نسخة ولا تعيد المؤشر إلى الخلف", "Historique en lecture seule · une restauration n’écrase rien et ne fait jamais reculer la tête"],
+    hint: ["Browse immutable local revisions, compare any historical state with the current version, and restore only through reviewed append-only history.", "تصفح النسخ المحلية غير القابلة للتغيير، وقارن أي حالة تاريخية بالنسخة الحالية، واستعدها فقط عبر سجل إضافي خاضع للمراجعة.", "Parcourez les révisions locales immuables, comparez un état historique à la version actuelle et restaurez-le uniquement par ajout contrôlé."],
+    trust: ["Read-only history · a restore adds a new revision and never overwrites one", "سجل للقراءة فقط · تضيف الاستعادة نسخة جديدة ولا تستبدل أي نسخة", "Historique en lecture seule · une restauration ajoute une révision et n’en écrase aucune"],
     revisions: ["Immutable revisions", "النسخ غير القابلة للتغيير", "Révisions immuables"],
-    compare: ["Compared with current head", "مقارنة بالنسخة الحالية", "Comparaison avec la tête actuelle"],
+    compare: ["Compared with the current version", "مقارنة بالنسخة الحالية", "Comparaison avec la version actuelle"],
     revision: ["Revision {sequence}", "النسخة {sequence}", "Révision {sequence}"],
     imported: ["Imported", "مستوردة", "Importée"],
     committed: ["Committed", "معتمدة", "Validée"],
-    head: ["Current head", "النسخة الحالية", "Tête actuelle"],
+    head: ["Current version", "النسخة الحالية", "Version actuelle"],
     restored: ["Restored", "مستعادة", "Restaurée"],
     created: ["Created", "تاريخ الإنشاء", "Créée"],
     kind: ["Kind", "النوع", "Type"],
@@ -7264,7 +7300,7 @@ function revisionText(key, values = {}) {
     checksum: ["Content fingerprint", "بصمة المحتوى", "Empreinte du contenu"],
     restore: ["Prepare safe restore", "تحضير استعادة آمنة", "Préparer la restauration sûre"],
     dirtyBlocked: ["Restore is blocked because the working draft has uncommitted changes. Commit or remove that draft first.", "الاستعادة محظورة لأن مسودة العمل تحتوي تغييرات غير معتمدة. اعتمد المسودة أو أزل تغييراتها أولًا.", "La restauration est bloquée car le brouillon contient des modifications non validées. Validez-les ou supprimez-les d’abord."],
-    headBlocked: ["This revision is already the current head.", "هذه النسخة هي الحالية بالفعل.", "Cette révision est déjà la tête actuelle."],
+    headBlocked: ["This revision is already the current version.", "هذه النسخة هي الحالية بالفعل.", "Cette révision est déjà la version actuelle."],
     identicalBlocked: ["This revision has the same content as the current one; there is nothing to restore.", "محتوى هذه النسخة مطابق للنسخة الحالية؛ لا حاجة إلى معاملة استعادة.", "Cette révision a le même contenu que la version actuelle ; il n’y a rien à restaurer."],
     preparing: ["Preparing verified restore transaction…", "جارٍ تحضير معاملة الاستعادة المتحقق منها…", "Préparation de la restauration vérifiée…"],
     error: ["Revision operation failed safely: {message}", "فشلت عملية النسخة بأمان: {message}", "L’opération de révision a échoué sans altération : {message}"],
@@ -7299,7 +7335,7 @@ async function renderRevisionHistory() {
       revision.is_imported ? `<span class="j-chip">${escapeHtml(revisionText("imported"))}</span>` : "",
       revision.kind === "restored_revision" ? `<span class="j-chip">${escapeHtml(revisionText("restored"))}</span>` : "",
     ].join("");
-    return `<button class="j-pick" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="j-pick-top"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><code class="j-mono" dir="ltr">${escapeHtml(revision.revision_id)}</code><span class="j-pick-meta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
+    return `<button class="j-pick" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="j-pick-top"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><span class="j-pick-meta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
   }).join("");
   $("revisionList").querySelectorAll("[data-revision-id]").forEach((button) => {
     button.onclick = async () => {
@@ -7313,12 +7349,14 @@ async function renderRevisionHistory() {
     targetRevisionId: selected.revision_id,
   });
   $("revisionChangeCount").textContent = pluralText(comparison.diff.change_count, CHANGE_COUNT);
+  const parent = history.revisions.find((revision) => revision.revision_id === selected.parent_revision_id);
   $("revisionMetadata").innerHTML = [
     [revisionText("created"), new Date(selected.created_at).toLocaleString(state.lang)],
     [revisionText("kind"), revisionKindText(selected.kind)],
-    [revisionText("parent"), selected.parent_revision_id || "—"],
-    [revisionText("checksum"), selected.payload_checksum],
-  ].map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd${label === revisionText("checksum") || label === revisionText("parent") ? ' class="j-mono" dir="ltr"' : ""}>${escapeHtml(value)}</dd></div>`).join("");
+    [revisionText("parent"), parent ? revisionText("revision", { sequence: parent.sequence }) : "—"],
+    // The fingerprint's first 12 characters tell revisions apart; the bundle keeps all 64.
+    [revisionText("checksum"), String(selected.payload_checksum || "").slice(0, 12)],
+  ].map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd${label === revisionText("checksum") ? ' class="j-mono" dir="ltr"' : ""}>${escapeHtml(value)}</dd></div>`).join("");
   $("revisionDiff").innerHTML = comparison.diff.changes.length
     ? comparison.diff.changes.map(diffItem).join("")
     : "";
@@ -7425,8 +7463,8 @@ function resolutionText(key) {
     integrity: ["Proposal integrity", "سلامة الاقتراح", "Intégrité de la proposition"],
     verified: ["Verified", "متحقق منها", "Vérifiée"],
     restoreTitle: ["Safe revision restore", "استعادة آمنة لنسخة سابقة", "Restauration sûre d’une révision"],
-    restoreHint: ["Review the exact historical-to-current difference and approve a new child revision. The head never moves backward.", "راجع الفرق الدقيق بين النسخة التاريخية والحالية ووافق على نسخة فرعية جديدة. لا يعود مؤشر النسخة الحالية إلى الخلف.", "Examinez la différence exacte avec l’historique et approuvez une nouvelle révision enfant. La tête ne recule jamais."],
-    restoreTrust: ["Restore appends a new immutable child of the current head · selected history remains unchanged", "تضيف الاستعادة نسخة فرعية جديدة غير قابلة للتغيير من النسخة الحالية · ويبقى التاريخ المحدد دون تعديل", "La restauration ajoute un nouvel enfant immuable à la tête actuelle · l’historique sélectionné reste inchangé"],
+    restoreHint: ["Review the exact difference from the current version and approve a new revision. Earlier revisions stay as they are.", "راجع الفرق الدقيق بين النسخة التاريخية والحالية ووافق على نسخة جديدة. تبقى النسخ السابقة كما هي.", "Examinez la différence exacte avec la version actuelle et approuvez une nouvelle révision. Les révisions antérieures restent inchangées."],
+    restoreTrust: ["Restore adds a new revision after the current version · the selected history stays unchanged", "تضيف الاستعادة نسخة جديدة بعد النسخة الحالية · ويبقى التاريخ المحدد دون تعديل", "La restauration ajoute une révision après la version actuelle · l’historique sélectionné reste inchangé"],
     restoreCommit: ["Approve & append restored revision", "الموافقة وإضافة النسخة المستعادة", "Approuver et ajouter la révision restaurée"],
     source: ["Historical source", "المصدر التاريخي", "Source historique"],
     restored: ["Historical state restored as a new immutable revision.", "تمت استعادة الحالة التاريخية كنسخة جديدة غير قابلة للتغيير.", "État historique restauré sous forme d’une nouvelle révision immuable."],
@@ -7471,6 +7509,26 @@ const REPAIR_COUNT = {
   ar: { zero: "لا إصلاحات", one: "إصلاح واحد", two: "إصلاحان", few: "{count} إصلاحات", many: "{count} إصلاحًا", other: "{count} إصلاح" },
   fr: { one: "{count} réparation", other: "{count} réparations" },
 };
+const ITEM_COUNT = {
+  en: { one: "{count} item", other: "{count} items" },
+  ar: { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" },
+  fr: { one: "{count} élément", other: "{count} éléments" },
+};
+const RECORD_COUNT = {
+  en: { one: "{count} record", other: "{count} records" },
+  ar: { zero: "لا سجلات", one: "سجل واحد", two: "سجلان", few: "{count} سجلات", many: "{count} سجلًا", other: "{count} سجل" },
+  fr: { one: "{count} fiche", other: "{count} fiches" },
+};
+const EVIDENCE_RECORD_COUNT = {
+  en: { one: "{count} evidence record", other: "{count} evidence records" },
+  ar: { zero: "لا سجلات أدلة", one: "سجل دليل واحد", two: "سجلا دليل", few: "{count} سجلات أدلة", many: "{count} سجلًا للأدلة", other: "{count} سجل دليل" },
+  fr: { one: "{count} fiche de preuve", other: "{count} fiches de preuve" },
+};
+const CITED_BY_COUNT = {
+  en: { one: "cited by {count} record", other: "cited by {count} records" },
+  ar: { zero: "لا يحيل إليه أي سجل", one: "يحيل إليه سجل واحد", two: "يحيل إليه سجلان", few: "يحيل إليه {count} سجلات", many: "يحيل إليه {count} سجلًا", other: "يحيل إليه {count} سجل" },
+  fr: { one: "cité par {count} fiche", other: "cité par {count} fiches" },
+};
 const REVISION_COUNT = {
   en: { one: "{count} revision", other: "{count} revisions" },
   ar: { zero: "لا نسخ", one: "نسخة واحدة", two: "نسختان", few: "{count} نسخ", many: "{count} نسخة", other: "{count} نسخة" },
@@ -7480,6 +7538,10 @@ const REVISION_COUNT = {
 function pluralText(count, forms) {
   const lang = ["ar", "fr"].includes(state.lang) ? state.lang : "en";
   return (forms[lang][new Intl.PluralRules(lang).select(count)] || forms[lang].other).replace("{count}", count);
+}
+// A count in words with its number in bold: "<b>3</b> items".
+function countHtml(count, forms) {
+  return escapeHtml(pluralText(count, forms)).replace(String(count), `<b>${count}</b>`);
 }
 
 // One change of a canonical diff, the same in the commit and history dialogs.
@@ -7625,6 +7687,7 @@ function ledgerText(key) {
     export: ["Export audit trail", "تصدير سجل التدقيق", "Exporter la piste d’audit"],
     history: ["Immutable event history", "سجل الأحداث غير القابل للتغيير", "Historique immuable"],
     choose: ["Select a task to record review work.", "اختر مهمة لتسجيل عمل المراجعة.", "Sélectionnez une tâche pour enregistrer le travail de revue."],
+    noEvents: ["No review events for this task yet.", "لا أحداث مراجعة لهذه المهمة بعد.", "Aucun événement de revue pour cette tâche pour l’instant."],
     saved: ["Review event appended and integrity verified.", "أُضيف حدث المراجعة وتم التحقق من سلامته.", "Événement ajouté et intégrité vérifiée."],
     saving: ["Appending review event…", "جارٍ إضافة حدث المراجعة…", "Ajout de l’événement de revue…"],
     identityRequired: ["Enter the reviewer display name before recording an event.", "أدخل اسم المراجع قبل تسجيل الحدث.", "Saisissez le nom du réviseur avant d’enregistrer un événement."],
@@ -7689,17 +7752,21 @@ async function renderReviewLedger() {
   if (!selected) {
     $("ledgerSelectedTask").textContent = ledgerText("choose");
     $("ledgerApply").disabled = true;
+    $("ledgerHistory").innerHTML = "";
+    $("ledgerHistoryEmpty").hidden = true;
     return;
   }
   $("ledgerApply").disabled = ledgerEventPending;
-  $("ledgerSelectedTask").innerHTML = `${ledgerChip(selected.current.status, ledgerText(selected.current.status))}<strong>${escapeHtml(ledgerTaskLabels(selected.task).reason)}</strong><code dir="ltr">${escapeHtml(selected.task.targetId)}</code><small dir="ltr">${escapeHtml(selected.key)}</small>`;
+  $("ledgerSelectedTask").innerHTML = `${ledgerChip(selected.current.status, ledgerText(selected.current.status))}<strong>${escapeHtml(ledgerTaskLabels(selected.task).reason)}</strong><code dir="ltr">${escapeHtml(selected.task.targetId)}</code>`;
   const previousAction = $("ledgerAction").value;
   const actions = ledgerActionsFor(selected.current.status);
   $("ledgerAction").innerHTML = actions.map((action) => `<option value="${action}">${escapeHtml(ledgerText(action))}</option>`).join("");
   if (actions.includes(previousAction)) $("ledgerAction").value = previousAction;
   toggleLedgerWaiver();
   const history = state.ledgerWorkspace.review_ledger.events.filter((event) => event.task_key === selected.key).reverse();
-  $("ledgerHistory").innerHTML = history.length ? history.map((event) => `<li><div><strong>${escapeHtml(ledgerText(event.type))}</strong><span>${escapeHtml(event.reviewer.display_name)}</span><time datetime="${escapeHtml(event.occurred_at)}">${escapeHtml(new Date(event.occurred_at).toLocaleString(state.lang))}</time></div>${event.rationale ? `<p>${escapeHtml(event.rationale)}</p>` : ""}${event.note ? `<p>${escapeHtml(event.note)}</p>` : ""}<code>${escapeHtml(event.event_hash.slice(0, 16))}…</code></li>`).join("") : `<li>${escapeHtml(ledgerText("choose"))}</li>`;
+  $("ledgerHistory").innerHTML = history.length ? history.map((event) => `<li><div><strong>${escapeHtml(ledgerText(event.type))}</strong><span>${escapeHtml(event.reviewer.display_name)}</span><time datetime="${escapeHtml(event.occurred_at)}">${escapeHtml(new Date(event.occurred_at).toLocaleString(state.lang))}</time></div>${event.rationale ? `<p>${escapeHtml(event.rationale)}</p>` : ""}${event.note ? `<p>${escapeHtml(event.note)}</p>` : ""}</li>`).join("") : "";
+  $("ledgerHistoryEmpty").hidden = history.length > 0;
+  $("ledgerHistoryEmpty").textContent = ledgerText("noEvents");
 }
 
 // A task's status as a chip: its tone and the status it stands for.
@@ -8016,8 +8083,8 @@ function lifeText(key, values = {}) {
     snapNone: ["None. No unsaved work was interrupted.", "لا توجد. لم يُقاطَع أي عمل غير محفوظ.", "Aucun. Aucun travail non enregistré n’a été interrompu."],
     draftTitle: ["Working draft", "مسودة العمل", "Brouillon de travail"],
     notCommitted: ["Not committed", "غير معتمدة", "Non validé"],
-    uncommitted: ["Draft saved locally, not committed yet. Revision {n} is the current head.", "المسودة محفوظة محليًا ولم تُعتمد بعد. النسخة {n} هي النسخة الحالية.", "Brouillon enregistré localement, pas encore validé. La révision {n} est la tête actuelle."],
-    matchesHead: ["Matches revision {n}, the current head.", "تطابق النسخة {n}، وهي النسخة الحالية.", "Identique à la révision {n}, la tête actuelle."],
+    uncommitted: ["Draft saved locally, not committed yet. Revision {n} is the current version.", "المسودة محفوظة محليًا ولم تُعتمد بعد. النسخة {n} هي النسخة الحالية.", "Brouillon enregistré localement, pas encore validé. La révision {n} est la version actuelle."],
+    matchesHead: ["Matches revision {n}, the current version.", "تطابق النسخة {n}، وهي النسخة الحالية.", "Identique à la révision {n}, la version actuelle."],
     reviewCommit: ["Review and commit", "مراجعة واعتماد", "Examiner et valider"],
     damagedOne: ["One saved workspace failed its integrity check. Nothing was loaded from it.", "فشلت مساحة عمل محفوظة في فحص السلامة. لم يُحمَّل منها أي شيء.", "Un espace enregistré a échoué au contrôle d’intégrité. Rien n’en a été chargé."],
     damagedMany: ["Saved workspaces that failed their integrity check: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة فشلت في فحص السلامة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés ayant échoué au contrôle d’intégrité : {n}. Rien n’en a été chargé."],
