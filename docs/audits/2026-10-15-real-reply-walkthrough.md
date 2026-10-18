@@ -88,7 +88,7 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 | D1 | The import details repeated one message 13 times and silently stopped at 12 lines | D1 |
 | D2 | The review queue is not grouped; empty columns span screens; traceability tables can be all dashes | done (UIX-5 H part 2) |
 | D3 | A record appears 4–9 times across views; the report lists relations two or three times | report: done (UIX-5 G1, each record lists its connections); records across views: open |
-| D4 | Walls of "not applicable"; the inspector repeats "not provided" five times | inspector: done (UIX-5 H part 1); walls of "not applicable": open |
+| D4 | Walls of "not applicable"; the inspector repeats "not provided" five times | inspector: done (UIX-5 H part 1); walls of "not applicable" and of passed self-audit checks: done (UIX-5 H part 3) |
 
 ### E. Language
 

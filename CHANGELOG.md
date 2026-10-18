@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Fewer walls in a Biopolitical answer (UIX-5 slice H, part 3)
+
+Walkthrough D4, in AR/EN/FR. On real answers an evidence record listed up to
+seven fields as "Not applicable", one row each, and the model's self-audit
+was eighteen tiles, seventeen of them passes.
+
+- **A record names the fields that do not apply on one line**: "Not
+  applicable: Population · Denominator · Sample size". A French record went
+  from seven such rows to one.
+- **The self-audit shows the checks to look at**; the passes fold under
+  "17 checks it says it passed". The conclusion section went from 2,024px
+  to 1,644px on a French answer and from 1,055px to 706px on the sample.
+- **Every folded part shows a chevron**, down when closed and up when
+  open, so it reads as something to open.
+- **Coded values read in sentence case** in English and French ("Not
+  applicable", "Statut réglementé"), not "Not Applicable".
+- **Arabic:** the self-audit note quotes the label it shows, «مستوفى».
+
 ### An evidence review that fits on the page (UIX-5 slice H, part 2)
 
 Walkthrough D2, in AR/EN/FR. On four real answers the "Source clusters and

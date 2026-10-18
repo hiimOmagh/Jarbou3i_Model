@@ -70,6 +70,9 @@ ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
 .j-checks dt { color: var(--j-fg); font-size: var(--j-t-14); line-height: 1.45; overflow-wrap: anywhere; }
 .j-checks dd { margin: 0; }
 .j-checks + .j-note { margin-top: var(--j-s-3); }
+/* The passes, folded under their count after the checks to look at. */
+.j-checks + .j-disclosure[data-self-audit-passed], .j-disclosure[data-self-audit-passed] + .j-note { margin-top: var(--j-s-3); }
+.j-disclosure[data-self-audit-passed] > .j-checks { padding: 0 var(--j-s-3) var(--j-s-3); }
 
 /* Counts, each a figure over its name; a tone colours the figure only. */
 .j-stats { display: grid; grid-template-columns: repeat(3, minmax(88px, 1fr)); gap: var(--j-s-2); }

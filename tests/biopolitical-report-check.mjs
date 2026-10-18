@@ -170,9 +170,9 @@ for (const lang of ["ar", "fr"]) {
     );
   assert.deepEqual([...new Set(raw)], [], `${lang} report prints raw codes`);
 }
-// A word the AI wrote where a code was asked is capitalized as a word, not
-// after each accented letter ("RéGlementé").
-assert.equal(bio.displayToken("fr", "statut réglementé"), "Statut Réglementé");
+// A word the AI wrote where a code was asked reads in sentence case, with no
+// capital after an accented letter ("RéGlementé").
+assert.equal(bio.displayToken("fr", "statut réglementé"), "Statut réglementé");
 // A link between two records points from one to the other as Arabic reads.
 assert.ok(!readableBody("ar").includes("→"), "an Arabic report has an arrow pointing against its reading");
 

@@ -33,6 +33,17 @@ test.describe("Case file", () => {
     const audit = conclusion.locator('[data-records="self-audit"]');
     await expect(audit.locator(".j-status").first()).toBeVisible();
     await expect(audit.locator('.j-status[data-tone="ok"]')).toHaveCount(0);
+    // The concern stays in view; the passes are folded under their count.
+    await expect(audit.locator(".j-status")).toHaveCount(1);
+    const passed = conclusion.locator("[data-self-audit-passed]");
+    await expect(passed.locator(":scope > summary")).toHaveText("17 checks it says it passed");
+    await passed.locator(":scope > summary").click();
+    await expect(passed.locator(".j-status")).toHaveCount(17);
+
+    // A record names the fields that do not apply on one line.
+    const facts = page.locator("#case-evidence .j-rec-facts");
+    await expect(facts.locator("dd", { hasText: /^Not applicable$/ })).toHaveCount(0);
+    await expect(facts.locator("dt", { hasText: /^Not applicable$/ }).first().locator("xpath=following-sibling::dd")).toContainText("Denominator");
   });
 
   test("the outline jumps to a section and follows the reader", async ({ page }) => {

@@ -10,7 +10,7 @@
 .j-idir-head .j-lede { margin-bottom: 0; }
 
 .j-evi > summary {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--j-s-4);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--j-s-4);
   padding: var(--j-s-3) var(--j-s-4);
 }
 .j-evi-title { display: grid; gap: var(--j-s-1); }
@@ -56,7 +56,11 @@
   .j-evi-body { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 620px) {
-  .j-evi > summary, .j-evi-head, .j-idir-head { grid-template-columns: minmax(0, 1fr); }
+  .j-evi-head, .j-idir-head { grid-template-columns: minmax(0, 1fr); }
+  /* The counts under the title, the chevron beside it. */
+  .j-evi > summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .j-evi > summary > .j-stats { grid-area: 2 / 1 / 3 / -1; }
+  .j-evi > summary::after { grid-area: 1 / 2; }
   .j-evi-body { padding-inline: var(--j-s-3); }
   .j-evi-acts { justify-content: stretch; }
   .j-evi-acts .j-btn { flex: 1 1 auto; }

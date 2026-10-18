@@ -340,7 +340,7 @@
       },
       conclusion: "الحكم المُعاير",
       selfAudit: "المراجعة الذاتية للنموذج",
-      selfAuditNote: "فحوص الذكاء الاصطناعي لإجابته: «ناجح» ادعاء منه وليس تحققًا.",
+      selfAuditNote: "فحوص الذكاء الاصطناعي لإجابته: «مستوفى» ادعاء منه وليس تحققًا.",
       migration: "تمت ترقية استيراد السياسة الحيوية القديم إلى الإصدار 2",
       noRecords: "لا توجد سجلات منظّمة في هذه الركيزة.",
       sourceTier: "رتبة المصدر",
@@ -786,12 +786,13 @@
   }
 
   function humanizeToken(value) {
-    // Each word's first letter, also when it is accented ("état"), and not
-    // a letter after an accented one or an apostrophe.
+    // In sentence case, as the app writes: "Not applicable", "État de réplication".
     return str(value)
       .replaceAll("_", " ")
-      .replace(/(?<![\p{L}\p{N}'’])\p{L}/gu, (character) => character.toUpperCase());
+      .replace(/^\p{L}/u, (character) => character.toUpperCase());
   }
+  // A value that says its field does not apply, as the AI writes it.
+  const notApplicable = (value) => /^(?:not[ _]applicable|non applicable|n\/a|غير منطبق)\.?$/i.test(str(value).trim());
 
   // French sets a colon apart with a space that does not break.
   const colonFor = (lang) => (lang === "fr" ? "\u00A0: " : ": ");
@@ -4814,6 +4815,7 @@ ${schema}${interchangeGuide}`;
     ui,
     displayToken,
     ratingOf,
+    notApplicable,
     displayCode,
     auditLabel,
     sanitizePortableText,

@@ -6107,10 +6107,14 @@ function bioRecordHtml(item) {
       return kernelChip(BIO.displayToken(state.lang, value), rating ? BIO_RATED_TONE[rating.kind]?.(rating.level) || "" : "");
     })
     .join("");
+  // Fields that do not apply are named on one line, not one row each.
+  const details = arr(item.details);
+  const blank = details.filter((detail) => BIO.notApplicable(detail.value));
   const facts = [
-    ...arr(item.details).map((detail) =>
+    ...details.filter((detail) => !blank.includes(detail)).map((detail) =>
       recordFact(detail.label, namedBioText(detail.value, graph)),
     ),
+    blank.length ? recordFact(BIO.displayToken(state.lang, "not_applicable"), escapeHtml(blank.map((detail) => detail.label).join(" · "))) : "",
     ...arr(item.lists).map((group) =>
       recordFact(
         group.label,
@@ -6451,12 +6455,18 @@ function renderBiopoliticalConclusion() {
     )
     .join("");
   // The AI's own checks: a pass is its claim, so it is not shown as verified.
+  // The others come first; the passes are folded under their count.
   const tones = { pass: "idle", concern: "warn", not_applicable: "idle" };
-  const audit = BIO.SELF_AUDIT_KEYS.map((key) => {
+  const check = (key) => {
     const status = a.self_audit[key] || "concern";
     return `<div data-tone="${tones[status]}"><dt>${escapeHtml(BIO.auditLabel(state.lang, key))}</dt><dd><span class="j-status" data-tone="${tones[status]}">${escapeHtml(BIO.displayToken(state.lang, status))}</span></dd></div>`;
-  }).join("");
-  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p><dl class="j-checks" data-records="self-audit">${audit}</dl>${a.self_audit_notes.length ? `<div class="j-note" data-tone="idle">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
+  };
+  const passed = BIO.SELF_AUDIT_KEYS.filter((key) => a.self_audit[key] === "pass");
+  const others = BIO.SELF_AUDIT_KEYS.filter((key) => a.self_audit[key] !== "pass");
+  const audit = `${others.length ? `<dl class="j-checks" data-records="self-audit">${others.map(check).join("")}</dl>` : ""}${
+    passed.length ? `<details class="j-disclosure" data-self-audit-passed><summary>${escapeHtml(pluralText(passed.length, PASSED_CHECK_COUNT))}</summary><dl class="j-checks">${passed.map(check).join("")}</dl></details>` : ""
+  }`;
+  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p>${audit}${a.self_audit_notes.length ? `<div class="j-note" data-tone="idle">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
 }
 function renderBiopoliticalReviewNav() {
   const connectionLabel = labelText("Connections", "العلاقات", "Connexions");
@@ -7553,6 +7563,11 @@ const MORE_TASK_COUNT = {
   en: { one: "{count} more task", other: "{count} more tasks" },
   ar: { one: "مهمة أخرى", two: "مهمتان أخريان", few: "{count} مهام أخرى", many: "{count} مهمة أخرى", other: "{count} مهمة أخرى" },
   fr: { one: "{count} autre tâche", other: "{count} autres tâches" },
+};
+const PASSED_CHECK_COUNT = {
+  en: { one: "{count} check it says it passed", other: "{count} checks it says it passed" },
+  ar: { one: "فحص واحد يقول إنه مستوفى", two: "فحصان يقول إنهما مستوفيان", few: "{count} فحوص يقول إنها مستوفاة", many: "{count} فحصًا يقول إنها مستوفاة", other: "{count} فحص يقول إنها مستوفاة" },
+  fr: { one: "{count} contrôle déclaré satisfait", other: "{count} contrôles déclarés satisfaits" },
 };
 const UNREFERENCED_COUNT = {
   en: { one: "{count} record cites no evidence", other: "{count} records cite no evidence" },

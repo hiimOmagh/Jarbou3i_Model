@@ -194,7 +194,13 @@
 
 /* A disclosure: a <details> whose summary is a 44px control. */
 .j-disclosure { border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel); color: var(--j-fg); }
-.j-disclosure > summary { display: flex; align-items: center; min-height: 44px; padding: 0 var(--j-s-3); font-weight: 600; font-size: var(--j-t-13); cursor: pointer; }
+.j-disclosure > summary { display: flex; align-items: center; gap: var(--j-s-2); min-height: 44px; padding: 0 var(--j-s-3); font-weight: 600; font-size: var(--j-t-13); cursor: pointer; }
+/* Its chevron at the end, drawn from two borders: down when closed, up when open. */
+.j-disclosure > summary::after {
+  content: ""; flex: none; inline-size: 8px; block-size: 8px; margin-inline: auto var(--j-s-1);
+  border-right: 2px solid var(--j-fg-muted); border-bottom: 2px solid var(--j-fg-muted); transform: translateY(-2px) rotate(45deg);
+}
+.j-disclosure[open] > summary::after { transform: translateY(2px) rotate(-135deg); }
 .j-disclosure > summary:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
 
 /* ---------- Card ---------- */
