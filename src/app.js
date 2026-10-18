@@ -1266,6 +1266,9 @@ const RECOVERY_JOURNAL = createRecoveryJournal({
 const TRIP_PREFIX = "intake-draft";
 const TRIP_CONTRACT = "jarbou3i-intake-draft@1";
 const TAB_KEY = "jarbou3i-tab";
+// When this tab's page last left for good: a page that starts just after is
+// its reload.
+const TAB_LEFT_KEY = "jarbou3i-tab-left";
 const TAB_WORKSPACE_KEY = "jarbou3i-tab-workspace";
 // The analysis this tab's analysis being prepared goes with, known at once
 // after a reload; the stored record may still be on its way.
@@ -1287,6 +1290,15 @@ const tabStorage = {
   },
 };
 const newTab = !tabStorage.get(TAB_KEY);
+const reloaded = Date.now() - Number(tabStorage.get(TAB_LEFT_KEY) || 0) < 10000;
+// Not carried into a tab duplicated from this one.
+tabStorage.set(TAB_LEFT_KEY, "");
+// Said as a page leaves for good once it holds the tab's lock, or while it
+// waits for it as a reload: reloaded again, it still waits for the same page.
+function markTabLeft(event) {
+  if (!event.persisted) tabStorage.set(TAB_LEFT_KEY, String(Date.now()));
+}
+if (reloaded) window.addEventListener("pagehide", markTabLeft);
 let tripKey = "";
 function claimTab(id) {
   tabStorage.set(TAB_KEY, id);
@@ -1300,15 +1312,18 @@ async function holdTabLock() {
       navigator.locks
         .request(tripKey, options, (lock) => {
           resolve(Boolean(lock));
+          if (!lock) return undefined;
+          window.addEventListener("pagehide", markTabLeft);
           // Held until the tab closes.
-          return lock ? new Promise(() => {}) : undefined;
+          return new Promise(() => {});
         })
         .catch(() => resolve(false));
     });
-  // A reload waits for the page it replaces to let go of the lock. A
-  // duplicated tab starts with the ID of a tab that stays open, so it never
-  // gets it and takes an ID of its own.
-  if (await hold({ signal: AbortSignal.timeout(3000) })) return;
+  // A reload waits for the page it replaces to let go of the lock, which can
+  // take several seconds on a busy device. A duplicated tab starts with the
+  // ID of a tab that stays open, so it never gets it and takes an ID of its
+  // own.
+  if (await hold({ signal: AbortSignal.timeout(reloaded ? 30000 : 3000) })) return;
   claimTab(globalThis.crypto.randomUUID());
   await hold({ ifAvailable: true });
 }

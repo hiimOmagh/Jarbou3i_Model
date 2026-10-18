@@ -743,8 +743,10 @@ test.describe("AI interchange reliability", () => {
     await openStep(other, "answer");
     await other.locator("#jsonInput").fill('{"tab": "B"');
     await expect.poll(async () => (await readIntakeDraft(other))?.reply).toBe('{"tab": "B"');
+    // A reload waits for the page it replaces to let go of the tab's lock,
+    // which a loaded browser can take several seconds to do.
     await page.reload();
-    await expect(page.locator("#topicInput")).toHaveValue("Tab A topic");
+    await expect(page.locator("#topicInput")).toHaveValue("Tab A topic", { timeout: 20_000 });
     await expect(page.locator("#jsonInput")).toHaveValue('{"tab": "A"');
 
     // The other tab opens an analysis and imports nothing pending.
@@ -753,7 +755,7 @@ test.describe("AI interchange reliability", () => {
     await other.locator("#loadSampleBtn").click();
     await expect(other.locator("#workspaceSaveState")).toHaveText("Saved locally");
     await page.reload();
-    await expect(page.locator("#topicInput")).toHaveValue("Tab A topic");
+    await expect(page.locator("#topicInput")).toHaveValue("Tab A topic", { timeout: 20_000 });
     await expect(page.locator("#jsonInput")).toHaveValue('{"tab": "A"');
 
     // A tab opened after the first one closed takes over what it left.
@@ -765,6 +767,87 @@ test.describe("AI interchange reliability", () => {
     await later.goto("./");
     await expect(later.locator("#jsonInput")).toHaveValue('{"tab": "A"');
     await expect(later.locator("#topicInput")).toHaveValue("Tab A topic");
+  });
+
+  test("a reload keeps the analysis being prepared while the page it replaces is slow to let go of it", async ({
+    page,
+    context,
+  }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "topic");
+    await page.locator("#topicInput").fill("Tab A topic");
+    await expect.poll(async () => (await readIntakeDraft(page))?.topic).toBe("Tab A topic");
+    const tab = await page.evaluate(() => sessionStorage.getItem("jarbou3i-tab"));
+    // Another page takes the tab's lock as the reloaded page lets go of it and
+    // keeps it, as a busy browser can keep a page that has left, for longer
+    // than a duplicated tab waits before taking an ID of its own.
+    const other = await context.newPage();
+    await other.goto("./");
+    const takeLock = async () => {
+      await other.evaluate((name) => {
+        window.letGo = null;
+        navigator.locks.request(name, () => new Promise((resolve) => (window.letGo = resolve)));
+      }, `intake-draft:${tab}`);
+      await expect
+        .poll(() =>
+          other.evaluate(
+            async (name) => (await navigator.locks.query()).pending.some((lock) => lock.name === name),
+            `intake-draft:${tab}`,
+          ),
+        )
+        .toBe(true);
+    };
+    const letGo = async () => {
+      await page.waitForTimeout(4000);
+      await expect.poll(() => other.evaluate(() => Boolean(window.letGo)), { timeout: 20_000 }).toBe(true);
+      await other.evaluate(() => window.letGo());
+    };
+    const restored = async () => {
+      // Restored by the app once the lock is its own again, not by a browser
+      // that keeps typed values across a reload.
+      await expect(page.locator("#topicStatus")).toContainText(RESTORED, { timeout: 20_000 });
+      await expect(page.locator("#topicInput")).toHaveValue("Tab A topic");
+      expect(await page.evaluate(() => sessionStorage.getItem("jarbou3i-tab"))).toBe(tab);
+    };
+
+    await takeLock();
+    await page.reload();
+    await letGo();
+    await restored();
+
+    // Reloaded again while it waits.
+    await takeLock();
+    await page.reload();
+    await page.reload();
+    await letGo();
+    await restored();
+  });
+
+  test("a duplicated tab takes an ID of its own, even just after a reload", async ({ page, context }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "topic");
+    await page.locator("#topicInput").fill("Tab A topic");
+    await expect.poll(async () => (await readIntakeDraft(page))?.topic).toBe("Tab A topic");
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED, { timeout: 20_000 });
+    const tab = await page.evaluate(() => sessionStorage.getItem("jarbou3i-tab"));
+
+    // A duplicated tab starts with a copy of the tab's session storage.
+    const copy = await page.evaluate(() => ({ ...sessionStorage }));
+    const duplicate = await context.newPage();
+    await duplicate.addInitScript((copy) => {
+      if (sessionStorage.length) return;
+      for (const [key, value] of Object.entries(copy)) sessionStorage.setItem(key, value);
+    }, copy);
+    await duplicate.goto("./");
+    await expect.poll(() => duplicate.evaluate(() => sessionStorage.getItem("jarbou3i-tab"))).not.toBe(tab);
+    await duplicate.locator("#langEn").click();
+    await openStep(duplicate, "topic");
+    await duplicate.locator("#topicInput").fill("Duplicated tab topic");
+    await expect.poll(async () => (await readIntakeDraft(duplicate))?.topic).toBe("Duplicated tab topic");
+    expect((await readIntakeDraft(page))?.topic).toBe("Tab A topic");
   });
 
   test("a topic typed in a lens with no analysis comes back after a lens round trip", async ({ page }) => {

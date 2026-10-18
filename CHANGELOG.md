@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### A reload on a busy device keeps the analysis being prepared
+
+A reloaded page waited three seconds for the page it replaced to let go of
+the tab. A busy browser can take longer, and the tab then started over
+without its topic and pasted reply.
+
+- **A reload waits for the page it replaces**, up to 30 seconds, then
+  restores what that tab was preparing. A duplicated tab still keeps its
+  own, apart from the tab it came from.
+
 ### Each record drawn once (UIX-5 slice D3)
 
 Walkthrough D3. In a Biopolitical answer the evidence records were drawn in
