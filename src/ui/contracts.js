@@ -120,7 +120,7 @@ export const CONTRACTS = Object.freeze({
 // shell's layout (src/ui/shell.css), whose controls are kernel controls.
 const FREE_CLASSES = [
   "j-root", "j-card", "j-card-head", "j-label", "j-mono", "j-sr-only", "j-icon",
-  "j-shell", "j-shell-top", "j-shell-brand", "j-shell-brand-text", "j-shell-case", "j-shell-cluster",
+  "j-shell", "j-shell-top", "j-shell-brand", "j-shell-brand-text", "j-shell-lead", "j-shell-case", "j-shell-cluster",
   "j-shell-bar", "j-shell-nav", "j-shell-phase", "j-shell-phase-index", "j-shell-phase-copy",
   "j-shell-trust", "j-shell-next", "j-shell-next-copy", "j-shell-display", "j-shell-tools", "j-shell-tool-name",
   "j-flow", "j-flow-guide", "j-flow-mascot", "j-flow-say", "j-flow-steps", "j-flow-step", "j-flow-step-n",

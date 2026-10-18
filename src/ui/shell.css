@@ -13,6 +13,8 @@
 .j-shell-brand img { width: 32px; height: 32px; border-radius: var(--j-r-2); flex: none; }
 .j-shell-brand-text { display: grid; gap: 2px; min-width: 0; }
 .j-shell-brand h1 { font: 700 var(--j-t-16)/1.2 var(--j-font-display); color: var(--j-fg); }
+/* What the tool is for and who it is for, under its name. */
+.j-shell-lead { margin: 0; max-width: 72ch; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.4; }
 /* Global context: the case open now, when there is one. Its own row: beside
    the header's controls a real title had room for a few letters. */
 .j-shell-case {
@@ -88,7 +90,8 @@
 }
 }
 @media (max-width: 720px) {
-  .j-shell-phase-copy small, .j-shell-trust { display: none; }
+  /* A phone's first screen holds the topic field; the lead line waits for a wider one. */
+  .j-shell-phase-copy small, .j-shell-trust, .j-shell-lead { display: none; }
   .j-shell-nav { flex: 1 1 100%; }
   .j-shell-phase { flex: 1 1 0; justify-content: center; }
   .j-shell-next { flex: 1 1 100%; }

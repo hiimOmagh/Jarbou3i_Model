@@ -149,6 +149,19 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
 
+test("one title names both lenses, with what the tool is for under it", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  const title = page.locator("#appHeader h1");
+  const name = await title.textContent();
+  await expect(page.locator(".j-shell-lead")).toBeVisible();
+  await openStep(page, "lens");
+  await page.locator('[data-lens="biopolitical"]').click();
+  await expect(title).toHaveText(name);
+  await expect(page).toHaveTitle(`${name} — Jarbou3i Model`);
+});
+
 test("a phone's first screen holds the topic field and one primary action", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("./");
@@ -158,6 +171,7 @@ test("a phone's first screen holds the topic field and one primary action", asyn
     await expect(page.locator("#topicInput")).toBeInViewport({ ratio: 1 });
     await expect(page.locator("#shellNextAction")).toBeHidden();
     await expect(page.locator("#flowNext")).toBeVisible();
+    await expect(page.locator(".j-shell-lead")).toBeHidden();
   }
 });
 

@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Saying what the tool is for
+
+- **One title for both lenses**: "Strategic and Biopolitical Analysis" (AR/EN/FR),
+  where it said "Strategic Analysis Workbench" until the lens was switched.
+  Under it, what the tool is for and who it is for: "Trace who wants what,
+  and how lives are governed, with your own AI assistant. For researchers,
+  journalists and analysts." A phone's first screen keeps the topic field
+  instead. The page title, description, share preview and app manifest say
+  the same.
+
+### Asking the AI for plain, concrete writing
+
+- **Both prompts ask for named specifics** (AR/EN/FR): the actor,
+  institution, law, place, date or figure rather than its category, who does
+  what to whom, in short sentences, and never an invented name or figure to
+  sound specific. In the saved replies, 75% of text values named no actor,
+  date or figure (Biopolitical answers 78–99%, e.g. "Regulators, courts,
+  data-protection authorities"); stock phrases were rare (8%).
+
 ### Saying what each prompt mode asks for
 
 - **The settings step compares the three prompt modes** under the menu, in

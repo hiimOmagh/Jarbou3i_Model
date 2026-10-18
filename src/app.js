@@ -54,9 +54,8 @@ import { inspectStorageHealth, requestStoragePersistence } from "./core/storage-
 "use strict";
 const I18N = {
   ar: {
-    appTitle: "مساحة عمل التحليل الاستراتيجي",
-    appSubtitle:
-      "مساحة تحليل استراتيجية منظّمة: موجِّه ذكي، استيراد واضح، ومراجعة قابلة للتصفح.",
+    appTitle: "التحليل الاستراتيجي وتحليل السياسة الحيوية",
+    appSubtitle: "تتبّع من يريد ماذا، وكيف تُحكم حياة الناس، بمساعدك الذكي. للباحثين والصحفيين والمحللين.",
     topicLabel: "موضوع التحليل",
     topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا 2022–2026",
     analysisLang: "لغة التحليل",
@@ -289,9 +288,6 @@ const I18N = {
     sectionSummary: "خلاصة القسم",
     compactView: "عرض مركز",
     detailedView: "عرض تفصيلي",
-    appTitleBiopolitical: "مساحة عمل تحليل السياسة الحيوية",
-    appSubtitleBiopolitical:
-      "مساحة تحليل لفهم كيف تُدار الأجساد والسكان والمعايير والمخاطر والسلوك.",
     topicPlaceholderBiopolitical:
       "مثال: جوازات الصحة الرقمية وتصنيف مخاطر السكان 2020–2022",
     analysisLens: "عدسة التحليل",
@@ -357,9 +353,8 @@ const I18N = {
       "تم تحميل مثال للسياسة الحيوية. راجع طبقات الحكم أو استبدله بموضوعك.",
   },
   en: {
-    appTitle: "Strategic Analysis Workbench",
-    appSubtitle:
-      "A structured analysis workspace: a clear prompt, a clean import, and a review you can navigate.",
+    appTitle: "Strategic and Biopolitical Analysis",
+    appSubtitle: "Trace who wants what, and how lives are governed, with your own AI assistant. For researchers, journalists and analysts.",
     topicLabel: "Analysis topic",
     topicPlaceholder: "Example: Rise of the far right in Europe, 2022–2026",
     analysisLang: "Analysis language",
@@ -599,9 +594,6 @@ const I18N = {
     sectionSummary: "Section summary",
     compactView: "Compact view",
     detailedView: "Detailed view",
-    appTitleBiopolitical: "Biopolitical Analysis Workbench",
-    appSubtitleBiopolitical:
-      "A lens-aware workspace for analyzing how power governs bodies, populations, norms, risks, and conduct.",
     topicPlaceholderBiopolitical:
       "Example: Digital health passports and population risk classification, 2020–2022",
     analysisLens: "Analysis lens",
@@ -670,9 +662,8 @@ const I18N = {
       "Biopolitical sample loaded. Review the governance layers or replace it with your topic.",
   },
   fr: {
-    appTitle: "Atelier d’analyse stratégique",
-    appSubtitle:
-      "Un espace d’analyse structuré : prompt clair, import propre et revue navigable.",
+    appTitle: "Analyse stratégique et biopolitique",
+    appSubtitle: "Retracez qui veut quoi, et comment les vies sont gouvernées, avec votre propre assistant IA. Pour les chercheurs, journalistes et analystes.",
     topicLabel: "Sujet d’analyse",
     topicPlaceholder:
       "Exemple : montée de l’extrême droite en Europe, 2022–2026",
@@ -925,9 +916,6 @@ const I18N = {
     sectionSummary: "Résumé de section",
     compactView: "Vue compacte",
     detailedView: "Vue détaillée",
-    appTitleBiopolitical: "Atelier d’analyse biopolitique",
-    appSubtitleBiopolitical:
-      "Un espace d’analyse pour étudier comment le pouvoir gouverne les corps, les populations, les normes, les risques et les conduites.",
     topicPlaceholderBiopolitical:
       "Exemple : passeports sanitaires numériques et classification des risques, 2020–2022",
     analysisLens: "Lentille d’analyse",
@@ -1099,8 +1087,6 @@ if (!PROVENANCE) throw new Error("Evidence provenance service failed to load.");
 const SETTINGS_KEY = "jarbou3i-model-settings";
 const SUPPORTED_LANGUAGES = ["ar", "en", "fr"];
 const LENS_KEY_ALIASES = {
-  appTitle: "appTitleBiopolitical",
-  appSubtitle: "appSubtitleBiopolitical",
   topicPlaceholder: "topicPlaceholderBiopolitical",
   engineTitle: "engineTitleBiopolitical",
   engineSubtitle: "engineSubtitleBiopolitical",
@@ -3110,6 +3096,7 @@ ${evidenceRule}
 - goal_achieved_pct في النتائج وprobability في السيناريوهات نسبتان مئويتان من 0 إلى 100 (0–100)، لا كسور.
 - لا تستخدم علامات استشهاد داخلية للمساعد مثل cite أو filecite أو turn؛ استخدم روابط HTTP(S) عامة وملاحظات مصادر قابلة للنقل فقط.
 - فرّق بين الملاحظة والاستنتاج والتقدير عندما يكون ذلك مطلوبًا.
+- اكتب بلغة واضحة وملموسة: سمِّ الفاعل أو المؤسسة أو القانون أو المكان أو التاريخ أو الرقم المحدد، لا فئته («الجهات التنظيمية»، «أصحاب المصلحة»)؛ وقل من يفعل ماذا وبمن، بجمل قصيرة؛ دون قوائم من الأسماء المجردة، ودون جملة تصلح لأي موضوع. لا تختلق اسمًا أو تاريخًا أو رقمًا لتبدو دقيقًا: إن كان مجهولًا فقل ذلك.
 - في التناقضات: إذا كانت نفس السردية/الخطاب تنتج عدة أفعال متناقضة، اجعلها مجموعة واحدة تحتوي actions متعددة.
 - في السيناريوهات: أضف شروطًا واضحة تُضعف أو تُبطل السيناريو.
 - قبل إخراج JSON النهائي، راجع داخليًا: الفاعلين المفقودين، السببية الأحادية، الافتراضات غير المدعومة، ضعف الأدلة، غياب الأدلة المضادة، وغياب شروط الإبطال.
@@ -3136,6 +3123,7 @@ Règles :
 - goal_achieved_pct des résultats et probability des scénarios sont des pourcentages de 0 à 100 (0–100), pas des fractions.
 - N’utilise aucun marqueur interne d’assistant tel que cite, filecite ou turn ; utilise uniquement des URL HTTP(S) publiques et des notes de source portables.
 - Sépare observation, inférence et estimation lorsque c’est pertinent.
+- Écris simplement et concrètement : nomme l’acteur, l’institution, la loi, le lieu, la date ou le chiffre précis, pas sa catégorie (« les régulateurs », « les parties prenantes ») ; dis qui fait quoi à qui, en phrases courtes ; pas de liste de noms abstraits ni de phrase qui conviendrait à n’importe quel sujet. N’invente jamais un nom, une date ou un chiffre pour paraître précis : s’il est inconnu, dis-le.
 - Dans les contradictions : si la même rhétorique/hypothèse produit plusieurs actions contradictoires, conserve une seule entrée avec plusieurs actions.
 - Dans les scénarios : inclue des conditions claires qui affaibliraient ou réfuteraient chaque scénario.
 - Avant le JSON final, audite silencieusement : acteurs manquants, monocausalité, hypothèses non étayées, preuves faibles, absence de contre-preuves et absence de réfutateurs.
@@ -3161,6 +3149,7 @@ Rules:
 - Results goal_achieved_pct and scenario probability are percentages from 0 to 100 (0–100), not fractions.
 - Never use assistant-internal citation markers such as cite, filecite, or turn; use public HTTP(S) URLs and portable source notes only.
 - Separate observation, inference, and estimate where requested.
+- Write plainly and concretely: name the specific actor, institution, law, place, date or figure, not its category ("regulators", "stakeholders"); say who does what to whom, in short sentences; no list of abstract nouns and no sentence that would fit any topic. Never invent a name, date or figure to sound specific: where one is unknown, say so.
 - In contradictions: if the same rhetoric/hypothesis has multiple contradictory actions, keep it as one contradiction group with multiple actions.
 - In scenarios: include clear conditions that would weaken or disprove each scenario.
 - Before final JSON, silently audit for missing actors, monocausal reasoning, unsupported assumptions, weak evidence, absent counter-evidence, and missing falsifiers.

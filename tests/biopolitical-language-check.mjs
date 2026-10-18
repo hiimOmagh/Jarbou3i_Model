@@ -135,8 +135,7 @@ for (const [lang, fixture] of Object.entries(fixtures)) {
 
 const app = fs.readFileSync("src/app.js", "utf8");
 for (const token of [
-  'appTitle: "مساحة عمل التحليل الاستراتيجي"',
-  'appTitleBiopolitical: "مساحة عمل تحليل السياسة الحيوية"',
+  'appTitle: "التحليل الاستراتيجي وتحليل السياسة الحيوية"',
   "رابط المصدر ليس رابط HTTP(S) مطلقًا",
   "L’URL de la source n’est pas une URL HTTP(S) absolue",
   "لا تطابق القيمة البنية التي تتطلبها صيغة التحليل",

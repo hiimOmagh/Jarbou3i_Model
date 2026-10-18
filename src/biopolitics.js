@@ -124,9 +124,6 @@
 
   const UI = {
     en: {
-      appTitle: "Biopolitical Analysis Workbench",
-      appSubtitle:
-        "A question-driven system for tracing how human functions, institutions, infrastructures, classifications, and meanings become governed.",
       workflowSubtitle:
         "Define the inquiry, generate the Biopolitical v2 prompt, import its evidence-calibrated JSON, and inspect the full mechanism chain.",
       topicPlaceholder:
@@ -238,9 +235,6 @@
       changeEvidence: "Evidence that would change the conclusion",
     },
     ar: {
-      appTitle: "مساحة عمل تحليل السياسة الحيوية",
-      appSubtitle:
-        "نظام قائم على الأسئلة لتتبّع كيفية إخضاع وظائف الإنسان والمؤسسات والبنى التحتية والتصنيفات والمعاني للحكم.",
       workflowSubtitle:
         "حدّد السؤال، أنشئ موجِّه نموذج السياسة الحيوية 2، استورد JSON منضبطًا بالأدلة، ثم افحص سلسلة الآليات كاملة.",
       topicPlaceholder:
@@ -352,9 +346,6 @@
       changeEvidence: "أدلة قد تغيّر الخلاصة",
     },
     fr: {
-      appTitle: "Atelier d’analyse biopolitique",
-      appSubtitle:
-        "Un système guidé par des questions pour suivre la gouvernementalisation des fonctions humaines, institutions, infrastructures, classifications et significations.",
       workflowSubtitle:
         "Définissez la question, générez le prompt Biopolitique v2, importez son JSON calibré par les preuves et inspectez la chaîne des mécanismes.",
       topicPlaceholder:
@@ -1821,7 +1812,8 @@ ${evidenceRule}
 12. لا تستنتج سمات فردية حساسة من بدائل ضعيفة، ولا تحوّل نتائج جماعية تلقائيًا إلى تنبؤ فردي.
 13. لا تصنع الخوف، ولا تجرد جماعة من إنسانيتها، ولا تسهّل التحرش أو العقاب الجماعي، وقدّم الادعاءات المتنازع عليها بوصفها ادعاءات لا حقائق.
 14. قدّم مقاومة وفاعلية وبدائل واقعية أقل ضررًا وخلاصة مُعايرة وشروطًا قد تغيّرها.
-15. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
+15. اكتب بلغة واضحة وملموسة: سمِّ الفاعل أو المؤسسة أو القانون أو المكان أو التاريخ أو الرقم المحدد، لا فئته («الجهات التنظيمية»، «أصحاب المصلحة»)؛ وقل من يفعل ماذا وبمن، بجمل قصيرة؛ دون قوائم من الأسماء المجردة، ودون جملة تصلح لأي موضوع. لا تختلق اسمًا أو تاريخًا أو رقمًا لتبدو دقيقًا: إن كان مجهولًا فقل ذلك.
+16. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
 
 العمق: ${modeName}. ${depth}
 
@@ -1872,7 +1864,8 @@ ${evidenceRule}
 12. N’inférez pas de traits individuels sensibles à partir de proxys faibles et ne transformez pas automatiquement des résultats de groupe en prédictions individuelles.
 13. Ne fabriquez pas la peur, ne déshumanisez pas, ne facilitez ni harcèlement ni punition collective, et présentez les allégations contestées comme telles.
 14. Incluez résistance, agentivité, alternatives réalistes moins nocives, conclusion calibrée et éléments susceptibles de la modifier.
-15. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
+15. Écrivez simplement et concrètement : nommez l’acteur, l’institution, la loi, le lieu, la date ou le chiffre précis, pas sa catégorie (« les régulateurs », « les parties prenantes ») ; dites qui fait quoi à qui, en phrases courtes ; pas de liste de noms abstraits ni de phrase qui conviendrait à n’importe quel sujet. N’inventez jamais un nom, une date ou un chiffre pour paraître précis : s’il est inconnu, dites-le.
+16. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
 
 Profondeur : ${modeName}. ${depth}
 
@@ -1922,7 +1915,8 @@ ${evidenceRule}
 12. Do not infer sensitive individual traits from weak proxies or automatically convert group-level research into individual prediction.
 13. Do not manufacture fear, dehumanize groups, facilitate harassment or collective punishment, or state contested allegations as established fact.
 14. Include agency, resistance, feasible lower-harm alternatives, a calibrated conclusion, and evidence that would change it.
-15. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
+15. Write plainly and concretely: name the specific actor, institution, law, place, date or figure, not its category ("regulators", "stakeholders"); say who does what to whom, in short sentences; no list of abstract nouns and no sentence that would fit any topic. Never invent a name, date or figure to sound specific: where one is unknown, say so.
+16. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
 
 Depth: ${modeName}. ${depth}
 
