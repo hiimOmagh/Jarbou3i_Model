@@ -2,6 +2,14 @@
 
 ## 2.1.0-alpha.57 — Design-System Kernel and Real Answers (UIX-3 to UIX-5)
 
+### Closing the editor while it saves
+
+- **Close during a save waits for it**, then closes. It asked to discard
+  the unsaved changes while they were being saved; a save that fails keeps
+  the editor open with its message.
+- **Review & commit opens only once the editor has closed.** Keeping the
+  edits at the discard question left the editor open with the review over it.
+
 ### A reload on a busy device keeps the analysis being prepared
 
 A reloaded page waited three seconds for the page it replaced to let go of

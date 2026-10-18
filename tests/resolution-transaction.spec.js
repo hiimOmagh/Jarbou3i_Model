@@ -50,6 +50,18 @@ async function approve(page, rationale) {
 }
 
 test.describe("Resolution transactions", () => {
+  test("edits kept in the editor keep it open instead of opening the review over it", async ({ page }) => {
+    await start(page, "strategic");
+    await saveTitle(page, "Saved before the review");
+    await page.locator("#editorField").fill('{ "title": "typed, not applied" }');
+    page.once("dialog", (dialog) => dialog.dismiss());
+    await page.locator("#editorResolve").click();
+    await expect(page.locator("#editorDialog")).toBeVisible();
+    // The review would open a moment later; it does not.
+    await page.waitForTimeout(500);
+    await expect(page.locator("#resolutionBackdrop")).not.toHaveClass(/show/);
+  });
+
   test("reviews an exact Strategic diff and commits an immutable child revision", async ({ page }) => {
     await start(page, "strategic");
     await saveTitle(page, "Committed strategic resolution");

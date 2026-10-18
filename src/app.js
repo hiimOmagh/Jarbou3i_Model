@@ -7237,6 +7237,12 @@ async function heldElsewhere(record) {
 
 function closeCanonicalEditor() {
   if (!$("editorBackdrop").classList.contains("show")) return;
+  // Closed while a save is under way: it closes once the save is done, not
+  // as if the edits being saved were to be thrown away.
+  if (editorSavePending) {
+    editorCloseAfterSave = true;
+    return;
+  }
   const discarding = editorHasPendingInput() || state.editorSession?.inspect().dirty;
   if (discarding && !window.confirm(editorText("closeDirty"))) return;
   $("editorBackdrop").classList.remove("show");
@@ -7342,6 +7348,7 @@ async function discardEditorRecovery() {
 }
 
 let editorSavePending = false;
+let editorCloseAfterSave = false;
 
 async function saveEditorDraft() {
   if (editorSavePending || !applyEditorField()) return;
@@ -7370,8 +7377,14 @@ async function saveEditorDraft() {
     $("editorFieldStatus").dataset.tone = "crit";
     $("editorFieldStatus").textContent = message;
     scheduleEditorRecovery();
+    // A save that failed keeps the editor open with its message.
+    editorCloseAfterSave = false;
   } finally {
     editorSavePending = false;
+    if (editorCloseAfterSave) {
+      editorCloseAfterSave = false;
+      closeCanonicalEditor();
+    }
   }
 }
 
@@ -8922,6 +8935,8 @@ $("editorRecoveryDiscard").onclick = discardEditorRecovery;
 $("editorResolve").onclick = async (event) => {
   const workspace = state.editorWorkspace;
   closeCanonicalEditor();
+  // Still open: its edits were kept, or a save is under way.
+  if ($("editorBackdrop").classList.contains("show")) return;
   await openResolutionTransaction(workspace, $("workspaceSaveState"));
 };
 $("editorField").addEventListener("keydown", (event) => {

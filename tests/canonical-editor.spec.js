@@ -69,10 +69,31 @@ test.describe("Structured canonical editor", () => {
         return put.apply(this, args);
       };
     });
-    await page.locator("#editorSave").click();
+    // Closed while the save is under way: the editor stays open with its message.
+    await page.evaluate(() => { document.getElementById("editorSave").click(); document.getElementById("editorClose").click(); });
     await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(page.locator("#editorFieldStatus")).not.toContainText("validation passed");
     await expect(page.locator("#editorDirty")).toContainText("Unsaved");
+    await expect(page.locator("#editorDialog")).toBeVisible();
+  });
+
+  test("closed while a save is under way, the editor saves, then closes, without asking to discard", async ({ page }) => {
+    const dialogs = [];
+    page.on("dialog", (dialog) => { dialogs.push(dialog.message()); dialog.dismiss(); });
+    await page.locator("#workspaceSaveState").click();
+    await page.getByRole("button", { name: "Edit draft" }).click();
+    await page.locator('[data-editor-path="/subject"]').click();
+    const field = page.locator("#editorField");
+    const subject = JSON.parse(await field.inputValue());
+    subject.title = "Saved while closing";
+    await field.fill(JSON.stringify(subject, null, 2));
+    await field.press("Control+Enter");
+    // Save and Close in one go: Close comes while the save is still writing.
+    await page.evaluate(() => { document.getElementById("editorSave").click(); document.getElementById("editorClose").click(); });
+    await expect(page.locator("#editorDialog")).toBeHidden();
+    expect(dialogs).toEqual([]);
+    await page.reload();
+    await expect(page.locator("#topicInput")).toHaveValue("Saved while closing");
   });
 
   test("rejects malformed field JSON without mutating the draft", async ({ page }) => {
