@@ -1,6 +1,6 @@
 # Capability Authority Map
 
-**Product version:** `2.1.0-alpha.56`
+**Product version:** `2.1.0-alpha.57`
 
 **Operational runtime baseline:** `df41acca4dbf09e753104f22db18702c5e52da7e`
 
@@ -76,7 +76,7 @@ do not override this map.
 
 | Identity | Meaning | Current value |
 |---|---|---|
-| Product version | User-visible compatibility and release identity | `2.1.0-alpha.56` |
+| Product version | User-visible compatibility and release identity | `2.1.0-alpha.57` |
 | Operational runtime baseline | Latest accepted commit that changed the governed operational baseline | The SHA declared in this document header |
 | Initiative | A bounded capability or assurance change | `REL-AUTH-1`, AI interchange completion, `CI-REL-1` |
 | Roadmap version | Proposed product sequence; not a release claim | Strategic Product Roadmap v3.0 |

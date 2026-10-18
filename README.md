@@ -1,6 +1,6 @@
 # Jarbou3i Model — Dual-Lens Analysis Workbench
 
-Version `2.1.0-alpha.56` is a local-first browser workbench for producing,
+Version `2.1.0-alpha.57` is a local-first browser workbench for producing,
 challenging, revising, and publishing evidence-traceable analysis with an
 external AI assistant. It generates the prompt, imports the assistant's JSON
 answer, recovers what it safely can, shows what is missing, and keeps
