@@ -46,6 +46,21 @@ test.describe("Case file", () => {
     await expect(facts.locator("dt", { hasText: /^Not applicable$/ }).first().locator("xpath=following-sibling::dd")).toContainText("Denominator");
   });
 
+  test("an evidence record is drawn once, in its own section", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator('#case-evidence [data-inspection-id="E1"]')).toHaveCount(1);
+    await expect(page.locator('#case-pillars [data-inspection-id="E1"]')).toHaveCount(0);
+    // Its layer says where the records are and goes there.
+    await page.locator('[data-bio-acc="evidence_explanations"]').click();
+    await page.locator("#bio-acc-panel-evidence_explanations [data-bio-jump]").click();
+    await expect(page.locator("#case-evidence")).toBeFocused();
+    await expect(page.locator('#reviewNav [data-bio-review="evidence"]')).toHaveAttribute("aria-current", "location");
+  });
+
   test("the outline jumps to a section and follows the reader", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();

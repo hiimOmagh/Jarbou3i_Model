@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Each record drawn once (UIX-5 slice D3)
+
+Walkthrough D3. In a Biopolitical answer the evidence records were drawn in
+full twice: in the Evidence & explanations layer and in the Evidence
+section.
+
+- **The evidence layer points to its section** instead of repeating its
+  cards: "These records are listed once, in their own section", with a
+  button that goes there. The layer keeps its place and its count.
+- On a real French answer 14 of 55 records were two cards; now every
+  record in both lenses is one card, and every other place links to it.
+
 ### The missing parts, listed where the note says (UIX-5 slice C4)
 
 Walkthrough C4, in AR/EN/FR. An answer held back for missing parts said "3

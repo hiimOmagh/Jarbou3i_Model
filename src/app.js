@@ -6279,7 +6279,11 @@ function renderBiopoliticalPillars() {
   const labels = t("pillars");
   return `<h3>${escapeHtml(t("engine"))}</h3><div class="j-layers">${BIO.PILLARS.map((pillar, index) => {
     const records = BIO.recordsFor(pillar.key, state.analysis, state.lang);
-    return layerAccordion({ prefix: "bio-acc", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: records.length, body: bioRecordsHtml(records) });
+    // The evidence layer has its own section; its records are drawn there once.
+    const body = pillar.key === "evidence_explanations" && records.length
+      ? `<p class="j-note" data-tone="idle">${escapeHtml(labelText("These records are listed once, in their own section.", "تُعرض هذه السجلات مرة واحدة، في قسمها الخاص.", "Ces fiches sont présentées une seule fois, dans leur propre section."))}</p><button class="j-btn" data-variant="ghost" type="button" data-bio-jump="evidence">${escapeHtml(labelText(`Go to the ${labels[pillar.key][0]} section`, `انتقل إلى قسم «${labels[pillar.key][0]}»`, `Aller à la section « ${labels[pillar.key][0]} »`))}</button>`
+      : bioRecordsHtml(records);
+    return layerAccordion({ prefix: "bio-acc", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: records.length, body });
   }).join("")}</div>`;
 }
 function renderBiopoliticalEvidence() {
@@ -6676,6 +6680,9 @@ function renderBiopoliticalReview() {
     .map((key) => caseSection(key, sections[key]()))
     .join("");
   wireCaseOutline("[data-bio-review]", "bioReview");
+  document.querySelectorAll("[data-bio-jump]").forEach((button) => {
+    button.onclick = () => $("reviewNav").querySelector(`[data-bio-review="${button.dataset.bioJump}"]`)?.click();
+  });
   wireResultsExplanation("biopolitical");
   bindResultsInspection("biopolitical");
   wireConnectionsView();
