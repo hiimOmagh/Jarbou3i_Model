@@ -79,7 +79,7 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 | C1 | The guide said "Something is off in the format" in red for an answer with three missing parts | D1 |
 | C2 | "Draft import is allowed" beside a disabled Import button | D1 |
 | C3 | The completion prompt asked for "the ID of an existing record" without listing the IDs or quoting what the AI wrote (ChatGPT wrote a sentence about the study) | D1 |
-| C4 | "3 parts" sits above twelve mixed bullets with raw paths; after copying, nothing says what to do next | open |
+| C4 | "3 parts" sits above twelve mixed bullets with raw paths; after copying, nothing says what to do next | done (UIX-5 slice C4): the parts are listed under the note in words; the copy toast says the next step |
 
 ### D. Repetition
 

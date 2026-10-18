@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### The missing parts, listed where the note says (UIX-5 slice C4)
+
+Walkthrough C4, in AR/EN/FR. An answer held back for missing parts said "3
+parts are missing or invalid, listed below", but below was a closed panel
+whose twelve bullets mixed those parts with review notes and raw JSON paths.
+
+- **The parts are listed right under the note**, each named by its section
+  and record, with what is wrong in plain words: "Intervention assessment ·
+  Continuous remote activity monitoring: the AI wrote “A field study of…”
+  where an evidence ID goes." The review details keep the full record,
+  paths included.
+- **Copying a prompt says what to do next**: "Send it in the same chat,
+  then paste the reply in the answer box."
+- **Arabic and French counts agree** with their number ("جزءان ناقصان …
+  مدرجان أدناه", "1 partie … listée ci-dessous").
+
 ### Fewer walls in a Biopolitical answer (UIX-5 slice H, part 3)
 
 Walkthrough D4, in AR/EN/FR. On real answers an evidence record listed up to

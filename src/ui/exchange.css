@@ -26,3 +26,5 @@
 .j-audit-group p, .j-audit-group ul { margin: 0; }
 .j-audit-group ul { padding-inline-start: var(--j-s-5); }
 .j-audit-path, .j-audit-group code { font-family: var(--j-font-data); overflow-wrap: anywhere; }
+/* The parts an answer held back needs, under the note that says so. */
+.j-audit-gaps { display: grid; gap: var(--j-s-2); margin: 0; padding-inline-start: var(--j-s-5); font-size: var(--j-t-14); line-height: 1.5; overflow-wrap: anywhere; }

@@ -164,8 +164,8 @@ const I18N = {
     jsonImported: "مستورد: هذا هو التحليل قيد المراجعة. الصق إجابة جديدة لتستبدله.",
     jsonInvalid: "JSON غير صالح أو غير مكتمل. استخدم موجِّه الإصلاح إذا لزم.",
     analysisImported: "تم استيراد التحليل. ابدأ بالخلاصة.",
-    repairCopied: "تم نسخ موجِّه الإصلاح.",
-    completionCopied: "تم نسخ موجِّه الاستكمال.",
+    repairCopied: "تم نسخ موجِّه الإصلاح. أرسله في المحادثة نفسها ثم الصق الإجابة المصحّحة في خانة الإجابة.",
+    completionCopied: "تم نسخ موجِّه الاستكمال. أرسله في المحادثة نفسها ثم الصق الرد في خانة الإجابة.",
     continuePrompt: "موجِّه متابعة النتيجة المقطوعة",
     continueCopied: "تم نسخ موجِّه المتابعة. أرسله في المحادثة نفسها ثم الصق الرد في خانة المتابعة.",
     continuationLabel: "تابع النتيجة المقطوعة",
@@ -466,8 +466,8 @@ const I18N = {
     jsonInvalid: "Invalid or incomplete JSON. Use the repair prompt if needed.",
     analysisImported:
       "Analysis imported. Start with its overview.",
-    repairCopied: "Repair prompt copied.",
-    completionCopied: "Completion prompt copied.",
+    repairCopied: "Repair prompt copied. Send it in the same chat, then paste the corrected answer in the answer box.",
+    completionCopied: "Completion prompt copied. Send it in the same chat, then paste the reply in the answer box.",
     continuePrompt: "Continue cut-off result prompt",
     continueCopied: "Continue prompt copied. Send it in the same chat, then paste the reply in the continuation box.",
     continuationLabel: "Continue the cut-off result",
@@ -779,8 +779,8 @@ const I18N = {
       "JSON invalide ou incomplet. Utilisez le prompt de réparation si nécessaire.",
     analysisImported:
       "Analyse importée. Commencez par la synthèse.",
-    repairCopied: "Prompt de réparation copié.",
-    completionCopied: "Prompt de complétion copié.",
+    repairCopied: "Prompt de réparation copié. Envoyez-le dans la même conversation, puis collez la réponse corrigée dans la zone de réponse.",
+    completionCopied: "Prompt de complétion copié. Envoyez-le dans la même conversation, puis collez la réponse dans la zone de réponse.",
     continuePrompt: "Prompt pour continuer le résultat coupé",
     continueCopied: "Prompt de continuation copié. Envoyez-le dans la même conversation, puis collez la réponse dans la zone de continuation.",
     continuationLabel: "Continuer le résultat coupé",
@@ -2343,12 +2343,55 @@ function renderImportAuditDetails({
   }<section class="j-audit-group"><h3>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h3>${warningItems}</section><section class="j-audit-group"><h3>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h3>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
   details.hidden = false;
 }
+// What a part the AI is asked for needs, in the reader's words.
+const GAP_TEXT = {
+  reference: [(ref) => `the AI wrote “${ref}” where a record ID goes.`, (ref) => `كتب الذكاء الاصطناعي «${ref}» في موضع معرّف سجل.`, (ref) => `l’IA a écrit « ${ref} » à la place de l’identifiant d’une fiche.`],
+  evidence: [(ref) => `the AI wrote “${ref}” where an evidence ID goes.`, (ref) => `كتب الذكاء الاصطناعي «${ref}» في موضع معرّف دليل.`, (ref) => `l’IA a écrit « ${ref} » à la place de l’identifiant d’une preuve.`],
+  noReference: ["no record ID is given.", "لم يُذكر معرّف أي سجل.", "aucun identifiant de fiche n’est donné."],
+  duplicate: ["it uses an ID another record already has.", "يستخدم معرّفًا يحمله سجل آخر.", "il reprend l’identifiant d’une autre fiche."],
+  required: ["a required part is missing.", "ينقصه جزء مطلوب.", "il manque une partie requise."],
+  minitems: ["the list is empty.", "القائمة فارغة.", "la liste est vide."],
+  minlength: ["the text is empty.", "النص فارغ.", "le texte est vide."],
+  type: ["the value is of the wrong kind.", "نوع القيمة غير صحيح.", "la valeur n’est pas du bon type."],
+  enum: ["the value is not one the format allows.", "القيمة ليست من القيم التي تسمح بها الصيغة.", "la valeur ne fait pas partie de celles que le format autorise."],
+  other: ["it does not match the analysis format.", "لا يطابق صيغة التحليل.", "il ne correspond pas au format de l’analyse."],
+};
+const clipText = (value) => (value.length > 80 ? `${value.slice(0, 79)}…` : value);
+function gapText(gap) {
+  const pick = (copy) => copy[state.lang === "ar" ? 1 : state.lang === "fr" ? 2 : 0];
+  const code = String(gap.code || "").toUpperCase();
+  if (code === "BROKEN_REFERENCE") {
+    const ref = String(gap.reference || "");
+    if (!ref) return pick(GAP_TEXT.noReference);
+    return pick(GAP_TEXT[(gap.allowedTypes || []).includes("evidence") ? "evidence" : "reference"])(clipText(ref));
+  }
+  if (code === "DUPLICATE_GLOBAL_ID") return pick(GAP_TEXT.duplicate);
+  if (!code.startsWith("SCHEMA_")) return localizedImportIssueMessage(gap);
+  return pick(GAP_TEXT[String(gap.keyword || code.slice(7)).toLowerCase()] || GAP_TEXT.other);
+}
+// The parts of an answer held back that the AI is asked for, under the note
+// that says they are listed below: each named by its section and record.
+function renderImportGaps(gaps = [], candidate = null) {
+  const list = $("importGaps");
+  list.hidden = !gaps.length;
+  list.innerHTML = gaps
+    .slice(0, 5)
+    .map((gap) => {
+      const keys = String(gap.path || "").split("/").filter(Boolean);
+      // A record named by a sentence loses its full stop before the colon.
+      const record = candidate ? clipText(AI_INTERCHANGE.gapRecord(gap, candidate).replace(/[.!?؟。]+$/u, "")) : "";
+      const place = [keys[0] ? editorKeyLabel(keys[0]) : labelText("The analysis", "التحليل", "L’analyse"), record].filter(Boolean);
+      return `<li><b>${place.map((part) => `<bdi>${escapeHtml(part)}</bdi>`).join(" · ")}</b>${colonMark()} ${escapeHtml(gapText(gap))}</li>`;
+    })
+    .join("") + (gaps.length > 5 ? `<li>${escapeHtml(labelText(`and ${gaps.length - 5} more`, `و${gaps.length - 5} غيرها`, `et ${gaps.length - 5} de plus`))}</li>` : "");
+}
 // The answer box holds the analysis under review once it is imported.
 function showReplyImported() {
   $("jsonStatus").dataset.tone = "ok";
   $("jsonStatus").textContent = t("jsonImported");
 }
 function validateJsonInput() {
+  renderImportGaps();
   const text = $("jsonInput").value.trim();
   if (!text) {
     state.jsonValid = false;
@@ -2680,9 +2723,9 @@ function validateJsonInput() {
       ? ""
       : gaps
         ? labelText(
-            `This answer is not imported yet: ${gaps} part${gaps === 1 ? " is" : "s are"} missing or invalid, listed below. Click “${t("completionPrompt")}”, paste it into the same AI chat, then paste the AI’s reply here; it is added to this answer and checked again.`,
-            `لم تُستورد هذه الإجابة بعد: ${gaps} ${gaps === 1 ? "جزء ناقص أو غير صالح" : "أجزاء ناقصة أو غير صالحة"}، مدرجة أدناه. انقر «${t("completionPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رد الذكاء الاصطناعي هنا؛ يُضاف إلى هذه الإجابة ويُفحص من جديد.`,
-            `Cette réponse n’est pas encore importée : ${gaps} partie${gaps === 1 ? " manque ou est invalide" : "s manquent ou sont invalides"}, listée${gaps === 1 ? "" : "s"} ci-dessous. Cliquez sur « ${t("completionPrompt")} », collez-le dans la même conversation avec l’IA, puis collez ici sa réponse ; elle est ajoutée à cette réponse et vérifiée à nouveau.`,
+            `This answer is not imported yet: ${pluralText(gaps, GAP_COUNT)}. Click “${t("completionPrompt")}”, paste it into the same AI chat, then paste the AI’s reply here; it is added to this answer and checked again.`,
+            `لم تُستورد هذه الإجابة بعد: ${pluralText(gaps, GAP_COUNT)}. انقر «${t("completionPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رد الذكاء الاصطناعي هنا؛ يُضاف إلى هذه الإجابة ويُفحص من جديد.`,
+            `Cette réponse n’est pas encore importée : ${pluralText(gaps, GAP_COUNT)}. Cliquez sur « ${t("completionPrompt")} », collez-le dans la même conversation avec l’IA, puis collez ici sa réponse ; elle est ajoutée à cette réponse et vérifiée à nouveau.`,
           )
         : importErrors.length
           ? labelText(
@@ -2702,6 +2745,7 @@ function validateJsonInput() {
         .filter(Boolean)
         .join(" ");
     if (incomplete) {
+      if (gaps) renderImportGaps(completionGaps, completionCandidate || analysis);
       state.jsonValid = false;
       $("importBtn").disabled = true;
       // With nothing listed to complete, there is nothing to ask the AI for.
@@ -7568,6 +7612,11 @@ const PASSED_CHECK_COUNT = {
   en: { one: "{count} check it says it passed", other: "{count} checks it says it passed" },
   ar: { one: "فحص واحد يقول إنه مستوفى", two: "فحصان يقول إنهما مستوفيان", few: "{count} فحوص يقول إنها مستوفاة", many: "{count} فحصًا يقول إنها مستوفاة", other: "{count} فحص يقول إنها مستوفاة" },
   fr: { one: "{count} contrôle déclaré satisfait", other: "{count} contrôles déclarés satisfaits" },
+};
+const GAP_COUNT = {
+  en: { one: "{count} part is missing or invalid, listed below", other: "{count} parts are missing or invalid, listed below" },
+  ar: { one: "جزء واحد ناقص أو غير صالح، مدرج أدناه", two: "جزءان ناقصان أو غير صالحين، مدرجان أدناه", few: "{count} أجزاء ناقصة أو غير صالحة، مدرجة أدناه", many: "{count} جزءًا ناقصًا أو غير صالح، مدرجة أدناه", other: "{count} جزء ناقص أو غير صالح، مدرجة أدناه" },
+  fr: { one: "{count} partie manque ou est invalide, listée ci-dessous", other: "{count} parties manquent ou sont invalides, listées ci-dessous" },
 };
 const UNREFERENCED_COUNT = {
   en: { one: "{count} record cites no evidence", other: "{count} records cite no evidence" },

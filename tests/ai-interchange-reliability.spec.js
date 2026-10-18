@@ -296,7 +296,12 @@ test.describe("AI interchange reliability", () => {
     reply.power_map.power_asymmetries[0].between[0] = "Nobody named";
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(reply));
-    await expect(page.locator("#jsonStatus")).toContainText("2 parts are missing or invalid");
+    await expect(page.locator("#jsonStatus")).toContainText("2 parts are missing or invalid, listed below");
+    // Listed under the note in words; the details give each one's path, once.
+    const gaps = page.locator("#importGaps > li");
+    await expect(gaps).toHaveCount(2);
+    await expect(gaps.filter({ hasText: "the AI wrote “Nobody named” where a record ID goes." })).toHaveCount(1);
+    await expect(gaps.filter({ hasText: "/" })).toHaveCount(0);
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     const text = await audit.textContent();

@@ -1307,8 +1307,14 @@ Parties manquantes :`,
                 ? copy.text
                 : copy.value;
     }
+    const shortLabel = clip(gapRecord(item, candidate));
+    return `${target} — ${description}${shortLabel ? copy.within(shortLabel) : ""}`;
+  }
+
+  // The name of the record a gap sits in, as the AI wrote it, or "".
+  function gapRecord(item, candidate) {
     let label = "";
-    keys.slice(0, -1).reduce((node, key) => {
+    pointerKeys(gapTarget(item)).slice(0, -1).reduce((node, key) => {
       const next = node?.[key];
       const name = isObject(next)
         ? LABEL_KEYS.map((field) => next[field]).find((value) => typeof value === "string" && value.trim())
@@ -1316,8 +1322,7 @@ Parties manquantes :`,
       if (name) label = name.trim();
       return next;
     }, candidate);
-    const shortLabel = clip(label);
-    return `${target} — ${description}${shortLabel ? copy.within(shortLabel) : ""}`;
+    return label;
   }
 
 
@@ -1488,6 +1493,7 @@ Chaque lien a la forme ${shape}, où "from" et "to" sont les identifiants d’é
     buildChecklist,
     buildCompletionPrompt,
     completionTargets,
+    gapRecord,
     LINK_FILL_TARGET,
     buildLinkPrompt,
     isCompletionReply,

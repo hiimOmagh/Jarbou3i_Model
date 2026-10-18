@@ -138,7 +138,7 @@ const FREE_CLASSES = [
   "j-pick-list", "j-pick-top", "j-pick-meta",
   "j-ledger", "j-ledger-grid", "j-ledger-counts", "j-ledger-selected", "j-ledger-waiver", "j-ledger-history",
   "j-ws", "j-ws-title", "j-ws-acts", "j-ws-list", "j-ws-row", "j-ws-name", "j-ws-meta", "j-ws-row-acts", "j-ws-empty",
-  "j-export", "j-export-raw", "j-audit-body", "j-audit-group", "j-audit-path",
+  "j-export", "j-export-raw", "j-audit-body", "j-audit-group", "j-audit-path", "j-audit-gaps",
   "j-ref-label", "j-ref-id",
   "j-insp-head", "j-insp-body", "j-insp-summary", "j-insp-sec", "j-insp-facts", "j-insp-pair", "j-insp-sub",
   "j-insp-list", "j-insp-rec", "j-insp-occ", "j-insp-foot",
