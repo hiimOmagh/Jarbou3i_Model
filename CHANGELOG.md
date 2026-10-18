@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Saying what each prompt mode asks for
+
+- **The settings step compares the three prompt modes** under the menu, in
+  AR/EN/FR: Focused gives the shortest answer, Expert a longer one with
+  evidence, assumptions and causes, Research the longest, with sourced
+  evidence and counter-evidence. Screen readers read it with the menu.
+  User feedback: the modes' differences, and that an answer's
+  length could be chosen (it can: the modes set it), were not said.
+- The UX-0 prototype's mode descriptions say the same; Expert no longer
+  claims to add contradictions and scenarios, which Focused has too.
+
 ## 2.1.0-alpha.57 — Design-System Kernel and Real Answers (UIX-3 to UIX-5)
 
 ### Closing the editor while it saves

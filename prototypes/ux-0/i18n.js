@@ -37,9 +37,9 @@ export const I18N = {
     s3Hint: "These choices shape the prompt. The defaults suit most questions.",
     depthLabel: "Depth",
     depth: {
-      simple: ["Focused", "Short and fast. Good for a first look."],
-      expert: ["Expert", "Adds contradictions, scenarios and tests."],
-      research: ["Research", "Most thorough. The AI needs longer."],
+      simple: ["Focused", "Shortest answer: a few items per part, one sentence each. For assistants that cut long answers off."],
+      expert: ["Expert", "Longer answer: adds evidence, assumptions and how causes lead to effects. For assistants that write long answers."],
+      research: ["Research", "Longest answer: adds sourced evidence, counter-evidence and what stays uncertain. Best when the assistant can browse the web or you supply sources."],
     },
     sourcesLabel: "Sources",
     sources: {
@@ -260,9 +260,9 @@ export const I18N = {
     s3Hint: "هذه الخيارات تشكّل الموجِّه. الإعدادات الافتراضية تناسب معظم الأسئلة.",
     depthLabel: "العمق",
     depth: {
-      simple: ["مركّز", "قصير وسريع، مناسب لنظرة أولى."],
-      expert: ["خبير", "يضيف التناقضات والسيناريوهات والاختبارات."],
-      research: ["بحثي", "الأكثر شمولًا، ويحتاج الذكاء الاصطناعي وقتًا أطول."],
+      simple: ["مركّز", "أقصر إجابة: عناصر قليلة في كل قسم، وجملة واحدة لكل عنصر. للمساعدات التي تقطع الإجابات الطويلة."],
+      expert: ["خبير", "إجابة أطول: تضيف الأدلة والافتراضات وكيف تقود الأسباب إلى النتائج. للمساعدات التي تكتب إجابات طويلة."],
+      research: ["بحثي", "أطول إجابة: تضيف أدلة من مصادر موثّقة، وأدلة مضادة، وما يبقى غير مؤكد. الأفضل حين يستطيع المساعد تصفّح الويب أو حين تقدّم المصادر بنفسك."],
     },
     sourcesLabel: "المصادر",
     sources: {
@@ -482,9 +482,9 @@ export const I18N = {
     s3Hint: "Ces choix façonnent le prompt. Les valeurs par défaut conviennent à la plupart des questions.",
     depthLabel: "Profondeur",
     depth: {
-      simple: ["Ciblé", "Court et rapide. Idéal pour un premier aperçu."],
-      expert: ["Expert", "Ajoute contradictions, scénarios et tests."],
-      research: ["Recherche", "Le plus complet. L’IA a besoin de plus de temps."],
+      simple: ["Ciblé", "Réponse la plus courte : quelques éléments par partie, une phrase chacun. Pour les assistants qui coupent les longues réponses."],
+      expert: ["Expert", "Réponse plus longue : ajoute des preuves, des hypothèses et comment les causes mènent aux effets. Pour les assistants qui écrivent de longues réponses."],
+      research: ["Recherche", "Réponse la plus longue : ajoute des preuves sourcées, des contre-preuves et ce qui reste incertain. Idéal si l’assistant peut consulter le web ou si vous fournissez des sources."],
     },
     sourcesLabel: "Sources",
     sources: {

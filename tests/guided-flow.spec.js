@@ -65,6 +65,18 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#jsonStatus")).toHaveText(/^Importée : c’est l’analyse en cours d’examen/);
   });
 
+  test("says what each prompt mode asks for, beside the choice", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await step(page, "settings").click();
+    await expect(page.locator("#promptMode")).toHaveAccessibleDescription(/^Focused Shortest answer.*Expert Longer answer.*Research Longest answer/);
+    // Named as the menu names them, in each language.
+    const names = (selector) => page.locator(selector).allTextContents();
+    expect(await names("#promptModeHelp dt")).toEqual(await names("#promptMode option"));
+    await page.locator("#langAr").click();
+    expect(await names("#promptModeHelp dt")).toEqual(await names("#promptMode option"));
+  });
+
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langAr").click();

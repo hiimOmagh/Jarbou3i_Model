@@ -145,9 +145,14 @@
         </div>
         <div class="j-flow-panel" data-flow-panel="settings" hidden>
           <div class="j-flow-grid">
-            <div class="j-field">
+            <div class="j-field j-mode-field">
               <label for="promptMode" data-i18n="promptMode">نمط الموجِّه</label>
-              <select id="promptMode" class="j-input"><option value="simple" data-i18n-option="modeSimple">مركّز</option><option value="expert" data-i18n-option="modeExpert">خبير</option><option value="research" data-i18n-option="modeResearch">بحثي</option></select>
+              <select id="promptMode" class="j-input" aria-describedby="promptModeHelp"><option value="simple" data-i18n-option="modeSimple">مركّز</option><option value="expert" data-i18n-option="modeExpert">خبير</option><option value="research" data-i18n-option="modeResearch">بحثي</option></select>
+              <dl class="j-mode-help" id="promptModeHelp">
+                <dt data-i18n="modeSimple">مركّز</dt><dd data-i18n="modeSimpleHelp">أقصر إجابة: عناصر قليلة في كل قسم، وجملة واحدة لكل عنصر. للمساعدات التي تقطع الإجابات الطويلة.</dd>
+                <dt data-i18n="modeExpert">خبير</dt><dd data-i18n="modeExpertHelp">إجابة أطول: تضيف الأدلة والافتراضات وكيف تقود الأسباب إلى النتائج. للمساعدات التي تكتب إجابات طويلة.</dd>
+                <dt data-i18n="modeResearch">بحثي</dt><dd data-i18n="modeResearchHelp">أطول إجابة: تضيف أدلة من مصادر موثّقة، وأدلة مضادة، وما يبقى غير مؤكد. الأفضل حين يستطيع المساعد تصفّح الويب أو حين تقدّم المصادر بنفسك.</dd>
+              </dl>
             </div>
             <div class="j-field">
               <label for="evidenceAccess" data-i18n="evidenceAccess">الوصول إلى المصادر</label>

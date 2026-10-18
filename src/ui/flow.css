@@ -81,6 +81,15 @@
 }
 .j-flow-note { color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--j-s-4); }
+/* The prompt mode takes its own row, with what each mode asks for under it. */
+.j-mode-field { grid-column: 1 / -1; }
+.j-mode-field > .j-input { max-width: 22rem; }
+.j-mode-help {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--j-s-1) var(--j-s-3);
+  margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13);
+}
+.j-mode-help dt { color: var(--j-fg); font-weight: 600; }
+.j-mode-help dd { margin: 0; }
 
 .j-flow-howto { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-3); counter-reset: how; }
 .j-flow-howto li {
