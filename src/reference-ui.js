@@ -13,7 +13,7 @@
     en: {
       close: "Close inspection details", details: "Inspection details",
       connections: "Linked records", incoming: "Linked from", outgoing: "Links to",
-      none: "No indexed connections", open: "Open full record", showConnections: "Show its connections",
+      open: "Open full record", showConnections: "Show its connections",
       identity: "Identity", type: "Record type", pillar: "Analysis pillar",
       canonicalId: "Record ID", path: "Path in the analysis", confidence: "Confidence",
       provenance: "Provenance", sourceTitle: "Source", sourceLocator: "Locator",
@@ -40,7 +40,7 @@
     ar: {
       close: "إغلاق تفاصيل الفحص", details: "تفاصيل الفحص",
       connections: "السجلات المرتبطة", incoming: "تُشير إليه", outgoing: "يُشير إلى",
-      none: "لا توجد علاقات مفهرسة", open: "فتح السجل الكامل", showConnections: "إظهار روابطه",
+      open: "فتح السجل الكامل", showConnections: "إظهار روابطه",
       identity: "الهوية", type: "نوع السجل", pillar: "محور التحليل",
       canonicalId: "معرّف السجل", path: "المسار في التحليل", confidence: "الثقة",
       provenance: "المصدر والتتبّع", sourceTitle: "المصدر", sourceLocator: "موضع المصدر",
@@ -67,7 +67,7 @@
     fr: {
       close: "Fermer les détails d’inspection", details: "Détails d’inspection",
       connections: "Fiches liées", incoming: "Référencé par", outgoing: "Renvoie à",
-      none: "Aucune connexion indexée", open: "Ouvrir la fiche complète", showConnections: "Afficher ses connexions",
+      open: "Ouvrir la fiche complète", showConnections: "Afficher ses connexions",
       identity: "Identité", type: "Type de fiche", pillar: "Pilier d’analyse",
       canonicalId: "Identifiant de la fiche", path: "Chemin dans l’analyse", confidence: "Confiance",
       provenance: "Provenance", sourceTitle: "Source", sourceLocator: "Localisation",
@@ -140,7 +140,9 @@
     if (Array.isArray(pillar)) return pillar[0];
     if (CODE_LABELS[lang]?.[token]) return CODE_LABELS[lang][token];
     if (lang !== "en" && token && bio?.displayToken) return bio.displayToken(lang, token);
-    return humanize(token);
+    // English reads a code in sentence case: "Internal sample", not "internal_sample".
+    const text = humanize(token);
+    return text.charAt(0).toUpperCase() + text.slice(1);
   };
   const validHttpUrl = (value) => {
     try { return ["http:", "https:"].includes(new URL(String(value || "")).protocol); }
@@ -210,7 +212,7 @@
       fact(copy.claimStatus, provenance.claimStatus, { code: true }), fact(copy.reviewStatus, provenance.reviewStatus, { code: true }),
       provenance.sourceStatus ? fact(copy.approvalEligible, provenance.approvalEligible ? copy.yes : copy.no) : "",
     ].filter(Boolean).join("");
-    return `<section class="j-insp-sec" data-inspection-section="provenance"><h3>${escapeHtml(copy.provenance)}</h3>${facts ? `<dl class="j-insp-facts">${facts}</dl>` : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`}</section>`;
+    return facts ? `<section class="j-insp-sec" data-inspection-section="provenance"><h3>${escapeHtml(copy.provenance)}</h3><dl class="j-insp-facts">${facts}</dl></section>` : "";
   }
 
   function evidenceHtml(inspection, copy) {
@@ -218,6 +220,7 @@
     const counterText = evidence.counterEvidence?.length
       ? `<div class="j-note" data-tone="warn"><h4 class="j-label">${escapeHtml(copy.counterText)}</h4><ul>${evidence.counterEvidence.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul></div>`
       : "";
+    if (!evidence.supportingIds?.length && !evidence.counterIds?.length && !counterText) return "";
     return `<section class="j-insp-sec" data-inspection-section="evidence"><h3>${escapeHtml(copy.evidence)}</h3><div class="j-insp-pair"><div><h4 class="j-label">${escapeHtml(copy.supporting)}</h4>${referenceList(evidence.supportingIds, copy.unavailable)}</div><div><h4 class="j-label">${escapeHtml(copy.counter)}</h4>${referenceList(evidence.counterIds, copy.unavailable)}</div></div>${counterText}</section>`;
   }
 
@@ -233,6 +236,7 @@
     const counterBacklinks = backlinks
       .filter((item) => item.role === "counter")
       .map((item) => item.ownerId);
+    if (!supporting.length && !counter.length && !backlinks.length) return "";
     return `<section class="j-insp-sec" data-inspection-section="evidence-trail"><h3>${escapeHtml(copy.evidenceTrail)}</h3><div class="j-insp-pair"><div><h4 class="j-label">${escapeHtml(copy.trailSupporting)}</h4>${referenceList(supporting, copy.unavailable)}</div><div><h4 class="j-label">${escapeHtml(copy.trailCounter)}</h4>${referenceList(counter, copy.unavailable)}</div></div>${backlinks.length ? `<div class="j-insp-sub"><h4>${escapeHtml(copy.backReferences)}</h4><div class="j-insp-pair"><div><h5 class="j-label">${escapeHtml(copy.citedAsSupport)}</h5>${referenceList(supportBacklinks, copy.unavailable)}</div><div><h5 class="j-label">${escapeHtml(copy.citedAsCounter)}</h5>${referenceList(counterBacklinks, copy.unavailable)}</div></div></div>` : ""}</section>`;
   }
 
@@ -304,12 +308,21 @@
     const outgoing = graph.outgoing(node.id);
     const connections = incoming.length + outgoing.length
       ? `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4 class="j-label">${escapeHtml(copy.incoming)}</h4><ul class="j-insp-list">${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4 class="j-label">${escapeHtml(copy.outgoing)}</h4><ul class="j-insp-list">${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
-      : `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3><p class="j-note" data-tone="idle">${escapeHtml(copy.none)}</p></section>`;
+      : "";
     const permanentLink = inspection.relationship?.deepLink
       ? `<div><dt class="j-label">${escapeHtml(copy.permanentLink)}</dt><dd><a data-permanent-link href="${escapeHtml(inspection.relationship.deepLink)}">${escapeHtml(copy.permanentLinkText)}</a></dd></div>`
       : "";
     const identity = `<section class="j-insp-sec" data-inspection-section="identity"><h3>${escapeHtml(copy.identity)}</h3><dl class="j-insp-facts">${fact(copy.type, graph.typeLabel(node.type))}${fact(copy.pillar, inspection.pillar, { code: true })}${fact(copy.canonicalId, inspection.canonicalId, { raw: true })}${fact(copy.confidence, inspection.confidence, { code: true })}${permanentLink}</dl></section>`;
-    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="j-insp-summary">${escapeHtml(root.Jarbou3iBiopolitics?.displayCode?.(lang, inspection.summary) ?? inspection.summary)}</p>` : ""}${identity}${provenanceHtml(inspection, copy)}${evidenceHtml(inspection, copy)}${relationshipEvidenceHtml(inspection, copy)}${connections}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
+    // A section the record leaves empty is named once here, not repeated as a note each.
+    const parts = [
+      [copy.provenance, provenanceHtml(inspection, copy)], [copy.evidence, evidenceHtml(inspection, copy)],
+      [copy.evidenceTrail, relationshipEvidenceHtml(inspection, copy)], [copy.connections, connections],
+    ];
+    const missing = parts.filter(([, html]) => !html).map(([name]) => name);
+    const missingNote = missing.length
+      ? `<p class="j-note" data-tone="idle" data-inspection-missing>${escapeHtml(`${copy.unavailable}${lang === "fr" ? " :" : ":"} ${missing.join(" · ")}`)}</p>`
+      : "";
+    rootElement.querySelector("#referenceInspectorBody").innerHTML = `${inspection.summary && inspection.summary !== inspection.label ? `<p class="j-insp-summary">${escapeHtml(root.Jarbou3iBiopolitics?.displayCode?.(lang, inspection.summary) ?? inspection.summary)}</p>` : ""}${identity}${missingNote}${parts.map(([, html]) => html).join("")}${auditHtml(inspection, copy)}${occurrencesHtml(inspection, copy)}`;
     const openButton = rootElement.querySelector("#referenceOpenRecord");
     openButton.textContent = copy.open;
     openButton.dataset.referenceOpenRecord = node.id;

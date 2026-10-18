@@ -13,7 +13,7 @@ async function openQueue(page, lens) {
   await page.locator("#loadSampleBtn").click();
   await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
   const intelligence = page.locator("[data-evidence-intelligence]");
-  await intelligence.locator("summary").click();
+  await intelligence.locator(":scope > summary").click();
   const queue = intelligence.locator("[data-evidence-review-queue]");
   await expect(queue).toBeVisible();
   return queue;

@@ -14,7 +14,7 @@ async function openInspection(page, lens) {
   await page.locator("#loadSampleBtn").click();
   await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
   const intelligence = page.locator("[data-evidence-intelligence]");
-  await intelligence.locator("summary").click();
+  await intelligence.locator(":scope > summary").click();
   await expect(intelligence).toHaveAttribute("open", "");
   await expectKernel(page, "[data-evidence-intelligence]");
   return intelligence;
@@ -118,7 +118,7 @@ test("biopolitical records read as record cards in each pillar and the evidence 
   await expectKernel(page, panel);
   // Its codes are chips in words, then its statement; its facts and lists
   // are one description list.
-  await expect(record.locator(".j-chip")).toHaveText(["Infrastructure", "High"]);
+  await expect(record.locator(".j-chip")).toHaveText(["Infrastructure", "High confidence"]);
   await expect(record.locator(".j-rec-title")).toHaveText("QR credential and verification rule");
   await expect(record.locator("dt")).toHaveText(["Stated purpose", "Ownership", "Oversight", "Scale", "Links to", "Linked from"]);
   // Then its connections: the link it authors, and the records that point to
@@ -152,7 +152,7 @@ test("strategic claim–evidence matrix exports an explicitly derived audit arti
   const matrix = intelligence.locator("[data-evidence-traceability]");
   await expect(matrix).toBeVisible();
   await expect(matrix.locator("[data-traceability-record]")).toHaveCount(13);
-  await expect(matrix.locator('[data-traceability-record="I1"]')).toContainText("unreferenced");
+  await expect(matrix.locator('[data-traceability-unreferenced] [data-traceability-record="I1"]')).toBeAttached();
 
   const manifest = await downloadManifest(page, intelligence);
   expect(manifest.format).toBe("jarbou3i-evidence-intelligence-v1");

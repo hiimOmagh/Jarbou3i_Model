@@ -61,7 +61,7 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 | A4 | The report's next action came from the structure check, not the analysis's own `next_improvement` the overview shows | D1 |
 | A5 | The Strategic `quality_gate.weakest_layer` is never shown | D2 (with `publication_risk`, as the AI's own assessment) |
 | A6 | The report colours scenario probabilities with quality tones: a 20% scenario looks failed | D1 |
-| A7 | The model's self-audit reads green, as if verified; red is used for low confidence; rating pills carry no labels; confidence wording varies | D2 for the self-audit; the rest open |
+| A7 | The model's self-audit reads green, as if verified; red is used for low confidence; rating pills carry no labels; confidence wording varies | done (D2 for the self-audit; UIX-5 H part 1 for the rest) |
 
 ### B. After import, and moving around
 
@@ -86,9 +86,9 @@ Status: **D1** / **D2** = fixed in UIX-5 slice D, first or second part;
 | # | Finding | Status |
 |---|---|---|
 | D1 | The import details repeated one message 13 times and silently stopped at 12 lines | D1 |
-| D2 | The review queue is not grouped; empty columns span screens; traceability tables can be all dashes | open |
+| D2 | The review queue is not grouped; empty columns span screens; traceability tables can be all dashes | done (UIX-5 H part 2) |
 | D3 | A record appears 4–9 times across views; the report lists relations two or three times | report: done (UIX-5 G1, each record lists its connections); records across views: open |
-| D4 | Walls of "not applicable"; the inspector repeats "not provided" five times | open |
+| D4 | Walls of "not applicable"; the inspector repeats "not provided" five times | inspector: done (UIX-5 H part 1); walls of "not applicable": open |
 
 ### E. Language
 

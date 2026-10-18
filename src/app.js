@@ -4481,11 +4481,12 @@ function displayEnum(v) {
 }
 // A qualifier as a kernel chip: the words say it, the tone only adds to them.
 function kernelChip(label, tone = "") {
-  return label ? `<span class="j-chip"${tone ? ` data-tone="${tone}"` : ""}>${escapeHtml(label)}</span>` : "";
+  return label ? `<span class="j-chip"${tone ? ` data-tone="${escapeHtml(tone)}"` : ""}>${escapeHtml(label)}</span>` : "";
 }
+// Confidence is the AI's own claim, not a check: no level reads as verified
+// or failed; only a low one asks for attention.
 function confidenceTone(value) {
-  const score = confidenceScore(value);
-  return score >= 90 ? "ok" : score >= 60 ? "warn" : score < 40 ? "crit" : "";
+  return confidenceScore(value) < 40 ? "warn" : "";
 }
 function riskTone(value) {
   const score = riskScore(value);
@@ -5830,7 +5831,6 @@ function evidenceIntelligenceCopy() {
       support_and_counter: labelText("support and counter", "دعم وأدلة مضادة", "appui et contre-preuves"),
       support_only: labelText("support only", "دعم فقط", "appui seulement"),
       counter_only: labelText("counter only", "أدلة مضادة فقط", "contre-preuves seulement"),
-      unreferenced: labelText("unreferenced", "بلا مراجع", "sans référence"),
     },
     export: labelText("Export the evidence review (JSON)", "تصدير مراجعة الأدلة (JSON)", "Exporter la revue des preuves (JSON)"),
     reviewQueue: labelText("Evidence review queue", "قائمة مراجعة الأدلة", "File de revue des preuves"),
@@ -5906,27 +5906,42 @@ function renderEvidenceIntelligence(index) {
     verify_provenance: copy.verifyProvenance,
     strengthen_coverage: copy.strengthenCoverage,
   };
+  const taskItem = (task) => {
+    const navigationId = index.resolve(task.targetId) ? task.targetId : task.ownerId;
+    const target = index.resolve(navigationId);
+    const targetLabel = target?.label || task.targetId || task.id;
+    const control = navigationId
+      ? recordButton(navigationId, targetLabel, task.targetId)
+      : `<span class="j-evi-target"><span>${escapeHtml(targetLabel)}</span><code>${escapeHtml(task.targetId)}</code></span>`;
+    return `<li data-review-task="${escapeHtml(task.id)}" data-review-reason="${escapeHtml(task.reasonCode)}"><span class="j-evi-seq">${task.sequence}</span><div>${control}</div></li>`;
+  };
+  // A reason is named once over its tasks (a phase lists them reason by
+  // reason); a long group shows its first five and folds the rest.
   const reviewGroups = Object.keys(phaseLabels).map((phase) => {
     const tasks = reviewPlan.forPhase(phase);
-    const items = tasks.map((task) => {
-      const navigationId = index.resolve(task.targetId) ? task.targetId : task.ownerId;
-      const target = index.resolve(navigationId);
-      const targetLabel = target?.label || task.targetId || task.id;
-      const control = navigationId
-        ? recordButton(navigationId, targetLabel, task.targetId)
-        : `<span class="j-evi-target"><span>${escapeHtml(targetLabel)}</span><code>${escapeHtml(task.targetId)}</code></span>`;
-      return `<li data-review-task="${escapeHtml(task.id)}" data-review-reason="${escapeHtml(task.reasonCode)}"><span class="j-evi-seq">${task.sequence}</span><div><strong>${escapeHtml(copy.reasonLabels[task.reasonCode] || task.reasonCode)}</strong>${control}</div></li>`;
+    const reasons = [...new Set(tasks.map((task) => task.reasonCode))].map((reason) => {
+      const group = tasks.filter((task) => task.reasonCode === reason);
+      const shown = 5;
+      const more = group.slice(shown);
+      return `<div class="j-evi-reason"><h6>${escapeHtml(copy.reasonLabels[reason] || reason)} <span class="j-chip">${group.length}</span></h6><ol class="j-evi-tasks">${group.slice(0, shown).map(taskItem).join("")}</ol>${more.length ? `<details class="j-disclosure"><summary>${escapeHtml(pluralText(more.length, MORE_TASK_COUNT))}</summary><ol class="j-evi-tasks">${more.map(taskItem).join("")}</ol></details>` : ""}</div>`;
     }).join("");
-    return `<section class="j-rec" data-review-phase="${escapeHtml(phase)}"><header class="j-rec-head"><h5 class="j-rec-title">${escapeHtml(phaseLabels[phase])}</h5><span class="j-chip">${tasks.length}</span></header>${items ? `<ol class="j-evi-tasks">${items}</ol>` : ""}</section>`;
+    return `<section class="j-rec" data-review-phase="${escapeHtml(phase)}"><header class="j-rec-head"><h5 class="j-rec-title">${escapeHtml(phaseLabels[phase])}</h5><span class="j-chip">${tasks.length}</span></header>${reasons}</section>`;
   }).join("");
   const reviewQueue = `<section class="j-evi-sec" data-evidence-review-queue><header class="j-evi-head"><div><h4>${escapeHtml(copy.reviewQueue)}</h4><p>${escapeHtml(copy.reviewQueueIntro)}</p><small>${escapeHtml(copy.derivedNote)}</small></div><div class="j-evi-acts"><button class="j-btn" data-variant="primary" id="openReviewLedger" type="button">${escapeHtml(copy.openLedger)}</button><button class="j-btn" id="exportReviewPlan" type="button">${escapeHtml(copy.exportReviewPlan)}</button></div></header><div class="j-evi-phases">${reviewGroups}</div></section>`;
   const codes = (ids) => (ids.length ? ids.map((id) => `<code>${escapeHtml(id)}</code>`).join(" ") : "—");
   const balanceTone = { support_and_counter: "ok", support_only: "warn", counter_only: "warn" };
-  const matrixRows = traceability.rows.map((row) => {
+  // A record that cites no evidence is a row of dashes: such records are
+  // listed once, folded, under the rows that cite some.
+  const unreferenced = traceability.rows.filter((row) => row.balance === "unreferenced");
+  const matrixRows = traceability.rows.filter((row) => row.balance !== "unreferenced").map((row) => {
     const tone = balanceTone[row.balance];
     return `<tr data-traceability-record="${escapeHtml(row.recordId)}"><th scope="row">${recordButton(row.recordId, row.label)}</th><td>${codes(row.supportingIds)}</td><td>${codes(row.counterIds)}</td><td>${codes(row.clusterIds)}</td><td><span class="j-chip" data-balance="${escapeHtml(row.balance)}"${tone ? ` data-tone="${tone}"` : ""}>${escapeHtml(copy.balanceLabels[row.balance] || String(row.balance).replaceAll("_", " "))}</span></td></tr>`;
   }).join("");
-  const matrix = `<section class="j-evi-sec" data-evidence-traceability><header class="j-evi-head"><div><h4>${escapeHtml(copy.matrix)}</h4><p>${escapeHtml(copy.matrixIntro)}</p><small>${escapeHtml(copy.derivedNote)}</small></div><div class="j-evi-acts"><button class="j-btn" id="exportIntelligence" type="button">${escapeHtml(copy.export)}</button></div></header><div class="j-table-wrap"><table class="j-table"><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div></section>`;
+  const table = matrixRows ? `<div class="j-table-wrap"><table class="j-table"><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div>` : "";
+  const uncited = unreferenced.length
+    ? `<details class="j-disclosure" data-traceability-unreferenced><summary>${escapeHtml(pluralText(unreferenced.length, UNREFERENCED_COUNT))}</summary><ul class="j-insp-list">${unreferenced.map((row) => `<li data-traceability-record="${escapeHtml(row.recordId)}">${recordButton(row.recordId, row.label)}</li>`).join("")}</ul></details>`
+    : "";
+  const matrix = `<section class="j-evi-sec" data-evidence-traceability><header class="j-evi-head"><div><h4>${escapeHtml(copy.matrix)}</h4><p>${escapeHtml(copy.matrixIntro)}</p><small>${escapeHtml(copy.derivedNote)}</small></div><div class="j-evi-acts"><button class="j-btn" id="exportIntelligence" type="button">${escapeHtml(copy.export)}</button></div></header>${table}${uncited}</section>`;
   const stats = [
     [intelligence.stats.sourceClusters, copy.clusters],
     [`${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}`, copy.cited],
@@ -6081,11 +6096,16 @@ function bioConnectionFacts(node, graph) {
 // A Biopolitical record as a kernel card: its qualifiers, its statement, its
 // summary, then its facts, lists and connections. Every pillar and the
 // evidence view use it.
+// A Biopolitical rating takes the tone the Strategic lens gives it.
+const BIO_RATED_TONE = { confidence: confidenceTone, risk: riskTone };
 function bioRecordHtml(item) {
   const graph = currentBiopoliticalGraph();
   const node = item.id ? graph.resolve(item.id) : null;
   const chips = arr(item.meta)
-    .map((value) => kernelChip(BIO.displayToken(state.lang, value)))
+    .map((value) => {
+      const rating = BIO.ratingOf(value);
+      return kernelChip(BIO.displayToken(state.lang, value), rating ? BIO_RATED_TONE[rating.kind]?.(rating.level) || "" : "");
+    })
     .join("");
   const facts = [
     ...arr(item.details).map((detail) =>
@@ -7528,6 +7548,16 @@ const CITED_BY_COUNT = {
   en: { one: "cited by {count} record", other: "cited by {count} records" },
   ar: { zero: "لا يحيل إليه أي سجل", one: "يحيل إليه سجل واحد", two: "يحيل إليه سجلان", few: "يحيل إليه {count} سجلات", many: "يحيل إليه {count} سجلًا", other: "يحيل إليه {count} سجل" },
   fr: { one: "cité par {count} fiche", other: "cité par {count} fiches" },
+};
+const MORE_TASK_COUNT = {
+  en: { one: "{count} more task", other: "{count} more tasks" },
+  ar: { one: "مهمة أخرى", two: "مهمتان أخريان", few: "{count} مهام أخرى", many: "{count} مهمة أخرى", other: "{count} مهمة أخرى" },
+  fr: { one: "{count} autre tâche", other: "{count} autres tâches" },
+};
+const UNREFERENCED_COUNT = {
+  en: { one: "{count} record cites no evidence", other: "{count} records cite no evidence" },
+  ar: { one: "سجل واحد لا يستند إلى أي دليل", two: "سجلان لا يستندان إلى أي دليل", few: "{count} سجلات لا تستند إلى أي دليل", many: "{count} سجلًا لا يستند إلى أي دليل", other: "{count} سجل لا يستند إلى أي دليل" },
+  fr: { one: "{count} fiche ne cite aucune preuve", other: "{count} fiches ne citent aucune preuve" },
 };
 const REVISION_COUNT = {
   en: { one: "{count} revision", other: "{count} revisions" },

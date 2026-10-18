@@ -99,7 +99,7 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
   await expect(inspector.locator('[data-inspection-section="identity"]')).toContainText("Record ID");
   await expect(inspector.locator('[data-inspection-section="audit"]')).toContainText("/evidence/items/0");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("Historical power distribution reference");
-  await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("unreviewed");
+  await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("Unreviewed");
   await expect(inspector.locator('[data-inspection-section="evidence"]')).toContainText(
     "Some European states retained substantial institutional and economic capacity",
   );
@@ -110,6 +110,24 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
   await expect(inspector).toBeHidden();
   await expect(page.locator('[data-review="evidence"]')).toHaveAttribute("aria-current", "location");
   await expect(page.locator('[data-inspection-id="E1"]')).toBeFocused();
+});
+
+test("an empty inspector section is named once, and ratings say what they rate", async ({ page }) => {
+  await loadStrategicSample(page);
+  await page.locator('[data-review="inspection"]').click();
+  await page.locator('[data-inspection-directory-item] [data-reference-id="I1"]').click();
+  const inspector = page.locator("#referenceInspector");
+  await expect(inspector.locator("[data-inspection-missing]")).toContainText("Provenance");
+  await expect(inspector.locator('[data-inspection-section="provenance"]')).toHaveCount(0);
+  await expect(inspector.locator(".j-note", { hasText: "Not given in the record" })).toHaveCount(1);
+  await inspector.locator("#referenceInspectorClose").click();
+
+  await openStep(page, "lens");
+  await page.locator('[data-lens="biopolitical"]').click();
+  await page.locator("#loadSampleBtn").click();
+  const chips = page.locator("#case-pillars .j-chip");
+  await expect(chips.filter({ hasText: /^(High|Medium|Low) confidence$/ }).first()).toBeAttached();
+  await expect(chips.filter({ hasText: /^(High|Medium|Low)$/ })).toHaveCount(0);
 });
 
 test("biopolitical inspection traverses linked records without losing return focus", async ({ page }) => {
@@ -130,8 +148,8 @@ test("biopolitical inspection traverses linked records without losing return foc
   await evidenceRecord.press("Enter");
 
   const inspector = page.locator("#referenceInspector");
-  await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("primary legal policy");
-  await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("unverified");
+  await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("Primary legal policy");
+  await expect(inspector.locator('[data-inspection-section="provenance"]')).toContainText("Unverified");
   await expect(inspector.locator('[data-inspection-section="evidence"]')).toContainText("sunset clauses");
   await expect(inspector.locator('[data-inspection-section="audit"]')).toContainText("Complete");
   await expect(inspector.locator('[data-inspection-section="occurrences"] [data-reference-occurrence]')).not.toHaveCount(0);
@@ -182,7 +200,7 @@ test("source clusters and evidence gaps remain authored, navigable, and lens-spe
   await page.locator('[data-review="inspection"]').click();
 
   const strategic = page.locator('[data-evidence-intelligence]');
-  await strategic.locator("summary").click();
+  await strategic.locator(":scope > summary").click();
   await expect(strategic).toHaveAttribute("open", "");
   await expect(strategic.locator('[data-source-cluster="SC1"]')).toContainText(
     "Historical power distribution reference",
@@ -200,7 +218,7 @@ test("source clusters and evidence gaps remain authored, navigable, and lens-spe
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="inspection"]').click();
   const biopolitical = page.locator('[data-evidence-intelligence]');
-  await biopolitical.locator("summary").click();
+  await biopolitical.locator(":scope > summary").click();
   await expect(biopolitical.locator("[data-source-cluster]")).toHaveCount(2);
   await expect(biopolitical.locator('[data-evidence-gap="untraceableEvidence"] [data-reference-id]')).toHaveCount(2);
   await expect(biopolitical.locator(".j-stats")).toContainText("2/2");

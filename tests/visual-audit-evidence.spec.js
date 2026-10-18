@@ -258,7 +258,7 @@ test.describe("Release Candidate visual audit evidence", () => {
 
       await page.locator('[data-bio-review="inspection"]').click();
       const intelligence = page.locator("[data-evidence-intelligence]");
-      await intelligence.locator("summary").click();
+      await intelligence.locator(":scope > summary").click();
       await expect(page.locator("#openReviewLedger")).toBeEnabled();
       await page.locator("#openReviewLedger").click();
       await expect(page.locator("#ledgerDialog")).toBeVisible();

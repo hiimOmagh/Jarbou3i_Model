@@ -150,7 +150,7 @@ const FREE_CLASSES = [
   "j-brief-steps", "j-brief-desc", "j-brief-items", "j-brief-tags", "j-brief-open", "j-brief-divider", "j-brief-alert", "j-brief-bands",
   "j-diag", "j-diag-notes",
   "j-evi", "j-evi-title", "j-evi-body", "j-evi-sec", "j-evi-head", "j-evi-acts", "j-evi-counts",
-  "j-evi-phases", "j-evi-tasks", "j-evi-seq", "j-evi-target",
+  "j-evi-phases", "j-evi-reason", "j-evi-tasks", "j-evi-seq", "j-evi-target",
   "j-conn", "j-conn-hop", "j-conn-all", "j-conn-map", "j-conn-side", "j-conn-arrow", "j-conn-centre", "j-conn-node",
   "j-conn-rel", "j-conn-list", "j-conn-line", "j-conn-why", "j-conn-gaps", "j-conn-loose", "j-conn-act",
 ];

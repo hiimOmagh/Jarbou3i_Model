@@ -14,7 +14,7 @@ async function openLedger(page, lang = "En") {
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-review="inspection"]').click();
   const intelligence = page.locator("[data-evidence-intelligence]");
-  await intelligence.locator("summary").click();
+  await intelligence.locator(":scope > summary").click();
   await expect(page.locator("#openReviewLedger")).toBeEnabled();
   await page.locator("#openReviewLedger").click();
   await expect(page.locator("#ledgerDialog")).toBeVisible();
@@ -49,7 +49,7 @@ test.describe("Operational review ledger", () => {
     await page.reload();
     await page.locator("#langEn").click();
     await page.locator('[data-review="inspection"]').click();
-    await page.locator("[data-evidence-intelligence] summary").click();
+    await page.locator("[data-evidence-intelligence] > summary").click();
     await page.locator("#openReviewLedger").click();
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
     await expect(page.locator("#ledgerTrust")).toContainText(/does not validate conclusions/i);
@@ -65,7 +65,7 @@ test.describe("Operational review ledger", () => {
     await page.locator("#editorSave").click();
     await page.locator("#editorClose").click();
     await page.locator('[data-review="inspection"]').click();
-    await page.locator("[data-evidence-intelligence] summary").click();
+    await page.locator("[data-evidence-intelligence] > summary").click();
     await page.locator("#openReviewLedger").click();
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Completed");
     await expect(page.locator("#ledgerTaskList [data-ledger-status=stale]").first()).toContainText(/Stale after draft change/i);

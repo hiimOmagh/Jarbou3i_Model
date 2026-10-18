@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+### An evidence review that fits on the page (UIX-5 slice H, part 2)
+
+Walkthrough D2, in AR/EN/FR. On four real answers the "Source clusters and
+evidence gaps" panel ran to about 25,000px when opened.
+
+- **The review queue names each reason once**, with its count, and shows
+  its first five records; the rest fold under "48 more tasks". A phase
+  with no task is one line; the others take the full width, their reasons
+  side by side. One answer's queue went from 2,212px to 1,324px.
+- **The claim–evidence table lists the records that cite evidence.** A
+  record that cites none was a row of four dashes; such records are named
+  once, folded under "57 records cite no evidence". The exported matrix
+  keeps every record.
+
+### Ratings that say what they rate (UIX-5 slice H, part 1)
+
+Walkthrough A7 and D4 (the record inspector), in AR/EN/FR, the app, the
+Biopolitical report and the prototype.
+
+- **The inspector names an empty section once.** On real answers almost
+  every record said "Not given in the record" five times (provenance,
+  evidence balance, evidence trail); it now leaves those sections out and
+  says on one line which ones the record does not give.
+- **Confidence is named in full and is never red or green.** Biopolitical
+  cards and the report said "Low" or "Faible" where the overview said "Low
+  confidence"; risk and feasibility read "High risk" and "Low feasibility".
+  A confidence is the AI's own claim, so no level reads as verified or
+  failed: low is amber, the others neutral, in both lenses and the
+  prototype.
+- **English inspector values read in sentence case** ("Internal sample",
+  "Unreviewed"), not as raw codes.
+- **Arabic:** the evidence score is سلامة الأدلة (soundness), not نزاهة
+  الأدلة (probity), and semantic warnings are about consistency (الاتساق).
+
 ### Readable details and counts (UIX-5 slice E, part 3)
 
 Walkthrough E1, E3, H3 and H4, in AR/EN/FR, the app, the Biopolitical

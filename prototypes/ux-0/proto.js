@@ -793,8 +793,10 @@ function renderWizard() {
 
 /* ---------- Workspace ---------- */
 const contentLang = (a) => (a?.language ? `lang="${esc(a.language)}" dir="${a.language === "ar" ? "rtl" : "ltr"}"` : 'dir="auto"');
+// Confidence is the AI's own claim: named in full, and only a low one is
+// coloured (amber), so no level reads as verified or failed.
 function confChip(level) {
-  return level ? `<span class="chip ${esc(level)}">${esc(t(`confidence.${level}`) || level)}</span>` : "";
+  return level ? `<span class="chip${level === "low" ? " medium" : ""}">${esc(lookup(`confidenceFull.${level}`) ?? level)}</span>` : "";
 }
 
 function renderPro() {
@@ -995,7 +997,7 @@ function evidenceView(a) {
     </table></div></div>
     <div class="panelBox"><span class="label">${esc(t("asTitle"))}</span>
       <div class="cards">${as.map((x) => `<button type="button" class="recCard" data-action="selectRecord" data-value="${esc(x.id)}" aria-pressed="${selectedId === x.id}">
-        <div class="recHead"><span class="mono help">${esc(x.id)}</span><span class="chip ${x.risk === "high" ? "low" : x.risk === "low" ? "high" : "medium"}">${esc(t("risk"))}${colon()} ${esc(x.risk)}</span></div>
+        <div class="recHead"><span class="mono help">${esc(x.id)}</span><span class="chip ${x.risk === "high" ? "low" : x.risk === "low" ? "high" : "medium"}">${esc(lookup(`riskFull.${x.risk}`) ?? `${t("risk")}${colon()} ${x.risk}`)}</span></div>
         <h3 ${contentLang(a)}>${esc(x.assumption)}</h3>
         <dl class="kv"><dt>${esc(t("disprovenBy"))}</dt><dd ${contentLang(a)}>${esc(x.disproving_test)}</dd>${x.implication_if_wrong ? `<dt>${esc(t("ifWrong"))}</dt><dd ${contentLang(a)}>${esc(x.implication_if_wrong)}</dd>` : ""}</dl>
       </button>`).join("")}</div>

@@ -263,7 +263,7 @@
       scoreLabels: {
         scope: "السؤال والسياق",
         mechanism: "تتبّع الآلية",
-        evidence: "نزاهة الأدلة",
+        evidence: "سلامة الأدلة",
         distribution: "التوزيع والموافقة",
         pluralism: "التفسيرات المتنافسة",
         agency: "الفاعلية والبدائل",
@@ -468,6 +468,24 @@
     },
   };
 
+  // A record's ratings in full ([ar, fr, en]), worded as the Strategic lens words them.
+  const RATED_LABELS = {
+    confidence: {
+      high: ["ثقة عالية", "Confiance élevée", "High confidence"],
+      medium: ["ثقة متوسطة", "Confiance moyenne", "Medium confidence"],
+      low: ["ثقة منخفضة", "Confiance faible", "Low confidence"],
+    },
+    risk: {
+      high: ["مخاطر عالية", "Risque élevé", "High risk"],
+      medium: ["مخاطر متوسطة", "Risque moyen", "Medium risk"],
+      low: ["مخاطر منخفضة", "Risque faible", "Low risk"],
+    },
+    feasibility: {
+      high: ["جدوى عالية", "Faisabilité élevée", "High feasibility"],
+      medium: ["جدوى متوسطة", "Faisabilité moyenne", "Medium feasibility"],
+      low: ["جدوى منخفضة", "Faisabilité faible", "Low feasibility"],
+    },
+  };
   const TOKEN_LABELS = {
     high: ["عالٍ", "Élevé"],
     medium: ["متوسط", "Moyen"],
@@ -783,9 +801,20 @@
       ? root.Jarbou3iReportTheme.dateText(lang, value, { utc: true })
       : value;
 
+  // A record's rating tag ("confidence:low") as its kind and level, or null.
+  function ratingOf(value) {
+    const match = /^(confidence|risk|feasibility):(.+)$/.exec(str(value).trim());
+    return match ? { kind: match[1], level: match[2].toLowerCase() } : null;
+  }
+
   function displayToken(lang, value) {
     const token = str(value).trim();
     if (!token) return "";
+    const rating = ratingOf(token);
+    if (rating) {
+      const label = RATED_LABELS[rating.kind][rating.level];
+      return label ? label[lang === "ar" ? 0 : lang === "fr" ? 1 : 2] : displayToken(lang, rating.level);
+    }
     const translated = TOKEN_LABELS[token];
     if (lang === "ar" && translated) return translated[0];
     if (lang === "fr" && translated) return translated[1];
@@ -2903,6 +2932,8 @@ ${schema}${interchangeGuide}`;
     return normalizeV2(localized || sample);
   }
 
+  // A rating among a record's tags names what it rates: "Low confidence", not "Low".
+  const rated = (kind, value) => (str(value) ? `${kind}:${str(value)}` : "");
   function record(title, summary = "", meta = [], details = [], lists = []) {
     return {
       title: str(title),
@@ -3049,7 +3080,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.jurisdiction_or_context,
             item.comparison_basis,
-            ["international_comparison", item.confidence],
+            ["international_comparison", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Evidence IDs", "معرّفات الأدلة", "Identifiants de preuve"),
@@ -3113,7 +3144,7 @@ ${schema}${interchangeGuide}`;
         record(
           item.name,
           item.lived_context,
-          [item.domain, item.confidence],
+          [item.domain, rated("confidence", item.confidence)],
           [
             pair(
               labelFor(
@@ -3160,7 +3191,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.formal_mandate,
-            [item.role, item.confidence],
+            [item.role, rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Authority", "السلطة", "Autorité"),
@@ -3241,7 +3272,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.classification,
-            ["affected_population", item.confidence],
+            ["affected_population", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Agency", "الفاعلية", "Agentivité"),
@@ -3277,7 +3308,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.mandate,
-            ["institution", item.confidence],
+            ["institution", rated("confidence", item.confidence)],
             [pair(labelFor(lang, "Role", "الدور", "Rôle"), displayCode(lang, item.role))],
             [
               list(
@@ -3291,7 +3322,7 @@ ${schema}${interchangeGuide}`;
           record(
             displayCode(lang, item.resource),
             item.effect,
-            ["power_asymmetry", item.confidence],
+            ["power_asymmetry", rated("confidence", item.confidence)],
             [pair(labelFor(lang, "Between", "بين", "Entre"), item.between)],
           ),
         ),
@@ -3302,7 +3333,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.mechanism,
-            [item.type, item.confidence],
+            [item.type, rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Stated purpose", "الغرض المعلن", "But déclaré"),
@@ -3324,7 +3355,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.dependency_created,
-            ["infrastructure", item.confidence],
+            ["infrastructure", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Owner", "المالك", "Propriétaire"),
@@ -3362,7 +3393,7 @@ ${schema}${interchangeGuide}`;
               "Économie politique",
             ),
             item.dependency_model,
-            ["political_economy", item.confidence],
+            ["political_economy", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Ownership", "الملكية", "Propriété"),
@@ -3415,7 +3446,7 @@ ${schema}${interchangeGuide}`;
           record(
             displayCode(lang, item.mode),
             item.mechanism,
-            ["power_mode", item.confidence],
+            ["power_mode", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3438,7 +3469,7 @@ ${schema}${interchangeGuide}`;
               ? `${filled(item.from) ? item.from : "—"} ${lang === "ar" ? "\u200F←\u200F" : "→"} ${filled(item.to) ? item.to : "—"}`
               : "",
             item.mechanism,
-            ["causal_link", item.relation, item.confidence],
+            ["causal_link", item.relation, rated("confidence", item.confidence)],
           ),
         ),
       ];
@@ -3448,7 +3479,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.definition,
-            ["norm", item.confidence],
+            ["norm", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Authority", "السلطة", "Autorité"),
@@ -3481,7 +3512,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.claim,
             item.validation_procedure,
-            ["regime_of_truth", item.confidence],
+            ["regime_of_truth", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3528,7 +3559,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.category,
             item.definition,
-            ["classification", item.confidence],
+            ["classification", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3566,7 +3597,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.id,
             item.institutional_response,
-            ["looping_effect", item.confidence],
+            ["looping_effect", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3625,7 +3656,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name,
             item.stated_benefit,
-            [item.modality, item.proportionality, item.confidence],
+            [item.modality, item.proportionality, rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3707,7 +3738,7 @@ ${schema}${interchangeGuide}`;
             "Évaluation de la capture",
           ),
           capture.conclusion,
-          [capture.status, capture.confidence],
+          [capture.status, rated("confidence", capture.confidence)],
           [
             pair(
               labelFor(
@@ -3798,7 +3829,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.care_claim,
             item.interpretation,
-            ["care_control_tension", item.confidence],
+            ["care_control_tension", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Severity", "الشدة", "Sévérité"),
@@ -3826,7 +3857,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.name || item.population_id,
             item.burdens?.join(" · "),
-            ["distribution", item.confidence],
+            ["distribution", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3912,7 +3943,7 @@ ${schema}${interchangeGuide}`;
           record(
             displayCode(lang, item.axis),
             item.mechanism,
-            ["inequality", item.confidence],
+            ["inequality", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -3941,7 +3972,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.exposure,
             item.protection_gap,
-            ["necropolitics", item.causal_character, item.confidence],
+            ["necropolitics", item.causal_character, rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -4048,7 +4079,7 @@ ${schema}${interchangeGuide}`;
               item.type,
               item.relevance,
               item.evidentiary_status,
-              item.confidence,
+              rated("confidence", item.confidence),
             ],
             [
               pair(
@@ -4082,7 +4113,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.claim,
             item.limitations,
-            [item.epistemic_type, item.source_tier, item.confidence],
+            [item.epistemic_type, item.source_tier, rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(lang, "Source", "المصدر", "Source"),
@@ -4189,7 +4220,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.assumption,
             item.implication_if_wrong,
-            ["assumption", item.risk, item.confidence],
+            ["assumption", rated("risk", item.risk), rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -4210,7 +4241,7 @@ ${schema}${interchangeGuide}`;
           record(
             displayCode(lang, item.form),
             item.mechanism,
-            ["resistance", item.confidence],
+            ["resistance", rated("confidence", item.confidence)],
             [
               pair(
                 labelFor(
@@ -4243,7 +4274,7 @@ ${schema}${interchangeGuide}`;
           record(
             item.proposal,
             item.lower_harm_rationale,
-            ["alternative", item.level, item.feasibility],
+            ["alternative", item.level, rated("feasibility", item.feasibility)],
             [
               pair(
                 labelFor(lang, "Mechanism", "الآلية", "Mécanisme"),
@@ -4724,7 +4755,7 @@ ${schema}${interchangeGuide}`;
     block(
       semantic.warnings.length === 0,
       "Resolve every semantic-integrity warning before publication.",
-      "عالج جميع تنبيهات النزاهة الدلالية قبل النشر.",
+      "عالج جميع تنبيهات الاتساق الدلالي قبل النشر.",
       "Résolvez tous les avertissements d’intégrité sémantique avant publication.",
     );
     const scoreResult = scores(a, options);
@@ -4782,6 +4813,7 @@ ${schema}${interchangeGuide}`;
     SOURCE_TIERS,
     ui,
     displayToken,
+    ratingOf,
     displayCode,
     auditLabel,
     sanitizePortableText,
