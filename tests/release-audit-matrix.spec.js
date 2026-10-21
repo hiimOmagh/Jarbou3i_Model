@@ -29,6 +29,9 @@ async function expectNoSeriousViolations(page) {
       if (animation.effect?.getComputedTiming().iterations !== Infinity) animation.finish();
     }
   });
+  // Work queued for the next frames (a scroll into view) runs first: axe maps
+  // the page once, then reads colours, so a later scroll mixes two states.
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const results = await new AxeBuilder({ page }).analyze();
   const blocking = results.violations.filter((violation) =>
     ["serious", "critical"].includes(violation.impact),
@@ -118,6 +121,8 @@ test.describe("Final release language, theme, viewport, and resilience audit", (
         await connectionsTab.press("Enter");
         await expect(connectionsTab).toHaveAttribute("aria-current", "location");
         await expect(page.locator("#connMap")).toBeVisible();
+        // The shell names the review as the current phase once it is open.
+        await expect(page.locator('[data-shell-nav="review"]')).toHaveAttribute("aria-current", "step");
 
         const duplicateIds = await page.locator("[id]").evaluateAll((elements) => {
           const counts = new Map();
