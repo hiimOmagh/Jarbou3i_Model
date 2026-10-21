@@ -4,17 +4,23 @@
    and the single next action. Classes are .j-shell-*, layout only; the kernel
    contracts apply to every control inside. */
 
-.j-shell { border: 1px solid var(--j-line); border-radius: var(--j-r-3); overflow: hidden; margin-bottom: var(--j-s-4); }
+/* The header is the line's name board: an enamel bar closed by a thick ink rule. */
+.j-shell { margin-bottom: var(--j-s-5); background: var(--j-panel); border-block-end: var(--j-rule) solid var(--j-ink); border-radius: var(--j-r-2) var(--j-r-2) 0 0; }
 .j-shell-top {
-  display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3);
-  min-height: 56px; padding: var(--j-s-2) var(--j-s-4);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3) var(--j-s-4);
+  min-height: 64px; padding: var(--j-s-3) var(--j-s-4);
 }
-.j-shell-brand { display: flex; align-items: center; gap: var(--j-s-2); min-width: 0; }
-.j-shell-brand img { width: 32px; height: 32px; border-radius: var(--j-r-2); flex: none; }
+/* The mascot and the wordmark, then the title and what the tool is for. */
+.j-shell-brand { display: flex; align-items: center; gap: var(--j-s-3); min-width: 0; }
+.j-shell-brand img { width: 40px; height: 40px; border-radius: 50%; flex: none; background: var(--j-bg); }
+.j-shell-mark {
+  flex: none; padding-inline-end: var(--j-s-3); border-inline-end: 2px solid var(--j-line-strong);
+  color: var(--j-fg); font: 700 var(--j-t-18)/1 var(--j-font-display); letter-spacing: -.01em;
+}
 .j-shell-brand-text { display: grid; gap: 2px; min-width: 0; }
-.j-shell-brand h1 { font: 700 var(--j-t-16)/1.2 var(--j-font-display); color: var(--j-fg); }
+.j-shell-brand h1 { font: 700 var(--j-t-16)/1.25 var(--j-font-display); color: var(--j-fg); }
 /* What the tool is for and who it is for, under its name. */
-.j-shell-lead { margin: 0; max-width: 72ch; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.4; }
+.j-shell-lead { margin: 0; max-width: 72ch; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.4; text-wrap: balance; }
 /* Global context: the case open now, when there is one. Its own row: beside
    the header's controls a real title had room for a few letters. */
 .j-shell-case {
@@ -37,27 +43,28 @@
 .j-shell-phase {
   display: inline-flex; align-items: center; gap: var(--j-s-2);
   min-height: var(--j-control); padding: var(--j-s-1) var(--j-s-3);
-  border: 1px solid transparent; border-radius: var(--j-r-2);
+  border: 0; border-radius: var(--j-r-pill);
   background: transparent; color: var(--j-fg-muted); text-align: start;
   transition: background-color var(--j-dur-1) var(--j-ease-out), color var(--j-dur-1) var(--j-ease-out);
 }
-.j-shell-phase:hover:not(:disabled) { background: var(--j-raise); color: var(--j-fg); }
+.j-shell-phase:hover:not(:disabled, [aria-current="step"]) { background: var(--j-raise); color: var(--j-fg); }
 /* The faint parts would fall under 4.5:1 on the raised background; a tapped
    phase stays hovered on a touch screen. */
 .j-shell-phase:hover:not(:disabled, [aria-current="step"]) :is(.j-shell-phase-index, .j-shell-phase-copy small) { color: var(--j-fg-muted); }
 .j-shell-phase:disabled { opacity: .45; cursor: not-allowed; }
-/* The current phase: tinted, outlined and its number in the accent, not colour alone. */
-.j-shell-phase[aria-current="step"] {
-  color: var(--j-fg); background: var(--j-signal-wash);
-  border-color: color-mix(in srgb, var(--j-signal) 45%, transparent);
+/* The current phase: an ink plate with its station filled, not colour alone. */
+.j-shell-phase[aria-current="step"] { color: var(--j-on-ink); background: var(--j-ink); }
+/* Each phase is a station: a ring, its number for the eye only in the order. */
+.j-shell-phase-index {
+  inline-size: 14px; block-size: 14px; flex: none; overflow: hidden; border-radius: 50%;
+  border: var(--j-station) solid currentColor; color: var(--j-fg-faint); font-size: 0;
 }
-.j-shell-phase-index { font: 600 var(--j-t-12)/1 var(--j-font-data); color: var(--j-fg-faint); }
-.j-shell-phase[aria-current="step"] .j-shell-phase-index { color: var(--j-signal); }
+.j-shell-phase[aria-current="step"] .j-shell-phase-index { color: var(--j-on-ink); background: var(--j-on-ink); }
 .j-shell-phase-copy { display: grid; gap: 2px; }
 .j-shell-phase-copy strong { font-size: var(--j-t-14); }
 .j-shell-phase-copy small { font-size: var(--j-t-12); color: var(--j-fg-faint); }
-/* Faint text fails contrast on the accent tint; the current phase uses muted. */
-.j-shell-phase[aria-current="step"] .j-shell-phase-copy small { color: var(--j-fg-muted); }
+/* On the ink plate the hint takes the plate's own text colour. */
+.j-shell-phase[aria-current="step"] .j-shell-phase-copy small { color: var(--j-on-ink); opacity: .85; }
 .j-shell-trust { margin-inline-start: auto; }
 .j-shell-next { text-align: start; }
 .j-shell-next-copy { display: grid; gap: 1px; }
@@ -100,5 +107,7 @@
   .j-shell-next:not([data-shell-command="review"]) { display: none; }
 }
 @media (forced-colors: active) {
-  .j-shell-phase[aria-current="step"] { border: 2px solid Highlight; }
+  .j-shell-phase[aria-current="step"] { forced-color-adjust: none; border: 2px solid Highlight; background: Highlight; color: HighlightText; }
+  .j-shell-phase[aria-current="step"] :is(.j-shell-phase-copy small, .j-shell-phase-index) { color: HighlightText; }
+  .j-shell-phase[aria-current="step"] .j-shell-phase-index { background: HighlightText; }
 }

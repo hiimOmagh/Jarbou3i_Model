@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/ui/kernel.css"
+        ],
+        "createdAt": "2026-10-19T17:15:37.512Z",
+        "reason": "Claude: kernel.css L185 is the warn status glyph, a triangle drawn from transparent borders, not a bordered card; pre-existing"
+      }
+    ]
+  }
+}

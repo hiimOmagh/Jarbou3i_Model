@@ -42,6 +42,9 @@ test("premium shell preserves orientation, density, and lens parity", async ({ p
   await expect(page.locator("body")).toHaveClass(/dark/);
   await expect(page.locator('.j-shell-phase[aria-current="step"] .j-shell-phase-index')).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  // The browser's bar follows the theme in use, here dark on a light system.
+  const panel = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--j-panel").trim());
+  for (const meta of await page.locator('meta[name="theme-color"]').all()) await expect(meta).toHaveAttribute("content", panel);
 
   const density = await displayControl(page, "densityBtn");
   const beforeDensity = await renderRegionCounts(page);

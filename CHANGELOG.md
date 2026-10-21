@@ -2,13 +2,44 @@
 
 ## Unreleased
 
+### A visual identity of its own: the transit line
+
+- **New colours in both themes**: a daylight ground with ink text and one
+  line colour per layer of the model (nine for the Biopolitical lens); the
+  dark theme is the same map on midnight blue. No glows or background
+  gradients; code alone in monospace.
+- **One typeface, Readex Pro**, for Arabic and Latin alike, served from the
+  site (ADR-0003): three files, about 82 KB in all, each loaded only when its
+  script is on the page.
+- **The setup steps are stations on a line**: the current one ringed, the
+  line ridden in ink up to it. The header is a white bar under a thick ink
+  rule, with the Jarbou3i wordmark; the current phase and the primary action
+  are ink plates. Labels no longer sit above headings.
+- **The model map is drawn as one line**: a station per layer with its name
+  beside it, and each layer's stretch of line as long as its share of the
+  records, so the lengths compare. The six Strategic layers ride across the
+  page on wide screens; the nine Biopolitical layers, and phones, run down.
+- **The review is a line too**: its outline is a line of stations, ridden in
+  ink up to the section you are reading (tiles on narrow screens). Briefs and
+  records sit under ink rules instead of in boxes, their tone said by their
+  labels; the topic and other fields have ink edges.
+- **Dialogs and sheets open under the same ink rule.** Close and theme
+  buttons are drawn icons, not characters; the reference sheet leads with
+  the record’s name, then its type.
+- Exported reports take the new colours and ink rules, and their labels are
+  in sentence case rather than spaced capitals. In forced-colours mode the ink
+  plates keep system colours, so their text stays readable.
+- Focus rings are 3px. A phone's browser bar takes the header's colour, in the
+  theme chosen in the app.
+
 ### Saying what the tool is for
 
 - **One title for both lenses**: "Strategic and Biopolitical Analysis" (AR/EN/FR),
   where it said "Strategic Analysis Workbench" until the lens was switched.
   Under it, what the tool is for and who it is for: "Trace who wants what,
-  and how lives are governed, with your own AI assistant. For researchers,
-  journalists and analysts." A phone's first screen keeps the topic field
+  and how lives are governed, with your own AI assistant. For anyone who
+  wants to understand a story in the news, not only researchers and
+  journalists." A phone's first screen keeps the topic field
   instead. The page title, description, share preview and app manifest say
   the same.
 

@@ -1,13 +1,13 @@
 {
   "name": "Jarbou3i Model — Strategic and Biopolitical Analysis",
   "short_name": "Jarbou3i Model",
-  "description": "Trace who wants what, and how lives are governed, with your own AI assistant. In Arabic, English and French, for researchers, journalists and analysts.",
+  "description": "Trace who wants what, and how lives are governed, with your own AI assistant. For anyone who wants to understand a story in the news, in Arabic, English and French.",
   "id": "/Jarbou3i_Model/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#020817",
-  "theme_color": "#255ee8",
+  "background_color": "#0f1b30",
+  "theme_color": "#1f5bc4",
   "icons": [
     {
       "src": "assets/jarbou3i-mascot-192.png",

@@ -9,7 +9,7 @@
   background: var(--j-panel); cursor: pointer;
 }
 .j-save-light:hover { border-color: var(--j-signal); background: var(--j-raise); }
-.j-save-light:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-save-light:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 
 /* Lifecycle banners: above the flow and the case file. */
 .j-life-banners { display: grid; gap: var(--j-s-2); margin-bottom: var(--j-s-4); }
@@ -17,11 +17,11 @@
 .j-life-banners[hidden] { display: none; }
 .j-life-banner {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-3);
-  padding: var(--j-s-3) var(--j-s-4); border: 1px solid var(--j-line); border-inline-start-width: 4px;
+  padding: var(--j-s-3) var(--j-s-4); border: 1px solid var(--j-line);
   border-radius: var(--j-r-2); background: var(--j-panel); color: var(--j-fg);
 }
-.j-life-banner[data-tone="warn"] { border-inline-start-color: var(--j-warn); background: var(--j-warn-wash); }
-.j-life-banner[data-tone="crit"] { border-inline-start-color: var(--j-crit); background: var(--j-crit-wash); }
+.j-life-banner[data-tone="warn"] { border-color: color-mix(in srgb, var(--j-warn) 60%, transparent); background: var(--j-warn-wash); }
+.j-life-banner[data-tone="crit"] { border-color: color-mix(in srgb, var(--j-crit) 55%, transparent); background: var(--j-crit-wash); }
 .j-life-banner p { margin: 0; flex: 1 1 280px; }
 .j-life-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
 
@@ -49,8 +49,8 @@
 }
 .j-ws-row > div:first-child { flex: 1 1 240px; min-width: 0; }
 /* The open one and a damaged one by a thicker edge too, not by colour alone. */
-.j-ws-row[aria-current="true"] { border-color: var(--j-signal); border-inline-start-width: 4px; }
-.j-ws-row[data-state="damaged"] { border-color: var(--j-crit); border-inline-start-width: 4px; background: var(--j-crit-wash); }
+.j-ws-row[aria-current="true"] { border: 2px solid var(--j-ink); }
+.j-ws-row[data-state="damaged"] { border: 2px solid var(--j-crit); background: var(--j-crit-wash); }
 .j-ws-name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .j-ws-meta { display: flex; flex-wrap: wrap; gap: var(--j-s-1) var(--j-s-3); margin-top: var(--j-s-1); color: var(--j-fg-muted); font-size: var(--j-t-12); }
 .j-ws-meta strong { color: var(--j-fg); }

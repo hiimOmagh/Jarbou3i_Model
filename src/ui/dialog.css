@@ -10,7 +10,7 @@
 .j-modal-back[aria-hidden="false"] { display: flex; }
 .j-modal {
   width: min(880px, 100%); max-height: 88vh; overflow: auto; padding: var(--j-s-5);
-  border: 1px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel); box-shadow: var(--j-shadow);
+  border: 1px solid var(--j-line); border-block-start: var(--j-rule) solid var(--j-ink); border-radius: 0 0 var(--j-r-3) var(--j-r-3); background: var(--j-panel); box-shadow: var(--j-shadow);
 }
 .j-modal[data-size="wide"] { width: min(1180px, 100%); }
 .j-modal:focus { outline: none; }
@@ -28,7 +28,7 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 
 /* What a dialog guarantees, said once above its content. */
 .j-modal-trust {
-  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-inline-start: 4px solid var(--j-signal);
+  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid color-mix(in srgb, var(--j-signal) 45%, transparent);
   border-radius: var(--j-r-2); background: var(--j-signal-wash); color: var(--j-fg); font-size: var(--j-t-13);
 }
 .j-modal-sechead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-2); }
@@ -37,9 +37,9 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 /* It takes focus, so the keyboard can scroll it. */
 .j-modal-pre {
   max-height: 60vh; overflow: auto; margin: var(--j-s-3) 0; padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
-  background: var(--j-raise); color: var(--j-fg); font: var(--j-t-13)/1.55 var(--j-font-data); white-space: pre-wrap; overflow-wrap: anywhere;
+  background: var(--j-raise); color: var(--j-fg); font: var(--j-t-13)/1.55 var(--j-font-code); white-space: pre-wrap; overflow-wrap: anywhere;
 }
-.j-modal-pre:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-modal-pre:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 
 /* A list of choices, one pressed: revisions, ledger tasks. Its buttons take
    focus, so the keyboard can scroll it. Its rows keep their content's height
@@ -50,9 +50,9 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
   border-radius: var(--j-r-2); background: transparent; color: var(--j-fg); text-align: start; cursor: pointer;
 }
 .j-pick:hover { background: var(--j-raise); }
-.j-pick:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-pick:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 /* Pressed by a thicker leading edge too, not by colour alone. */
-.j-pick[aria-pressed="true"] { background: var(--j-signal-wash); border-color: var(--j-signal); border-inline-start-width: 4px; }
+.j-pick[aria-pressed="true"] { background: var(--j-signal-wash); border: 2px solid var(--j-ink); }
 .j-pick-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); }
 .j-pick .j-chip { background: var(--j-panel); }
 .j-pick code { overflow-wrap: anywhere; font-size: var(--j-t-12); }
@@ -65,12 +65,12 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 .j-ledger-grid h4 { margin: 0; font-size: var(--j-t-14); }
 .j-ledger-counts { display: flex; flex-wrap: wrap; gap: var(--j-s-1); }
 .j-ledger-selected { display: grid; gap: var(--j-s-1); justify-items: start; padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); }
-.j-ledger-selected code, .j-ledger-selected small { overflow-wrap: anywhere; font-family: var(--j-font-data); font-size: var(--j-t-12); }
+.j-ledger-selected code, .j-ledger-selected small { overflow-wrap: anywhere; font-family: var(--j-font-code); font-size: var(--j-t-12); }
 .j-ledger-waiver { display: grid; gap: var(--j-s-3); padding: var(--j-s-3); border: 1px dashed var(--j-warn); border-radius: var(--j-r-2); }
 .j-ledger-history ol { display: grid; gap: var(--j-s-2); margin: 0; padding: 0 var(--j-s-3) var(--j-s-3) var(--j-s-6); font-size: var(--j-t-13); }
 .j-ledger-history li > div { display: flex; flex-wrap: wrap; gap: var(--j-s-1) var(--j-s-3); }
 .j-ledger-history p { margin: var(--j-s-1) 0 0; }
-.j-ledger-history code { font-family: var(--j-font-data); font-size: var(--j-t-12); color: var(--j-fg-muted); }
+.j-ledger-history code { font-family: var(--j-font-code); font-size: var(--j-t-12); color: var(--j-fg-muted); }
 
 @media (max-width: 620px) {
   .j-modal-back[data-variant="sheet"] { align-items: flex-end; }

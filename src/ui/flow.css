@@ -4,20 +4,19 @@
 
 .j-flow {
   display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--j-s-5);
-  align-items: start; padding: var(--j-s-4); margin-bottom: var(--j-s-4);
-  border: 1px solid var(--j-line); border-radius: var(--j-r-3);
+  align-items: start; padding: var(--j-s-4) 0; margin-bottom: var(--j-s-5);
 }
 
 /* ---------- Guide: the mascot, the steps, a sample ---------- */
 .j-flow-guide { position: sticky; top: var(--j-s-4); display: grid; gap: var(--j-s-4); align-content: start; }
 .j-flow-mascot { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
 .j-flow-mascot img {
-  width: 72px; height: 72px; display: block; border-radius: var(--j-r-3);
-  border: 1px solid var(--j-line-strong); background: var(--j-panel-2);
+  width: 72px; height: 72px; display: block; border-radius: 50%;
+  border: 2px solid var(--j-line-strong); background: var(--j-panel);
   /* No idle bob: an endless animation here cut WebKit to 2–6 frames a second. */
 }
 .j-flow-say {
-  padding: var(--j-s-3) var(--j-s-4); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-3);
+  padding: var(--j-s-3) var(--j-s-4); border: 2px solid var(--j-line-strong); border-radius: var(--j-r-3);
   border-start-start-radius: var(--j-r-1); background: var(--j-panel); font-size: var(--j-t-14);
 }
 /* Not colour alone: the bubble's edge changes and the mascot stops to react. */
@@ -26,33 +25,49 @@
 .j-flow-guide:is([data-mood="warn"], [data-mood="trunc"], [data-mood="gaps"]) .j-flow-say { border-color: var(--j-warn); }
 .j-flow-guide[data-mood="crit"] .j-flow-say { border-color: var(--j-crit); border-width: 2px; }
 
+/* The steps are stations on one line: a ring per step, its number inside like
+   a station code, the track ridden (ink) up to the current one, which wears a
+   second ring in the first line's colour. The buttons stay transparent so the
+   track shows under them. */
 .j-flow-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.j-flow-steps > li { position: relative; }
+.j-flow-steps > li:not(:last-child)::after {
+  content: ""; position: absolute; z-index: 0; inset-inline-start: 19px; inset-block-start: 22px;
+  inline-size: var(--j-track); block-size: calc(100% + 2px);
+  background: color-mix(in srgb, var(--j-line-strong) 45%, var(--j-bg));
+}
+.j-flow-steps > li:has(> .j-flow-step[data-state="done"]):not(:last-child)::after { background: var(--j-ink); }
 .j-flow-step {
+  position: relative; z-index: 1;
   display: flex; align-items: center; gap: var(--j-s-3); width: 100%;
   min-height: var(--j-control); padding: 0 var(--j-s-2); border: 0; border-radius: var(--j-r-2);
-  background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-14); text-align: start;
+  background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-16); font-weight: 600; text-align: start;
 }
-.j-flow-step:hover { background: var(--j-raise); color: var(--j-fg); }
+.j-flow-step:hover { color: var(--j-fg); }
+.j-flow-step:hover > span:last-child { text-decoration: underline; text-underline-offset: .25em; }
 .j-flow-step-n {
-  width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%;
-  border: 1px solid var(--j-line-strong); font: 600 var(--j-t-12)/1 var(--j-font-data);
+  width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%;
+  border: var(--j-station) solid var(--j-line-strong); background: var(--j-panel);
+  color: var(--j-fg-muted); font: 700 var(--j-t-12)/1 var(--j-font-ui);
 }
-.j-flow-step[data-state="done"] .j-flow-step-n { background: var(--j-signal-wash); border-color: var(--j-signal); color: var(--j-signal); }
-.j-flow-step[aria-current="step"] { background: var(--j-panel); color: var(--j-fg); font-weight: 600; }
-.j-flow-step[aria-current="step"] .j-flow-step-n { background: var(--j-signal); border-color: var(--j-signal); color: var(--j-on-signal); }
+.j-flow-step[data-state="done"] { color: var(--j-fg); }
+.j-flow-step[data-state="done"] .j-flow-step-n { background: var(--j-ink); border-color: var(--j-ink); color: var(--j-on-ink); }
+.j-flow-step[aria-current="step"] { color: var(--j-fg); font-weight: 700; }
+.j-flow-step[aria-current="step"] .j-flow-step-n {
+  border-color: var(--j-ink); color: var(--j-fg); background: var(--j-panel);
+  box-shadow: 0 0 0 3px var(--j-bg), 0 0 0 7px var(--j-l1);
+}
 
 /* ---------- The step ---------- */
-.j-flow-card {
-  display: grid; gap: var(--j-s-5); min-width: 0; padding: var(--j-s-6);
-  background: var(--j-panel); border: 1px solid var(--j-line); border-radius: var(--j-r-3);
-}
+/* The step sits on the platform itself, no box: its heading at the scale of a
+   station name, its fields on enamel. */
+.j-flow-card { display: grid; gap: var(--j-s-5); min-width: 0; padding: var(--j-s-2) 0 0; }
 .j-flow-head { display: grid; gap: var(--j-s-2); }
-.j-flow-head .j-label { color: var(--j-signal); }
-.j-flow-head h2 { font-size: var(--j-t-28); line-height: 1.2; font-weight: 700; }
-.j-flow-head p { color: var(--j-fg-muted); font-size: var(--j-t-16); max-width: 60ch; }
+.j-flow-head h2 { font-size: var(--j-t-36); line-height: 1.1; font-weight: 700; letter-spacing: -.02em; }
+.j-flow-head p { color: var(--j-fg-muted); font-size: var(--j-t-18); max-width: 60ch; }
 .j-flow-panel { display: grid; gap: var(--j-s-4); min-width: 0; animation: j-flow-in var(--j-dur-2) var(--j-ease-out); }
 .j-flow-topic { min-height: 96px; font-size: var(--j-t-16); }
-.j-flow-answer { min-height: 220px; font-family: var(--j-font-data); font-size: var(--j-t-13); }
+.j-flow-answer { min-height: 220px; font-family: var(--j-font-code); font-size: var(--j-t-13); }
 /* An answer is JSON, laid out left to right in every language; its hint reads
    in the page's direction while the box is empty. */
 [dir="rtl"] .j-flow-answer:placeholder-shown { direction: rtl; }
@@ -60,24 +75,26 @@
 .j-flow-examples { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-flow-example-list { display: contents; }
 .j-flow-example {
-  min-height: var(--j-control); padding: 0 var(--j-s-3); border: 1px dashed var(--j-line-strong); border-radius: 999px;
-  background: transparent; color: var(--j-fg-muted); font-size: var(--j-t-13);
+  min-height: var(--j-control); padding: 0 var(--j-s-4); border: 2px solid var(--j-line); border-radius: var(--j-r-pill);
+  background: var(--j-panel); color: var(--j-fg); font-size: var(--j-t-14); font-weight: 600;
 }
-.j-flow-example:hover { border-style: solid; border-color: var(--j-signal); color: var(--j-fg); }
+.j-flow-example:hover { border-color: var(--j-ink); }
 
 .j-flow-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--j-s-3); }
 .j-flow-choice {
   position: relative; display: grid; gap: var(--j-s-2); align-content: start; text-align: start;
-  padding: var(--j-s-5); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-3); background: var(--j-panel-2);
+  padding: var(--j-s-5); border: 2px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
   transition: border-color var(--j-dur-1) var(--j-ease-out), background-color var(--j-dur-1) var(--j-ease-out);
 }
-.j-flow-choice:hover { border-color: var(--j-signal); }
+.j-flow-choice:hover { border-color: var(--j-line-strong); }
 .j-flow-choice b { font-size: var(--j-t-18); }
 .j-flow-choice span { color: var(--j-fg-muted); font-size: var(--j-t-13); }
-.j-flow-choice[aria-checked="true"] { border-color: var(--j-signal); background: var(--j-signal-wash); box-shadow: var(--j-glow); }
+/* The chosen one: an ink edge and a station ring in its corner. */
+.j-flow-choice[aria-checked="true"] { border-color: var(--j-ink); }
 .j-flow-choice[aria-checked="true"]::after {
-  content: ""; position: absolute; inset-inline-end: 14px; top: 14px; width: 10px; height: 10px;
-  border-radius: 50%; background: var(--j-signal);
+  content: ""; position: absolute; inset-inline-end: 16px; top: 16px; width: 18px; height: 18px;
+  border-radius: 50%; border: var(--j-station) solid var(--j-ink); background: var(--j-panel);
+  box-shadow: 0 0 0 3px var(--j-panel), 0 0 0 6px var(--j-l1);
 }
 .j-flow-note { color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--j-s-4); }
@@ -94,10 +111,14 @@
 .j-flow-howto { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-3); counter-reset: how; }
 .j-flow-howto li {
   counter-increment: how; display: grid; gap: var(--j-s-2); padding: var(--j-s-4);
-  border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
-  color: var(--j-fg-muted); font-size: var(--j-t-13);
+  border: 2px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
+  color: var(--j-fg-muted); font-size: var(--j-t-14);
 }
-.j-flow-howto li::before { content: counter(how, decimal-leading-zero); font: 700 var(--j-t-12) var(--j-font-data); color: var(--j-signal); letter-spacing: .08em; }
+/* Its order as a station code: the number in an ink ring. */
+.j-flow-howto li::before {
+  content: counter(how); display: grid; place-items: center; inline-size: 28px; block-size: 28px; border-radius: 50%;
+  border: var(--j-station) solid var(--j-ink); color: var(--j-fg); font: 700 var(--j-t-12)/1 var(--j-font-ui);
+}
 
 .j-flow-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3); }
 .j-flow-actions {
@@ -106,7 +127,7 @@
 }
 .j-flow-actions #flowNext { margin-inline-start: auto; }
 
-[data-density="compact"] .j-flow-card { padding: var(--j-s-4); gap: var(--j-s-3); }
+[data-density="compact"] .j-flow-card { gap: var(--j-s-3); }
 
 @keyframes j-flow-pop { 40% { transform: scale(1.08); } }
 @keyframes j-flow-in { from { opacity: 0; transform: translateY(6px); } }
@@ -114,22 +135,20 @@
 @media (max-width: 900px) {
   .j-flow { grid-template-columns: minmax(0, 1fr); }
   .j-flow-guide { position: static; }
+  /* The line runs across: each segment from a station to the next one. */
   .j-flow-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .j-flow-step { flex-direction: column; justify-content: center; gap: 2px; padding: var(--j-s-1); font-size: var(--j-t-12); text-align: center; }
+  .j-flow-steps > li:not(:last-child)::after { inset-inline-start: 50%; inset-block-start: 15px; inline-size: calc(100% + 2px); block-size: var(--j-track); }
+  .j-flow-step { flex-direction: column; justify-content: flex-start; gap: var(--j-s-1); padding: var(--j-s-1); font-size: var(--j-t-13); text-align: center; }
 }
 @media (max-width: 720px) {
-  .j-flow { padding: var(--j-s-2); }
-  .j-flow-card { padding: var(--j-s-4); }
-  .j-flow-head h2 { font-size: var(--j-t-22); }
+  .j-flow { padding: var(--j-s-2) 0; }
+  .j-flow-head h2 { font-size: var(--j-t-28); }
+  .j-flow-head p { font-size: var(--j-t-16); }
   .j-flow-howto { grid-template-columns: minmax(0, 1fr); }
 }
-/* A phone holds one card less: the step is the flow's body. The step list
-   above it already says which step this is; the count stays for screen
-   readers. */
 @media (max-width: 620px) {
-  .j-flow { gap: var(--j-s-4); padding: var(--j-s-4); background: var(--j-panel); }
-  .j-flow .j-flow-card { gap: var(--j-s-4); padding: 0; border: 0; background: none; }
-  .j-flow-head .j-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .j-flow { gap: var(--j-s-4); }
+  .j-flow .j-flow-card { gap: var(--j-s-4); }
 }
 @media (forced-colors: active) {
   .j-flow-step[aria-current="step"], .j-flow-choice[aria-checked="true"] { outline: 2px solid Highlight; }

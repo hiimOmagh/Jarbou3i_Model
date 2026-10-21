@@ -13,7 +13,7 @@ const files = [
   "assets/jarbou3i-mascot-192.png",
   "assets/jarbou3i-mascot-512.png",
 ];
-const directories = ["src"];
+const directories = ["src", "assets/fonts"];
 // Cloudflare Pages branch previews (any branch but main) also carry the UX-0 prototype, so it can be
 // tried against the real app and shared for feedback. Production and GitHub Pages never include it.
 // Branch previews carry the prototype when the branch has it; production never does.

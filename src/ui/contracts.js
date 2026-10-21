@@ -120,7 +120,7 @@ export const CONTRACTS = Object.freeze({
 // shell's layout (src/ui/shell.css), whose controls are kernel controls.
 const FREE_CLASSES = [
   "j-root", "j-card", "j-card-head", "j-label", "j-mono", "j-sr-only", "j-icon",
-  "j-shell", "j-shell-top", "j-shell-brand", "j-shell-brand-text", "j-shell-lead", "j-shell-case", "j-shell-cluster",
+  "j-shell", "j-shell-top", "j-shell-brand", "j-shell-mark", "j-shell-brand-text", "j-shell-lead", "j-shell-case", "j-shell-cluster",
   "j-shell-bar", "j-shell-nav", "j-shell-phase", "j-shell-phase-index", "j-shell-phase-copy",
   "j-shell-trust", "j-shell-next", "j-shell-next-copy", "j-shell-display", "j-shell-tools", "j-shell-tool-name",
   "j-flow", "j-flow-guide", "j-flow-mascot", "j-flow-say", "j-flow-steps", "j-flow-step", "j-flow-step-n",
@@ -144,7 +144,7 @@ const FREE_CLASSES = [
   "j-insp-list", "j-insp-rec", "j-insp-occ", "j-insp-foot",
   "j-lede", "j-recs", "j-rec", "j-rec-head", "j-rec-id", "j-rec-title", "j-rec-text", "j-rec-facts", "j-checks", "j-stats", "j-table-wrap", "j-table",
   "j-idir", "j-idir-head",
-  "j-engine-map", "j-engine-step", "j-engine-n", "j-engine-name", "j-engine-text", "j-engine-count", "j-engine-depth",
+  "j-engine-map", "j-engine-step", "j-engine-n", "j-engine-name", "j-engine-text", "j-engine-count",
   "j-layers", "j-layer", "j-layer-h", "j-layer-head", "j-layer-n", "j-layer-name", "j-layer-text", "j-layer-count", "j-layer-chev", "j-layer-body",
   "j-brief", "j-brief-head", "j-brief-gate", "j-brief-main", "j-brief-claim", "j-brief-figures", "j-brief-bar", "j-brief-signals", "j-brief-signal",
   "j-brief-steps", "j-brief-desc", "j-brief-items", "j-brief-tags", "j-brief-open", "j-brief-divider", "j-brief-alert", "j-brief-bands",

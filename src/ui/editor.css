@@ -20,7 +20,7 @@
   background: transparent; color: var(--j-fg); font: inherit; text-align: start; cursor: pointer;
 }
 .j-editor-sec:hover:not(:disabled) { background: var(--j-raise); border-color: var(--j-line); }
-.j-editor-sec:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-editor-sec:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 .j-editor-sec[aria-current="true"] { background: var(--j-signal-wash); border-color: var(--j-signal); }
 .j-editor-sec:disabled { opacity: .5; cursor: not-allowed; }
 .j-editor-sec .j-mono { overflow-wrap: anywhere; font-size: var(--j-t-13); }
@@ -29,7 +29,7 @@
 
 /* One canonical field as JSON, with its check (a kernel note) and the problems under it. */
 .j-editor-main { display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; }
-.j-editor .j-editor-json { min-height: 360px; resize: vertical; text-align: left; font-family: var(--j-font-data); }
+.j-editor .j-editor-json { min-height: 360px; resize: vertical; text-align: left; font-family: var(--j-font-code); }
 /* Not a scroll box of its own: it has nothing to focus, so a keyboard could
    not scroll it. The dialog scrolls instead. */
 .j-editor-errors ul { margin: 0; padding-inline-start: var(--j-s-5); color: var(--j-fg); }

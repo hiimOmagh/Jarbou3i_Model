@@ -68,7 +68,7 @@ test.describe("Design-system kernel", () => {
       const style = getComputedStyle(document.activeElement);
       return { tag: document.activeElement.tagName, style: style.outlineStyle, width: style.outlineWidth };
     });
-    expect(outline).toEqual({ tag: "BUTTON", style: "solid", width: "2px" });
+    expect(outline).toEqual({ tag: "BUTTON", style: "solid", width: "3px" });
   });
 
   test("reduced motion stops transitions", async ({ page }) => {

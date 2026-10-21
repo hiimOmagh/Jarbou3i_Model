@@ -1,0 +1,1042 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T01:12:03.925Z",
+  "title": "Design System: Jarbou3i Model",
+  "extensions": {
+    "colorMeta": {
+      "platform-white": {
+        "role": "neutral",
+        "displayName": "Platform White",
+        "canonical": "#f8f8f6",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#242423",
+          "#40403e",
+          "#5e5e5c",
+          "#80807e",
+          "#a5a5a3",
+          "#cacac9",
+          "#eeeeec"
+        ]
+      },
+      "enamel-white": {
+        "role": "neutral",
+        "displayName": "Enamel White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#808080",
+          "#a4a4a4",
+          "#cacaca",
+          "#eeeeee"
+        ]
+      },
+      "platform-grey": {
+        "role": "neutral",
+        "displayName": "Platform Grey",
+        "canonical": "#efefeb",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5a",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ]
+      },
+      "raised-enamel": {
+        "role": "neutral",
+        "displayName": "Raised Enamel",
+        "canonical": "#e8e8e3",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242421",
+          "#40403c",
+          "#5e5e5a",
+          "#80807c",
+          "#a5a5a0",
+          "#cbcbc6",
+          "#efefea"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#dcdcd6",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242420",
+          "#40403b",
+          "#5e5e59",
+          "#81817b",
+          "#a5a59f",
+          "#cbcbc5",
+          "#efefe9"
+        ]
+      },
+      "rail-grey": {
+        "role": "neutral",
+        "displayName": "Rail Grey",
+        "canonical": "#7c8088",
+        "tonalRamp": [
+          "#080b11",
+          "#21242b",
+          "#3c4047",
+          "#5a5e65",
+          "#7c8088",
+          "#a0a5ad",
+          "#c6cbd3",
+          "#eaeff8"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink",
+        "canonical": "#15171b",
+        "tonalRamp": [
+          "#090b0f",
+          "#222428",
+          "#3d4044",
+          "#5b5e63",
+          "#7e8085",
+          "#a2a5aa",
+          "#c8cbd0",
+          "#eceef4"
+        ]
+      },
+      "ink-hover": {
+        "role": "primary",
+        "displayName": "Ink, Pressed Plate",
+        "canonical": "#33363d",
+        "tonalRamp": [
+          "#090b11",
+          "#21242b",
+          "#3d4047",
+          "#5a5e65",
+          "#7d8088",
+          "#a1a5ad",
+          "#c7cad3",
+          "#eaeef8"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "#4a4f57",
+        "tonalRamp": [
+          "#080b11",
+          "#20242b",
+          "#3b4048",
+          "#595e66",
+          "#7b8189",
+          "#9fa5ae",
+          "#c5cbd4",
+          "#e9eff9"
+        ]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Ink Faint",
+        "canonical": "#5e636b",
+        "tonalRamp": [
+          "#080b11",
+          "#20242b",
+          "#3b4047",
+          "#595e66",
+          "#7b8189",
+          "#9fa5ae",
+          "#c5cbd4",
+          "#e9eff8"
+        ]
+      },
+      "signal-blue": {
+        "role": "primary",
+        "displayName": "Signal Blue",
+        "canonical": "#1f5bc4",
+        "tonalRamp": [
+          "#000826",
+          "#001e59",
+          "#003791",
+          "#1a56be",
+          "#3e7be7",
+          "#6fa4fe",
+          "#aeccfe",
+          "#e6efff"
+        ]
+      },
+      "signal-blue-deep": {
+        "role": "primary",
+        "displayName": "Signal Blue, Deep",
+        "canonical": "#174a9f",
+        "tonalRamp": [
+          "#000826",
+          "#001f57",
+          "#03388c",
+          "#2659b0",
+          "#497ed8",
+          "#6ea4fe",
+          "#adccfe",
+          "#e6effe"
+        ]
+      },
+      "signal-wash": {
+        "role": "primary",
+        "displayName": "Signal Wash",
+        "canonical": "rgba(31, 91, 196, .09)"
+      },
+      "ok-green": {
+        "role": "tertiary",
+        "displayName": "Ok Green",
+        "canonical": "#17733f",
+        "tonalRamp": [
+          "#001004",
+          "#002d13",
+          "#014d26",
+          "#11703c",
+          "#3f945e",
+          "#66ba81",
+          "#8ce1a6",
+          "#c7ffd6"
+        ]
+      },
+      "warn-amber": {
+        "role": "tertiary",
+        "displayName": "Warn Amber",
+        "canonical": "#8a5300",
+        "tonalRamp": [
+          "#140800",
+          "#361e00",
+          "#5c3601",
+          "#845002",
+          "#ab722f",
+          "#d29755",
+          "#fbbd7b",
+          "#feebd8"
+        ]
+      },
+      "crit-red": {
+        "role": "tertiary",
+        "displayName": "Crit Red",
+        "canonical": "#c8262a",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0105",
+          "#7c020e",
+          "#b20117",
+          "#dd3e3c",
+          "#fe726a",
+          "#feb5ad",
+          "#ffe9e6"
+        ]
+      },
+      "line-1-red": {
+        "role": "secondary",
+        "displayName": "Line 1 Red",
+        "canonical": "#d62b2b",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0003",
+          "#7c010a",
+          "#b10313",
+          "#e13835",
+          "#ff7267",
+          "#feb5ad",
+          "#ffe9e6"
+        ]
+      },
+      "line-2-blue": {
+        "role": "secondary",
+        "displayName": "Line 2 Blue",
+        "canonical": "#1f5bc4",
+        "tonalRamp": [
+          "#000826",
+          "#001e59",
+          "#003791",
+          "#1a56be",
+          "#3e7be7",
+          "#6fa4fe",
+          "#aeccfe",
+          "#e6efff"
+        ]
+      },
+      "line-3-yellow": {
+        "role": "secondary",
+        "displayName": "Line 3 Yellow",
+        "canonical": "#e9a21a",
+        "tonalRamp": [
+          "#130900",
+          "#332000",
+          "#573901",
+          "#7e5400",
+          "#aa7405",
+          "#da9502",
+          "#ffbd55",
+          "#ffebd1"
+        ]
+      },
+      "line-4-green": {
+        "role": "secondary",
+        "displayName": "Line 4 Green",
+        "canonical": "#1d8a4e",
+        "tonalRamp": [
+          "#001004",
+          "#002d14",
+          "#004d27",
+          "#01713b",
+          "#2f965a",
+          "#59bc7d",
+          "#81e4a2",
+          "#c6ffd6"
+        ]
+      },
+      "line-5-purple": {
+        "role": "secondary",
+        "displayName": "Line 5 Purple",
+        "canonical": "#7a3f9e",
+        "tonalRamp": [
+          "#150022",
+          "#370151",
+          "#591b7a",
+          "#793e9c",
+          "#9d62c3",
+          "#c386eb",
+          "#e0b7fe",
+          "#f5e9ff"
+        ]
+      },
+      "line-6-ink": {
+        "role": "secondary",
+        "displayName": "Line 6 Ink",
+        "canonical": "#15171b",
+        "tonalRamp": [
+          "#090b0f",
+          "#222428",
+          "#3d4044",
+          "#5b5e63",
+          "#7e8085",
+          "#a2a5aa",
+          "#c8cbd0",
+          "#eceef4"
+        ]
+      },
+      "line-7-orange": {
+        "role": "secondary",
+        "displayName": "Line 7 Orange",
+        "canonical": "#d9621c",
+        "tonalRamp": [
+          "#190500",
+          "#3f1500",
+          "#6a2901",
+          "#983e00",
+          "#cd5706",
+          "#f77d3e",
+          "#feb897",
+          "#feeae1"
+        ]
+      },
+      "line-8-teal": {
+        "role": "secondary",
+        "displayName": "Line 8 Teal",
+        "canonical": "#0f8a8f",
+        "tonalRamp": [
+          "#000e0f",
+          "#012a2c",
+          "#04494c",
+          "#016b6f",
+          "#1e9196",
+          "#4fb7bc",
+          "#78dee2",
+          "#bdfcff"
+        ]
+      },
+      "line-9-brown": {
+        "role": "secondary",
+        "displayName": "Line 9 Brown",
+        "canonical": "#8b5e34",
+        "tonalRamp": [
+          "#150700",
+          "#371c01",
+          "#5e3403",
+          "#7e5228",
+          "#a4754b",
+          "#ca996e",
+          "#f2bf93",
+          "#feebda"
+        ]
+      },
+      "midnight-enamel": {
+        "role": "neutral",
+        "displayName": "Midnight Enamel",
+        "canonical": "#0f1b30",
+        "tonalRamp": [
+          "#020a1e",
+          "#17243a",
+          "#324058",
+          "#4f5e77",
+          "#71819c",
+          "#95a5c1",
+          "#bacbe8",
+          "#e6effe"
+        ]
+      },
+      "midnight-panel": {
+        "role": "neutral",
+        "displayName": "Midnight Panel",
+        "canonical": "#142440",
+        "tonalRamp": [
+          "#010923",
+          "#13233f",
+          "#2e405e",
+          "#4b5e7e",
+          "#6d81a3",
+          "#91a6c9",
+          "#b6ccf1",
+          "#e6efff"
+        ]
+      },
+      "midnight-panel-2": {
+        "role": "neutral",
+        "displayName": "Midnight Panel, Inset",
+        "canonical": "#1a2b48",
+        "tonalRamp": [
+          "#010923",
+          "#132340",
+          "#2e405e",
+          "#4b5e7f",
+          "#6c81a3",
+          "#90a6ca",
+          "#b5ccf1",
+          "#e6effe"
+        ]
+      },
+      "midnight-raise": {
+        "role": "neutral",
+        "displayName": "Midnight Raise",
+        "canonical": "#203457",
+        "tonalRamp": [
+          "#000827",
+          "#102344",
+          "#2b3f63",
+          "#485e84",
+          "#6981a9",
+          "#8da6d0",
+          "#b2ccf7",
+          "#e6efff"
+        ]
+      },
+      "midnight-hairline": {
+        "role": "neutral",
+        "displayName": "Midnight Hairline",
+        "canonical": "#2a3e62",
+        "tonalRamp": [
+          "#000827",
+          "#102344",
+          "#2b3f63",
+          "#485e84",
+          "#6a81a9",
+          "#8da5d0",
+          "#b2ccf7",
+          "#e6efff"
+        ]
+      },
+      "midnight-rail": {
+        "role": "neutral",
+        "displayName": "Midnight Rail",
+        "canonical": "#6f82a6",
+        "tonalRamp": [
+          "#010824",
+          "#142341",
+          "#2f3f5f",
+          "#4c5e80",
+          "#6e80a4",
+          "#91a5cb",
+          "#b6cbf2",
+          "#e6efff"
+        ]
+      },
+      "porcelain": {
+        "role": "primary",
+        "displayName": "Porcelain (dark-theme ink)",
+        "canonical": "#f2f0ea",
+        "tonalRamp": [
+          "#0c0b07",
+          "#252420",
+          "#41403b",
+          "#5f5d58",
+          "#82807b",
+          "#a6a49f",
+          "#cccac5",
+          "#f0eee8"
+        ]
+      },
+      "porcelain-muted": {
+        "role": "neutral",
+        "displayName": "Porcelain Muted",
+        "canonical": "#bbc4d4",
+        "tonalRamp": [
+          "#060b16",
+          "#1e2430",
+          "#39404d",
+          "#565e6c",
+          "#78818f",
+          "#9ca5b4",
+          "#c2cbdb",
+          "#e6effe"
+        ]
+      },
+      "porcelain-faint": {
+        "role": "neutral",
+        "displayName": "Porcelain Faint",
+        "canonical": "#9ca9bf",
+        "tonalRamp": [
+          "#040b1a",
+          "#1a2435",
+          "#354053",
+          "#525e72",
+          "#758196",
+          "#98a5bb",
+          "#becbe2",
+          "#e6efff"
+        ]
+      },
+      "porcelain-hover": {
+        "role": "primary",
+        "displayName": "Porcelain, Pressed Plate",
+        "canonical": "#d9dce4",
+        "tonalRamp": [
+          "#090b10",
+          "#22242a",
+          "#3d4046",
+          "#5b5d64",
+          "#7d8087",
+          "#a2a4ac",
+          "#c7cad2",
+          "#ebeef6"
+        ]
+      },
+      "night-signal": {
+        "role": "primary",
+        "displayName": "Night Signal",
+        "canonical": "#8db2f5",
+        "tonalRamp": [
+          "#000729",
+          "#041f56",
+          "#1f3d76",
+          "#3c5c98",
+          "#5d80bf",
+          "#80a5e7",
+          "#afcbff",
+          "#e6efff"
+        ]
+      },
+      "night-signal-strong": {
+        "role": "primary",
+        "displayName": "Night Signal, Strong",
+        "canonical": "#b3ccf8",
+        "tonalRamp": [
+          "#000827",
+          "#112344",
+          "#2b3f63",
+          "#485e84",
+          "#6a81a9",
+          "#8da5d0",
+          "#b3cbf7",
+          "#e6efff"
+        ]
+      },
+      "night-ok": {
+        "role": "tertiary",
+        "displayName": "Night Ok",
+        "canonical": "#4cc383",
+        "tonalRamp": [
+          "#000f05",
+          "#002d17",
+          "#014d2b",
+          "#037042",
+          "#08985c",
+          "#47bf7f",
+          "#72e6a4",
+          "#c5ffda"
+        ]
+      },
+      "night-warn": {
+        "role": "tertiary",
+        "displayName": "Night Warn",
+        "canonical": "#f2b33d",
+        "tonalRamp": [
+          "#120900",
+          "#322001",
+          "#553a00",
+          "#7b5602",
+          "#a77606",
+          "#d5980e",
+          "#febe4a",
+          "#feeccf"
+        ]
+      },
+      "night-crit": {
+        "role": "tertiary",
+        "displayName": "Night Crit",
+        "canonical": "#ff7a70",
+        "tonalRamp": [
+          "#1f0001",
+          "#4b0004",
+          "#7c010c",
+          "#a62726",
+          "#d05049",
+          "#fa766c",
+          "#feb5ad",
+          "#fee9e6"
+        ]
+      },
+      "night-line-1-red": {
+        "role": "secondary",
+        "displayName": "Night Line 1 Red",
+        "canonical": "#ee5248",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0002",
+          "#7c0208",
+          "#b10510",
+          "#dc4039",
+          "#ff7266",
+          "#ffb5ab",
+          "#fee9e6"
+        ]
+      },
+      "night-line-2-blue": {
+        "role": "secondary",
+        "displayName": "Night Line 2 Blue",
+        "canonical": "#5e8fea",
+        "tonalRamp": [
+          "#000729",
+          "#001c5c",
+          "#0d388b",
+          "#2c59af",
+          "#4d7dd7",
+          "#71a3fe",
+          "#afcbfe",
+          "#e6effe"
+        ]
+      },
+      "night-line-3-yellow": {
+        "role": "secondary",
+        "displayName": "Night Line 3 Yellow",
+        "canonical": "#f2b33d",
+        "tonalRamp": [
+          "#120900",
+          "#322001",
+          "#553a00",
+          "#7b5602",
+          "#a77606",
+          "#d5980e",
+          "#febe4a",
+          "#feeccf"
+        ]
+      },
+      "night-line-4-green": {
+        "role": "secondary",
+        "displayName": "Night Line 4 Green",
+        "canonical": "#3db06e",
+        "tonalRamp": [
+          "#001005",
+          "#012d15",
+          "#014d28",
+          "#05703e",
+          "#1b9858",
+          "#4dbe7b",
+          "#77e6a0",
+          "#c6ffd7"
+        ]
+      },
+      "night-line-5-purple": {
+        "role": "secondary",
+        "displayName": "Night Line 5 Purple",
+        "canonical": "#b37fe0",
+        "tonalRamp": [
+          "#140023",
+          "#360054",
+          "#55207a",
+          "#74419d",
+          "#9865c3",
+          "#be8aeb",
+          "#dcb9fe",
+          "#f4eafe"
+        ]
+      },
+      "night-line-7-orange": {
+        "role": "secondary",
+        "displayName": "Night Line 7 Orange",
+        "canonical": "#f08a4b",
+        "tonalRamp": [
+          "#180600",
+          "#3d1800",
+          "#662d01",
+          "#934403",
+          "#c3611b",
+          "#ec8647",
+          "#feb991",
+          "#feeadf"
+        ]
+      },
+      "night-line-8-teal": {
+        "role": "secondary",
+        "displayName": "Night Line 8 Teal",
+        "canonical": "#36b9bf",
+        "tonalRamp": [
+          "#000e0f",
+          "#012a2c",
+          "#03494c",
+          "#006b6f",
+          "#039298",
+          "#36b9bf",
+          "#65e0e6",
+          "#bdfcff"
+        ]
+      },
+      "night-line-9-brown": {
+        "role": "secondary",
+        "displayName": "Night Line 9 Brown",
+        "canonical": "#c49561",
+        "tonalRamp": [
+          "#140800",
+          "#361e00",
+          "#5b3600",
+          "#7e531d",
+          "#a37642",
+          "#ca9a66",
+          "#f1c08b",
+          "#ffebd6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The setup step's heading (28px under 720px)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Card headings (22px under 720px)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Case-file sections, briefs, dialog and inspector titles."
+      },
+      "station-name": {
+        "displayName": "Station name",
+        "purpose": "Map stations, layer heads, record titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text with tabular figures; ledes cap at 60-72ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sentence-case names for values and groups; status text."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "JSON answers, prompts, paths and IDs only."
+      }
+    },
+    "fonts": {
+      "family": "Readex Pro",
+      "license": "OFL-1.1 (assets/fonts/OFL.txt)",
+      "weights": "variable 160-700; the kernel uses 400-700",
+      "fontDisplay": "swap",
+      "files": [
+        "assets/fonts/readex-pro-arabic-wght-normal.woff2",
+        "assets/fonts/readex-pro-latin-wght-normal.woff2",
+        "assets/fonts/readex-pro-latin-ext-wght-normal.woff2"
+      ],
+      "decision": "docs/decisions/0003-self-hosted-typeface.md"
+    },
+    "lineWeights": [
+      {
+        "name": "rule",
+        "value": "3px",
+        "token": "--j-rule",
+        "purpose": "Ink rule across the top of cards, briefs, dialogs and the foot of the header."
+      },
+      {
+        "name": "record-rule",
+        "value": "2px",
+        "purpose": "Ink rule over each record."
+      },
+      {
+        "name": "track",
+        "value": "6px",
+        "token": "--j-track",
+        "purpose": "Track between setup-step and outline stations."
+      },
+      {
+        "name": "station",
+        "value": "4px",
+        "token": "--j-station",
+        "purpose": "Edge of every station ring."
+      },
+      {
+        "name": "map-line",
+        "value": "8px",
+        "purpose": "The model map's stretch between layer stations."
+      },
+      {
+        "name": "focus",
+        "value": "3px solid var(--j-signal), offset 2px",
+        "purpose": "Every focus-visible outline."
+      }
+    ],
+    "shadows": [
+      {
+        "name": "float-light",
+        "value": "0 12px 32px rgba(21, 23, 27, .14), 0 2px 6px rgba(21, 23, 27, .08)",
+        "purpose": "Toasts, dialogs, the display menu, the focused skip link, the return button (light)."
+      },
+      {
+        "name": "float-dark",
+        "value": "0 16px 40px rgba(3, 8, 18, .5), 0 2px 6px rgba(3, 8, 18, .3)",
+        "purpose": "The same layers, dark theme."
+      },
+      {
+        "name": "station-ring",
+        "value": "0 0 0 3px var(--j-panel), 0 0 0 7px var(--j-layer)",
+        "purpose": "Second ring of the current station; not depth."
+      },
+      {
+        "name": "focus-edge",
+        "value": "0 0 0 1px var(--j-signal)",
+        "purpose": "Input focus thickens the edge (token named --j-glow; it is not a halo)."
+      },
+      {
+        "name": "scrim-blur",
+        "value": "backdrop-filter: blur(6px)",
+        "purpose": "Modal backdrop behind the scrim."
+      }
+    ],
+    "motion": [
+      {
+        "name": "dur-1",
+        "value": "120ms",
+        "purpose": "Hover and press colour changes; button press scale (.98)."
+      },
+      {
+        "name": "dur-2",
+        "value": "200ms",
+        "purpose": "Dialog, toast and step-panel entrances; chevron turns."
+      },
+      {
+        "name": "dur-3",
+        "value": "320ms",
+        "purpose": "The mascot's reaction pop."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Default easing."
+      },
+      {
+        "name": "ease-in",
+        "value": "cubic-bezier(.4, 0, 1, 1)",
+        "purpose": "Exits."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation: none; transition-duration: 1ms",
+        "purpose": "Under prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone-narrow",
+        "value": "420px"
+      },
+      {
+        "name": "phone",
+        "value": "620px"
+      },
+      {
+        "name": "small",
+        "value": "720px"
+      },
+      {
+        "name": "tablet",
+        "value": "760px"
+      },
+      {
+        "name": "map-across",
+        "value": "900px"
+      },
+      {
+        "name": "outline-tiles",
+        "value": "940px"
+      },
+      {
+        "name": "outline-rail",
+        "value": "1120px"
+      }
+    ],
+    "rasterProvenance": "The only shipping rasters are the jerboa mascot PNGs (assets/jarbou3i-mascot-192.png, assets/jarbou3i-mascot-512.png) and the favicon and touch icon; they predate the Transit Line build and were not changed by it."
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action: an ink pill.",
+      "html": "<button class=\"ds-btn-primary\">Start with the topic</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 16px; border:2px solid var(--j-ink,#15171b); border-radius:999px; background:var(--j-ink,#15171b); color:var(--j-on-ink,#f8f8f6); font:700 14px/1 'Readex Pro',system-ui,sans-serif; cursor:pointer; transition:background-color 120ms cubic-bezier(.16,1,.3,1), border-color 120ms cubic-bezier(.16,1,.3,1), transform 120ms cubic-bezier(.16,1,.3,1); } .ds-btn-primary:hover { background:var(--j-ink-hover,#33363d); border-color:var(--j-ink-hover,#33363d); } .ds-btn-primary:active { transform:scale(.98); } .ds-btn-primary:focus-visible { outline:3px solid var(--j-signal,#1f5bc4); outline-offset:2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Every other action: an enamel pill with a 2px rail edge.",
+      "html": "<button class=\"ds-btn\">Load a sample</button>",
+      "css": ".ds-btn { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 16px; border:2px solid var(--j-line-strong,#7c8088); border-radius:999px; background:var(--j-panel,#fff); color:var(--j-fg,#15171b); font:700 14px/1 'Readex Pro',system-ui,sans-serif; cursor:pointer; transition:background-color 120ms cubic-bezier(.16,1,.3,1), border-color 120ms cubic-bezier(.16,1,.3,1), transform 120ms cubic-bezier(.16,1,.3,1); } .ds-btn:hover { border-color:var(--j-ink,#15171b); background:var(--j-raise,#e8e8e3); } .ds-btn:active { transform:scale(.98); } .ds-btn:focus-visible { outline:3px solid var(--j-signal,#1f5bc4); outline-offset:2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet actions: transparent, muted text, raised fill on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { min-height:44px; padding:0 16px; border:2px solid transparent; border-radius:999px; background:transparent; color:var(--j-fg-muted,#4a4f57); font:700 14px/1 'Readex Pro',system-ui,sans-serif; cursor:pointer; transition:background-color 120ms, color 120ms; } .ds-btn-ghost:hover { color:var(--j-fg,#15171b); background:var(--j-raise,#e8e8e3); } .ds-btn-ghost:focus-visible { outline:3px solid var(--j-signal,#1f5bc4); outline-offset:2px; }"
+    },
+    {
+      "name": "Topic Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Fields have a 2px ink edge; focus turns it signal blue.",
+      "html": "<label class=\"ds-field\"><span>Topic of the analysis</span><textarea class=\"ds-input\" rows=\"3\" placeholder=\"e.g. The rise of the far right in Europe, 2022-2026\"></textarea></label>",
+      "css": ".ds-field { display:grid; gap:8px; font:700 14px/1.3 'Readex Pro',system-ui,sans-serif; color:var(--j-fg,#15171b); } .ds-input { width:100%; min-height:96px; padding:12px; border:2px solid var(--j-ink,#15171b); border-radius:10px; background:var(--j-panel,#fff); color:var(--j-fg,#15171b); font:400 16px/1.5 'Readex Pro',system-ui,sans-serif; transition:border-color 120ms, box-shadow 120ms; } .ds-input::placeholder { color:var(--j-fg-faint,#5e636b); } .ds-input:focus { outline:none; border-color:var(--j-signal,#1f5bc4); box-shadow:0 0 0 1px var(--j-signal,#1f5bc4); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "nav",
+      "refersTo": "segmented-selected",
+      "description": "One choice of a few; the chosen segment is an ink plate.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\"><button role=\"radio\" aria-checked=\"true\">AR</button><button role=\"radio\" aria-checked=\"false\">EN</button><button role=\"radio\" aria-checked=\"false\">FR</button></div>",
+      "css": ".ds-seg { display:inline-flex; padding:2px; gap:2px; border:1px solid var(--j-line-strong,#7c8088); border-radius:999px; background:var(--j-panel,#fff); } .ds-seg button { min-height:38px; min-width:44px; padding:0 12px; border:0; border-radius:999px; background:transparent; color:var(--j-fg-muted,#4a4f57); font:700 13px 'Readex Pro',system-ui,sans-serif; cursor:pointer; } .ds-seg button:hover:not([aria-checked=\"true\"]) { background:var(--j-raise,#e8e8e3); color:var(--j-fg,#15171b); } .ds-seg button[aria-checked=\"true\"] { background:var(--j-ink,#15171b); color:var(--j-on-ink,#f8f8f6); } .ds-seg button:focus-visible { outline:3px solid var(--j-signal,#1f5bc4); outline-offset:2px; }"
+    },
+    {
+      "name": "Phase Navigation",
+      "kind": "nav",
+      "refersTo": "phase-current",
+      "description": "Three phases; the current one is an ink plate with its station filled.",
+      "html": "<nav class=\"ds-phases\"><button class=\"ds-phase\" aria-current=\"step\"><i></i>Setup</button><button class=\"ds-phase\"><i></i>Model</button><button class=\"ds-phase\" disabled><i></i>Review</button></nav>",
+      "css": ".ds-phases { display:flex; gap:4px; } .ds-phase { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:4px 12px; border:0; border-radius:999px; background:transparent; color:var(--j-fg-muted,#4a4f57); font:700 14px 'Readex Pro',system-ui,sans-serif; cursor:pointer; } .ds-phase i { width:14px; height:14px; box-sizing:border-box; border-radius:50%; border:4px solid currentColor; } .ds-phase:hover:not(:disabled):not([aria-current]) { background:var(--j-raise,#e8e8e3); color:var(--j-fg,#15171b); } .ds-phase[aria-current=\"step\"] { background:var(--j-ink,#15171b); color:var(--j-on-ink,#f8f8f6); } .ds-phase[aria-current=\"step\"] i { background:currentColor; } .ds-phase:disabled { opacity:.45; cursor:not-allowed; } .ds-phase:focus-visible { outline:3px solid var(--j-signal,#1f5bc4); outline-offset:2px; }"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "A short qualifier; a tone recolours its text and edge only.",
+      "html": "<span class=\"ds-chip\">Medium confidence</span> <span class=\"ds-chip ds-chip-ok\">Supported</span>",
+      "css": ".ds-chip { display:inline-flex; align-items:center; min-height:22px; padding:0 8px; border:1px solid var(--j-line-strong,#7c8088); border-radius:999px; font:600 12px/1 'Readex Pro',system-ui,sans-serif; color:var(--j-fg-muted,#4a4f57); } .ds-chip-ok { color:var(--j-ok,#17733f); border-color:color-mix(in srgb, var(--j-ok,#17733f) 45%, transparent); }"
+    },
+    {
+      "name": "Ink-Rule Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Not a box: a section opened by a 3px ink rule.",
+      "html": "<section class=\"ds-card\"><h2>Model engine map</h2><p>The causal path from interests to feedback.</p></section>",
+      "css": ".ds-card { display:grid; gap:24px; padding:32px; background:var(--j-panel,#fff); border:0; border-top:3px solid var(--j-ink,#15171b); border-radius:0 0 10px 10px; font-family:'Readex Pro',system-ui,sans-serif; } .ds-card h2 { margin:0; font:700 28px/1.15 'Readex Pro',system-ui,sans-serif; letter-spacing:-.015em; color:var(--j-fg,#15171b); } .ds-card p { margin:0; max-width:72ch; font-size:14px; line-height:1.55; color:var(--j-fg-muted,#4a4f57); }"
+    },
+    {
+      "name": "Station Line",
+      "kind": "custom",
+      "refersTo": "station",
+      "description": "Setup steps as stations: done filled ink, the current one double-ringed in line 1 red, the track ridden in ink.",
+      "html": "<ol class=\"ds-line\"><li data-state=\"done\"><b>1</b>Topic</li><li aria-current=\"step\"><b>2</b>Lens</li><li><b>3</b>Settings</li></ol>",
+      "css": ".ds-line { list-style:none; margin:0; padding:0; display:grid; gap:2px; font:600 16px 'Readex Pro',system-ui,sans-serif; color:var(--j-fg-muted,#4a4f57); } .ds-line li { position:relative; display:flex; align-items:center; gap:12px; min-height:44px; padding:0 8px; } .ds-line li:not(:last-child)::after { content:\"\"; position:absolute; inset-inline-start:19px; top:22px; width:6px; height:calc(100% + 2px); background:color-mix(in srgb, var(--j-line-strong,#7c8088) 45%, var(--j-bg,#f8f8f6)); } .ds-line li[data-state=\"done\"]::after { background:var(--j-ink,#15171b); } .ds-line b { position:relative; z-index:1; width:28px; height:28px; display:grid; place-items:center; box-sizing:border-box; border-radius:50%; border:4px solid var(--j-line-strong,#7c8088); background:var(--j-panel,#fff); font:700 12px/1 'Readex Pro',system-ui,sans-serif; } .ds-line [data-state=\"done\"] { color:var(--j-fg,#15171b); } .ds-line [data-state=\"done\"] b { background:var(--j-ink,#15171b); border-color:var(--j-ink,#15171b); color:var(--j-on-ink,#f8f8f6); } .ds-line [aria-current=\"step\"] { color:var(--j-fg,#15171b); font-weight:700; } .ds-line [aria-current=\"step\"] b { border-color:var(--j-ink,#15171b); box-shadow:0 0 0 3px var(--j-bg,#f8f8f6), 0 0 0 7px var(--j-l1,#d62b2b); }"
+    },
+    {
+      "name": "Record",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "A record under a 2px ink rule, no box: ID, title, text.",
+      "html": "<article class=\"ds-rec\"><span class=\"ds-rec-id\">A-03</span><h4>Ministry of the Interior</h4><p>Sets the detention rules and runs the registry.</p></article>",
+      "css": ".ds-rec { display:grid; gap:12px; padding:12px 0 0; border-top:2px solid var(--j-ink,#15171b); font-family:'Readex Pro',system-ui,sans-serif; } .ds-rec-id { color:var(--j-signal,#1f5bc4); font:600 12px/1.3 'Readex Pro',system-ui,sans-serif; } .ds-rec h4 { margin:0; font:700 16px/1.5 'Readex Pro',system-ui,sans-serif; color:var(--j-fg,#15171b); } .ds-rec p { margin:0; font-size:14px; line-height:1.6; color:var(--j-fg,#15171b); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Transit Line",
+    "overview": "An analysis is a line you can ride. Each layer of the model is a station, each link an interchange, and the reader's place is always ringed. The system borrows the Beck/Vignelli transit diagram: a platform-white ground, enamel panels, ink text and plates, and one colour per line of the model, each colour always printed beside its name. The dark theme is the same map on midnight enamel, never black with neon.\n\nDensity is comfortable by default (a compact setting halves card padding) and every control keeps a 44px target in both. Hierarchy comes from size and weight in one typeface, never from labels stacked over headings. Structure is drawn with thick ink rules and tracks, not with boxes, glows or shadows.\n\nThe interface is Arabic-first and equally English and French. Every direction-sensitive value uses logical properties, so right-to-left is the same layout mirrored, not a variant.",
+    "keyCharacteristics": [
+      "One typeface, Readex Pro, for Arabic and Latin; code alone in monospace.",
+      "Ink plates mark the current phase, the selected segment and the one primary action.",
+      "3px ink rules open cards, briefs, dialogs and the header instead of card borders.",
+      "Stations: rings with a 4px edge; the current one gets a second ring in its line's colour.",
+      "The model map is one continuous line whose stretches are as long as the record counts.",
+      "Light \"daylight map\" and dark \"midnight enamel\" themes carry the same tokens."
+    ],
+    "rules": [
+      {
+        "name": "The Name Beside the Colour Rule",
+        "body": "A line colour never stands alone: its layer's number and name are always printed beside it. Status uses colour plus shape plus words, never colour alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Blue Rule",
+        "body": "Signal blue means \"you can act here\" or \"you are here\". It is never decoration and never a fill for a primary action; the primary action is ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Same Map Rule",
+        "body": "The dark theme is the daylight map re-enamelled: same roles, midnight surfaces, porcelain ink. Never pure black, never neon.",
+        "section": "colors"
+      },
+      {
+        "name": "The 700 Ceiling Rule",
+        "body": "Weights run 400 to 700. Nothing heavier exists in the font, and nothing heavier is asked for.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Display, labels, data and body are all Readex Pro; monospace is reserved for what is literally code. Data uses the UI face with tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Labels are sentence case at normal tracking. No uppercase spaced labels, and no small label above a heading.",
+        "section": "typography"
+      },
+      {
+        "name": "The Rule Not Box Rule",
+        "body": "A section, brief, record or dialog opens with a thick ink rule across its top (3px for cards, briefs and dialogs, 2px for records) and has no side or bottom border. If something needs grouping, give it a rule, not a box.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Glow Rule",
+        "body": "No glows, no gradients, no coloured side stripes. Focus thickens an edge; it is never a halo.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use `j-` classes and `--j-*` tokens, and register any new control in `src/ui/contracts.js`.",
+      "**Do** open a new section or panel with a 3px ink rule (`--j-rule`) instead of a border box.",
+      "**Do** make the one primary action an ink pill, and the current state (phase, segment, station) an ink plate or a double ring.",
+      "**Do** print a layer's number and name next to its line colour, and pair every status colour with a shape and words.",
+      "**Do** give every focusable element a 3px signal outline at 2px offset, and every target 44px.",
+      "**Do** write directional styles with logical properties, and check every label in AR, EN and FR.",
+      "**Do** map ink plates to system colours (ButtonText/ButtonFace or Highlight/HighlightText) under `forced-colors: active`.",
+      "**Do** mirror any colour change in `src/report-theme.js`; exported reports carry the tokens as text."
+    ],
+    "donts": [
+      "**Don't** add glows, gradients, text shadows or coloured side stripes.",
+      "**Don't** put a small or uppercase label above a heading.",
+      "**Don't** use weights above 700, a second typeface, or monospace for anything that is not code.",
+      "**Don't** make the dark theme black with neon accents; it is midnight enamel.",
+      "**Don't** use a line colour as decoration, or signal blue as a fill for the primary action.",
+      "**Don't** use typed characters (×, ☾, ▸) as icons; draw them as SVG or from borders.",
+      "**Don't** add shadows to resting surfaces; the float shadow is for layers over the page.",
+      "**Don't** add new raster imagery without recording its provenance. The only shipping rasters are the jerboa mascot PNGs (`assets/jarbou3i-mascot-192.png`, `-512.png`, plus favicon and touch icon), which predate the Transit Line build and were not changed by it."
+    ]
+  }
+}

@@ -102,10 +102,10 @@ test.describe("Case file", () => {
     await expect(page.locator(".j-engine-text").first()).toBeVisible();
     await page.locator("#loadSampleBtn").click();
     // With one, the case file holds the descriptions: the map keeps names
-    // and records, two to a row.
+    // and records, each stop one short row.
     await expect(page.locator(".j-engine-text").first()).toBeHidden();
-    const [first, second] = await page.locator(".j-engine-step").evaluateAll((steps) => steps.slice(0, 2).map((step) => step.getBoundingClientRect().top));
-    expect(Math.abs(first - second)).toBeLessThan(1);
+    const heights = await page.locator(".j-engine-step").evaluateAll((steps) => steps.map((step) => step.getBoundingClientRect().height));
+    for (const height of heights) expect(height).toBeLessThanOrEqual(48);
     // A section uses the width: one card around it, not three.
     const section = await page.locator("#case-overview").boundingBox();
     expect(section.width).toBeGreaterThanOrEqual(330);

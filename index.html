@@ -7,12 +7,12 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="description" content="Trace who wants what, and how lives are governed, with your own AI assistant. For researchers, journalists and analysts, in Arabic, English and French." />
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#255ee8" />
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#020817" />
+<meta name="description" content="Trace who wants what, and how lives are governed, with your own AI assistant. For anyone who wants to understand a story in the news, in Arabic, English and French." />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#142440" />
 <meta name="color-scheme" content="light dark" />
 <meta property="og:title" content="Jarbou3i Model — Strategic and Biopolitical Analysis" />
-<meta property="og:description" content="Trace who wants what, and how lives are governed, with your own AI assistant. For researchers, journalists and analysts, in Arabic, English and French." />
+<meta property="og:description" content="Trace who wants what, and how lives are governed, with your own AI assistant. For anyone who wants to understand a story in the news, in Arabic, English and French." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
 <meta name="app-version" content="2.1.0-alpha.57" />
@@ -41,11 +41,11 @@
   <div class="j-root j-shell" id="appShell">
   <header class="j-shell-top" id="appHeader">
     <div class="j-shell-brand">
-      <img src="assets/jarbou3i-mascot-192.png" width="32" height="32" decoding="async" alt="">
+      <img src="assets/jarbou3i-mascot-192.png" width="40" height="40" decoding="async" alt="">
+      <span class="j-shell-mark" lang="en" translate="no">Jarbou3i</span>
       <div class="j-shell-brand-text">
-        <span class="j-label" data-i18n="productEyebrow">Jarbou3i / Research workbench</span>
         <h1 data-i18n="appTitle">التحليل الاستراتيجي وتحليل السياسة الحيوية</h1>
-        <p class="j-shell-lead" data-i18n="appSubtitle">تتبّع من يريد ماذا، وكيف تُحكم حياة الناس، بمساعدك الذكي. للباحثين والصحفيين والمحللين.</p>
+        <p class="j-shell-lead" data-i18n="appSubtitle">تتبّع من يريد ماذا، وكيف تُحكم حياة الناس، بمساعدك الذكي. لكل من يريد أن يفهم ما وراء خبر، لا للباحثين والصحفيين وحدهم.</p>
       </div>
     </div>
     <span class="j-shell-case" id="shellCaseTitle" hidden></span>
@@ -63,7 +63,7 @@
         <button class="j-btn" id="densityBtn" type="button" aria-pressed="false" title="تبديل كثافة العرض">
           <svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="j-shell-tool-name" data-i18n="densityName">الكثافة</span><span id="densityLabel">مريح</span>
         </button>
-        <button class="j-btn" data-size="icon" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle"><span aria-hidden="true">◐</span><span class="j-shell-tool-name" data-i18n="themeName">الوضع</span></button>
+        <button class="j-btn" data-size="icon" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg><span class="j-shell-tool-name" data-i18n="themeName">الوضع</span></button>
       </div>
     </div>
   </header>
@@ -119,7 +119,7 @@
       </div>
       <div class="j-flow-card">
         <header class="j-flow-head">
-          <span class="j-label" id="flowStepOf">الخطوة 1 من 5</span>
+          <span class="j-sr-only" id="flowStepOf">الخطوة 1 من 5</span>
           <h2 id="flowStepTitle" tabindex="-1">ما الذي تريد فهمه؟</h2>
           <p id="flowStepHint">جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.</p>
         </header>
@@ -214,7 +214,6 @@
     <section class="j-card" id="enginePanel" aria-labelledby="engineTitle">
       <header class="j-card-head">
         <div>
-          <span class="j-label" data-i18n="engineEyebrow">02 / بنية النموذج</span>
           <h2 id="engineTitle" data-i18n="engineTitle">خريطة محرك التحليل</h2>
           <p data-i18n="engineSubtitle">هذه ليست أزرارًا زائدة؛ هذه طبقات النموذج نفسها. بعد الاستيراد تصبح كل طبقة قابلة للفحص.</p>
         </div>
@@ -226,7 +225,6 @@
     <section class="j-card hide" id="reviewPanel" aria-labelledby="reviewTitle">
       <header class="j-card-head">
         <div>
-          <span class="j-label" data-i18n="reviewEyebrow">03 / فحص النتيجة</span>
           <h2 id="reviewTitle" data-i18n="reviewTitle" tabindex="-1">مراجعة التحليل الاستراتيجي</h2>
           <p data-i18n="reviewSubtitle">تنقل بين الخلاصة، الطبقات الست، التناقضات، السيناريوهات، الأدلة، والتصدير.</p>
         </div>
@@ -244,7 +242,7 @@
   <div class="j-root j-modal" id="modalDialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
     <div class="j-modal-head">
       <h3 id="modalTitle">Preview</h3>
-      <button class="j-btn" data-variant="ghost" data-size="icon" id="modalClose" type="button" aria-label="Close preview">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="modalClose" type="button" aria-label="Close preview"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <pre class="j-modal-pre" id="modalContent" tabindex="0" dir="auto"></pre>
     <div class="j-modal-acts">
@@ -256,7 +254,7 @@
   <section class="j-root j-modal" id="workspaceDialog" role="dialog" aria-modal="true" aria-labelledby="workspaceDialogTitle" tabindex="-1">
     <div class="j-modal-head">
       <div><h3 id="workspaceDialogTitle">مساحات العمل المحلية</h3><p class="j-modal-hint" id="workspaceDialogHint">محفوظة على هذا الجهاز فقط.</p></div>
-      <button class="j-btn" data-variant="ghost" data-size="icon" id="workspaceClose" type="button" aria-label="Close workspaces">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="workspaceClose" type="button" aria-label="Close workspaces"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="j-root j-life" id="workLife" hidden></div>
     <div class="j-root j-ws">
@@ -279,7 +277,7 @@
   <section class="j-root j-modal" data-size="wide" id="editorDialog" role="dialog" aria-modal="true" aria-labelledby="editorTitle" tabindex="-1">
     <div class="j-modal-head">
       <div><h3 id="editorTitle">Analysis editor</h3><p class="j-modal-hint" id="editorHint"></p></div>
-      <button class="j-btn" data-variant="ghost" data-size="icon" id="editorClose" type="button" aria-label="Close editor">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="editorClose" type="button" aria-label="Close editor"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="j-root j-editor">
       <section class="j-life-banner" data-tone="warn" id="editorRecovery" aria-labelledby="editorRecoveryTitle" hidden>
@@ -316,7 +314,7 @@
   <section class="j-root j-modal" data-size="wide" id="ledgerDialog" role="dialog" aria-modal="true" aria-labelledby="ledgerTitle" tabindex="-1">
     <div class="j-modal-head">
       <div><h3 id="ledgerTitle">Operational review ledger</h3><p class="j-modal-hint" id="ledgerHint"></p></div>
-      <button class="j-btn" data-variant="ghost" data-size="icon" id="ledgerClose" type="button" aria-label="Close review ledger">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="ledgerClose" type="button" aria-label="Close review ledger"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="j-ledger">
       <p class="j-modal-trust" id="ledgerTrust"></p>
@@ -352,7 +350,7 @@
   <section class="j-root j-modal" data-size="wide" id="revisionDialog" role="dialog" aria-modal="true" aria-labelledby="revisionTitle" tabindex="-1">
     <div class="j-modal-head">
       <div><h3 id="revisionTitle">Revision history</h3><p class="j-modal-hint" id="revisionHint"></p></div>
-      <button class="j-btn" data-variant="ghost" data-size="icon" id="revisionClose" type="button" aria-label="Close revision history">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="revisionClose" type="button" aria-label="Close revision history"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="j-root j-commit">
       <p class="j-modal-trust" id="revisionTrust"></p>
@@ -377,7 +375,7 @@
   <section class="j-root j-modal" data-size="wide" id="resolutionDialog" role="dialog" aria-modal="true" aria-labelledby="resolutionTitle" tabindex="-1">
     <div class="j-modal-head">
       <div><h3 id="resolutionTitle">Resolution transaction</h3><p class="j-modal-hint" id="resolutionHint"></p></div>
-      <button class="j-btn" data-variant="ghost" data-size="icon" id="resolutionClose" type="button" aria-label="Close resolution transaction">×</button>
+      <button class="j-btn" data-variant="ghost" data-size="icon" id="resolutionClose" type="button" aria-label="Close resolution transaction"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="j-root j-commit">
       <p class="j-modal-trust" id="resolutionTrust"></p>

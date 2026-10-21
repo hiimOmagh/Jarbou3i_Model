@@ -21,34 +21,27 @@
   --success:var(--j-ok);
   --warn:var(--j-warn);
   --danger:var(--j-crit);
-  --p1:#e5484d;--p2:#f97316;--p3:#d9a406;--p4:#2f6fed;--p5:#8b5cf6;--p6:#64748b;
+  /* The model's lines, from the kernel (both themes). */
+  --p1:var(--j-l1);--p2:var(--j-l2);--p3:var(--j-l3);--p4:var(--j-l4);--p5:var(--j-l5);--p6:var(--j-l6);--p7:var(--j-l7);--p8:var(--j-l8);--p9:var(--j-l9);
   --shadow-xs:0 1px 2px rgba(15,23,42,.05);
   --shadow:0 24px 70px rgba(15,23,42,.12)
 }
 body.dark{
-  --p1:#f87171;--p2:#fb923c;--p3:#facc15;--p4:#60a5fa;--p5:#c084fc;--p6:#a1a1aa;
   --shadow-xs:0 1px 2px rgba(0,0,0,.20);
   --shadow:0 24px 70px rgba(0,0,0,.38)
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;min-height:100%;font-family:var(--j-font-ui);background:var(--bg);color:var(--text);line-height:1.55}
-body{
-  background:
-    radial-gradient(circle at 8% 0%, rgba(37,94,232,.13), transparent 28%),
-    radial-gradient(circle at 88% 10%, rgba(19,184,166,.12), transparent 30%),
-    radial-gradient(circle at 45% 100%, rgba(114,85,232,.10), transparent 34%),
-    linear-gradient(180deg,color-mix(in srgb,var(--bg) 86%,#fff 14%),var(--bg));
-}
 button,input,select{font:inherit}
 
 button{cursor:pointer}
 button:disabled{cursor:not-allowed;opacity:.52;filter:saturate(.7)}
-.hide{display:none!important}.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:"Inter","Segoe UI",Arial,sans-serif}
+.hide{display:none!important}.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:var(--j-font-ui)}
 .app{max-width:1380px;margin:0 auto;padding:24px 20px 86px}
 
 .shell{display:grid;gap:20px}
 
-input,select{width:100%;border:1px solid var(--line);background:var(--surface-solid);color:var(--text);border-radius:16px;padding:13px 14px;outline:none;transition:.15s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}input:focus,select:focus{border-color:color-mix(in srgb,var(--accent) 60%,var(--line));transform:translateY(-1px)}
+input,select{width:100%;border:1px solid var(--line);background:var(--surface-solid);color:var(--text);border-radius:var(--j-r-2);padding:13px 14px;outline:none;transition:border-color .15s ease}input:focus,select:focus{border-color:var(--j-signal)}
 
 @media(max-width:720px){.app{padding:18px 14px 70px}}
 
@@ -62,13 +55,7 @@ input,select{width:100%;border:1px solid var(--line);background:var(--surface-so
 body{letter-spacing:-.003em}
 .app{padding-top:18px}
 
-input,select{
-  border-radius:17px;
-  border-color:color-mix(in srgb,var(--line) 92%,transparent);
-  background:linear-gradient(180deg,color-mix(in srgb,var(--surface-solid) 96%,transparent),color-mix(in srgb,var(--surface-solid) 88%,transparent));
-}
-
-input:focus-visible,select:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 40%,transparent);outline-offset:3px}
+input:focus-visible,select:focus-visible{outline:3px solid var(--j-signal);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
 
 .srOnly{

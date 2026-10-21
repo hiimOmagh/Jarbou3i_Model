@@ -55,7 +55,7 @@ import { inspectStorageHealth, requestStoragePersistence } from "./core/storage-
 const I18N = {
   ar: {
     appTitle: "التحليل الاستراتيجي وتحليل السياسة الحيوية",
-    appSubtitle: "تتبّع من يريد ماذا، وكيف تُحكم حياة الناس، بمساعدك الذكي. للباحثين والصحفيين والمحللين.",
+    appSubtitle: "تتبّع من يريد ماذا، وكيف تُحكم حياة الناس، بمساعدك الذكي. لكل من يريد أن يفهم ما وراء خبر، لا للباحثين والصحفيين وحدهم.",
     topicLabel: "موضوع التحليل",
     topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا 2022–2026",
     analysisLang: "لغة التحليل",
@@ -77,7 +77,6 @@ const I18N = {
     themeTitle: "تبديل الوضع",
     languageLabel: "اختيار اللغة",
     skipToWorkspace: "انتقل إلى مساحة العمل",
-    productEyebrow: "Jarbou3i / أداة بحث وتحليل",
     lensContextStrategic: "العدسة الاستراتيجية",
     lensContextBiopolitical: "عدسة السياسة الحيوية",
     densityTitle: "تبديل كثافة العرض",
@@ -109,8 +108,6 @@ const I18N = {
     shellMovedToSetup: "تم الانتقال إلى إعداد التحليل.",
     shellMovedToModel: "تم الانتقال إلى بنية النموذج.",
     shellMovedToReview: "تم الانتقال إلى مراجعة التحليل.",
-    engineEyebrow: "02 / بنية النموذج",
-    reviewEyebrow: "03 / فحص النتيجة",
     severity: "الشدة",
     timeframeLabel: "السياق الزمني/الجغرافي",
     timeframePlaceholder: "اختياري: 2022–2026، أوروبا",
@@ -354,7 +351,7 @@ const I18N = {
   },
   en: {
     appTitle: "Strategic and Biopolitical Analysis",
-    appSubtitle: "Trace who wants what, and how lives are governed, with your own AI assistant. For researchers, journalists and analysts.",
+    appSubtitle: "Trace who wants what, and how lives are governed, with your own AI assistant. For anyone who wants to understand a story in the news, not only researchers and journalists.",
     topicLabel: "Analysis topic",
     topicPlaceholder: "Example: Rise of the far right in Europe, 2022–2026",
     analysisLang: "Analysis language",
@@ -376,7 +373,6 @@ const I18N = {
     themeTitle: "Toggle theme",
     languageLabel: "Language selector",
     skipToWorkspace: "Skip to workspace",
-    productEyebrow: "Jarbou3i / Research workbench",
     lensContextStrategic: "Strategic lens",
     lensContextBiopolitical: "Biopolitical lens",
     densityTitle: "Toggle display density",
@@ -408,8 +404,6 @@ const I18N = {
     shellMovedToSetup: "Moved to analysis setup.",
     shellMovedToModel: "Moved to model structure.",
     shellMovedToReview: "Moved to analysis review.",
-    engineEyebrow: "02 / Model structure",
-    reviewEyebrow: "03 / Inspect outcome",
     severity: "Severity",
     timeframeLabel: "Time/geographic context",
     timeframePlaceholder: "Optional: 2022–2026, Europe",
@@ -663,7 +657,7 @@ const I18N = {
   },
   fr: {
     appTitle: "Analyse stratégique et biopolitique",
-    appSubtitle: "Retracez qui veut quoi, et comment les vies sont gouvernées, avec votre propre assistant IA. Pour les chercheurs, journalistes et analystes.",
+    appSubtitle: "Retracez qui veut quoi, et comment les vies sont gouvernées, avec votre propre assistant IA. Pour toute personne qui veut comprendre une actualité, pas seulement les chercheurs et les journalistes.",
     topicLabel: "Sujet d’analyse",
     topicPlaceholder:
       "Exemple : montée de l’extrême droite en Europe, 2022–2026",
@@ -686,7 +680,6 @@ const I18N = {
     themeTitle: "Changer de thème",
     languageLabel: "Sélecteur de langue",
     skipToWorkspace: "Aller à l’espace de travail",
-    productEyebrow: "Jarbou3i / Atelier de recherche",
     lensContextStrategic: "Perspective stratégique",
     lensContextBiopolitical: "Perspective biopolitique",
     densityTitle: "Changer la densité d’affichage",
@@ -718,8 +711,6 @@ const I18N = {
     shellMovedToSetup: "Navigation vers la préparation de l’analyse.",
     shellMovedToModel: "Navigation vers la structure du modèle.",
     shellMovedToReview: "Navigation vers la revue de l’analyse.",
-    engineEyebrow: "02 / Structure du modèle",
-    reviewEyebrow: "03 / Examiner le résultat",
     severity: "Sévérité",
     timeframeLabel: "Contexte temporel/géographique",
     timeframePlaceholder: "Optionnel : 2022–2026, Europe",
@@ -1781,6 +1772,10 @@ function setTheme(isDark, persist = true) {
   document.body.classList.toggle("dark", !!isDark);
   // The design-system kernel (src/ui/) reads the theme from the root.
   document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  // The browser's bar takes the header's colour in the theme in use, which can
+  // differ from the system's.
+  const bar = getComputedStyle(document.documentElement).getPropertyValue("--j-panel").trim();
+  if (bar) document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => { meta.content = bar; });
   const btn = $("themeBtn");
   if (btn) btn.setAttribute("aria-pressed", isDark ? "true" : "false");
   if (persist) writeSettings({ theme: isDark ? "dark" : "light" });
@@ -4083,12 +4078,18 @@ function sampleAnalysis(lang = state.lang) {
 function countFor(p) {
   return state.analysis ? normalizeArray(state.analysis[p]).length : 0;
 }
-// A layer on the engine map: a numbered step that opens it in the case file,
-// with its records beside a bar of their share of the fullest layer's.
-function engineStep({ attr, key, index, color, label, count, max }) {
-  const depth = Math.round((count / Math.max(1, max)) * 100);
+// The engine map is one line: each layer's stretch of it is as wide as its
+// share of the records (equal while there are none), above a floor that
+// leaves room for its name.
+function setEngineLine(counts) {
+  const total = counts.reduce((sum, count) => sum + count, 0);
+  $("engineNav").style.setProperty("--j-cols", counts.map((count) => `minmax(var(--j-stop), ${total ? count : 1}fr)`).join(" "));
+}
+// A layer on the engine map: a numbered station that opens it in the case
+// file, with its records.
+function engineStep({ attr, key, index, color, label, count }) {
   const current = state.activePillar === key ? ' aria-current="true"' : "";
-  return `<li><button class="j-engine-step" type="button" ${attr}="${escapeHtml(key)}" style="--j-layer:${color};--j-depth:${depth}%"${current}><span class="j-engine-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-engine-name">${escapeHtml(label[0])}</span><span class="j-engine-text">${escapeHtml(label[1])}</span><span class="j-engine-count">${countHtml(count, ITEM_COUNT)}</span><span class="j-engine-depth" aria-hidden="true"></span></button></li>`;
+  return `<li style="--j-layer:${color};--j-n:${count}"><button class="j-engine-step" type="button" ${attr}="${escapeHtml(key)}"${current}><span class="j-engine-n" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><span class="j-engine-name">${escapeHtml(label[0])}</span><span class="j-engine-text">${escapeHtml(label[1])}</span><span class="j-engine-count">${countHtml(count, ITEM_COUNT)}</span></button></li>`;
 }
 // A layer of the case file: a heading whose button opens its records (the
 // WAI-ARIA accordion pattern). The prefix names its ids and data attribute.
@@ -4099,11 +4100,11 @@ function layerAccordion({ prefix, key, index, color, label, count, body }) {
 }
 function renderEngineNav() {
   const labels = t("pillars");
-  const max = Math.max(...PILLARS.map(countFor));
+  setEngineLine(PILLARS.map(countFor));
   $("engineNav").dataset.layers = PILLARS.length;
   $("engineNav").dataset.loaded = String(Boolean(state.analysis));
   $("engineNav").innerHTML = PILLARS.map((p, index) =>
-    engineStep({ attr: "data-pillar-card", key: p, index, color: COLORS[p], label: labels[p], count: countFor(p), max }),
+    engineStep({ attr: "data-pillar-card", key: p, index, color: COLORS[p], label: labels[p], count: countFor(p) }),
   ).join("");
   document.querySelectorAll("[data-pillar-card]").forEach(
     (btn) =>
@@ -5161,7 +5162,7 @@ function briefFigure(label, value) {
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
-  return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Decision orientation", "اتجاه القرار", "Orientation de décision"))}</span><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(t("qualityGate"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
+  return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(t("qualityGate"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
 }
 function authoredText(...values) {
   for (const value of values) {
@@ -5371,7 +5372,7 @@ function resultsExplanationHtml(model) {
       ? kernelChip(confidenceInfo(String(value)).label, confidenceTone(value))
       : kernelChip(displayEnum(String(value)));
   const cards = model.sections
-    .map((section, index) => {
+    .map((section) => {
       const items = section.items.length
         ? `<ol class="j-brief-items">${section.items
             .map((item) => {
@@ -5380,10 +5381,10 @@ function resultsExplanationHtml(model) {
             })
             .join("")}</ol>`
         : `<p class="j-brief-desc">${escapeHtml(section.emptyLabel)}</p>`;
-      return `<li><article class="j-rec" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header class="j-rec-head"><span class="j-rec-id" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span><h5 class="j-rec-title" id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h5><span class="j-chip"><span aria-hidden="true">${section.total}</span><span class="j-sr-only">${escapeHtml(pluralText(section.total, ITEM_COUNT))}</span></span></header><p class="j-brief-desc">${escapeHtml(section.description)}</p>${items}<button class="j-btn j-brief-open" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article></li>`;
+      return `<li><article class="j-rec" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header class="j-rec-head"><h5 class="j-rec-title" id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h5><span class="j-chip"><span aria-hidden="true">${section.total}</span><span class="j-sr-only">${escapeHtml(pluralText(section.total, ITEM_COUNT))}</span></span></header><p class="j-brief-desc">${escapeHtml(section.description)}</p>${items}<button class="j-btn j-brief-open" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article></li>`;
     })
     .join("");
-  return `<section class="j-brief" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="j-brief-head"><div><span class="j-label">${escapeHtml(labelText("Explanation", "الشرح", "Explication"))}</span><h4 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h4><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></div></header><ol class="j-brief-steps">${cards}</ol></section>`;
+  return `<section class="j-brief" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="j-brief-head"><div><h4 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h4><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></div></header><ol class="j-brief-steps">${cards}</ol></section>`;
 }
 function wireResultsExplanation(lens) {
   document.querySelectorAll("[data-explanation-open]").forEach((button) => {
@@ -5756,7 +5757,7 @@ function htmlReport() {
     .cols div{padding:var(--j-s-3);border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel)}.cols p{margin:.35rem 0 0}
     .evidenceTable{overflow-x:auto}
     .evidenceTable table{width:100%;border-collapse:separate;border-spacing:0 var(--j-s-2)}
-    .evidenceTable th{padding:0 var(--j-s-3);color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-align:start;text-transform:uppercase}
+    .evidenceTable th{padding:0 var(--j-s-3);color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);text-align:start}
     .evidenceTable td{padding:var(--j-s-3);border-block:1px solid var(--j-line);background:var(--j-panel-2);vertical-align:top;overflow-wrap:anywhere}
     .evidenceTable td:first-child{border-inline-start:1px solid var(--j-line);border-start-start-radius:var(--j-r-2);border-end-start-radius:var(--j-r-2)}
     .evidenceTable td:last-child{border-inline-end:1px solid var(--j-line);border-start-end-radius:var(--j-r-2);border-end-end-radius:var(--j-r-2)}
@@ -5768,14 +5769,13 @@ function htmlReport() {
     .facts div{display:flex;flex-wrap:wrap;gap:0 var(--j-s-2);align-items:baseline;min-width:0;padding:var(--j-s-1) var(--j-s-3);border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2)}
     .facts dt{color:var(--j-fg-muted);font-size:var(--j-t-13);font-weight:600}.facts dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
     .reportDate{font-size:var(--j-t-14)}
-    [dir="rtl"] :is(.evidenceTable th,.conflict header small,.scenario header small){font-family:var(--j-font-ui);letter-spacing:0}
     @media(max-width:820px){.heroGrid,.grid,.cols,.weights{grid-template-columns:1fr}.shell{width:calc(100% - 1rem);padding-top:.5rem}.metric,.block,.evidenceTable,.formula{padding:var(--j-s-4)}
       .evidenceTable thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
       .evidenceTable :is(table,tbody,tr,td){display:block}
       .evidenceTable tr{margin-top:var(--j-s-3);padding:var(--j-s-3);border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2)}
       .evidenceTable td{padding:var(--j-s-1) 0;border:0!important;border-radius:0!important;background:none}
-      .evidenceTable td[data-label]::before{content:attr(data-label);display:block;color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);letter-spacing:.04em;text-transform:uppercase}
-      [dir="rtl"] .evidenceTable td[data-label]::before{font-family:var(--j-font-ui);letter-spacing:0}}
+      .evidenceTable td[data-label]::before{content:attr(data-label);display:block;color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-data);}
+      }
     @media print{body{background:var(--j-panel);font-size:10.5pt}.shell{width:100%;padding:0}.heroGrid{grid-template-columns:minmax(0,1fr) 200px;gap:var(--j-s-4)}.weights,.cols{grid-template-columns:repeat(3,minmax(0,1fr))}.metric,.block,.evidenceTable,.formula{padding:var(--j-s-4)}.metric,.item,.assumption,.exportContract,.weights span,.cols div,.signal,.evidenceTable tr,.facts div{break-inside:avoid-page}h2,h3,.block>header,.conflict>header,.scenario>header{break-after:avoid-page}p{orphans:3;widows:3}.grid{grid-template-columns:repeat(2,1fr)}a{color:inherit}}`;
   const exportedAt = new Date();
   const docTitle = a.subject.title ? `${a.subject.title} — ${exportContract.title}` : exportContract.title;
@@ -6226,11 +6226,11 @@ function renderBiopoliticalEngineNav() {
   const counts = state.analysis
     ? BIO.PILLARS.map((pillar) => BIO.pillarCount(state.analysis, pillar.key))
     : BIO.PILLARS.map(() => 0);
-  const max = Math.max(...counts);
+  setEngineLine(counts);
   $("engineNav").dataset.layers = BIO.PILLARS.length;
   $("engineNav").dataset.loaded = String(Boolean(state.analysis));
   $("engineNav").innerHTML = BIO.PILLARS.map((pillar, index) =>
-    engineStep({ attr: "data-bio-pillar", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: counts[index], max }),
+    engineStep({ attr: "data-bio-pillar", key: pillar.key, index, color: pillar.color, label: labels[pillar.key], count: counts[index] }),
   ).join("");
   document.querySelectorAll("[data-bio-pillar]").forEach(
     (button) =>

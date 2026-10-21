@@ -171,7 +171,7 @@
     rootElement.dataset.variant = "sheet";
     rootElement.setAttribute("aria-hidden", "true");
     // A dialog, built from divs: aside, header and footer would add landmarks inside it.
-    rootElement.innerHTML = `<div class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><div class="j-insp-head"><div><p class="j-label" id="referenceInspectorType"></p><h2 id="referenceInspectorTitle"></h2></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close></button></div><div class="j-insp-body" id="referenceInspectorBody"></div><div class="j-insp-foot"><button class="j-btn" id="referenceShowConnections" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></div></div>`;
+    rootElement.innerHTML = `<div class="j-root j-modal" data-size="sheet" id="referenceInspector" role="dialog" aria-modal="true" aria-labelledby="referenceInspectorTitle" tabindex="-1"><div class="j-insp-head"><div><h2 id="referenceInspectorTitle"></h2><p class="j-label" id="referenceInspectorType"></p></div><button class="j-btn" data-variant="ghost" data-size="icon" id="referenceInspectorClose" type="button" data-reference-close><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="j-insp-body" id="referenceInspectorBody"></div><div class="j-insp-foot"><button class="j-btn" id="referenceShowConnections" type="button"></button><button class="j-btn" data-variant="primary" id="referenceOpenRecord" type="button"></button></div></div>`;
     document.body.append(rootElement);
     return rootElement;
   }
@@ -301,7 +301,6 @@
     activeInspection = inspection;
     rootElement.dir = lang === "ar" ? "rtl" : "ltr";
     rootElement.querySelector("#referenceInspectorClose").setAttribute("aria-label", copy.close);
-    rootElement.querySelector("#referenceInspectorClose").textContent = "×";
     rootElement.querySelector("#referenceInspectorType").textContent = `${graph.typeLabel(node.type)} · ${node.id}`;
     rootElement.querySelector("#referenceInspectorTitle").textContent = node.label;
     const incoming = graph.incoming(node.id);

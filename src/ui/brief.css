@@ -1,33 +1,30 @@
 /* Jarbou3i overview (UIX-3, ADR-0002): the brief (what matters first, then how
    the conclusion is built), then the detailed diagnostics. Classes are
    .j-brief* and .j-diag*; the explanation's steps and the score rule are .j-rec
-   cards, the counts .j-stats. */
+   records, the counts .j-stats. */
 
 /* A part of the brief: a heading, then its blocks. */
 .j-brief {
-  display: grid; gap: var(--j-s-4); min-width: 0; margin: 0 0 var(--j-s-4); padding: min(var(--j-card-pad), var(--j-s-5));
-  border: 1px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
+  display: grid; gap: var(--j-s-4); min-width: 0; margin: 0 0 var(--j-s-5);
 }
 .j-brief-head { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: var(--j-s-3) var(--j-s-5); }
 .j-brief-head > div { display: grid; gap: var(--j-s-1); flex: 1 1 24ch; min-width: 0; }
 .j-brief-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-22)/1.25 var(--j-font-display); letter-spacing: -.01em; text-wrap: balance; }
 .j-brief-head > div > p { max-width: 72ch; margin: 0; color: var(--j-fg-muted); line-height: 1.55; overflow-wrap: anywhere; }
-/* The publication verdict: a status, said in words. */
+/* The publication verdict: a status, said in words, under an ink rule. */
 .j-brief-gate {
-  display: grid; gap: var(--j-s-1); margin: 0; padding: var(--j-s-2) var(--j-s-3);
-  border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+  display: grid; gap: var(--j-s-1); margin: 0; padding: var(--j-s-2) 0 0;
+  border-block-start: var(--j-rule) solid var(--j-ink);
 }
 
-/* The conclusion beside its two figures. */
-.j-brief-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 260px); gap: var(--j-s-3); }
+/* The conclusion beside its two figures, each under an ink rule, no boxes. */
+.j-brief-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 260px); gap: var(--j-s-5); }
 .j-brief-claim, .j-brief-figures > div, .j-brief-signal {
-  display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; padding: var(--j-s-4);
-  border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+  display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; padding: var(--j-s-3) 0 0;
+  border-block-start: var(--j-rule) solid var(--j-ink);
 }
-.j-brief-claim { align-content: center; }
 .j-brief-claim > p { margin: 0; color: var(--j-fg); font-size: var(--j-t-18); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
-.j-brief-figures { display: grid; gap: var(--j-s-3); margin: 0; }
-.j-brief-figures > div { padding-block: var(--j-s-3); }
+.j-brief-figures { display: grid; gap: var(--j-s-4); margin: 0; }
 .j-brief-figures dd { display: grid; gap: var(--j-s-2); margin: 0; }
 .j-brief-figures b { color: var(--j-fg); font: 700 var(--j-t-28)/1 var(--j-font-data); font-variant-numeric: tabular-nums; }
 /* A share of the whole; the band of the score legend colours it. */
@@ -37,15 +34,15 @@
 .j-brief-bar[data-tone="warn"]::before { background: var(--j-warn); }
 .j-brief-bar[data-tone="crit"]::before { background: var(--j-crit); }
 
-/* The principal uncertainty and the next action: an edge says which. */
-.j-brief-signals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-3); }
-.j-brief-signal { border-inline-start: 4px solid var(--j-signal); }
-.j-brief-signal[data-tone="warn"] { border-inline-start-color: var(--j-warn); }
+/* The principal uncertainty and the next action: their labels say which;
+   an uncertainty’s rule is in the warning colour. */
+.j-brief-signals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-5); }
+.j-brief-signal[data-tone="warn"] { border-block-start-color: var(--j-warn); }
 .j-brief-signal > p { margin: 0; color: var(--j-fg); font-size: var(--j-t-14); line-height: 1.55; overflow-wrap: anywhere; }
 
-/* How the conclusion is built: five steps, each a card that ends on its link. */
+/* How the conclusion is built: its steps, each a record that ends on its link. */
 .j-brief-steps {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--j-s-3);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--j-s-5);
   margin: 0; padding: 0; list-style: none;
 }
 .j-brief-steps > li { display: grid; min-width: 0; }
@@ -61,7 +58,7 @@
 }
 .j-brief-tags { display: flex; flex-wrap: wrap; gap: var(--j-s-1); margin-block-start: var(--j-s-1); }
 .j-brief-open { justify-content: space-between; width: 100%; font-size: var(--j-t-14); }
-.j-brief-open:focus-visible { outline: 2px solid var(--j-signal); outline-offset: 2px; }
+.j-brief-open:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 
 /* Where the brief ends and the diagnostics begin. */
 .j-brief-divider { display: flex; align-items: center; gap: var(--j-s-3); margin: var(--j-s-2) 0 var(--j-s-4); }
@@ -92,7 +89,6 @@
 .j-diag-notes { display: grid; gap: var(--j-s-2); margin: 0; padding: 0; list-style: none; }
 
 @media (max-width: 760px) {
-  .j-brief { padding: var(--j-s-4); }
   .j-brief-main, .j-brief-signals { grid-template-columns: minmax(0, 1fr); }
   .j-brief-figures { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .j-brief-claim > p { font-size: var(--j-t-16); }
@@ -105,7 +101,7 @@
   .j-brief-open, .j-brief-divider { display: none; }
 }
 @media (forced-colors: active) {
-  .j-brief, .j-brief-gate, .j-brief-claim, .j-brief-figures > div, .j-brief-signal { border-color: CanvasText; }
+  .j-brief-gate, .j-brief-claim, .j-brief-figures > div, .j-brief-signal { border-color: CanvasText; }
   .j-brief-bar { forced-color-adjust: none; border: 1px solid CanvasText; background: Canvas; }
   .j-brief-bar::before { background: Highlight; }
 }

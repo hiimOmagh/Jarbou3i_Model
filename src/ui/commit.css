@@ -23,11 +23,11 @@
 .j-diff-vals { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: var(--j-s-2); }
 .j-diff-val { min-width: 0; color: var(--j-fg-muted); font-size: var(--j-t-12); }
 .j-diff-val pre {
-  margin: var(--j-s-1) 0 0; padding: var(--j-s-2); border-inline-start: 3px solid var(--j-line); border-radius: var(--j-r-1);
+  margin: var(--j-s-1) 0 0; padding: var(--j-s-2); border: 1px solid var(--j-line); border-radius: var(--j-r-1);
   background: var(--j-raise); color: var(--j-fg); white-space: pre-wrap; overflow-wrap: anywhere; text-align: left; font-size: var(--j-t-12);
 }
-.j-diff-val:first-child pre { border-inline-start-color: var(--j-crit); }
-.j-diff-val:last-child pre { border-inline-start-color: var(--j-ok); }
+.j-diff-val:first-child pre { border-color: color-mix(in srgb, var(--j-crit) 55%, transparent); }
+.j-diff-val:last-child pre { border-color: color-mix(in srgb, var(--j-ok) 55%, transparent); }
 
 /* Who approves, why, and the explicit confirmation. */
 .j-commit-approve { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(260px, 1.3fr); gap: var(--j-s-3); align-items: start; }

@@ -8,40 +8,86 @@
 
   // Colours, as the kernel has them in each theme.
   const LIGHT = Object.freeze({
-    "--j-bg": "#edf1f6", "--j-panel": "#ffffff", "--j-panel-2": "#f6f8fb", "--j-raise": "#eef2f7",
-    "--j-line": "#dbe2ec", "--j-line-strong": "#c3cede",
-    "--j-fg": "#0b1220", "--j-fg-muted": "#44546b", "--j-fg-faint": "#5b6b82",
-    "--j-signal": "#0a6f94", "--j-signal-strong": "#075a79", "--j-on-signal": "#ffffff", "--j-signal-wash": "rgba(10, 111, 148, .09)",
-    "--j-ok": "#0f7a52", "--j-warn": "#8f5a00", "--j-crit": "#c42737",
-    "--j-ok-wash": "rgba(15, 122, 82, .1)", "--j-warn-wash": "rgba(143, 90, 0, .1)", "--j-crit-wash": "rgba(196, 39, 55, .09)",
-    "--j-shadow": "0 18px 50px rgba(15, 30, 55, .16)",
+    "--j-bg": "#f8f8f6",
+    "--j-panel": "#ffffff",
+    "--j-panel-2": "#efefeb",
+    "--j-raise": "#e8e8e3",
+    "--j-line": "#dcdcd6",
+    "--j-line-strong": "#7c8088",
+    "--j-fg": "#15171b",
+    "--j-fg-muted": "#4a4f57",
+    "--j-fg-faint": "#5e636b",
+    "--j-signal": "#1f5bc4",
+    "--j-signal-strong": "#174a9f",
+    "--j-on-signal": "#ffffff",
+    "--j-signal-wash": "rgba(31, 91, 196, .09)",
+    "--j-ink": "#15171b",
+    "--j-on-ink": "#f8f8f6",
+    "--j-ok": "#17733f",
+    "--j-warn": "#8a5300",
+    "--j-crit": "#c8262a",
+    "--j-ok-wash": "rgba(23, 115, 63, .09)",
+    "--j-warn-wash": "rgba(233, 162, 26, .14)",
+    "--j-crit-wash": "rgba(200, 38, 42, .08)",
+    "--j-shadow": "0 12px 32px rgba(21, 23, 27, .14), 0 2px 6px rgba(21, 23, 27, .08)",
   });
   const DARK = Object.freeze({
-    "--j-bg": "#070b12", "--j-panel": "#0c131e", "--j-panel-2": "#111a28", "--j-raise": "#172235",
-    "--j-line": "#1d2939", "--j-line-strong": "#2c3b52",
-    "--j-fg": "#e6edf7", "--j-fg-muted": "#9aaac0", "--j-fg-faint": "#7385a0",
-    "--j-signal": "#4cc9f0", "--j-signal-strong": "#7dd9f5", "--j-on-signal": "#04121b", "--j-signal-wash": "rgba(76, 201, 240, .12)",
-    "--j-ok": "#3ddc97", "--j-warn": "#f5b83d", "--j-crit": "#ff6b78",
-    "--j-ok-wash": "rgba(61, 220, 151, .12)", "--j-warn-wash": "rgba(245, 184, 61, .12)", "--j-crit-wash": "rgba(255, 107, 120, .12)",
-    "--j-shadow": "0 18px 50px rgba(0, 0, 0, .45)",
+    "--j-bg": "#0f1b30",
+    "--j-panel": "#142440",
+    "--j-panel-2": "#1a2b48",
+    "--j-raise": "#203457",
+    "--j-line": "#2a3e62",
+    "--j-line-strong": "#6f82a6",
+    "--j-fg": "#f2f0ea",
+    "--j-fg-muted": "#bbc4d4",
+    "--j-fg-faint": "#9ca9bf",
+    "--j-signal": "#8db2f5",
+    "--j-signal-strong": "#b3ccf8",
+    "--j-on-signal": "#0f1b30",
+    "--j-signal-wash": "rgba(141, 178, 245, .14)",
+    "--j-ink": "#f2f0ea",
+    "--j-on-ink": "#0f1b30",
+    "--j-ok": "#4cc383",
+    "--j-warn": "#f2b33d",
+    "--j-crit": "#ff7a70",
+    "--j-ok-wash": "rgba(76, 195, 131, .14)",
+    "--j-warn-wash": "rgba(242, 179, 61, .14)",
+    "--j-crit-wash": "rgba(255, 122, 112, .14)",
+    "--j-shadow": "0 16px 40px rgba(3, 8, 18, .5), 0 2px 6px rgba(3, 8, 18, .3)",
   });
   // Type, space and radius: the same in both themes.
   const SHARED = Object.freeze({
-    "--j-font-ui": '"Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", "Noto Sans Arabic", "Geeza Pro", Tahoma, sans-serif',
-    "--j-font-display": '"Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", "Noto Sans Arabic", "Geeza Pro", sans-serif',
-    "--j-font-data": 'ui-monospace, "Cascadia Code", "SF Mono", "JetBrains Mono", Consolas, "Noto Sans Arabic", monospace',
-    "--j-t-12": "12px", "--j-t-13": "13px", "--j-t-14": "14px", "--j-t-16": "16px",
-    "--j-t-18": "18px", "--j-t-22": "22px", "--j-t-28": "28px", "--j-t-36": "36px",
-    "--j-s-1": "4px", "--j-s-2": "8px", "--j-s-3": "12px", "--j-s-4": "16px", "--j-s-5": "24px", "--j-s-6": "32px",
-    "--j-r-1": "4px", "--j-r-2": "8px", "--j-r-3": "14px",
+    "--j-font-ui": '"Readex Pro", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", "Noto Sans Arabic", "Geeza Pro", Tahoma, sans-serif',
+    "--j-font-display": '"Readex Pro", "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", "Noto Sans Arabic", "Geeza Pro", sans-serif',
+    "--j-font-data": "var(--j-font-ui)",
+    "--j-font-code": 'ui-monospace, "Cascadia Code", "SF Mono", "JetBrains Mono", Consolas, "Noto Sans Arabic", monospace',
+    "--j-t-12": "12px",
+    "--j-t-13": "13px",
+    "--j-t-14": "14px",
+    "--j-t-16": "16px",
+    "--j-t-18": "18px",
+    "--j-t-22": "22px",
+    "--j-t-28": "28px",
+    "--j-t-36": "36px",
+    "--j-s-1": "4px",
+    "--j-s-2": "8px",
+    "--j-s-3": "12px",
+    "--j-s-4": "16px",
+    "--j-s-5": "24px",
+    "--j-s-6": "32px",
+    "--j-r-1": "4px",
+    "--j-r-2": "10px",
+    "--j-r-3": "16px",
+    "--j-r-pill": "999px",
+    "--j-rule": "3px",
   });
 
   const block = (tokens) => Object.entries(tokens).map(([name, value]) => `${name}:${value}`).join(";");
   // A draft's banner and the provenance footer, the same in both reports.
   const css = `:root{color-scheme:light;${block(SHARED)};${block(LIGHT)}}`
     + `@media screen and (prefers-color-scheme:dark){:root{color-scheme:dark;${block(DARK)}}}`
-    + `.draftBanner{display:flex;flex-wrap:wrap;gap:var(--j-s-1) var(--j-s-3);align-items:baseline;margin:0 0 var(--j-s-4);padding:var(--j-s-3) var(--j-s-4);border:1px solid var(--j-warn);border-inline-start-width:4px;border-radius:var(--j-r-2);background:linear-gradient(var(--j-warn-wash),var(--j-warn-wash)),var(--j-panel);color:var(--j-fg)}`
-    + `.draftBanner strong{color:var(--j-warn);font-size:var(--j-t-13);letter-spacing:.06em;text-transform:uppercase}[dir="rtl"] .draftBanner strong{letter-spacing:0}`
+    + `.draftBanner{display:flex;flex-wrap:wrap;gap:var(--j-s-1) var(--j-s-3);align-items:baseline;margin:0 0 var(--j-s-4);padding:var(--j-s-3) var(--j-s-4);border:1px solid var(--j-warn);border-radius:var(--j-r-2);background:linear-gradient(var(--j-warn-wash),var(--j-warn-wash)),var(--j-panel);color:var(--j-fg)}`
+    + `.draftBanner strong{color:var(--j-warn);font-size:var(--j-t-13);}`
     + `.draftBanner[data-tone="crit"]{border-color:var(--j-crit);background:linear-gradient(var(--j-crit-wash),var(--j-crit-wash)),var(--j-panel)}.draftBanner[data-tone="crit"] strong{color:var(--j-crit)}`
     + `.provenance{margin-top:var(--j-s-6);padding:var(--j-s-4) var(--j-s-4) 0;border-top:1px solid var(--j-line);color:var(--j-fg-muted);font-size:var(--j-t-13)}`
     + `.provenance h2{margin:0 0 var(--j-s-3);color:var(--j-fg);font:700 var(--j-t-16)/1.3 var(--j-font-display)}`

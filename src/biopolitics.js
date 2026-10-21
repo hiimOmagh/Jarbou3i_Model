@@ -36,9 +36,9 @@
     { key: "mechanisms_infrastructure", color: "var(--p4)" },
     { key: "meaning_classification", color: "var(--p5)" },
     { key: "intervention_capture", color: "var(--p6)" },
-    { key: "distribution_effects", color: "var(--warn)" },
-    { key: "evidence_explanations", color: "var(--accent-3)" },
-    { key: "agency_alternatives", color: "var(--success)" },
+    { key: "distribution_effects", color: "var(--p7)" },
+    { key: "evidence_explanations", color: "var(--p8)" },
+    { key: "agency_alternatives", color: "var(--p9)" },
   ];
 
   const INTERVENTION_MODALITIES = [
