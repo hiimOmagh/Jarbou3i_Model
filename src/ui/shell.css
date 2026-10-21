@@ -45,9 +45,11 @@
   min-height: var(--j-control); padding: var(--j-s-1) var(--j-s-3);
   border: 0; border-radius: var(--j-r-pill);
   background: transparent; color: var(--j-fg-muted); text-align: start;
-  transition: background-color var(--j-dur-1) var(--j-ease-out), color var(--j-dur-1) var(--j-ease-out);
 }
-.j-shell-phase:hover:not(:disabled, [aria-current="step"]) { background: var(--j-raise); color: var(--j-fg); }
+/* Only the hover tint fades in. The ink plate of the current phase inverts its
+   text, so it switches at once: a half-faded plate would leave its text
+   unreadable for a frame. */
+.j-shell-phase:hover:not(:disabled, [aria-current="step"]) { background: var(--j-raise); color: var(--j-fg); transition: background-color var(--j-dur-1) var(--j-ease-out); }
 /* The faint parts would fall under 4.5:1 on the raised background; a tapped
    phase stays hovered on a touch screen. */
 .j-shell-phase:hover:not(:disabled, [aria-current="step"]) :is(.j-shell-phase-index, .j-shell-phase-copy small) { color: var(--j-fg-muted); }
