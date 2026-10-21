@@ -34,6 +34,30 @@
 - Focus rings are 3px. A phone's browser bar takes the header's colour, in the
   theme chosen in the app.
 
+### A first visit that shows the way
+
+- **The trip, drawn as a route map**, above the setup on a first visit: ask
+  (1 min), your AI writes (2–5 min), check (5–10 min), then a report to
+  share, with "You are here" at the first stop. The line draws itself as it
+  appears (instant under reduced motion).
+- Two ways in: start with your own topic, or try the example first; Skip
+  sits first for the keyboard. It does not come back on its own, and visitors
+  who have used the tool before never see it; "How it works", beside "Load
+  sample" and in Commands, brings it back (AR/EN/FR).
+- Arabic year ranges read "من 2022 إلى 2026" in the topic and context
+  examples, where a dash range showed reversed in right-to-left text.
+
+### A clearer first step
+
+- The current step, the section you are reading and the chosen option are
+  ringed in ink, not red: line colours only mark the model's layers, and red
+  stays for what blocks publication.
+- Before an analysis, the model map explains its layers without a count of
+  zero beside each.
+- The guide no longer repeats the step's heading: on the topic it says what
+  your topic becomes, and on the answer that a cut-off answer gets a prompt
+  to continue (AR/EN/FR).
+
 ### Saying what the tool is for
 
 - **One title for both lenses**: "Strategic and Biopolitical Analysis" (AR/EN/FR),

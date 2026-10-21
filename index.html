@@ -102,6 +102,23 @@
 
   <main class="shell">
     <div class="j-root j-life-banners" id="lifeBanners" hidden></div>
+    <section class="j-root j-ride" id="firstRide" aria-labelledby="rideTitle" hidden>
+      <button class="j-ride-skip" id="rideSkip" type="button" data-i18n="rideSkip">تخطَّ</button>
+      <div class="j-ride-head">
+        <h2 id="rideTitle" tabindex="-1" data-i18n="rideTitle">من سؤال إلى تحليل يمكنك التحقق منه</h2>
+        <p data-i18n="rideLead">ثلاث محطات، مع مساعد الذكاء الاصطناعي الذي تستخدمه أصلًا. لا يغادر هذه الصفحة إلا ما تلصقه فيه.</p>
+        <div class="j-ride-doors">
+          <button class="j-btn" data-variant="primary" id="rideStart" type="button" data-i18n="rideStart">ابدأ بموضوعي</button>
+          <button class="j-btn" id="rideExample" type="button" data-i18n="rideExample">جرّب المثال أولًا</button>
+        </div>
+      </div>
+      <ol class="j-ride-line">
+        <li class="j-ride-stop" style="--j-i:0" aria-current="step"><span class="j-ride-ring" aria-hidden="true">1</span><span class="j-ride-name"><span data-i18n="rideAsk">اسأل</span><span class="j-ride-here" data-i18n="rideHere">أنت هنا</span></span><span class="j-ride-time" data-i18n="rideAskTime">دقيقة</span><p class="j-ride-text" data-i18n="rideAskText">يصبح موضوعك، في جملة واحدة، موجِّهًا دقيقًا.</p></li>
+        <li class="j-ride-stop" style="--j-i:1"><span class="j-ride-ring" aria-hidden="true">2</span><span class="j-ride-name" data-i18n="rideWrite">يكتب مساعدك</span><span class="j-ride-time" data-i18n="rideWriteTime">من 2 إلى 5 دقائق</span><p class="j-ride-text" data-i18n="rideWriteText">في ChatGPT أو Claude أو Gemini، بحسابك أنت.</p></li>
+        <li class="j-ride-stop" style="--j-i:2"><span class="j-ride-ring" aria-hidden="true">3</span><span class="j-ride-name" data-i18n="rideCheck">تحقّق</span><span class="j-ride-time" data-i18n="rideCheckTime">من 5 إلى 10 دقائق</span><p class="j-ride-text" data-i18n="rideCheckText">كل ادعاء بجانب أدلته، وحكم على ما إذا كان التحليل قابلًا للنشر.</p></li>
+        <li class="j-ride-stop j-ride-end" style="--j-i:3"><span class="j-ride-ring" aria-hidden="true"></span><span class="j-ride-name" data-i18n="rideEnd">تقرير للمشاركة</span></li>
+      </ol>
+    </section>
     <section class="j-root j-flow" id="workflowPanel" aria-labelledby="flowStepTitle">
       <div class="j-flow-guide" id="flowGuide" data-mood="idle">
         <div class="j-flow-mascot">
@@ -115,7 +132,10 @@
           <li><button class="j-flow-step" type="button" data-flow-step="prompt"><span class="j-flow-step-n" aria-hidden="true">4</span><span data-i18n="flowStepPrompt">الموجِّه</span></button></li>
           <li><button class="j-flow-step" type="button" data-flow-step="answer"><span class="j-flow-step-n" aria-hidden="true">5</span><span data-i18n="flowStepAnswer">الإجابة</span></button></li>
         </ol>
-        <button class="j-btn" data-variant="ghost" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
+        <div class="j-flow-more">
+          <button class="j-btn" data-variant="ghost" id="loadSampleBtn" type="button" data-i18n="loadSample">تحميل مثال</button>
+          <button class="j-btn" data-variant="ghost" id="rideOpen" type="button" data-i18n="rideOpen">كيف يعمل</button>
+        </div>
       </div>
       <div class="j-flow-card">
         <header class="j-flow-head">
@@ -126,7 +146,7 @@
         <div class="j-flow-panel" id="topicCard" data-flow-panel="topic">
           <div class="j-field">
             <label for="topicInput" data-i18n="topicLabel">موضوع التحليل</label>
-            <textarea id="topicInput" class="j-input j-flow-topic" data-i18n-placeholder="topicPlaceholder" placeholder="مثال: صعود اليمين المتطرف في أوروبا 2022–2026"></textarea>
+            <textarea id="topicInput" class="j-input j-flow-topic" data-i18n-placeholder="topicPlaceholder" placeholder="مثال: صعود اليمين المتطرف في أوروبا من 2022 إلى 2026"></textarea>
           </div>
           <div class="j-flow-examples">
             <span data-i18n="flowExamplesLabel">جرّب مثالًا:</span>
@@ -134,7 +154,7 @@
           </div>
           <div class="j-field">
             <label for="timeframeInput" data-i18n="timeframeLabel">السياق الزمني/الجغرافي</label>
-            <input id="timeframeInput" class="j-input" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: 2022–2026، أوروبا" />
+            <input id="timeframeInput" class="j-input" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: من 2022 إلى 2026، أوروبا" />
           </div>
         </div>
         <div class="j-flow-panel" data-flow-panel="lens" hidden>

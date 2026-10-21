@@ -7,6 +7,75 @@
   align-items: start; padding: var(--j-s-4) 0; margin-bottom: var(--j-s-5);
 }
 
+/* ---------- First visit: the trip as a route map ---------- */
+/* Above the setup on a first visit: the trip's three stops on one ink line,
+   the first marked "you are here", a terminus where the report waits. The line
+   runs across with room and down on a phone. */
+.j-ride {
+  position: relative; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--j-s-6);
+  align-items: start; margin: 0 0 var(--j-s-4); padding: var(--j-s-6) 0 var(--j-s-5);
+}
+.j-ride[hidden] { display: none; }
+.j-ride-head { display: grid; gap: var(--j-s-3); align-content: start; }
+.j-ride-head h2 { margin: 0; font: 700 var(--j-t-28)/1.15 var(--j-font-display); letter-spacing: -.01em; text-wrap: balance; }
+.j-ride-head h2:focus { outline: none; }
+.j-ride-head h2:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 4px; }
+.j-ride-head p { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-16); line-height: 1.5; max-width: 46ch; }
+.j-ride-doors { display: flex; flex-wrap: wrap; gap: var(--j-s-2); margin-block-start: var(--j-s-2); }
+.j-ride-skip {
+  position: absolute; inset-block-start: var(--j-s-2); inset-inline-end: 0; min-height: var(--j-control); padding: 0 var(--j-s-3);
+  border: 0; border-radius: var(--j-r-2); background: none; color: var(--j-fg-muted);
+  font: 600 var(--j-t-14)/1 var(--j-font-ui); text-decoration: underline; text-underline-offset: .25em; cursor: pointer;
+}
+.j-ride-skip:hover { color: var(--j-fg); }
+.j-ride-skip:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-ride-line { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(7rem, auto); margin: var(--j-s-6) 0 0; padding: 0; list-style: none; }
+.j-ride-stop { position: relative; display: grid; gap: var(--j-s-1); align-content: start; padding-block-start: 54px; padding-inline-end: var(--j-s-4); }
+.j-ride-stop:not(:last-child)::before {
+  content: ""; position: absolute; inset-block-start: 15px; inset-inline-start: 19px;
+  inline-size: 100%; block-size: 8px; background: var(--j-ink);
+}
+.j-ride-ring {
+  position: absolute; z-index: 1; inset-block-start: 0; inset-inline-start: 0; display: grid; place-items: center;
+  inline-size: 38px; block-size: 38px; box-sizing: border-box; border-radius: 50%;
+  border: var(--j-station) solid var(--j-ink); background: var(--j-bg); color: var(--j-fg); font: 700 var(--j-t-13)/1 var(--j-font-ui);
+}
+.j-ride-stop[aria-current] .j-ride-ring { box-shadow: 0 0 0 3px var(--j-bg), 0 0 0 7px var(--j-ink); }
+.j-ride-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--j-s-1) var(--j-s-2); font-size: var(--j-t-18); font-weight: 700; }
+.j-ride-here { padding: 4px 10px; border-radius: var(--j-r-1); background: var(--j-ink); color: var(--j-on-ink); font: 700 var(--j-t-12)/1.3 var(--j-font-ui); }
+.j-ride-time { font: 600 var(--j-t-13)/1.3 var(--j-font-ui); font-variant-numeric: tabular-nums; }
+.j-ride-text { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-14); line-height: 1.5; }
+.j-ride-end .j-ride-ring { inset-block-start: 4px; inline-size: 30px; block-size: 30px; }
+.j-ride-end .j-ride-name { font-size: var(--j-t-14); }
+/* The one authored moment: the line draws itself from the first stop as the
+   map appears, each station ringing as the ink reaches it. */
+@media (prefers-reduced-motion: no-preference) {
+  .j-ride-ring { animation: j-ride-ring var(--j-dur-2) var(--j-ease-out) both; animation-delay: calc(var(--j-i, 0) * 160ms); }
+  .j-ride-stop:not(:last-child)::before {
+    transform-origin: left center; animation: j-ride-draw 360ms var(--j-ease-out) both; animation-delay: calc(var(--j-i, 0) * 160ms + 80ms);
+  }
+  [dir="rtl"] .j-ride-stop:not(:last-child)::before { transform-origin: right center; }
+}
+@keyframes j-ride-ring { from { opacity: 0; transform: scale(.6); } }
+@keyframes j-ride-draw { from { transform: scaleX(0); } }
+@keyframes j-ride-down { from { transform: scaleY(0); } }
+@media (max-width: 900px) {
+  .j-ride { grid-template-columns: minmax(0, 1fr); gap: var(--j-s-3); padding-block-start: var(--j-s-5); }
+  .j-ride-head { padding-inline-end: 5rem; }
+  .j-ride-line { margin-block-start: var(--j-s-3); }
+}
+@media (max-width: 620px) {
+  .j-ride-line { grid-template-columns: minmax(0, 1fr); }
+  .j-ride-stop { padding-block: 6px var(--j-s-5); padding-inline: 56px 0; }
+  .j-ride-stop:not(:last-child)::before { inset-block-start: 19px; inset-inline-start: 15px; inline-size: 8px; block-size: 100%; transform-origin: center top; animation-name: j-ride-down; }
+  [dir="rtl"] .j-ride-stop:not(:last-child)::before { transform-origin: center top; }
+  .j-ride-end { padding-block-end: 0; }
+}
+@media (forced-colors: active) {
+  .j-ride-stop:not(:last-child)::before { forced-color-adjust: none; background: CanvasText; }
+  .j-ride-here { forced-color-adjust: none; background: CanvasText; color: Canvas; }
+}
+
 /* ---------- Guide: the mascot, the steps, a sample ---------- */
 .j-flow-guide { position: sticky; top: var(--j-s-4); display: grid; gap: var(--j-s-4); align-content: start; }
 .j-flow-mascot { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
@@ -15,6 +84,8 @@
   border: 2px solid var(--j-line-strong); background: var(--j-panel);
   /* No idle bob: an endless animation here cut WebKit to 2–6 frames a second. */
 }
+/* A sample and how the tool works, the guide's two ways to learn by looking. */
+.j-flow-more { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--j-s-1); }
 .j-flow-say {
   padding: var(--j-s-3) var(--j-s-4); border: 2px solid var(--j-line-strong); border-radius: var(--j-r-3);
   border-start-start-radius: var(--j-r-1); background: var(--j-panel); font-size: var(--j-t-14);
@@ -27,8 +98,8 @@
 
 /* The steps are stations on one line: a ring per step, its number inside like
    a station code, the track ridden (ink) up to the current one, which wears a
-   second ring in the first line's colour. The buttons stay transparent so the
-   track shows under them. */
+   second ring in ink. The buttons stay transparent so the track shows under
+   them. */
 .j-flow-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .j-flow-steps > li { position: relative; }
 .j-flow-steps > li:not(:last-child)::after {
@@ -55,7 +126,7 @@
 .j-flow-step[aria-current="step"] { color: var(--j-fg); font-weight: 700; }
 .j-flow-step[aria-current="step"] .j-flow-step-n {
   border-color: var(--j-ink); color: var(--j-fg); background: var(--j-panel);
-  box-shadow: 0 0 0 3px var(--j-bg), 0 0 0 7px var(--j-l1);
+  box-shadow: 0 0 0 3px var(--j-bg), 0 0 0 7px var(--j-ink);
 }
 
 /* ---------- The step ---------- */
@@ -94,7 +165,7 @@
 .j-flow-choice[aria-checked="true"]::after {
   content: ""; position: absolute; inset-inline-end: 16px; top: 16px; width: 18px; height: 18px;
   border-radius: 50%; border: var(--j-station) solid var(--j-ink); background: var(--j-panel);
-  box-shadow: 0 0 0 3px var(--j-panel), 0 0 0 6px var(--j-l1);
+  box-shadow: 0 0 0 3px var(--j-panel), 0 0 0 6px var(--j-ink);
 }
 .j-flow-note { color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--j-s-4); }

@@ -29,6 +29,7 @@ export function createCommandPalette({ document, translate }) {
         `${open}: ${clean(el.querySelector("strong")?.textContent || el.textContent)}`,
       ]),
       [byId("workspaceSaveState"), clean(byId("workspaceSaveState")?.getAttribute("aria-label"))],
+      [byId("rideOpen"), clean(byId("rideOpen")?.textContent)],
       ...["langAr", "langEn", "langFr"].map((id) => [byId(id), `${language}: ${clean(byId(id)?.textContent)}`]),
       [byId("densityBtn"), clean(byId("densityBtn")?.getAttribute("aria-label"))],
       [byId("themeBtn"), clean(byId("themeBtn")?.getAttribute("aria-label"))],

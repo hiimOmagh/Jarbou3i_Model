@@ -29,7 +29,16 @@ export default defineConfig({
       },
   use: {
     baseURL: externalBaseURL || managedBaseURL || localBaseURL,
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
+    // Every test starts past the first visit's route map, as a returning
+    // visitor; tests/first-ride.spec.js covers the first visit itself.
+    storageState: {
+      cookies: [],
+      origins: [{
+        origin: new URL(externalBaseURL || managedBaseURL || localBaseURL).origin,
+        localStorage: [{ name: 'jarbou3i-ride', value: 'seen' }]
+      }]
+    }
   },
   projects: [
     {

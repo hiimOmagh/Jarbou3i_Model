@@ -172,7 +172,7 @@ The interface is Arabic-first and equally English and French. Every direction-se
 - One typeface, Readex Pro, for Arabic and Latin; code alone in monospace.
 - Ink plates mark the current phase, the selected segment and the one primary action.
 - 3px ink rules open cards, briefs, dialogs and the header instead of card borders.
-- Stations: rings with a 4px edge; the current one gets a second ring in its line's colour.
+- Stations: rings with a 4px edge; the current one gets a second ring, in its line's colour on the model map and in ink everywhere else.
 - The model map is one continuous line whose stretches are as long as the record counts.
 - Light "daylight map" and dark "midnight enamel" themes carry the same tokens.
 
@@ -185,7 +185,7 @@ A neutral daylight ground with ink as the dominant accent, one interaction blue,
 - **Signal Blue** (`signal-blue`, dark `night-signal`): interaction only: links, focus rings, record IDs, the reader's current outline entry (as `signal-wash`), meter fills, input focus edges.
 
 ### Secondary: the lines of the model
-- **Line colours** (`line-1-red` to `line-9-brown`, dark `night-line-*`): one per layer. The six Strategic layers use lines 1 to 6 (line 6 is ink); the nine Biopolitical layers add orange, teal and brown. Set per element as `--j-layer` by the app. Line 1 red also rings the current setup step and the chosen option.
+- **Line colours** (`line-1-red` to `line-9-brown`, dark `night-line-*`): one per layer. The six Strategic layers use lines 1 to 6 (line 6 is ink); the nine Biopolitical layers add orange, teal and brown. Set per element as `--j-layer` by the app. They never mark anything else: the current setup step, outline entry and chosen option are ringed in ink, since line 1 red sits beside the critical red.
 
 ### Tertiary: status
 - **Ok Green, Warn Amber, Crit Red** (`ok-green`, `warn-amber`, `crit-red`, dark `night-*`): verdicts and notes, each with a matching wash at 8 to 14% for note backgrounds. Always paired with a shape and words.
@@ -249,7 +249,7 @@ Flat at rest. Depth comes from tone (platform, enamel, raised enamel) and from i
 
 ### Shadow Vocabulary
 - **Float** (light `0 12px 32px rgba(21,23,27,.14), 0 2px 6px rgba(21,23,27,.08)`; dark `0 16px 40px rgba(3,8,18,.5), 0 2px 6px rgba(3,8,18,.3)`): floating layers only.
-- **Station halo** (`0 0 0 3px <ground>, 0 0 0 7px <line colour>`): not depth; the second ring of the current station, drawn as a solid ring with a gap.
+- **Station halo** (`0 0 0 3px <ground>, 0 0 0 7px <line colour or ink>`): not depth; the second ring of the current station, drawn as a solid ring with a gap.
 
 ### Named Rules
 **The Rule Not Box Rule.** A section, brief, record or dialog opens with a thick ink rule across its top (3px for cards, briefs and dialogs, 2px for records) and has no side or bottom border. If something needs grouping, give it a rule, not a box.
@@ -293,13 +293,16 @@ Rounds and rules. Pills (999px) for every button, segment, chip and phase; 10px 
 
 ### Navigation
 - **Header:** an enamel bar closed by a 3px ink rule: mascot, Jarbou3i wordmark (18px/700 with a 2px rail divider), title and lead. Controls collapse to icons under 900px and density/theme move into a Display popover. The lead hides on phones so the topic field shows first.
-- **Case outline:** a vertical line of 16px stations; entries before the current one are ridden in ink, the current one is washed in signal and double-ringed in line 1 red.
+- **Case outline:** a vertical line of 16px stations; entries before the current one are ridden in ink, the current one is washed in signal and double-ringed in ink.
 
 ### Stations (signature)
-The shared device of the system. A ring with a 4px edge on enamel, a two-digit number inside when it is a code. Unridden stations and track are rail grey at 45%; done stations are filled ink; the current station keeps an ink edge and wears a second ring (3px gap, then 4px of colour). Used by the setup steps, the outline, the model map, layer heads, the how-to list and the chosen option.
+The shared device of the system. A ring with a 4px edge on enamel, a two-digit number inside when it is a code. Unridden stations and track are rail grey at 45%; done stations are filled ink; the current station keeps an ink edge and wears a second ring (3px gap, then 4px of colour). Used by the setup steps, the outline, the model map, layer heads, the how-to list, the chosen option and the first ride.
 
 ### Model map (signature)
 One line through all layers: an 8px stretch in the layer's colour from each station to the next, ending at a 26px terminus ring. Stretch length is set by the layer's record count so the lengths compare. The layer open in the case file gets an ink edge on its 16px-radius step and a doubled ring in its line colour.
+
+### First ride (signature)
+A first visit's route map above the setup: the trip's three stops (ask, your AI writes, check) on one 8px ink line with 38px stations, the first double-ringed with a "You are here" ink tag, ending at a 30px terminus for the report. Each stop gives its time and one line of what happens. Two doors (the ink pill starts the topic, the outline pill opens the example) and an underlined Skip at the top end, first in focus order. The line runs across beside the heading on wide screens, under it below 900px, and down below 620px. Its one motion: the line draws itself from the first stop, each station ringing as the ink reaches it (about 0.7s); leaving folds it away in 240ms. Under reduced motion both are instant. It shows once, for a visitor with no settings kept; "How it works" beside "Load sample" brings it back.
 
 ### Records and briefs
 A record sits under a 2px ink rule with no box: ID in signal (12px), title (16px/700), text (14px/1.6), then a facts grid. Briefs, claims, figures and the publication verdict sit under 3px ink rules; an uncertainty's rule turns warn amber. A record that opens the inspector turns its rule signal blue on hover.

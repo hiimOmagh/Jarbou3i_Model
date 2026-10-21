@@ -16,6 +16,7 @@ import { normalizeShellDensity } from "./core/shell-preferences.js";
 import { createApplicationShell } from "./features/application-shell.js";
 import { createCommandPalette } from "./features/command-palette.js";
 import { createGuidedFlow } from "./features/guided-flow.js";
+import { createFirstRide } from "./features/first-ride.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
 import { createResultsExplanation } from "./core/results-explanation.js";
 import { createResultsInspectionIndex } from "./core/results-inspection.js";
@@ -57,7 +58,7 @@ const I18N = {
     appTitle: "التحليل الاستراتيجي وتحليل السياسة الحيوية",
     appSubtitle: "تتبّع من يريد ماذا، وكيف تُحكم حياة الناس، بمساعدك الذكي. لكل من يريد أن يفهم ما وراء خبر، لا للباحثين والصحفيين وحدهم.",
     topicLabel: "موضوع التحليل",
-    topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا 2022–2026",
+    topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا من 2022 إلى 2026",
     analysisLang: "لغة التحليل",
     assistantPreset: "المساعد المفضل",
     promptMode: "نمط الموجِّه",
@@ -110,7 +111,7 @@ const I18N = {
     shellMovedToReview: "تم الانتقال إلى مراجعة التحليل.",
     severity: "الشدة",
     timeframeLabel: "السياق الزمني/الجغرافي",
-    timeframePlaceholder: "اختياري: 2022–2026، أوروبا",
+    timeframePlaceholder: "اختياري: من 2022 إلى 2026، أوروبا",
     sourcesLabel: "المصادر المقدمة",
     sourcesPlaceholder: "الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها.",
     sourcesHelp: "الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب الموجِّه من المساعد قراءتها والاستشهاد بكل ملف باسمه.",
@@ -127,7 +128,7 @@ const I18N = {
     flowStepOf: "الخطوة {n} من {total}",
     flowTitles: ["ما الذي تريد فهمه؟","أي عدسة تناسب سؤالك؟","كيف يجب أن يعمل الذكاء الاصطناعي؟","انسخ الموجِّه إلى مساعدك الذكي","الصق إجابة الذكاء الاصطناعي"],
     flowHints: ["جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.","لست متأكدًا؟ ابدأ بالعدسة الاستراتيجية، ويمكنك تشغيل الأخرى لاحقًا.","هذه الخيارات تشكّل الموجِّه. الإعدادات الافتراضية تناسب معظم الأسئلة.","يعمل مع ChatGPT وClaude وGemini أو أي مساعد يكتب JSON.","الصق كل ما كتبه. لا بأس بوجود نص حول JSON، سأجده."],
-    flowSay: ["أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى موجِّه دقيق لمساعدك الذكي.","العدسة الاستراتيجية تتتبع المصالح حتى النتائج، وعدسة السياسة الحيوية تتتبع كيف يُحكم الناس.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","الصق الإجابة كاملة. سأتحقق منها قبل استيراد أي شيء."],
+    flowSay: ["سأحوّل موضوعك إلى موجِّه دقيق لمساعدك الذكي.","العدسة الاستراتيجية تتتبع المصالح حتى النتائج، وعدسة السياسة الحيوية تتتبع كيف يُحكم الناس.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","أتحقق من الإجابة قبل استيراد أي شيء. وإن كانت مقطوعة، أعطيك موجِّهًا لمتابعتها."],
     flowSay_ok: "تبدو مكتملة. جاهز متى شئت.",
     flowSay_warn: "أستطيع قراءتها مع بعض الملاحظات. راجعها أدناه قبل الاستيراد.",
     flowSay_trunc: "انقطعت الإجابة. يحدث هذا مع الإجابات الطويلة.",
@@ -137,7 +138,24 @@ const I18N = {
     flowBack: "رجوع",
     flowContinue: "متابعة",
     flowExamplesLabel: "جرّب مثالًا:",
-    flowExamples: [["ضوابط تصدير أشباه الموصلات","2022–2026، الولايات المتحدة، الاتحاد الأوروبي، الصين"],["صعود العمل عن بُعد","2020–2024، عالميًا"],["حقوق المياه في حوض النيل","2011–2025، إثيوبيا، السودان، مصر"]],
+    rideTitle: "من سؤال إلى تحليل يمكنك التحقق منه",
+    rideLead: "ثلاث محطات، مع مساعد الذكاء الاصطناعي الذي تستخدمه أصلًا. لا يغادر هذه الصفحة إلا ما تلصقه فيه.",
+    rideStart: "ابدأ بموضوعي",
+    rideExample: "جرّب المثال أولًا",
+    rideSkip: "تخطَّ",
+    rideHere: "أنت هنا",
+    rideAsk: "اسأل",
+    rideAskTime: "دقيقة",
+    rideAskText: "يصبح موضوعك، في جملة واحدة، موجِّهًا دقيقًا.",
+    rideWrite: "يكتب مساعدك",
+    rideWriteTime: "من 2 إلى 5 دقائق",
+    rideWriteText: "في ChatGPT أو Claude أو Gemini، بحسابك أنت.",
+    rideCheck: "تحقّق",
+    rideCheckTime: "من 5 إلى 10 دقائق",
+    rideCheckText: "كل ادعاء بجانب أدلته، وحكم على ما إذا كان التحليل قابلًا للنشر.",
+    rideEnd: "تقرير للمشاركة",
+    rideOpen: "كيف يعمل",
+    flowExamples: [["ضوابط تصدير أشباه الموصلات","من 2022 إلى 2026، الولايات المتحدة، الاتحاد الأوروبي، الصين"],["صعود العمل عن بُعد","من 2020 إلى 2024، عالميًا"],["حقوق المياه في حوض النيل","من 2011 إلى 2025، إثيوبيا، السودان، مصر"]],
     flowHowTo1: "افتح مساعدك الذكي في تبويب آخر.",
     flowHowTo2: "الصق الموجِّه وأرسله.",
     flowHowTo3: "انتظر الإجابة كاملة ثم عد إلى هنا.",
@@ -286,7 +304,7 @@ const I18N = {
     compactView: "عرض مركز",
     detailedView: "عرض تفصيلي",
     topicPlaceholderBiopolitical:
-      "مثال: جوازات الصحة الرقمية وتصنيف مخاطر السكان 2020–2022",
+      "مثال: جوازات الصحة الرقمية وتصنيف مخاطر السكان من 2020 إلى 2022",
     analysisLens: "عدسة التحليل",
     lensStrategic: "استراتيجي",
     lensBiopolitical: "السياسة الحيوية",
@@ -423,7 +441,7 @@ const I18N = {
     flowStepOf: "Step {n} of {total}",
     flowTitles: ["What do you want to understand?","Which lens fits your question?","How should the AI work?","Copy the prompt into your AI assistant","Paste the AI's answer"],
     flowHints: ["One clear sentence is enough. Add a place and period if they matter.","Not sure? Start with Strategic. You can run the other lens later.","These choices shape the prompt. The defaults suit most questions.","Works with ChatGPT, Claude, Gemini or any assistant that can write JSON.","Paste everything the AI wrote. Text around the JSON is fine; I'll find it."],
-    flowSay: ["Tell me your topic in one sentence. I'll turn it into a precise prompt for your AI assistant.","Strategic follows interests to outcomes. Biopolitical follows how people are governed.","More depth means a longer answer. If you have sources, paste them: they make the result checkable.","I'll wait here. Come back when the AI has finished writing.","Paste the whole answer. I'll check it before anything is imported."],
+    flowSay: ["I'll turn your topic into a precise prompt for your AI assistant.","Strategic follows interests to outcomes. Biopolitical follows how people are governed.","More depth means a longer answer. If you have sources, paste them: they make the result checkable.","I'll wait here. Come back when the AI has finished writing.","I check the answer before anything is imported. If it was cut off, I'll give you a prompt to continue."],
     flowSay_ok: "That looks complete. Ready when you are.",
     flowSay_warn: "I can read it, with a few notes. Check them below before you import.",
     flowSay_trunc: "It got cut off. That happens with long answers.",
@@ -433,6 +451,23 @@ const I18N = {
     flowBack: "Back",
     flowContinue: "Continue",
     flowExamplesLabel: "Try an example:",
+    rideTitle: "From a question to an analysis you can check",
+    rideLead: "Three stops, with the AI assistant you already use. Nothing leaves this page except what you paste into it.",
+    rideStart: "Start with my topic",
+    rideExample: "Try the example first",
+    rideSkip: "Skip",
+    rideHere: "You are here",
+    rideAsk: "Ask",
+    rideAskTime: "1 min",
+    rideAskText: "Your topic, in one sentence, becomes a precise prompt.",
+    rideWrite: "Your AI writes",
+    rideWriteTime: "2–5 min",
+    rideWriteText: "In ChatGPT, Claude or Gemini, in your own account.",
+    rideCheck: "Check",
+    rideCheckTime: "5–10 min",
+    rideCheckText: "Each claim beside its evidence, and a verdict on whether the analysis can be published.",
+    rideEnd: "A report to share",
+    rideOpen: "How it works",
     flowExamples: [["Semiconductor export controls","2022–2026, United States, EU, China"],["The rise of remote work","2020–2024, global"],["Water rights in the Nile basin","2011–2025, Ethiopia, Sudan, Egypt"]],
     flowHowTo1: "Open your AI assistant in another tab.",
     flowHowTo2: "Paste the prompt and send it.",
@@ -730,7 +765,7 @@ const I18N = {
     flowStepOf: "Étape {n} sur {total}",
     flowTitles: ["Que voulez-vous comprendre ?","Quelle lentille convient à votre question ?","Comment l’IA doit-elle travailler ?","Copiez le prompt dans votre assistant IA","Collez la réponse de l’IA"],
     flowHints: ["Une phrase claire suffit. Ajoutez un lieu et une période s’ils comptent.","Vous hésitez ? Commencez par Stratégique. Vous pourrez lancer l’autre ensuite.","Ces choix façonnent le prompt. Les valeurs par défaut conviennent à la plupart des questions.","Fonctionne avec ChatGPT, Claude, Gemini ou tout assistant capable d’écrire du JSON.","Collez tout ce que l’IA a écrit. Du texte autour du JSON ne pose pas de problème."],
-    flowSay: ["Décrivez votre sujet en une phrase. J’en ferai un prompt précis pour votre assistant IA.","Stratégique suit les intérêts jusqu’aux résultats. Biopolitique suit la façon dont on gouverne les personnes.","Plus de profondeur, c’est une réponse plus longue. Si vous avez des sources, collez-les : elles rendent le résultat vérifiable.","J’attends ici. Revenez quand l’IA a fini d’écrire.","Collez la réponse entière. Je la vérifie avant tout import."],
+    flowSay: ["Je ferai de votre sujet un prompt précis pour votre assistant IA.","Stratégique suit les intérêts jusqu’aux résultats. Biopolitique suit la façon dont on gouverne les personnes.","Plus de profondeur, c’est une réponse plus longue. Si vous avez des sources, collez-les : elles rendent le résultat vérifiable.","J’attends ici. Revenez quand l’IA a fini d’écrire.","Je vérifie la réponse avant tout import. Si elle est coupée, je vous donne un prompt pour la poursuivre."],
     flowSay_ok: "Elle semble complète. Prêt quand vous l’êtes.",
     flowSay_warn: "Je peux la lire, avec quelques remarques. Vérifiez-les ci-dessous avant d’importer.",
     flowSay_trunc: "Elle a été coupée. Cela arrive avec les longues réponses.",
@@ -740,6 +775,23 @@ const I18N = {
     flowBack: "Retour",
     flowContinue: "Continuer",
     flowExamplesLabel: "Essayez un exemple :",
+    rideTitle: "D’une question à une analyse que vous pouvez vérifier",
+    rideLead: "Trois étapes, avec l’assistant IA que vous utilisez déjà. Rien ne quitte cette page, sauf ce que vous y collez.",
+    rideStart: "Commencer avec mon sujet",
+    rideExample: "Essayer l’exemple d’abord",
+    rideSkip: "Passer",
+    rideHere: "Vous êtes ici",
+    rideAsk: "Demander",
+    rideAskTime: "1 min",
+    rideAskText: "Votre sujet, en une phrase, devient un prompt précis.",
+    rideWrite: "Votre IA rédige",
+    rideWriteTime: "2 à 5 min",
+    rideWriteText: "Dans ChatGPT, Claude ou Gemini, avec votre propre compte.",
+    rideCheck: "Vérifier",
+    rideCheckTime: "5 à 10 min",
+    rideCheckText: "Chaque affirmation à côté de ses preuves, et un verdict : l’analyse peut-elle être publiée ?",
+    rideEnd: "Un rapport à partager",
+    rideOpen: "Comment ça marche",
     flowExamples: [["Contrôle des exportations de semi-conducteurs","2022–2026, États-Unis, UE, Chine"],["L’essor du télétravail","2020–2024, monde"],["Les droits sur l’eau dans le bassin du Nil","2011–2025, Éthiopie, Soudan, Égypte"]],
     flowHowTo1: "Ouvrez votre assistant IA dans un autre onglet.",
     flowHowTo2: "Collez le prompt et envoyez-le.",
@@ -1180,6 +1232,7 @@ const PLATFORM = createPlatformRuntime({
       applyI18n();
       renderLensToggle();
       APPLICATION_SHELL.render();
+      FIRST_RIDE.render(Boolean(state.analysis));
       renderLifeBanners();
       renderWorkLife();
     },
@@ -1233,6 +1286,18 @@ const GUIDED_FLOW = createGuidedFlow({
     return tone === "ok" ? "ok" : tone === "crit" ? "crit" : "warn";
   },
   onStep: () => APPLICATION_SHELL.render(),
+});
+// The first visit's route map (src/features/first-ride.js). A visitor with
+// settings already kept has been here before.
+const FIRST_RIDE = createFirstRide({
+  document,
+  storage: window.localStorage,
+  isNewVisitor: Object.keys(SETTINGS.read()).length === 0,
+  onStart: () => {
+    GUIDED_FLOW.go("topic");
+    $("topicInput").focus();
+  },
+  onExample: () => $("loadSampleBtn").click(),
 });
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),
@@ -8895,6 +8960,7 @@ $("workspaceResetAll").onclick = async () => {
     for (const lens of Object.keys(keptResults)) delete keptResults[lens];
     for (const lens of Object.keys(keptIntakes)) delete keptIntakes[lens];
     SETTINGS.remove();
+    FIRST_RIDE.forget();
     tabStorage.set(TAB_WORKSPACE_KEY, "");
     state.activeWorkspaceId = null;
     state.analysis = null;

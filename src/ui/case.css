@@ -42,7 +42,7 @@
    weight stays: a bolder name can wrap, and an outline above the document
    that changes height moves the page under the reader. */
 .j-case-outline [aria-current="location"] { background: var(--j-signal-wash); color: var(--j-fg); }
-.j-case-outline [aria-current="location"]::before { border-color: var(--j-ink); box-shadow: 0 0 0 3px var(--j-panel), 0 0 0 6px var(--j-l1); }
+.j-case-outline [aria-current="location"]::before { border-color: var(--j-ink); box-shadow: 0 0 0 3px var(--j-panel), 0 0 0 6px var(--j-ink); }
 /* Rows start at the top: a lone note while a section loads keeps its height. */
 /* The document is the review panel's own body: no second box. */
 .j-case-doc { display: grid; gap: var(--j-s-6); align-content: start; min-width: 0; min-height: 440px; }

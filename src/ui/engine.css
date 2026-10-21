@@ -48,6 +48,8 @@
 /* The layer open in the case file: an ink edge, its ring doubled. */
 .j-engine-step[aria-current="true"] { border-color: var(--j-ink); }
 .j-engine-step[aria-current="true"] .j-engine-n { box-shadow: 0 0 0 3px var(--j-panel), 0 0 0 7px var(--j-layer, var(--j-ink)); }
+/* Before an analysis the map explains the layers; a count of zero says nothing. */
+.j-engine-map[data-loaded="false"] .j-engine-count { display: none; }
 /* With room, a layer's description sits beside its name and records. */
 @media (min-width: 621px) {
   .j-engine-step { grid-template-columns: 34px minmax(9rem, 15rem) minmax(0, 1fr); column-gap: var(--j-s-4); }
