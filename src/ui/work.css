@@ -25,10 +25,11 @@
 .j-life-banner p { margin: 0; flex: 1 1 280px; }
 .j-life-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
 
-/* Where your work is: three places, side by side on wide screens. */
-.j-life { display: grid; gap: var(--j-s-3); margin-bottom: var(--j-s-4); }
-.j-life-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-3); }
-.j-life-card { display: grid; gap: var(--j-s-2); align-content: start; justify-items: start; min-width: 0; }
+/* Where your work is: three places, side by side on wide screens, each under
+   an ink rule. A root inside the dialog, it keeps the dialog's surface. */
+.j-life { display: grid; gap: var(--j-s-3); margin-bottom: var(--j-s-4); background: transparent; }
+.j-life-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-5); }
+.j-life-card { display: grid; gap: var(--j-s-2); align-content: start; justify-items: start; min-width: 0; padding: var(--j-s-3) 0 0; background: none; }
 .j-life-card > h4, .j-life-card > p, .j-life-card > ol { justify-self: stretch; margin: 0; }
 .j-life-help { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-life-revs { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--j-s-2); }

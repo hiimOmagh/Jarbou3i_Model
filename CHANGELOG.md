@@ -25,7 +25,9 @@
   labels; the topic and other fields have ink edges.
 - **Dialogs and sheets open under the same ink rule.** Close and theme
   buttons are drawn icons, not characters; the reference sheet leads with
-  the record’s name, then its type.
+  the record’s name, then its type. "Where your work is" sets its three
+  places under ink rules on the dialog's own surface, where the dark theme
+  showed a darker band behind them.
 - Exported reports take the new colours and ink rules, and their labels are
   in sentence case rather than spaced capitals. In forced-colours mode the ink
   plates keep system colours, so their text stays readable.
