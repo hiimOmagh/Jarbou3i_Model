@@ -58,6 +58,14 @@
   your topic becomes, and on the answer that a cut-off answer gets a prompt
   to continue (AR/EN/FR).
 
+### Motion that says what happened
+
+- When a setup step is done, the ink runs along the line to the next station.
+- When an analysis arrives, by import or the sample, its outline draws itself
+  from the top and the readiness and coverage bars fill from where a line
+  starts (right to left in Arabic). Once per arrival: a reopened analysis
+  does not replay it. Both are instant under reduced motion.
+
 ### Saying what the tool is for
 
 - **One title for both lenses**: "Strategic and Biopolitical Analysis" (AR/EN/FR),

@@ -105,9 +105,13 @@
 .j-flow-steps > li:not(:last-child)::after {
   content: ""; position: absolute; z-index: 0; inset-inline-start: 19px; inset-block-start: 22px;
   inline-size: var(--j-track); block-size: calc(100% + 2px);
-  background: color-mix(in srgb, var(--j-line-strong) 45%, var(--j-bg));
+  background: linear-gradient(var(--j-ink), var(--j-ink)) top / 100% 0% no-repeat color-mix(in srgb, var(--j-line-strong) 45%, var(--j-bg));
 }
-.j-flow-steps > li:has(> .j-flow-step[data-state="done"]):not(:last-child)::after { background: var(--j-ink); }
+/* Ridden: the ink runs on to the next station as a step is done. */
+.j-flow-steps > li:has(> .j-flow-step[data-state="done"]):not(:last-child)::after { background-size: 100% 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  .j-flow-steps > li:not(:last-child)::after { transition: background-size var(--j-dur-3) var(--j-ease-out); }
+}
 .j-flow-step {
   position: relative; z-index: 1;
   display: flex; align-items: center; gap: var(--j-s-3); width: 100%;
@@ -208,7 +212,11 @@
   .j-flow-guide { position: static; }
   /* The line runs across: each segment from a station to the next one. */
   .j-flow-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .j-flow-steps > li:not(:last-child)::after { inset-inline-start: 50%; inset-block-start: 15px; inline-size: calc(100% + 2px); block-size: var(--j-track); }
+  .j-flow-steps > li:not(:last-child)::after {
+    inset-inline-start: 50%; inset-block-start: 15px; inline-size: calc(100% + 2px); block-size: var(--j-track);
+    background-position: left center; background-size: 0% 100%;
+  }
+  [dir="rtl"] .j-flow-steps > li:not(:last-child)::after { background-position: right center; }
   .j-flow-step { flex-direction: column; justify-content: flex-start; gap: var(--j-s-1); padding: var(--j-s-1); font-size: var(--j-t-13); text-align: center; }
 }
 @media (max-width: 720px) {

@@ -8551,6 +8551,17 @@ async function restoreAfterLoad() {
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
 }
+// An analysis just imported or loaded: the outline draws itself from the top
+// and the readiness bars fill, once. A reopened analysis does not replay it.
+// A render during it shows a bar whole rather than starting it over.
+function arriveAtReview() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const easing = "cubic-bezier(.16, 1, .3, 1)";
+  $("reviewNav").animate([{ clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0 0)" }], { duration: 640, easing });
+  for (const bar of $("reviewPanel").querySelectorAll(".j-brief-bar")) {
+    bar.animate([{ transform: "scaleX(0)" }, { transform: "none" }], { duration: 720, delay: 160, easing, fill: "backwards", pseudoElement: "::before" });
+  }
+}
 function showModal(title, content, invoker = document.activeElement) {
   state.modalInvoker = invoker;
   $("modalTitle").textContent = title;
@@ -8813,6 +8824,7 @@ $("importBtn").onclick = async () => {
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
+  arriveAtReview();
   if (await persistImportedAnalysis(a)) discardTrip();
 };
 $("repairPromptBtn").onclick = async (event) => {
@@ -8878,6 +8890,7 @@ $("loadSampleBtn").onclick = async (event) => {
   document
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "nearest" });
+  arriveAtReview();
   if (await persistImportedAnalysis(a)) discardTrip();
   } catch (error) {
     showOperationFailure(error, "load_sample", event.currentTarget);

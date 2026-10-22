@@ -296,7 +296,7 @@ Rounds and rules. Pills (999px) for every button, segment, chip and phase; 10px 
 - **Case outline:** a vertical line of 16px stations; entries before the current one are ridden in ink, the current one is washed in signal and double-ringed in ink.
 
 ### Stations (signature)
-The shared device of the system. A ring with a 4px edge on enamel, a two-digit number inside when it is a code. Unridden stations and track are rail grey at 45%; done stations are filled ink; the current station keeps an ink edge and wears a second ring (3px gap, then 4px of colour). Used by the setup steps, the outline, the model map, layer heads, the how-to list, the chosen option and the first ride.
+The shared device of the system. A ring with a 4px edge on enamel, a two-digit number inside when it is a code. Unridden stations and track are rail grey at 45%; done stations are filled ink; the current station keeps an ink edge and wears a second ring (3px gap, then 4px of colour). Used by the setup steps, the outline, the model map, layer heads, the how-to list, the chosen option and the first ride. The line moves only to say what happened: when a setup step is done its ink runs on to the next station (0.32s); when an analysis arrives (import or sample, not a reopen) the outline draws itself from the top and the brief's bars fill from where a line starts (about 0.9s). Instant under reduced motion.
 
 ### Model map (signature)
 One line through all layers: an 8px stretch in the layer's colour from each station to the next, ending at a 26px terminus ring. Stretch length is set by the layer's record count so the lengths compare. The layer open in the case file gets an ink edge on its 16px-radius step and a doubled ring in its line colour.
