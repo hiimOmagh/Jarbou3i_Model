@@ -4,14 +4,14 @@ import AxeBuilder from "@axe-core/playwright";
 // A first visit: no settings kept and the route map never seen.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-async function expectNoSeriousViolations(page) {
+async function expectNoSeriousViolations(page, selector = "#firstRide") {
   // The line draws itself: end that first, so axe reads the colours that stay.
   await page.evaluate(() => {
     for (const animation of document.getAnimations()) {
       if (animation.effect?.getComputedTiming().iterations !== Infinity) animation.finish();
     }
   });
-  const { violations } = await new AxeBuilder({ page }).include("#firstRide").analyze();
+  const { violations } = await new AxeBuilder({ page }).include(selector).analyze();
   const serious = violations.filter((violation) => ["serious", "critical"].includes(violation.impact));
   expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
 }
@@ -87,6 +87,59 @@ test("trying the example opens its review and the map does not come back", async
   await page.reload();
   await booted(page);
   await expect(page.locator("#firstRide")).toBeHidden();
+});
+
+test("the example ride stops at four places, ringing each, and ends at the export", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator("#rideExample").click();
+  const card = page.locator("#rideTrip");
+  await expect(card).toBeVisible();
+  await expect(page.locator("#tripTitle")).toBeFocused();
+  await expectNoSeriousViolations(page, "#rideTrip");
+  const places = {
+    verdict: "#case-overview .j-brief:first-of-type",
+    map: "#engineNav",
+    claim: "#case-evidence .j-recs:first-of-type > li:first-child > .j-rec",
+    exports: "#case-exports",
+  };
+  const keys = Object.keys(places);
+  for (const [index, key] of keys.entries()) {
+    await expect(page.locator("html")).toHaveAttribute("data-ride-at", key);
+    await expect(page.locator("#tripCount")).toHaveText(`${index + 1} of 4`);
+    const place = page.locator(places[key]);
+    await expect(place).toHaveCSS("outline-style", "solid");
+    await expect(place).toBeInViewport();
+    if (index < keys.length - 1) await page.locator("#tripNext").click();
+  }
+  await expect(page.locator("#tripNext")).toHaveText("End the ride");
+  await page.locator("#tripNext").click();
+  await expect(card).toBeHidden();
+  await expect(page.locator("html")).not.toHaveAttribute("data-ride-at", /./);
+  await expect(page.locator("#case-exports")).toBeFocused();
+});
+
+test("on a phone the ride's card fits the foot, follows the language, and Esc leaves it", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.goto("./");
+  await page.locator("#rideExample").click();
+  const card = page.locator("#rideTrip");
+  await expect(card).toBeVisible();
+  const box = await card.boundingBox();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390);
+  expect(box.y + box.height).toBeLessThanOrEqual(844);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  expect(overflow).toBe(false);
+  await expectNoSeriousViolations(page, "#rideTrip");
+  await page.locator("#langFr").click();
+  await expect(page.locator("#tripTitle")).toHaveText("Le verdict");
+  await expect(page.locator("#tripCount")).toHaveText("1 sur 4");
+  await page.locator("#tripNext").focus();
+  await page.keyboard.press("Escape");
+  await expect(card).toBeHidden();
+  await expect(page.locator("#case-overview")).toBeFocused();
 });
 
 test("a visitor whose settings are already kept does not see it", async ({ page }) => {

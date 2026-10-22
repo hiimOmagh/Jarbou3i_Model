@@ -44,6 +44,11 @@
   sits first for the keyboard. It does not come back on its own, and visitors
   who have used the tool before never see it; "How it works", beside "Load
   sample" and in Commands, brings it back (AR/EN/FR).
+- **Trying the example is a short ride**: the sample opens and a card at the
+  foot of the view stops at four real places, each ringed in ink: the
+  verdict, the line of layers, a claim with its evidence, and the export.
+  Nothing is dimmed or blocked; "Next stop", "Leave the ride" and Esc are
+  always there, and the ride ends at the export (AR/EN/FR, both lenses).
 - Arabic year ranges read "من 2022 إلى 2026" in the topic and context
   examples, where a dash range showed reversed in right-to-left text.
 

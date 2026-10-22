@@ -17,6 +17,7 @@ import { createApplicationShell } from "./features/application-shell.js";
 import { createCommandPalette } from "./features/command-palette.js";
 import { createGuidedFlow } from "./features/guided-flow.js";
 import { createFirstRide } from "./features/first-ride.js";
+import { createExampleRide } from "./features/example-ride.js";
 import { createResultsOrientation } from "./core/results-orientation.js";
 import { createResultsExplanation } from "./core/results-explanation.js";
 import { createResultsInspectionIndex } from "./core/results-inspection.js";
@@ -155,6 +156,18 @@ const I18N = {
     rideCheckText: "كل ادعاء بجانب أدلته، وحكم على ما إذا كان التحليل قابلًا للنشر.",
     rideEnd: "تقرير للمشاركة",
     rideOpen: "كيف يعمل",
+    tripVerdict: "الحكم",
+    tripVerdictText: "تأتي الخلاصة أولًا، ومعها هل يمكن نشرها الآن، والدرجتان اللتان تستند إليهما.",
+    tripMap: "خط الطبقات",
+    tripMapText: "النموذج مرسومًا خطًا واحدًا: محطة لكل طبقة، وطول كل مقطع بقدر نصيبه من السجلات. افتح طبقة لتقرأ سجلاتها.",
+    tripClaim: "ادعاء وأدلته",
+    tripClaimText: "يُظهر كل ادعاء مصدره ومدى الثقة به، ويُذكر ما يعارضه أيضًا بدل أن يُخفى.",
+    tripExports: "التصدير",
+    tripExportsText: "احفظ تقريرًا مستقلًا بصيغة HTML لمشاركته، أو التحليل كاملًا بصيغة JSON لتستورده لاحقًا.",
+    tripNext: "المحطة التالية",
+    tripEnd: "إنهاء الجولة",
+    tripLeave: "مغادرة الجولة",
+    tripCount: "{n} من {total}",
     flowExamples: [["ضوابط تصدير أشباه الموصلات","من 2022 إلى 2026، الولايات المتحدة، الاتحاد الأوروبي، الصين"],["صعود العمل عن بُعد","من 2020 إلى 2024، عالميًا"],["حقوق المياه في حوض النيل","من 2011 إلى 2025، إثيوبيا، السودان، مصر"]],
     flowHowTo1: "افتح مساعدك الذكي في تبويب آخر.",
     flowHowTo2: "الصق الموجِّه وأرسله.",
@@ -468,6 +481,18 @@ const I18N = {
     rideCheckText: "Each claim beside its evidence, and a verdict on whether the analysis can be published.",
     rideEnd: "A report to share",
     rideOpen: "How it works",
+    tripVerdict: "The verdict",
+    tripVerdictText: "The conclusion comes first, with whether it can be published yet and the two scores behind that.",
+    tripMap: "The line of layers",
+    tripMapText: "The model drawn as one line: a station per layer, each stretch as long as its share of the records. Open a layer to read its records.",
+    tripClaim: "A claim and its evidence",
+    tripClaimText: "Each claim shows where it comes from and how sure it is, and what speaks against it is listed too, not hidden.",
+    tripExports: "The export",
+    tripExportsText: "Save a standalone HTML report to share, or the full analysis as JSON to import again later.",
+    tripNext: "Next stop",
+    tripEnd: "End the ride",
+    tripLeave: "Leave the ride",
+    tripCount: "{n} of {total}",
     flowExamples: [["Semiconductor export controls","2022–2026, United States, EU, China"],["The rise of remote work","2020–2024, global"],["Water rights in the Nile basin","2011–2025, Ethiopia, Sudan, Egypt"]],
     flowHowTo1: "Open your AI assistant in another tab.",
     flowHowTo2: "Paste the prompt and send it.",
@@ -792,6 +817,18 @@ const I18N = {
     rideCheckText: "Chaque affirmation à côté de ses preuves, et un verdict : l’analyse peut-elle être publiée ?",
     rideEnd: "Un rapport à partager",
     rideOpen: "Comment ça marche",
+    tripVerdict: "Le verdict",
+    tripVerdictText: "La conclusion vient d’abord, avec la possibilité ou non de la publier déjà, et les deux scores qui la fondent.",
+    tripMap: "La ligne des couches",
+    tripMapText: "Le modèle tracé d’une seule ligne : une station par couche, chaque tronçon aussi long que sa part des fiches. Ouvrez une couche pour lire ses fiches.",
+    tripClaim: "Une affirmation et ses preuves",
+    tripClaimText: "Chaque affirmation montre d’où elle vient et son degré de confiance ; ce qui la contredit est indiqué aussi, pas caché.",
+    tripExports: "L’export",
+    tripExportsText: "Enregistrez un rapport HTML autonome à partager, ou l’analyse complète en JSON pour la réimporter plus tard.",
+    tripNext: "Arrêt suivant",
+    tripEnd: "Terminer le trajet",
+    tripLeave: "Quitter le trajet",
+    tripCount: "{n} sur {total}",
     flowExamples: [["Contrôle des exportations de semi-conducteurs","2022–2026, États-Unis, UE, Chine"],["L’essor du télétravail","2020–2024, monde"],["Les droits sur l’eau dans le bassin du Nil","2011–2025, Éthiopie, Soudan, Égypte"]],
     flowHowTo1: "Ouvrez votre assistant IA dans un autre onglet.",
     flowHowTo2: "Collez le prompt et envoyez-le.",
@@ -1233,6 +1270,7 @@ const PLATFORM = createPlatformRuntime({
       renderLensToggle();
       APPLICATION_SHELL.render();
       FIRST_RIDE.render(Boolean(state.analysis));
+      EXAMPLE_RIDE.render(Boolean(state.analysis));
       renderLifeBanners();
       renderWorkLife();
     },
@@ -1287,6 +1325,8 @@ const GUIDED_FLOW = createGuidedFlow({
   },
   onStep: () => APPLICATION_SHELL.render(),
 });
+// Four stops in the sample analysis (src/features/example-ride.js).
+const EXAMPLE_RIDE = createExampleRide({ document, t });
 // The first visit's route map (src/features/first-ride.js). A visitor with
 // settings already kept has been here before.
 const FIRST_RIDE = createFirstRide({
@@ -1297,7 +1337,17 @@ const FIRST_RIDE = createFirstRide({
     GUIDED_FLOW.go("topic");
     $("topicInput").focus();
   },
-  onExample: () => $("loadSampleBtn").click(),
+  // The sample opens at once (its save follows); the ride starts only if it
+  // did, not when a pasted answer was kept instead.
+  onExample: () => {
+    const before = state.analysis;
+    $("loadSampleBtn").click();
+    if (state.analysis && state.analysis !== before) {
+      // The ride's card stands where the "sample loaded" toast would.
+      $("toast").dataset.open = "false";
+      EXAMPLE_RIDE.start();
+    }
+  },
 });
 const WORKSPACE_REPOSITORY = createWorkspaceRepository({
   backend: createIndexedDbWorkspaceBackend(),

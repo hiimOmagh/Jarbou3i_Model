@@ -234,7 +234,7 @@
     <section class="j-card" id="enginePanel" aria-labelledby="engineTitle">
       <header class="j-card-head">
         <div>
-          <h2 id="engineTitle" data-i18n="engineTitle">خريطة محرك التحليل</h2>
+          <h2 id="engineTitle" tabindex="-1" data-i18n="engineTitle">خريطة محرك التحليل</h2>
           <p data-i18n="engineSubtitle">هذه ليست أزرارًا زائدة؛ هذه طبقات النموذج نفسها. بعد الاستيراد تصبح كل طبقة قابلة للفحص.</p>
         </div>
         <span class="j-status" data-tone="idle" id="analysisStateChip">لا يوجد تحليل بعد</span>
@@ -254,6 +254,21 @@
         <div class="j-case-doc" id="reviewContent" tabindex="-1" aria-labelledby="reviewTitle"></div>
       </div>
       <button class="j-btn j-case-return" id="caseOutlineReturn" type="button" hidden><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span data-i18n="caseOutlineReturn">العودة إلى المخطط</span></button>
+    </section>
+    <section class="j-root j-trip" id="rideTrip" aria-labelledby="tripTitle" hidden>
+      <div class="j-trip-say" aria-live="polite" aria-atomic="true">
+        <img src="assets/jarbou3i-mascot-192.png" width="40" height="40" decoding="async" alt="">
+        <h2 class="j-trip-title" id="tripTitle" tabindex="-1"></h2>
+        <p class="j-trip-text" id="tripText"></p>
+      </div>
+      <div class="j-trip-foot">
+        <button class="j-btn" data-variant="primary" id="tripNext" type="button"></button>
+        <button class="j-btn" data-variant="ghost" id="tripLeave" type="button" data-i18n="tripLeave">مغادرة الجولة</button>
+        <span class="j-trip-where">
+          <ol class="j-trip-line" aria-hidden="true"><li></li><li></li><li></li><li></li></ol>
+          <span class="j-trip-count" id="tripCount"></span>
+        </span>
+      </div>
     </section>
   </main>
 </div>
