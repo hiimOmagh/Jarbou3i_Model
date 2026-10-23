@@ -68,7 +68,7 @@ and how many cite evidence. Below it:
   record with the most connections starts in the middle.
 - **Records with no connection**: the records nothing connects, and a prompt
   that asks the AI that wrote the answer for new links only. Its reply, pasted
-  in the answer box, is added after the answer's links, checked, and imported
+  in the reply box under the answer, is added after the answer's links, checked, and imported
   as a new answer; the original stays as it is.
 - **Every connection**: each connection as a line, "record · relation ·
   record", under the layer of the record it starts from, with the reason the

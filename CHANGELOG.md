@@ -71,6 +71,16 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### A place for every AI reply
+
+- The reply to a completion, repair, language or connections prompt has its
+  own box under the answer, labelled "The AI’s reply", shown once the prompt
+  is copied and kept across a reload. Nothing is pasted into the answer it
+  fixes: missing parts and new links are merged in, and a whole answer
+  replaces the old one. Text with no JSON in it, or the prompt pasted back,
+  is not read, and the answer stays as it is. Copy messages say where the
+  reply goes (AR/EN/FR).
+
 ### Motion that says what happened
 
 - When a setup step is done, the ink runs along the line to the next station.
