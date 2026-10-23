@@ -63,6 +63,14 @@
   your topic becomes, and on the answer that a cut-off answer gets a prompt
   to continue (AR/EN/FR).
 
+### The verdict first
+
+- The overview opens with the publication verdict as its heading ("Do not
+  publish yet", "Review needed" or "Publish-ready"), large, in its tone
+  with its shape, under a rule in that tone, and one line of why. It was
+  small text in a corner under "What matters first", which is gone; the
+  topic now sits under "Overview" (AR/EN/FR, both lenses).
+
 ### Motion that says what happened
 
 - When a setup step is done, the ink runs along the line to the next station.

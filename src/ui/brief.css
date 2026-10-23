@@ -11,11 +11,22 @@
 .j-brief-head > div { display: grid; gap: var(--j-s-1); flex: 1 1 24ch; min-width: 0; }
 .j-brief-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-22)/1.25 var(--j-font-display); letter-spacing: -.01em; text-wrap: balance; }
 .j-brief-head > div > p { max-width: 72ch; margin: 0; color: var(--j-fg-muted); line-height: 1.55; overflow-wrap: anywhere; }
-/* The publication verdict: a status, said in words, under an ink rule. */
-.j-brief-gate {
-  display: grid; gap: var(--j-s-1); margin: 0; padding: var(--j-s-2) 0 0;
+/* The overview's topic, under its title. */
+.j-brief-topic { margin: calc(-1 * var(--j-s-2)) 0 var(--j-s-4); color: var(--j-fg-muted); font-size: var(--j-t-16); line-height: 1.45; overflow-wrap: anywhere; }
+/* The publication verdict opens the overview: the gate's status as the
+   heading, its shape and words saying the tone, under a rule in that tone,
+   then why. */
+.j-brief-head > .j-brief-gate {
+  gap: var(--j-s-2); padding: var(--j-s-3) 0 0;
   border-block-start: var(--j-rule) solid var(--j-ink);
 }
+.j-brief-gate[data-tone="ok"] { border-block-start-color: var(--j-ok); }
+.j-brief-gate[data-tone="warn"] { border-block-start-color: var(--j-warn); }
+.j-brief-gate[data-tone="crit"] { border-block-start-color: var(--j-crit); }
+.j-brief-gate .j-status { align-items: flex-start; gap: var(--j-s-3); font: 700 var(--j-t-28)/1.15 var(--j-font-display); white-space: normal; }
+.j-brief-gate .j-status::before { width: 16px; height: 16px; margin-block-start: 8px; }
+.j-brief-gate .j-status[data-tone="warn"]::before { width: 0; height: 0; border-inline-width: 10px; border-bottom-width: 17px; margin-block-start: 7px; }
+.j-brief-head > .j-brief-gate > p { color: var(--j-fg); font-size: var(--j-t-16); }
 
 /* The conclusion beside its two figures, each under an ink rule, no boxes. */
 .j-brief-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(200px, 260px); gap: var(--j-s-5); }

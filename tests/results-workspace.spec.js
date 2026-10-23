@@ -11,7 +11,10 @@ test('shared results orientation prioritizes decision context across both lenses
   const orientation = page.locator('[data-results-orientation]');
   await expect(orientation).toBeVisible();
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'strategic');
-  await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('What matters first');
+  // The verdict opens the overview, as its heading, and says why.
+  await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('Do not publish yet');
+  await expect(orientation.locator('[data-orientation="gate"] p')).toContainText('structurally weak');
+  await expect(page.locator('#case-overview .j-brief-topic')).toHaveText('Sample: World War II outcomes');
   await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('bipolar order');
   // One verdict: the brief says what the quality gate says.
   await expect(page.locator('[data-diagnostic="gate"] h4')).toHaveText('Publication gate: Do not publish yet');
@@ -33,7 +36,7 @@ test('shared results orientation prioritizes decision context across both lenses
   await expect(orientation.locator('[data-orientation="uncertainty"]')).toContainText('Long-term normalization effects');
 
   await page.locator('#langFr').click();
-  await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('L’essentiel d’abord');
+  await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('Révision nécessaire');
   await expect(orientation.locator('[data-orientation="action"]')).toContainText('Prochaine action recommandée');
 
   await page.setViewportSize({ width: 320, height: 800 });

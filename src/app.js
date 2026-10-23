@@ -5277,7 +5277,9 @@ function briefFigure(label, value) {
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
-  return `<section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div><h4 id="resultsOrientationTitle">${escapeHtml(labelText("What matters first", "ما الذي يهم أولًا", "L’essentiel d’abord"))}</h4><p>${escapeHtml(model.topic)}</p></div><p class="j-brief-gate" data-orientation="gate"><span class="j-label">${escapeHtml(t("qualityGate"))}</span><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></p></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
+  // The topic, then the verdict as the brief's heading and why; the
+  // conclusion and its figures follow.
+  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
 }
 function authoredText(...values) {
   for (const value of values) {
@@ -5570,6 +5572,7 @@ function renderOverview() {
     publicationApproved: b.provenance.publicationApproved,
     publicationLabel: gate.status,
     publicationTone: gate.tone,
+    publicationSummary: gate.summary,
     readiness: b.overall,
     coverage: b.analyticalCoverage,
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
@@ -6314,10 +6317,14 @@ function bioGateVerdict(a, scores, health) {
 function bioGateHtml(a) {
   const scores = BIO.scores(a);
   const health = BIO.health(a, state.lang);
+  const { status, tone } = bioGateVerdict(a, scores, health);
+  return gateNoteHtml(tone, status, bioGateSummary(a, scores, health), health.missing);
+}
+// Why the Bio gate says what it says.
+function bioGateSummary(a, scores, health) {
   const ready = health.publishable;
   const review = BIO.reviewable(a, scores);
-  const { status, tone } = bioGateVerdict(a, scores, health);
-  const summary = ready
+  return ready
     ? labelText(
         "The analysis passes the format, consistency, and evidence checks.",
         "يجتاز التحليل فحوص الصيغة والاتساق والأدلة.",
@@ -6334,7 +6341,6 @@ function bioGateHtml(a) {
           "هذا التحليل غير جاهز للنشر؛ عالج عوائق الصيغة والأدلة أولًا.",
           "Cette analyse n’est pas publiable ; corrigez d’abord les blocages de format et de preuves.",
         );
-  return gateNoteHtml(tone, status, summary, health.missing);
 }
 function renderBiopoliticalEngineNav() {
   const labels = t("pillars");
@@ -6396,6 +6402,7 @@ function renderBiopoliticalOverview() {
     publicationApproved: health.publishable,
     publicationLabel: gate.status,
     publicationTone: gate.tone,
+    publicationSummary: bioGateSummary(a, scores, health),
     readiness: scores.overall,
     coverage: scores.analyticalCoverage,
     uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
