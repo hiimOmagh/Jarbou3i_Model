@@ -462,6 +462,13 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
     await expect(page.locator("#toast")).toContainText("Paste it into the same AI chat");
+    // The rewrite has its own box, kept while the answer is in the wrong language.
+    await expect(page.locator("#continuationField label")).toHaveText("The AI’s reply");
+    await expect.poll(async () => (await readIntakeDraft(page))?.reply_for).toBe("language");
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await openStep(page, "answer");
+    await expect(page.locator("#continuationField")).toBeVisible();
     await expect(page.locator("#importBtn")).toBeEnabled();
     await openStep(page, "answer");
     await page.locator("#importBtn").click();
@@ -900,6 +907,63 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonStatus")).toContainText("No analysis was found");
   });
 
+  // A follow-up prompt's reply has a prepared place: nothing is pasted into
+  // the answer it fixes or completes.
+  test("the reply to a completion prompt has its own box, kept across a reload", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "lens");
+    await page.locator('[data-lens="strategic"]').click();
+    await captureCopies(page);
+    const data = await fixture("sample-analysis-en.json");
+    const draft = structuredClone(data);
+    for (const key of ["tools", "narrative"]) delete draft[key];
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(JSON.stringify(draft));
+    const box = page.locator("#continuationField");
+    await expect(box).toBeHidden();
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+    await openStep(page, "answer");
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("in the box under your answer");
+    await expect(box).toBeVisible();
+    await expect(box.locator("label")).toHaveText("The AI’s reply");
+    const prompt = await lastCopy(page);
+    await expect.poll(async () => (await readIntakeDraft(page))?.reply_for).toBe("completion");
+
+    await page.reload();
+    await expect(page.locator("#topicStatus")).toContainText(RESTORED);
+    await openStep(page, "answer");
+    await expect(box).toBeVisible();
+    await page.locator("#continuationInput").fill(fillFrom(prompt, data));
+    await expect(page.locator("#jsonStatus")).toContainText(/Added \d+ missing parts/);
+    await expect(box).toBeHidden();
+    await expect(page.locator("#importBtn")).toBeEnabled();
+  });
+
+  test("a corrected answer pasted in the reply box replaces the broken one", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await captureCopies(page);
+    const text = JSON.stringify(await fixture("sample-analysis-en.json"));
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(text.replace('"actors":', '"actors"'));
+    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await openStep(page, "answer");
+    await page.locator("#repairPromptBtn").click();
+    await expect(page.locator("#toast")).toContainText("in the box under your answer");
+    await expect(page.locator("#continuationField label")).toHaveText("The AI’s reply");
+    // Words with no JSON are not read, and the answer stays as it is.
+    const broken = await page.locator("#jsonInput").inputValue();
+    await page.locator("#continuationInput").fill("Sorry, I cannot see the answer you mean.");
+    await expect(page.locator("#jsonStatus")).toContainText("so your answer was kept as it is");
+    await expect(page.locator("#jsonInput")).toHaveValue(broken);
+    await expect(page.locator("#continuationField")).toBeVisible();
+    await page.locator("#continuationInput").fill("```json\n" + text + "\n```");
+    await expect(page.locator("#continuationField")).toBeHidden();
+    await expect(page.locator("#importBtn")).toBeEnabled();
+  });
+
   test("merges the missing parts asked for before a reload", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();
@@ -963,9 +1027,9 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#continuationField")).toBeHidden();
     await expect(page.locator("#jsonInput")).toHaveValue(stray);
     await expect(page.locator("#jsonStatus")).toContainText("That reply does not seem to continue the answer");
-    // A reply that adds only words may still be the rest of the answer.
+    // The corrected answer has a box of its own; nothing is pasted into the answer.
     await expect(page.locator("#jsonStatus")).toContainText(
-      "If that reply is the rest of the answer, paste it at the end of the answer box yourself.",
+      "then paste the AI’s corrected answer in the box that appears under your answer.",
     );
     await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
     await expect.poll(async () => (await readIntakeDraft(page))?.verdict?.cutOff).toBe(false);

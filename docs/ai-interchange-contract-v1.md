@@ -157,6 +157,15 @@ statement of what evidence remains unlocated; it forbids invented sources,
 verification states, and unrelated rewrites. A path in the reply without its
 leading `/` (`feedback/1/speed`) is read as the same path.
 
+## Where a follow-up reply goes
+
+Every follow-up prompt (completion, repair, language rewrite, connections)
+has a reply box under the answer, shown once the prompt is copied and kept
+across a reload. Nothing is pasted into the answer it fixes or completes: a
+`fill` reply is merged into the analysis the prompt was built from, a whole
+answer replaces the old one, and text with no JSON in it (or the prompt
+pasted back) is not read, so the answer stays as it is.
+
 This is an adaptive single-pass completion layer. A future multi-packet merge
 protocol would require its own base-revision binding, conflict rules, and
 replay protection; those guarantees are not implied here.
@@ -189,9 +198,10 @@ validation diagnostics and the original text without repeating the schema. It
 asks for exactly one complete minified JSON object in a single `json` code
 block, forbids Python, JavaScript, JSON Patch, explanations, ellipses, and
 invented content, and requires `{"repair_status":"incomplete_input"}` instead
-of a reconstructed ending when the input was truncated. The workbench keeps the
-text the repair prompt was built from; when that reply comes back, the text is
-put back in the answer box and the continue prompt is offered, whatever the
+of a reconstructed ending when the input was truncated. The corrected answer
+goes in the reply box under the answer and replaces the broken one. The
+workbench keeps the text the repair prompt was built from; when the
+`incomplete_input` reply comes back, the text is put back in the answer box and the continue prompt is offered, whatever the
 parser made of it.
 
 ## Unknown properties

@@ -97,13 +97,15 @@ test("asks the AI to connect the records no connection reaches", async ({ page }
   expect(prompt).toContain('{"fill":{"/links/-":');
   for (const id of loose) expect(prompt).toContain(`\n${id} — `);
 
-  // The reply goes in the answer box: its links join the answer, which is
-  // checked and imported as a new one.
+  // The reply has its own box under the answer: its links join the answer,
+  // which is checked and imported as a new one.
   await page.locator("#connGapsAnswer").click();
-  await expect(page.locator("#jsonInput")).toBeFocused();
+  await expect(page.locator("#continuationInput")).toBeFocused();
+  await expect(page.locator("#continuationField label")).toHaveText("The AI’s reply");
   const link = (from, to) => ({ from, to, relation: "enables", mechanism: `${from} makes ${to} possible.`, confidence: "medium" });
-  await page.locator("#jsonInput").fill(`\`\`\`json\n${JSON.stringify({ fill: { "/links/-": [link(loose[0], "E1"), link(loose[1], loose[2])] } })}\n\`\`\``);
+  await page.locator("#continuationInput").fill(`\`\`\`json\n${JSON.stringify({ fill: { "/links/-": [link(loose[0], "E1"), link(loose[1], loose[2])] } })}\n\`\`\``);
   await expect(page.locator("#jsonStatus")).toContainText("Added 2 connections to your analysis.");
+  await expect(page.locator("#continuationField")).toBeHidden();
   await page.locator("#importBtn").click();
   await page.locator('#reviewNav [data-bio-review="connections"]').click();
   await expect(page.locator("#connectionsView .j-stats > span")).toHaveText(["23/32Records connected", "30Connections", "17Citing evidence"]);

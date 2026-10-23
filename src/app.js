@@ -194,12 +194,17 @@ const I18N = {
     jsonImported: "مستورد: هذا هو التحليل قيد المراجعة. الصق إجابة جديدة لتستبدله.",
     jsonInvalid: "JSON غير صالح أو غير مكتمل. استخدم موجِّه الإصلاح إذا لزم.",
     analysisImported: "تم استيراد التحليل. ابدأ بالخلاصة.",
-    repairCopied: "تم نسخ موجِّه الإصلاح. أرسله في المحادثة نفسها ثم الصق الإجابة المصحّحة في خانة الإجابة.",
-    completionCopied: "تم نسخ موجِّه الاستكمال. أرسله في المحادثة نفسها ثم الصق الرد في خانة الإجابة.",
+    repairCopied: "تم نسخ موجِّه الإصلاح. أرسله في المحادثة نفسها ثم الصق الإجابة المصحّحة في المربع الظاهر تحت إجابتك.",
+    completionCopied: "تم نسخ موجِّه الاستكمال. أرسله في المحادثة نفسها ثم الصق الرد في المربع الظاهر تحت إجابتك، فتُضاف الأجزاء الناقصة إليها.",
     continuePrompt: "موجِّه متابعة النتيجة المقطوعة",
     continueCopied: "تم نسخ موجِّه المتابعة. أرسله في المحادثة نفسها ثم الصق الرد في خانة المتابعة.",
     continuationLabel: "تابع النتيجة المقطوعة",
     continuationPlaceholder: "الصق هنا رد المساعد على موجِّه المتابعة؛ سيُضم تلقائيًا إلى النتيجة أعلاه.",
+    replyLabel: "رد الذكاء الاصطناعي",
+    replyPlaceholderParts: "الصق رد الذكاء الاصطناعي هنا. تُضاف الأجزاء الناقصة إلى إجابتك أعلاه، وإن أرسل إجابة كاملة جديدة حلّت محلها.",
+    replyPlaceholderLinks: "الصق رد الذكاء الاصطناعي هنا. تُضاف روابطه الجديدة إلى إجابتك أعلاه، وإن أرسل إجابة كاملة جديدة حلّت محلها.",
+    replyPlaceholderWhole: "الصق رد الذكاء الاصطناعي هنا. تحلّ الإجابة المصحّحة محل الإجابة أعلاه.",
+    replyNotRead: "لا يحوي هذا النص ردًّا يمكن قراءته، لذا بقيت إجابتك كما هي. أرسل الموجِّه إلى الذكاء الاصطناعي، ثم الصق ردّه هنا: جزء JSON الذي يبدأ بـ {.",
     engineTitle: "خريطة محرك التحليل",
     engineSubtitle:
       "المسار السببي للنموذج: من الحوافز إلى التكيف. بعد الاستيراد تصبح كل طبقة قابلة للفحص.",
@@ -521,12 +526,17 @@ const I18N = {
     jsonInvalid: "Invalid or incomplete JSON. Use the repair prompt if needed.",
     analysisImported:
       "Analysis imported. Start with its overview.",
-    repairCopied: "Repair prompt copied. Send it in the same chat, then paste the corrected answer in the answer box.",
-    completionCopied: "Completion prompt copied. Send it in the same chat, then paste the reply in the answer box.",
+    repairCopied: "Repair prompt copied. Send it in the same chat, then paste the AI’s corrected answer in the box under your answer.",
+    completionCopied: "Completion prompt copied. Send it in the same chat, then paste the AI’s reply in the box under your answer: the missing parts are added to it.",
     continuePrompt: "Continue cut-off result prompt",
     continueCopied: "Continue prompt copied. Send it in the same chat, then paste the reply in the continuation box.",
     continuationLabel: "Continue the cut-off result",
     continuationPlaceholder: "Paste the assistant's reply to the continue prompt here; it is joined to the result above automatically.",
+    replyLabel: "The AI’s reply",
+    replyPlaceholderParts: "Paste the AI’s reply here. Its missing parts are added to your answer above; a whole new answer replaces it.",
+    replyPlaceholderLinks: "Paste the AI’s reply here. Its new links are added to your answer above; a whole new answer replaces it.",
+    replyPlaceholderWhole: "Paste the AI’s reply here. The corrected answer replaces the one above.",
+    replyNotRead: "This text holds no reply to read, so your answer was kept as it is. Send the prompt to the AI, then paste its reply here: the JSON part, starting with {.",
     engineTitle: "Analysis Engine Map",
     engineSubtitle:
       "The causal path of the model: from incentives to adaptation. After import, each layer becomes inspectable.",
@@ -859,12 +869,17 @@ const I18N = {
       "JSON invalide ou incomplet. Utilisez le prompt de réparation si nécessaire.",
     analysisImported:
       "Analyse importée. Commencez par la synthèse.",
-    repairCopied: "Prompt de réparation copié. Envoyez-le dans la même conversation, puis collez la réponse corrigée dans la zone de réponse.",
-    completionCopied: "Prompt de complétion copié. Envoyez-le dans la même conversation, puis collez la réponse dans la zone de réponse.",
+    repairCopied: "Prompt de réparation copié. Envoyez-le dans la même conversation, puis collez la réponse corrigée de l’IA dans la zone sous votre réponse.",
+    completionCopied: "Prompt de complétion copié. Envoyez-le dans la même conversation, puis collez la réponse de l’IA dans la zone sous votre réponse : les parties manquantes y sont ajoutées.",
     continuePrompt: "Prompt pour continuer le résultat coupé",
     continueCopied: "Prompt de continuation copié. Envoyez-le dans la même conversation, puis collez la réponse dans la zone de continuation.",
     continuationLabel: "Continuer le résultat coupé",
     continuationPlaceholder: "Collez ici la réponse de l’assistant au prompt de continuation ; elle est jointe automatiquement au résultat ci-dessus.",
+    replyLabel: "La réponse de l’IA",
+    replyPlaceholderParts: "Collez ici la réponse de l’IA. Les parties manquantes sont ajoutées à votre réponse ci-dessus ; une réponse complète la remplace.",
+    replyPlaceholderLinks: "Collez ici la réponse de l’IA. Ses nouveaux liens sont ajoutés à votre réponse ci-dessus ; une réponse complète la remplace.",
+    replyPlaceholderWhole: "Collez ici la réponse de l’IA. La réponse corrigée remplace celle ci-dessus.",
+    replyNotRead: "Ce texte ne contient aucune réponse à lire ; votre réponse a donc été gardée telle quelle. Envoyez le prompt à l’IA, puis collez sa réponse ici : la partie JSON, qui commence par {.",
     engineTitle: "Carte du moteur d’analyse",
     engineSubtitle:
       "Le chemin causal du modèle : des intérêts à l’adaptation. Après import, chaque couche devient inspectable.",
@@ -1316,7 +1331,7 @@ const GUIDED_FLOW = createGuidedFlow({
   canContinue: (step) => step !== "topic" || Boolean($("topicInput").value.trim()),
   mood: (step) => {
     if (step !== "answer" || !$("jsonInput").value.trim()) return "idle";
-    if (!$("continuationField").hidden) return "trunc";
+    if (!$("continuationField").hidden && $("continuationField").dataset.reply === "continue") return "trunc";
     if (state.analysis && $("jsonInput").value === savedReply) return "done";
     const audit = state.importAudit;
     if (!state.jsonValid && audit?.completionCandidate && audit.completionDiagnostics?.length) return "gaps";
@@ -1446,6 +1461,7 @@ function keepTrip() {
     stage: state.stage,
     completion: completionBase,
     repair: repairBase,
+    reply_for: replyFor,
     verdict: cutOffVerdict,
   });
   tripKept = true;
@@ -1571,6 +1587,7 @@ async function restoreTrip(untouched, record) {
   if (typeof record.prompt === "string") state.lastPrompt = record.prompt;
   if (Array.isArray(record.completion?.targets)) completionBase = record.completion;
   if (typeof record.repair === "string") repairBase = record.repair;
+  if (["repair", "language", "completion", "links"].includes(record.reply_for)) replyFor = record.reply_for;
   if (typeof record.verdict?.text === "string") {
     cutOffVerdict = { text: record.verdict.text, cutOff: record.verdict.cutOff === true };
   }
@@ -1740,6 +1757,10 @@ let completionNotice = null;
 // The answer a repair prompt was copied for. If the AI replies that it is cut
 // off, the answer is put back to be continued.
 let repairBase = null;
+// The follow-up prompt whose reply is awaited in the reply box under the
+// answer: "repair", "language", "completion" or "links" (a cut-off answer's
+// rest is awaited there too, while the answer is cut off).
+let replyFor = null;
 // What the AI's own replies showed about one answer, which outranks the
 // parser's guess: {text, cutOff}. A continue reply that adds nothing means the
 // answer was complete; a repair reply of {"repair_status":"incomplete_input"}
@@ -2141,9 +2162,9 @@ function importErrorText(error) {
   }
   if (error?.code === "INVALID_JSON" && error.fromReply) {
     return labelText(
-      `That reply does not seem to continue the answer, so it was not added. The AI’s answer seems complete but has a JSON error. Click “${t("repairPrompt")}” and paste it into the same AI chat. If that reply is the rest of the answer, paste it at the end of the answer box yourself.`,
-      `يبدو أن هذا الرد لا يكمل الإجابة، لذا لم يُضف إليها. تبدو إجابة الذكاء الاصطناعي مكتملة لكن فيها خطأ في JSON. انقر «${t("repairPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها. وإن كان هذا الرد هو بقية الإجابة فعلًا، فالصقه بنفسك في آخر مربع الإجابة.`,
-      `Ce message ne semble pas prolonger la réponse de l’IA ; il n’a donc pas été ajouté. La réponse semble complète mais contient une erreur JSON. Cliquez sur « ${t("repairPrompt")} » et collez-le dans la même conversation avec l’IA. Si ce message est bien la suite de la réponse, collez-le vous-même à la fin de la zone de réponse.`,
+      `That reply does not seem to continue the answer, so it was not added. The AI’s answer seems complete but has a JSON error. Click “${t("repairPrompt")}”, paste it into the same AI chat, then paste the AI’s corrected answer in the box that appears under your answer.`,
+      `يبدو أن هذا الرد لا يكمل الإجابة، لذا لم يُضف إليها. تبدو إجابة الذكاء الاصطناعي مكتملة لكن فيها خطأ في JSON. انقر «${t("repairPrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق الإجابة المصحّحة في المربع الذي يظهر تحت إجابتك.`,
+      `Ce message ne semble pas prolonger la réponse de l’IA ; il n’a donc pas été ajouté. La réponse semble complète mais contient une erreur JSON. Cliquez sur « ${t("repairPrompt")} », collez-le dans la même conversation avec l’IA, puis collez la réponse corrigée dans la zone qui apparaît sous votre réponse.`,
     );
   }
   if (error?.code === "TRUNCATED_JSON") {
@@ -2505,6 +2526,27 @@ function renderImportGaps(gaps = [], candidate = null) {
     })
     .join("") + (gaps.length > 5 ? `<li>${escapeHtml(labelText(`and ${gaps.length - 5} more`, `و${gaps.length - 5} غيرها`, `et ${gaps.length - 5} de plus`))}</li>` : "");
 }
+// One prepared place for the AI's reply to a follow-up prompt, so nothing is
+// pasted into the answer itself: the rest of a cut-off answer is joined to
+// it, missing parts or new links are merged into it, and a whole answer
+// replaces it.
+function syncReplyBox(truncated) {
+  const kind = truncated ? "continue" : replyFor;
+  const field = $("continuationField");
+  field.hidden = !kind;
+  if (!kind) return;
+  field.dataset.reply = kind;
+  const label = field.querySelector("label");
+  const input = $("continuationInput");
+  label.dataset.i18n = kind === "continue" ? "continuationLabel" : "replyLabel";
+  input.dataset.i18nPlaceholder =
+    kind === "continue" ? "continuationPlaceholder"
+      : kind === "completion" ? "replyPlaceholderParts"
+        : kind === "links" ? "replyPlaceholderLinks"
+          : "replyPlaceholderWhole";
+  label.textContent = t(label.dataset.i18n);
+  input.placeholder = t(input.dataset.i18nPlaceholder);
+}
 // The answer box holds the analysis under review once it is imported.
 function showReplyImported() {
   $("jsonStatus").dataset.tone = "ok";
@@ -2520,7 +2562,10 @@ function validateJsonInput() {
     $("importBtn").textContent = t("importAnalysis");
     $("repairPromptBtn").disabled = true;
     $("repairPromptBtn").textContent = t("repairPrompt");
-    $("continuationField").hidden = true;
+    // An empty answer has nothing to fix or complete; the new links asked
+    // for the analysis on screen are still awaited.
+    if (replyFor !== "links") replyFor = null;
+    syncReplyBox(false);
     $("jsonStatus").dataset.tone = "idle";
     $("jsonStatus").textContent = t("jsonWaiting");
     $("pasteCard").classList.remove("ready", "invalid");
@@ -2557,6 +2602,7 @@ function validateJsonInput() {
       );
       const links = completionBase.targets.includes(AI_INTERCHANGE.LINK_FILL_TARGET);
       completionBase = null;
+      replyFor = null;
       const mergedText = JSON.stringify(merged.value);
       completionNotice = { text: mergedText, applied: merged.applied, ignored: merged.ignored.length, links };
       $("jsonInput").value = mergedText;
@@ -2573,6 +2619,7 @@ function validateJsonInput() {
       cutOffVerdict = { text: repairBase, cutOff: true };
       $("jsonInput").value = repairBase;
       repairBase = null;
+      replyFor = null;
       return validateJsonInput();
     }
     const recognized = AI_INTERCHANGE.recognize(parsed.value);
@@ -2874,12 +2921,15 @@ function validateJsonInput() {
       $("jsonStatus").dataset.tone = gaps && completionCandidate ? "warn" : "crit";
       $("pasteCard").classList.remove("ready");
       $("pasteCard").classList.add("invalid");
-      $("continuationField").hidden = true;
+      syncReplyBox(false);
       return null;
     }
     $("pasteCard").classList.add("ready");
     $("pasteCard").classList.remove("invalid");
-    $("continuationField").hidden = true;
+    // A whole answer needs no reply, except the new links asked for it or
+    // the rewrite asked while it is still in the wrong language.
+    if (replyFor !== "links" && !(replyFor === "language" && languageMismatch)) replyFor = null;
+    syncReplyBox(false);
     return analysis;
   } catch (e) {
     if (cutOffVerdict?.text === text && ["TRUNCATED_JSON", "INVALID_JSON"].includes(e?.code)) {
@@ -2925,7 +2975,7 @@ function validateJsonInput() {
       validationErrors[0]?.code === "LEGACY_CONTRACT";
     const truncated = e?.code === "TRUNCATED_JSON";
     $("repairPromptBtn").textContent = t(truncated ? "continuePrompt" : "repairPrompt");
-    $("continuationField").hidden = !truncated;
+    syncReplyBox(truncated);
     $("jsonStatus").dataset.tone = "crit";
     $("jsonStatus").textContent = importErrorText(e);
     $("pasteCard").classList.remove("ready");
@@ -6473,7 +6523,7 @@ function connectionsGapsHtml(graph, loose) {
     "Ask the AI that wrote this answer to connect them. Its reply is checked and imported as a new answer; this one stays as it is.",
     "اطلب من الذكاء الاصطناعي الذي كتب هذه الإجابة أن يربطها. يُفحص رده ويُستورد إجابةً جديدة، وتبقى هذه الإجابة كما هي.",
     "Demandez à l’IA qui a rédigé cette réponse de les relier. Sa réponse est vérifiée et importée comme une nouvelle réponse ; celle-ci reste telle quelle.",
-  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ موجِّه لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the answer box", "الانتقال إلى مربع الإجابة", "Aller à la zone de réponse"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
+  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ موجِّه لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the reply box", "الانتقال إلى مربع الرد", "Aller à la zone prévue"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
 }
 // The prompt is in the answer's language, like the answer it adds to.
 async function copyConnectionsPrompt(event) {
@@ -6488,6 +6538,8 @@ async function copyConnectionsPrompt(event) {
   const shape = JSON.parse(BIO.buildSchemaTemplate(lang, "research", "web")).links[0];
   const prompt = AI_INTERCHANGE.buildLinkPrompt(records, lang, shape);
   completionBase = { value: structuredClone(state.analysis), targets: [AI_INTERCHANGE.LINK_FILL_TARGET] };
+  replyFor = "links";
+  syncReplyBox(false);
   keepTrip();
   if (!(await copyText(prompt))) {
     toast(t("copyFailed"), "crit");
@@ -6495,9 +6547,9 @@ async function copyConnectionsPrompt(event) {
     return;
   }
   const copied = labelText(
-    "Prompt copied. Paste it into the same AI chat, then paste the AI’s reply into the answer box.",
-    "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رده في مربع الإجابة.",
-    "Prompt copié. Collez-le dans la même conversation avec l’IA, puis collez sa réponse dans la zone de réponse.",
+    "Prompt copied. Paste it into the same AI chat, then paste the AI’s reply in the reply box under your answer.",
+    "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رده في مربع الرد تحت إجابتك.",
+    "Prompt copié. Collez-le dans la même conversation avec l’IA, puis collez sa réponse dans la zone prévue sous votre réponse.",
   );
   // Said beside the button, where the next step is, not in a toast too.
   $("connGapsStatus").textContent = copied;
@@ -6507,10 +6559,9 @@ function openAnswerBox() {
   state.shellSection = "workflow";
   GUIDED_FLOW.go("answer");
   renderAll();
-  const answer = $("jsonInput");
-  answer.focus();
-  // The answer on screen is replaced by the reply pasted over it.
-  answer.select();
+  // The reply has its own box; the answer it adds to stays as it is.
+  syncReplyBox(false);
+  $(replyFor ? "continuationInput" : "jsonInput").focus();
 }
 function connectionsShownText(shown, total) {
   return labelText("Shown: {shown} of {total}", "المعروض: {shown} من {total}", "Affichées : {shown} sur {total}")
@@ -8199,6 +8250,8 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
     $("jsonInput").value = savedReply;
     $("importBtn").disabled = true;
     showReplyImported();
+    replyFor = null;
+    syncReplyBox(false);
   }
   writeSettings({ activeWorkspaceId: workspace.workspace_id, analysisLens: state.analysisLens });
   // The reply kept for a reload now belongs with the analysis on screen.
@@ -8584,6 +8637,7 @@ function restorableInputs() {
     $("sourcesInput").value,
     $("jsonInput").value,
     repairBase,
+    replyFor,
     cutOffVerdict,
   ];
 }
@@ -8826,7 +8880,21 @@ $("continuationInput").addEventListener("input", () => {
   const continuation = $("continuationInput").value;
   if (!continuation.trim()) return;
   const answer = $("jsonInput").value;
-  if (JSON_TOOLS.continuesAnswer(answer, continuation)) {
+  if ($("continuationField").dataset.reply !== "continue") {
+    // Words with no JSON, or the prompt pasted back, are not read: the answer
+    // they would replace stays as it is.
+    if (!continuation.includes("{") || AI_INTERCHANGE.isCopiedPrompt(continuation)) {
+      $("continuationInput").value = "";
+      $("jsonStatus").dataset.tone = "crit";
+      $("jsonStatus").textContent = t("replyNotRead");
+      return;
+    }
+    // A reply to the repair, language, completion or link prompt: missing
+    // parts and links are merged into the answer they complete when it is
+    // read; a whole answer replaces it.
+    replyFor = null;
+    $("jsonInput").value = continuation;
+  } else if (JSON_TOOLS.continuesAnswer(answer, continuation)) {
     $("jsonInput").value = JSON_TOOLS.joinContinuation(answer, continuation);
   } else {
     // "It was already complete" is not added: the answer has a JSON error
@@ -8839,6 +8907,7 @@ $("continuationInput").addEventListener("input", () => {
 });
 $("clearJsonBtn").onclick = () => {
   $("jsonInput").value = "";
+  $("continuationInput").value = "";
   validateJsonInput();
   keepTrip();
 };
@@ -8869,6 +8938,9 @@ $("importBtn").onclick = async () => {
   // Present the accepted canonical payload, not the provider's irregular spacing.
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
+  // A new analysis on screen ends any reply that was awaited.
+  replyFor = null;
+  syncReplyBox(false);
   $("importBtn").disabled = true;
   showReplyImported();
   $("topicStatus").dataset.tone = "ok";
@@ -8890,13 +8962,16 @@ $("repairPromptBtn").onclick = async (event) => {
   const completion = !language && Boolean(state.importAudit?.completionCandidate);
   const truncated = state.importAudit?.code === "TRUNCATED_JSON";
   const p = repairPrompt();
+  // The reply has its own box under the answer (a cut-off answer's already does).
+  if (!truncated) replyFor = language ? "language" : completion ? "completion" : "repair";
+  syncReplyBox(truncated);
   keepTrip();
   const ok = await copyText(p);
   const copied = language
     ? labelText(
-        "Prompt copied. Paste it into the same AI chat.",
-        "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها.",
-        "Prompt copié. Collez-le dans la même conversation avec l’IA.",
+        "Prompt copied. Paste it into the same AI chat, then paste the AI’s rewritten answer in the box under your answer.",
+        "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق الإجابة المعاد كتابتها في المربع الظاهر تحت إجابتك.",
+        "Prompt copié. Collez-le dans la même conversation avec l’IA, puis collez la réponse réécrite dans la zone sous votre réponse.",
       )
     : t(truncated ? "continueCopied" : completion ? "completionCopied" : "repairCopied");
   toast(ok ? copied : t("copyFailed"), ok ? "" : "crit");
@@ -8937,6 +9012,9 @@ $("loadSampleBtn").onclick = async (event) => {
   $("timeframeInput").value = state.context;
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
+  // A new analysis on screen ends any reply that was awaited.
+  replyFor = null;
+  syncReplyBox(false);
   $("importBtn").disabled = true;
   showReplyImported();
   toast(t("sampleLoaded"));
