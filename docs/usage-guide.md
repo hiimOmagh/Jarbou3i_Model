@@ -28,9 +28,9 @@ Paste the JSON into the import field. The app accepts plain JSON and commonly en
 
 When the answer needs help, the prompt button under the import field changes to match the problem:
 
-- **Cut off.** Copy the **Continue cut-off result prompt**, send it in the same chat, and paste the reply into the **Continue the cut-off result** box. It is joined to the first part automatically; repeat if the answer is still cut off.
-- **Missing parts.** If the analysis has listed gaps, copy the **Targeted completion prompt** and send it in the same chat. Paste the reply into the import field: the missing parts are merged into the open analysis. The prompt only allows changes at the listed paths.
-- **Broken JSON.** Copy the **JSON repair prompt**. It sends the diagnostics and asks for one complete JSON object without new content.
+- **Cut off.** Click **Copy a prompt to continue it**, send the prompt in the same chat, and paste the reply into the **The rest of the AI’s answer** box. It is joined to the first part automatically; repeat if the answer is still cut off.
+- **Missing parts.** If the analysis has listed gaps, click **Copy a prompt to complete it** and send the prompt in the same chat. Paste the reply into the **The AI’s reply** box under your answer: the missing parts are merged into the open analysis. The prompt only allows changes at the listed paths.
+- **Broken JSON.** Click **Copy a prompt to fix it**. The prompt sends the diagnostics and asks for one complete JSON object without new content.
 - **Wrong language.** If the reply is written in a language other than your analysis language, you can still import it, or ask the assistant to answer in the requested language.
 
 Your topic, context, sources, prompt, and pasted answer are kept in this browser and restored if the page reloads before you finish.

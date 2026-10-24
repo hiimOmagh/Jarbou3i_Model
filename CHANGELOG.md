@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Plain words where the answer is pasted
+
+- The answer step no longer speaks JSON: the field is "The AI’s whole
+  answer", it waits for "the AI’s answer", and the prompt buttons say what
+  they do: "Copy a prompt to fix it", "to complete it", "to continue it".
+  The box for a cut-off answer is "The rest of the AI’s answer"; copy
+  messages and the usage guide match (AR/EN/FR).
+
 ### The next action, asked of the AI
 
 - The overview's recommended next action has a button, "Copy a prompt to do

@@ -91,7 +91,7 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#importBtn")).toBeDisabled();
     await expect(page.locator("#continuationField")).toBeVisible();
     await expect(page.locator("#repairPromptBtn")).toHaveText(
-      "Continue cut-off result prompt",
+      "Copy a prompt to continue it",
     );
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
@@ -135,7 +135,7 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonStatus")).toContainText(
       /not imported yet: 2 parts are missing or invalid/i,
     );
-    await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to complete it");
     const audit = page.locator("#importAuditDetails");
     await audit.locator("summary").click();
     await expect(audit).toContainText("/actors/0/financial");
@@ -379,7 +379,7 @@ test.describe("AI interchange reliability", () => {
       /not imported yet: 8 parts are missing or invalid/i,
     );
     await expect(page.locator("#repairPromptBtn")).toHaveText(
-      "Targeted completion prompt",
+      "Copy a prompt to complete it",
     );
 
     const audit = page.locator("#importAuditDetails");
@@ -565,7 +565,7 @@ test.describe("AI interchange reliability", () => {
       await openStep(page, "answer");
       await page.locator("#jsonInput").fill(JSON.stringify(draft));
       await expect(page.locator("#importBtn")).toBeDisabled();
-      await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+      await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to complete it");
 
       await openStep(page, "answer");
       await page.locator("#repairPromptBtn").click();
@@ -922,7 +922,7 @@ test.describe("AI interchange reliability", () => {
     await page.locator("#jsonInput").fill(JSON.stringify(draft));
     const box = page.locator("#continuationField");
     await expect(box).toBeHidden();
-    await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to complete it");
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
     await expect(page.locator("#toast")).toContainText("in the box under your answer");
@@ -948,7 +948,7 @@ test.describe("AI interchange reliability", () => {
     const text = JSON.stringify(await fixture("sample-analysis-en.json"));
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(text.replace('"actors":', '"actors"'));
-    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to fix it");
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
     await expect(page.locator("#toast")).toContainText("in the box under your answer");
@@ -975,7 +975,7 @@ test.describe("AI interchange reliability", () => {
     for (const key of ["tools", "narrative", "results", "feedback", "scenarios"]) delete draft[key];
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(JSON.stringify(draft));
-    await expect(page.locator("#repairPromptBtn")).toHaveText("Targeted completion prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to complete it");
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
     await expect(page.locator("#toast")).toContainText("Completion prompt copied");
@@ -1031,13 +1031,13 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonStatus")).toContainText(
       "then paste the AI’s corrected answer in the box that appears under your answer.",
     );
-    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to fix it");
     await expect.poll(async () => (await readIntakeDraft(page))?.verdict?.cutOff).toBe(false);
 
     await page.reload();
     await expect(page.locator("#topicStatus")).toContainText(RESTORED);
     await expect(page.locator("#continuationField")).toBeHidden();
-    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to fix it");
     await captureCopies(page);
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
@@ -1065,7 +1065,7 @@ test.describe("AI interchange reliability", () => {
     const cut = broken.indexOf('","', Math.floor(broken.length * 0.6)) + 2;
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(broken.slice(0, cut));
-    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to fix it");
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
     await expect.poll(async () => (await readIntakeDraft(page))?.repair).toBe(broken.slice(0, cut));
@@ -1078,14 +1078,14 @@ test.describe("AI interchange reliability", () => {
       .fill('```json\n{"repair_status":"incomplete_input","reason":"truncated"}\n```');
     await expect(page.locator("#jsonInput")).toHaveValue(broken.slice(0, cut));
     await expect(page.locator("#continuationField")).toBeVisible();
-    await expect(page.locator("#repairPromptBtn")).toHaveText("Continue cut-off result prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to continue it");
     await expect(page.locator("#jsonStatus")).toContainText("The AI says this answer is cut off");
 
     await openStep(page, "answer");
     await page.locator("#continuationInput").fill(broken.slice(cut));
     await expect(page.locator("#jsonInput")).toHaveValue(broken);
     await expect(page.locator("#continuationField")).toBeHidden();
-    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to fix it");
   });
 
   test("a complete answer stays complete when the AI says it is cut off", async ({ page }) => {
@@ -1105,7 +1105,7 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonInput")).toHaveValue(text);
     await expect(page.locator("#jsonStatus")).toContainText("it has a JSON error the AI did not find");
     await expect(page.locator("#continuationField")).toBeHidden();
-    await expect(page.locator("#repairPromptBtn")).toHaveText("JSON repair prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to fix it");
   });
 
   test("explains a cut-off reply pasted without the answer it is about", async ({ page }) => {
@@ -1244,10 +1244,10 @@ test.describe("AI interchange reliability", () => {
     const text = JSON.stringify(await fixture("sample-analysis-en.json"));
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill(text.slice(0, Math.floor(text.length / 2)));
-    await expect(page.locator("#repairPromptBtn")).toHaveText("Continue cut-off result prompt");
+    await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to continue it");
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
-    await expect(page.locator("#modalTitle")).toHaveText("Continue cut-off result prompt");
+    await expect(page.locator("#modalTitle")).toHaveText("Copy a prompt to continue it");
   });
 
   test("corrects a wrong language label to the language the reply is written in", async ({

@@ -208,19 +208,19 @@
         </div>
         <div class="j-flow-panel" id="pasteCard" data-flow-panel="answer" hidden>
           <div class="j-field">
-            <label for="jsonInput" data-i18n="jsonLabel">نتيجة JSON</label>
-            <textarea id="jsonInput" class="j-input j-flow-answer" dir="ltr" data-i18n-placeholder="jsonPlaceholder" placeholder='{ "interests": [], "actors": [], "tools": [] }'></textarea>
+            <label for="jsonInput" data-i18n="jsonLabel">إجابة الذكاء الاصطناعي كاملة</label>
+            <textarea id="jsonInput" class="j-input j-flow-answer" dir="ltr" data-i18n-placeholder="jsonPlaceholder" placeholder="الصق الإجابة هنا…"></textarea>
           </div>
           <div class="j-field" id="continuationField" hidden>
-            <label for="continuationInput" data-i18n="continuationLabel">تابع النتيجة المقطوعة</label>
+            <label for="continuationInput" data-i18n="continuationLabel">بقية إجابة الذكاء الاصطناعي</label>
             <textarea id="continuationInput" class="j-input j-flow-answer" dir="ltr" data-i18n-placeholder="continuationPlaceholder"></textarea>
           </div>
           <div class="j-flow-row">
             <button class="j-btn" data-variant="primary" data-size="lg" id="importBtn" type="button" disabled data-i18n="importAnalysis">استيراد التحليل</button>
-            <button class="j-btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">موجِّه إصلاح JSON</button>
+            <button class="j-btn" id="repairPromptBtn" type="button" disabled data-i18n="repairPrompt">نسخ موجِّه لإصلاحها</button>
             <button class="j-btn" data-variant="ghost" id="clearJsonBtn" type="button" data-i18n="clear">مسح</button>
           </div>
-          <p class="j-note" data-tone="idle" id="jsonStatus" role="status" aria-live="polite">الصق نتيجة JSON للتحقق.</p>
+          <p class="j-note" data-tone="idle" id="jsonStatus" role="status" aria-live="polite">بانتظار إجابة الذكاء الاصطناعي.</p>
           <ul class="j-audit-gaps" id="importGaps" hidden></ul>
           <details class="j-disclosure" id="importAuditDetails" hidden>
             <summary id="importAuditSummary">Import review details</summary>
