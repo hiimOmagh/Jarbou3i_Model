@@ -109,6 +109,23 @@ test.describe("Case file", () => {
     // A section uses the width: one card around it, not three.
     const section = await page.locator("#case-overview").boundingBox();
     expect(section.width).toBeGreaterThanOrEqual(330);
+    // The outline is one line of stations scrolled sideways, so the verdict
+    // comes soon; the page itself never scrolls sideways.
+    const nav = page.locator("#reviewNav");
+    const tops = await nav.locator(".j-case-link").evaluateAll((links) => links.map((link) => Math.round(link.getBoundingClientRect().top)));
+    expect(new Set(tops).size).toBe(1);
+    expect((await nav.boundingBox()).height).toBeLessThanOrEqual(130);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    // Reading a section whose station is past the line's edge brings that
+    // station into the line's view.
+    await page.evaluate(() => document.getElementById("case-evidence").scrollIntoView({ block: "start" }));
+    const evidenceStop = page.locator('#reviewNav [data-review="evidence"]');
+    await expect(evidenceStop).toHaveAttribute("aria-current", "location");
+    await expect.poll(async () => {
+      const [stop, line] = await Promise.all([evidenceStop.boundingBox(), nav.boundingBox()]);
+      return stop.x >= line.x - 1 && stop.x + stop.width <= line.x + line.width + 1;
+    }).toBe(true);
+    await page.evaluate(() => window.scrollTo(0, 0));
 
     const back = page.locator("#caseOutlineReturn");
     await expect(back).toBeHidden();

@@ -211,8 +211,6 @@ const I18N = {
     stateNoAnalysis: "لا يوجد تحليل بعد",
     stateImported: "تحليل مستورد",
     reviewTitle: "مراجعة التحليل الاستراتيجي",
-    reviewSubtitle:
-      "تنقل بين الخلاصة، الطبقات، التناقضات، السيناريوهات، الأدلة، الفحص، والتصدير.",
     overview: "الخلاصة",
     engine: "الطبقات الست",
     contradictions: "التناقضات",
@@ -333,8 +331,6 @@ const I18N = {
     engineSubtitleBiopolitical:
       "مسار الحكم في النموذج: من تحويل الحياة إلى مشكلة عامة، إلى تصنيف السكان، والتطبيع، والآثار الجسدية، والمقاومة.",
     reviewTitleBiopolitical: "مراجعة تحليل السياسة الحيوية",
-    reviewSubtitleBiopolitical:
-      "تنقل بين الخلاصة، طبقات الحكم، التناقضات، السيناريوهات، الأدلة، والتصدير.",
     engineBiopolitical: "طبقات الحكم",
     generatedReportBiopolitical: "تقرير تحليل السياسة الحيوية",
     reportSubtitleBiopolitical:
@@ -543,8 +539,6 @@ const I18N = {
     stateNoAnalysis: "No analysis yet",
     stateImported: "Analysis imported",
     reviewTitle: "Strategic Analysis Review",
-    reviewSubtitle:
-      "Navigate the summary, layers, contradictions, scenarios, evidence, inspection, and exports.",
     overview: "Overview",
     engine: "Six layers",
     contradictions: "Contradictions",
@@ -671,8 +665,6 @@ const I18N = {
     engineSubtitleBiopolitical:
       "The governance path of the model: from problematized life processes to population classification, normalization, embodied outcomes, and resistance.",
     reviewTitleBiopolitical: "Biopolitical Analysis Review",
-    reviewSubtitleBiopolitical:
-      "Navigate the summary, governance layers, contradictions, scenarios, evidence, and exports.",
     engineBiopolitical: "Governance layers",
     generatedReportBiopolitical: "Biopolitical Analysis Report",
     reportSubtitleBiopolitical:
@@ -886,8 +878,6 @@ const I18N = {
     stateNoAnalysis: "Aucune analyse",
     stateImported: "Analyse importée",
     reviewTitle: "Revue de l’analyse stratégique",
-    reviewSubtitle:
-      "Naviguez entre la synthèse, les couches, les contradictions, les scénarios, les preuves, l’inspection et l’export.",
     overview: "Synthèse",
     engine: "Six couches",
     contradictions: "Contradictions",
@@ -1024,8 +1014,6 @@ const I18N = {
     engineSubtitleBiopolitical:
       "Le chemin de gouvernement du modèle : de la problématisation des processus vitaux à la classification des populations, la normalisation, les effets incarnés et la résistance.",
     reviewTitleBiopolitical: "Revue de l’analyse biopolitique",
-    reviewSubtitleBiopolitical:
-      "Naviguez entre synthèse, couches de gouvernement, contradictions, scénarios, preuves et exports.",
     engineBiopolitical: "Couches de gouvernement",
     generatedReportBiopolitical: "Rapport d’analyse biopolitique",
     reportSubtitleBiopolitical:
@@ -1186,7 +1174,6 @@ const LENS_KEY_ALIASES = {
   engineTitle: "engineTitleBiopolitical",
   engineSubtitle: "engineSubtitleBiopolitical",
   reviewTitle: "reviewTitleBiopolitical",
-  reviewSubtitle: "reviewSubtitleBiopolitical",
   engine: "engineBiopolitical",
   generatedReport: "generatedReportBiopolitical",
   reportSubtitle: "reportSubtitleBiopolitical",
@@ -6771,6 +6758,7 @@ function wireCaseOutline(selector, datasetKey) {
 // jump, an opened record) while the view stays put, else the section at the
 // top of the view (a short last section never reaches the top).
 let caseJump = null;
+let caseMarked = null;
 function markCaseLocation() {
   const sections = [...document.querySelectorAll(".j-case-sec")];
   if (!sections.length) return;
@@ -6785,6 +6773,16 @@ function markCaseLocation() {
       button.setAttribute("aria-current", "location");
     } else button.removeAttribute("aria-current");
   });
+  // On a phone the outline is one line scrolled sideways (case.css): the
+  // station the reader is at comes into its view, and the page stays put.
+  const nav = $("reviewNav");
+  const marked = nav.querySelector('[aria-current="location"]');
+  if (marked && marked !== caseMarked && nav.scrollWidth > nav.clientWidth) {
+    const box = marked.getBoundingClientRect();
+    const view = nav.getBoundingClientRect();
+    nav.scrollBy({ left: box.left + box.width / 2 - (view.left + view.width / 2) });
+  }
+  caseMarked = marked;
 }
 // Below 1120px the outline scrolls away (case.css); once it has, and the
 // document is still in view, a button brings the reader back to it.

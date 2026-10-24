@@ -77,10 +77,20 @@
   .j-case-link::before, .j-case-link::after { display: none; }
   .j-case-outline [aria-current="location"] { border-color: var(--j-ink); }
 }
+/* A phone: the line again, across the page and scrolled sideways, so the
+   verdict is not below a wall of tiles. Each station has its name under it,
+   then its count; the next station showing at the edge says there are more. */
 @media (max-width: 760px) {
-  .j-case-outline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-2); padding: var(--j-s-2); }
-  /* Two to a row: the names only, the count under a name it does not fit beside. */
-  .j-case-link { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px var(--j-s-2); padding: var(--j-s-2); }
+  .j-case-outline { display: flex; gap: 0; padding: var(--j-s-2); overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }
+  .j-case-link {
+    flex: 0 0 96px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "stop" "name" "count";
+    justify-items: center; align-content: start; gap: var(--j-s-1); padding: var(--j-s-2) var(--j-s-1); border: 0; text-align: center;
+  }
+  .j-case-link::before { display: block; }
+  .j-case-link:not(:last-child)::after {
+    display: block; inset-inline-start: 50%; inset-block-start: calc(var(--j-s-2) + 8px - var(--j-track) / 2);
+    inline-size: 100%; block-size: var(--j-track);
+  }
   .j-case-link > small { display: none; }
 }
 @media print {

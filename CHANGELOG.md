@@ -71,6 +71,15 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The verdict sooner on a phone
+
+- On a phone the review's outline is one line of stations again, across
+  the page and scrolled sideways, instead of seven tiles: about 115px
+  instead of 250, so "Do not publish yet" shows without scrolling. The
+  station you are reading comes into the line's view by itself.
+- The review's subtitle, which listed the outline's sections again, is gone
+  (AR/EN/FR).
+
 ### A lighter header
 
 - Density and theme moved into one Menu (⋯) at every width, so the header
