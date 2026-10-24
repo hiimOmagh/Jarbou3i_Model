@@ -436,15 +436,15 @@ then its detailed diagnostics.
 - `.j-brief-divider` starts the detailed diagnostics; print hides it and the
   links.
 - **Diagnostics** (`.j-diag`): the quality gate, a `.j-note` toned by its
-  verdict (`data-diagnostic="gate"`: an `h4`, why, what blocks it); the six
+  verdict (`data-diagnostic="gate"`: an `h4`, why, and every open item, each
+  said once in the diagnostics); the six
   scores, a `dl.j-brief-figures[data-layout="grid"]` (`data-diagnostic="scores"`) of figures out of 100 with
   their bars and what they measure (`metricCard()`), three to a row; the score
   rule, a `.j-rec` with the weights as `.j-stats` (Strategic) and the legend of
   the bars' colours (`.j-brief-bands`, `scoreBandsHtml()`); the caps on
-  readiness and the missing count, `.j-stats[data-cols="4"]`; the next action, a
-  `.j-brief-signal` (`data-diagnostic="next"`); the open items, `.j-note` rows in
-  a `.j-diag-notes` list (`data-diagnostic="warnings"`), and in Strategic the
-  import health under its own `h4`. A Biopolitical import migrated from v1 says
+  readiness and the missing count, `.j-stats[data-cols="4"]`; in Strategic the
+  warnings, `.j-note` rows in a `.j-diag-notes` list (`data-diagnostic="warnings"`).
+  The next action is the brief's, not repeated here. A Biopolitical import migrated from v1 says
   so in a `.j-note.j-brief-alert` above the brief.
 
 Tests: `tests/results-workspace.spec.js` (contracts and axe of the brief and the

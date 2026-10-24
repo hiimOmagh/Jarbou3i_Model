@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Each open item said once
+
+- The overview's diagnostics no longer repeat what the gate lists: the
+  Biopolitical list of open items under the gate, the Strategic "Import
+  health" list and "Next best action" are gone; the brief's recommended next
+  action stays. The Strategic gate in the app now lists every structural gap,
+  not only the first three; the report is unchanged (both lenses, AR/EN/FR).
+
 ### Plain words where the answer is pasted
 
 - The answer step no longer speaks JSON: the field is "The AI’s whole

@@ -24,7 +24,9 @@ test('shared results orientation prioritizes decision context across both lenses
   const promotedNextAction = (await orientation.locator('[data-next-action]').textContent())?.trim();
   expect(promotedNextAction).toBeTruthy();
   expect(promotedNextAction).not.toBe('—');
-  await expect(page.locator('[data-diagnostic="next"]')).toContainText(promotedNextAction);
+  // Said once in the overview: the diagnostics list it in the gate, not again.
+  await expect(page.locator('[data-diagnostic="next"]')).toHaveCount(0);
+  await expect(page.locator('#case-overview .j-diag').getByText(promotedNextAction, { exact: true })).toHaveCount(1);
   await expectKernel(page, '[data-results-orientation]');
   await expectKernel(page, '[data-results-explanation]');
 
@@ -67,9 +69,11 @@ test('the Bio overview gives one gate verdict and lists every open item in it', 
   const gate = page.locator('[data-diagnostic="gate"]');
   await expect(gate.locator('h4')).toHaveText('Publication gate: Review needed');
   await expect(page.locator('[data-orientation="gate"] strong')).toHaveText('Review needed');
-  const listed = await page.locator('[data-diagnostic="warnings"] li').count();
-  expect(listed).toBeGreaterThan(4);
-  await expect(gate.locator('li')).toHaveCount(listed);
+  // Each open item is said once, in the gate; the diagnostics do not repeat it.
+  const items = await gate.locator('li').allTextContents();
+  expect(items.length).toBeGreaterThan(4);
+  await expect(page.locator('[data-diagnostic="warnings"], [data-diagnostic="next"]')).toHaveCount(0);
+  for (const item of items) await expect(page.locator('#case-overview .j-diag').getByText(item, { exact: true })).toHaveCount(1);
   await expectKernel(page, '.j-diag');
 });
 

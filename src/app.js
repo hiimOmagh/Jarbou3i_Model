@@ -282,7 +282,6 @@ const I18N = {
     loadSample: "تحميل مثال",
     sampleLoaded:
       "تم تحميل مثال تجريبي. يمكنك مراجعة النتائج أو استبدالها بموضوعك.",
-    schemaHealth: "صحة الاستيراد",
     completeness: "الاكتمال",
     missingItems: "النواقص",
     nextBestAction: "الخطوة التالية",
@@ -611,7 +610,6 @@ const I18N = {
     loadSample: "Load sample",
     sampleLoaded:
       "Sample analysis loaded. You can review it or replace it with your own topic.",
-    schemaHealth: "Import health",
     completeness: "Completeness",
     missingItems: "Missing items",
     nextBestAction: "Next best action",
@@ -954,7 +952,6 @@ const I18N = {
     loadSample: "Charger un exemple",
     sampleLoaded:
       "Exemple chargé. Vous pouvez l’examiner ou le remplacer par votre propre sujet.",
-    schemaHealth: "Santé de l’import",
     completeness: "Complétude",
     missingItems: "Éléments manquants",
     nextBestAction: "Prochaine action",
@@ -4135,7 +4132,8 @@ function qualityGate(a = state.analysis) {
 }
 function qualityGateHtml(a = state.analysis) {
   const g = qualityGate(a);
-  return gateNoteHtml(g.tone, g.status, g.summary, g.issues || []);
+  // Every structural gap, said once here; the report names the first three.
+  return gateNoteHtml(g.tone, g.status, g.summary, schemaHealth(a).missing);
 }
 // The gate's verdict as a heading, why, then what blocks it.
 function gateNoteHtml(tone, status, summary, issues) {
@@ -5282,9 +5280,6 @@ function healthStatsHtml(structural, provenance, missing) {
   const stat = (value, label, tone) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`;
   return `<span class="j-stats" data-cols="4">${stat(pctText(structural), labelText("Structural completion", "اكتمال البنية", "Complétude structurelle"), pctTone(structural))}${stat(pctText(provenance.sourceTraceability), labelText("Source traceability", "قابلية تتبع المصادر", "Traçabilité des sources"), pctTone(provenance.sourceTraceability))}${stat(pctText(provenance.humanReview), labelText("Independent human review", "المراجعة البشرية المستقلة", "Revue humaine indépendante"), pctTone(provenance.humanReview))}${stat(missing, t("missingItems"), missing ? "warn" : "ok")}</span>`;
 }
-function nextActionHtml(text) {
-  return `<div class="j-brief-signal" data-diagnostic="next"><span class="j-label">${escapeHtml(t("nextBestAction"))}</span><p>${escapeHtml(text)}</p></div>`;
-}
 // Open items as notes; one "ok" note when there are none.
 function diagNotesHtml(items, good, hook = "") {
   const notes = items.length
@@ -5627,7 +5622,7 @@ function renderOverview() {
     // The analysis's own next step, or a gap the structure check found.
     nextActionImprovable: strategicNextAction(a, h) !== h.next || h.missing.length > 0,
   });
-  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}${strategicSelfAssessmentHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${nextActionHtml(h.next)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}<section aria-labelledby="schemaHealthTitle"><h4 id="schemaHealthTitle">${t("schemaHealth")}</h4>${diagNotesHtml(h.missing, t("healthGood"))}</section></div>`;
+  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}${strategicSelfAssessmentHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}</div>`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -6463,7 +6458,7 @@ function renderBiopoliticalOverview() {
     nextAction: health.next,
     nextActionImprovable: health.missing.length > 0,
   });
-  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="j-diag">${bioGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metrics}</dl><div class="j-rec"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p class="j-brief-desc">${escapeHtml(BIO.ui(state.lang, "formula"))}</p>${scoreBandsHtml()}</div>${healthStatsHtml(health.pct, scores.provenance, health.missing.length)}${nextActionHtml(health.next)}${diagNotesHtml(health.missing, health.next, "warnings")}</div>`;
+  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="j-diag">${bioGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metrics}</dl><div class="j-rec"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p class="j-brief-desc">${escapeHtml(BIO.ui(state.lang, "formula"))}</p>${scoreBandsHtml()}</div>${healthStatsHtml(health.pct, scores.provenance, health.missing.length)}</div>`;
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");

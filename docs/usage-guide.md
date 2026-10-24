@@ -58,7 +58,7 @@ A Biopolitical v1.1 six-array file becomes `biopolitical-migrated-draft-v1@1.0.0
 
 ### Overview
 
-Read the executive finding, overall readiness, six diagnostic dimensions, missing requirements, and the next best action.
+Read the executive finding, overall readiness and the recommended next action, then the six diagnostic dimensions and the quality gate, which lists every open item once.
 
 The score combines:
 
