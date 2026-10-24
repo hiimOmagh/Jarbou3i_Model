@@ -33,6 +33,12 @@ assert(
 );
 assert(orientation.uncertainty === source.uncertainty, 'authored uncertainty was not preserved');
 assert(!('analysis' in orientation), 'canonical analysis leaked into the view model');
+assert(orientation.improvable === false, 'a next action was offered to the AI without being a change');
+assert(
+  createResultsOrientation({ ...source, nextActionImprovable: true }).improvable === true &&
+    createResultsOrientation({ ...source, nextAction: ' ', nextActionImprovable: true }).improvable === false,
+  'an improvable next action was not kept, or an empty one was offered',
+);
 
 const fallback = createResultsOrientation({ lens: 'biopolitical' });
 assert(fallback.conclusion === '—' && fallback.nextAction === '—', 'empty text fallback failed');

@@ -159,12 +159,17 @@ leading `/` (`feedback/1/speed`) is read as the same path.
 
 ## Where a follow-up reply goes
 
-Every follow-up prompt (completion, repair, language rewrite, connections)
-has a reply box under the answer, shown once the prompt is copied and kept
+Every follow-up prompt (completion, repair, language rewrite, connections,
+the overview's next action) has a reply box under the answer, shown once the prompt is copied and kept
 across a reload. Nothing is pasted into the answer it fixes or completes: a
 `fill` reply is merged into the analysis the prompt was built from, a whole
 answer replaces the old one, and text with no JSON in it (or the prompt
 pasted back) is not read, so the answer stays as it is.
+
+The next-action prompt carries the analysis as it stands, under the same
+untrusted-material label as the first prompt, so edits made in the app are
+kept and a pasted-back prompt is recognised. It asks for the whole analysis
+again, with only that change made.
 
 This is an adaptive single-pass completion layer. A future multi-packet merge
 protocol would require its own base-revision binding, conflict rules, and

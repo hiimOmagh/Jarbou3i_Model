@@ -52,6 +52,8 @@
 .j-brief-signals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-5); }
 .j-brief-signal[data-tone="warn"] { border-block-start-color: var(--j-warn); }
 .j-brief-signal > p { margin: 0; color: var(--j-fg); font-size: var(--j-t-14); line-height: 1.55; overflow-wrap: anywhere; }
+.j-brief-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); margin-block-start: var(--j-s-1); }
+.j-brief-acts > [hidden] { display: none; }
 
 /* How the conclusion is built: its steps, each a record that ends on its link. */
 .j-brief-steps {

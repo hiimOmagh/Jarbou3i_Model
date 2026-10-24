@@ -21,7 +21,7 @@ test('shared results orientation prioritizes decision context across both lenses
   await expect(orientation.locator('[data-orientation="gate"] strong')).toHaveText('Do not publish yet');
   await expect(orientation.locator('[data-orientation="metrics"]')).toContainText('Decision readiness');
   await expect(orientation.locator('[data-orientation="uncertainty"]')).not.toContainText('—');
-  const promotedNextAction = (await orientation.locator('[data-orientation="action"] p').textContent())?.trim();
+  const promotedNextAction = (await orientation.locator('[data-next-action]').textContent())?.trim();
   expect(promotedNextAction).toBeTruthy();
   expect(promotedNextAction).not.toBe('—');
   await expect(page.locator('[data-diagnostic="next"]')).toContainText(promotedNextAction);
@@ -109,4 +109,44 @@ test('the analysis’s own assessment is shown as its claim, in the page languag
   await expect(assessment.locator('p')).toHaveText('Weakest layer: Evidence & assumptions · Publication risk: medium');
   await page.locator('#langFr').click();
   await expect(assessment.locator('p')).toHaveText('Couche la plus faible : Preuves & hypothèses · Risque de publication : moyen');
+});
+
+test('the recommended next action is asked of the AI, whose whole answer comes back in the reply box', async ({ page }) => {
+  const data = JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/sample-analysis-en.json`, 'utf8'));
+  await page.goto('./');
+  await page.locator('#langEn').click();
+  await openStep(page, "answer");
+  await page.locator('#jsonInput').fill(JSON.stringify(data));
+  await page.locator('#importBtn').click();
+  // What the page copies, so the test reads the prompt it would paste.
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator.clipboard, "writeText", { configurable: true, value: async (text) => { window.__copied.push(text); } });
+  });
+  const next = (await page.locator('[data-next-action]').textContent()).trim();
+  await expect(page.locator('#improveAnswer')).toBeHidden();
+  await page.locator('#improveCopy').click();
+  await expect(page.locator('#improveStatus')).toHaveText(/^Prompt copied/);
+  const prompt = await page.evaluate(() => window.__copied.at(-1));
+  expect(prompt).toContain(`Improve your analysis by doing this: ${next}\n`);
+  // The analysis goes with it as data, so edits made in the app are kept.
+  expect(JSON.parse(prompt.split('UNTRUSTED_ANALYSIS_MATERIAL_JSON:\n')[1]).subject.title).toBe(data.subject.title);
+
+  // The reply is awaited across a reload.
+  await page.reload();
+  await page.locator('#improveAnswer').click();
+  const reply = page.locator('#continuationInput');
+  await expect(reply).toBeFocused();
+  await expect(page.locator('#continuationField label')).toHaveText('The AI’s reply');
+  await expect(reply).toHaveAttribute('placeholder', 'Paste the AI’s reply here. The improved answer replaces the one above.');
+  // The prompt pasted back is not read as the improved answer.
+  await reply.fill(prompt);
+  await expect(page.locator('#jsonStatus')).toHaveText(/^This text holds no reply to read/);
+  await expect(page.locator('#continuationField')).toBeVisible();
+
+  const improved = { ...data, subject: { ...data.subject, executive_thesis: 'An improved thesis.' } };
+  await reply.fill(`\`\`\`json\n${JSON.stringify(improved)}\n\`\`\``);
+  await expect(page.locator('#continuationField')).toBeHidden();
+  await page.locator('#importBtn').click();
+  await expect(page.locator('[data-orientation="conclusion"] > p')).toHaveText('An improved thesis.');
 });

@@ -71,6 +71,15 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The next action, asked of the AI
+
+- The overview's recommended next action has a button, "Copy a prompt to do
+  this", when it is a change the analysis can take (not the all-clear). The
+  prompt asks the AI to make that change and resend the whole analysis; the
+  analysis goes with it, so edits made in the app are kept. The reply goes
+  in the reply box, kept across a reload, and the improved answer replaces
+  the old one (AR/EN/FR, both lenses).
+
 ### Assumptions read in full
 
 - An assumption now says what follows if it is wrong, as the report

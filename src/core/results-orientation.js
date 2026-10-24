@@ -22,6 +22,7 @@ export function createResultsOrientation({
   coverage,
   uncertainty,
   nextAction,
+  nextActionImprovable = false,
 } = {}) {
   if (!['strategic', 'biopolitical'].includes(lens)) {
     throw new TypeError('Results orientation requires a registered lens.');
@@ -43,5 +44,8 @@ export function createResultsOrientation({
     coverage: score(coverage),
     uncertainty: text(uncertainty),
     nextAction: text(nextAction),
+    // The next action is a change the analysis itself could take, not the
+    // all-clear: the AI can be asked to make it.
+    improvable: Boolean(nextActionImprovable) && text(nextAction, '') !== '',
   });
 }

@@ -204,6 +204,7 @@ const I18N = {
     replyPlaceholderParts: "الصق رد الذكاء الاصطناعي هنا. تُضاف الأجزاء الناقصة إلى إجابتك أعلاه، وإن أرسل إجابة كاملة جديدة حلّت محلها.",
     replyPlaceholderLinks: "الصق رد الذكاء الاصطناعي هنا. تُضاف روابطه الجديدة إلى إجابتك أعلاه، وإن أرسل إجابة كاملة جديدة حلّت محلها.",
     replyPlaceholderWhole: "الصق رد الذكاء الاصطناعي هنا. تحلّ الإجابة المصحّحة محل الإجابة أعلاه.",
+    replyPlaceholderImproved: "الصق رد الذكاء الاصطناعي هنا. تحلّ الإجابة المحسّنة محل الإجابة أعلاه.",
     replyNotRead: "لا يحوي هذا النص ردًّا يمكن قراءته، لذا بقيت إجابتك كما هي. أرسل الموجِّه إلى الذكاء الاصطناعي، ثم الصق ردّه هنا: جزء JSON الذي يبدأ بـ {.",
     engineTitle: "خريطة محرك التحليل",
     engineSubtitle:
@@ -532,6 +533,7 @@ const I18N = {
     replyPlaceholderParts: "Paste the AI’s reply here. Its missing parts are added to your answer above; a whole new answer replaces it.",
     replyPlaceholderLinks: "Paste the AI’s reply here. Its new links are added to your answer above; a whole new answer replaces it.",
     replyPlaceholderWhole: "Paste the AI’s reply here. The corrected answer replaces the one above.",
+    replyPlaceholderImproved: "Paste the AI’s reply here. The improved answer replaces the one above.",
     replyNotRead: "This text holds no reply to read, so your answer was kept as it is. Send the prompt to the AI, then paste its reply here: the JSON part, starting with {.",
     engineTitle: "Analysis Engine Map",
     engineSubtitle:
@@ -871,6 +873,7 @@ const I18N = {
     replyPlaceholderParts: "Collez ici la réponse de l’IA. Les parties manquantes sont ajoutées à votre réponse ci-dessus ; une réponse complète la remplace.",
     replyPlaceholderLinks: "Collez ici la réponse de l’IA. Ses nouveaux liens sont ajoutés à votre réponse ci-dessus ; une réponse complète la remplace.",
     replyPlaceholderWhole: "Collez ici la réponse de l’IA. La réponse corrigée remplace celle ci-dessus.",
+    replyPlaceholderImproved: "Collez ici la réponse de l’IA. La réponse améliorée remplace celle ci-dessus.",
     replyNotRead: "Ce texte ne contient aucune réponse à lire ; votre réponse a donc été gardée telle quelle. Envoyez le prompt à l’IA, puis collez sa réponse ici : la partie JSON, qui commence par {.",
     engineTitle: "Carte du moteur d’analyse",
     engineSubtitle:
@@ -1574,7 +1577,7 @@ async function restoreTrip(untouched, record) {
   if (typeof record.prompt === "string") state.lastPrompt = record.prompt;
   if (Array.isArray(record.completion?.targets)) completionBase = record.completion;
   if (typeof record.repair === "string") repairBase = record.repair;
-  if (["repair", "language", "completion", "links"].includes(record.reply_for)) replyFor = record.reply_for;
+  if (["repair", "language", "completion", "links", "improve"].includes(record.reply_for)) replyFor = record.reply_for;
   if (typeof record.verdict?.text === "string") {
     cutOffVerdict = { text: record.verdict.text, cutOff: record.verdict.cutOff === true };
   }
@@ -2530,7 +2533,8 @@ function syncReplyBox(truncated) {
     kind === "continue" ? "continuationPlaceholder"
       : kind === "completion" ? "replyPlaceholderParts"
         : kind === "links" ? "replyPlaceholderLinks"
-          : "replyPlaceholderWhole";
+          : kind === "improve" ? "replyPlaceholderImproved"
+            : "replyPlaceholderWhole";
   label.textContent = t(label.dataset.i18n);
   input.placeholder = t(input.dataset.i18nPlaceholder);
 }
@@ -2549,9 +2553,9 @@ function validateJsonInput() {
     $("importBtn").textContent = t("importAnalysis");
     $("repairPromptBtn").disabled = true;
     $("repairPromptBtn").textContent = t("repairPrompt");
-    // An empty answer has nothing to fix or complete; the new links asked
-    // for the analysis on screen are still awaited.
-    if (replyFor !== "links") replyFor = null;
+    // An empty answer has nothing to fix or complete; the new links or the
+    // improvement asked for the analysis on screen are still awaited.
+    if (!["links", "improve"].includes(replyFor)) replyFor = null;
     syncReplyBox(false);
     $("jsonStatus").dataset.tone = "idle";
     $("jsonStatus").textContent = t("jsonWaiting");
@@ -2913,9 +2917,9 @@ function validateJsonInput() {
     }
     $("pasteCard").classList.add("ready");
     $("pasteCard").classList.remove("invalid");
-    // A whole answer needs no reply, except the new links asked for it or
-    // the rewrite asked while it is still in the wrong language.
-    if (replyFor !== "links" && !(replyFor === "language" && languageMismatch)) replyFor = null;
+    // A whole answer needs no reply, except the new links or improvement
+    // asked for it, or the rewrite asked while it is still in the wrong language.
+    if (!["links", "improve"].includes(replyFor) && !(replyFor === "language" && languageMismatch)) replyFor = null;
     syncReplyBox(false);
     return analysis;
   } catch (e) {
@@ -5316,7 +5320,11 @@ function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
   // The topic, then the verdict as the brief's heading and why; the
   // conclusion and its figures follow.
-  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p>${escapeHtml(model.nextAction)}</p></div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
+  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
+}
+// The next action, asked of the AI; its reply goes in the reply box.
+function improvePromptHtml() {
+  return `<div class="j-brief-acts"><button class="j-btn" type="button" id="improveCopy">${escapeHtml(labelText("Copy a prompt to do this", "نسخ موجِّه لتنفيذ ذلك", "Copier un prompt pour le faire"))}</button><button class="j-btn" data-variant="ghost" type="button" id="improveAnswer"${replyFor === "improve" ? "" : " hidden"}>${escapeHtml(labelText("Go to the reply box", "الانتقال إلى مربع الرد", "Aller à la zone prévue"))}</button></div><p id="improveStatus" role="status"></p>`;
 }
 function authoredText(...values) {
   for (const value of values) {
@@ -5563,6 +5571,8 @@ function wireResultsExplanation(lens) {
       });
     };
   });
+  $("improveCopy")?.addEventListener("click", copyImprovementPrompt);
+  $("improveAnswer")?.addEventListener("click", openAnswerBox);
 }
 // The analysis’s own next improvement, else the structure’s; the overview and the report agree.
 function strategicNextAction(a, health) {
@@ -5614,6 +5624,8 @@ function renderOverview() {
     coverage: b.analyticalCoverage,
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: strategicNextAction(a, h),
+    // The analysis's own next step, or a gap the structure check found.
+    nextActionImprovable: strategicNextAction(a, h) !== h.next || h.missing.length > 0,
   });
   return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}${strategicSelfAssessmentHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${nextActionHtml(h.next)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}<section aria-labelledby="schemaHealthTitle"><h4 id="schemaHealthTitle">${t("schemaHealth")}</h4>${diagNotesHtml(h.missing, t("healthGood"))}</section></div>`;
 }
@@ -6449,6 +6461,7 @@ function renderBiopoliticalOverview() {
     coverage: scores.analyticalCoverage,
     uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: health.next,
+    nextActionImprovable: health.missing.length > 0,
   });
   return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="j-diag">${bioGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metrics}</dl><div class="j-rec"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p class="j-brief-desc">${escapeHtml(BIO.ui(state.lang, "formula"))}</p>${scoreBandsHtml()}</div>${healthStatsHtml(health.pct, scores.provenance, health.missing.length)}${nextActionHtml(health.next)}${diagNotesHtml(health.missing, health.next, "warnings")}</div>`;
 }
@@ -6533,19 +6546,43 @@ async function copyConnectionsPrompt(event) {
   replyFor = "links";
   syncReplyBox(false);
   keepTrip();
+  // The reply box awaits the reply even when the prompt is copied by hand.
+  $("connGapsAnswer").hidden = false;
   if (!(await copyText(prompt))) {
     toast(t("copyFailed"), "crit");
     showModal(button.textContent, prompt, button);
     return;
   }
-  const copied = labelText(
+  // Said beside the button, where the next step is, not in a toast too.
+  $("connGapsStatus").textContent = replyPromptCopiedText();
+}
+function replyPromptCopiedText() {
+  return labelText(
     "Prompt copied. Paste it into the same AI chat, then paste the AI’s reply in the reply box under your answer.",
     "نُسخ الموجِّه. الصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق رده في مربع الرد تحت إجابتك.",
     "Prompt copié. Collez-le dans la même conversation avec l’IA, puis collez sa réponse dans la zone prévue sous votre réponse.",
   );
-  // Said beside the button, where the next step is, not in a toast too.
-  $("connGapsStatus").textContent = copied;
-  $("connGapsAnswer").hidden = false;
+}
+// The overview's next action, asked of the AI: the whole analysis comes back
+// with it made, in the reply box, and replaces the answer.
+async function copyImprovementPrompt(event) {
+  const button = event.currentTarget;
+  const lang = ["ar", "en", "fr"].includes(state.analysis?.language) ? state.analysis.language : state.analysisLang;
+  const action = button.closest('[data-orientation="action"]').querySelector("[data-next-action]").textContent;
+  const prompt = AI_INTERCHANGE.buildImprovementPrompt(state.analysis, action, lang);
+  // A whole answer is awaited, not parts of an earlier one.
+  completionBase = null;
+  replyFor = "improve";
+  syncReplyBox(false);
+  keepTrip();
+  // The reply box awaits the reply even when the prompt is copied by hand.
+  $("improveAnswer").hidden = false;
+  if (!(await copyText(prompt))) {
+    toast(t("copyFailed"), "crit");
+    showModal(button.textContent, prompt, button);
+    return;
+  }
+  $("improveStatus").textContent = replyPromptCopiedText();
 }
 function openAnswerBox() {
   state.shellSection = "workflow";
