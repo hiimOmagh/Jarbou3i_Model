@@ -241,9 +241,9 @@ export function createApplicationShell({
         );
     }
 
-    // Below 900px density and theme sit in the Display menu (shell.css): it
-    // opens under its button and closes once a choice is made, so it never
-    // covers the page it changes.
+    // Density and theme sit in the header's menu (shell.css), and on a phone
+    // the commands too: it opens under its button and closes once a choice
+    // is made, so it never covers the page it changes.
     const displayMenu = byId("displayMenu");
     if (displayMenu?.showPopover) {
       let openWidth = 0;
@@ -263,7 +263,7 @@ export function createApplicationShell({
         if (event.target.closest("button") && displayMenu.matches(":popover-open")) displayMenu.hidePopover();
       });
       // A rotation moves its button: it closes rather than float where the
-      // button was (or past 900px, where its controls are back in the row).
+      // button was.
       window.addEventListener("resize", () => {
         if (displayMenu.matches(":popover-open") && document.documentElement.clientWidth !== openWidth) displayMenu.hidePopover();
       });

@@ -71,7 +71,8 @@ tests use.
 - The header holds:
   - global context: the product, the lens, and the title of the open case;
   - the save state, as a kernel status with shape, colour and text;
-  - workspaces, language, density and theme.
+  - workspaces, language, and a menu with density and theme (and, on a
+    phone, the commands).
 - The bar holds:
   - the three phases, with the current one marked by more than colour;
   - local processing;

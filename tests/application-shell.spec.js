@@ -178,8 +178,9 @@ test("a phone's first screen holds the topic field and one primary action", asyn
   }
 });
 
-test("below 900px density and theme are named in a Display menu that stays on screen", async ({ page }) => {
+test("density and theme are named in the header's menu, which stays on screen", async ({ page }) => {
   for (const { width, language, names } of [
+    { width: 1280, language: "#langEn", names: ["Density", "Theme"] },
     { width: 768, language: "#langFr", names: ["Densité", "Thème"] },
     { width: 390, language: "#langAr", names: ["الكثافة", "الوضع"] },
   ]) {
@@ -207,13 +208,40 @@ test("below 900px density and theme are named in a Display menu that stays on sc
     await expect(menu).toBeHidden();
     await expect(page.locator("body")).not.toHaveAttribute("data-density", density);
   }
-  // A rotation closes it; above 900px the controls are back in the header's row.
+  // A rotation closes it.
   await page.locator("#displayMenuBtn").click();
   await expect(page.locator("#displayMenu")).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect.poll(() => page.locator("#displayMenu").evaluate((menu) => menu.matches(":popover-open"))).toBe(false);
-  await expect(page.locator("#displayMenuBtn")).toBeHidden();
-  await expect(page.locator("#themeBtn")).toBeVisible();
+  await expect(page.locator("#themeBtn")).toBeHidden();
+});
+
+// On a phone the header is three short rows: the wordmark with the language
+// and the menu, which holds the commands, then the title, then the lens and
+// the save state.
+test("a phone's header keeps the language and the menu beside the wordmark", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+  await page.locator("#langAr").click();
+  const middle = async (selector) => {
+    const box = await page.locator(selector).boundingBox();
+    return box.y + box.height / 2;
+  };
+  const mark = await middle(".j-shell-mark");
+  expect(Math.abs((await middle("#languageSegment")) - mark)).toBeLessThanOrEqual(4);
+  expect(Math.abs((await middle("#displayMenuBtn")) - mark)).toBeLessThanOrEqual(4);
+  expect(await middle(".j-shell-brand h1")).toBeGreaterThan(mark + 24);
+  await expect(page.locator("#commandPaletteBtn")).toBeHidden();
+  // The keyboard follows the rows: the language, the menu, the save state.
+  await page.locator("#langAr").focus();
+  await page.keyboard.press("Tab");
+  await expect(page.locator("#displayMenuBtn")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.locator("#workspaceSaveState")).toBeFocused();
+  await page.locator("#displayMenuBtn").click();
+  await expect(page.locator("#menuCommandsBtn")).toHaveText("الأوامر");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(page.locator("#commandPaletteBtn")).toBeVisible();
 });
 
 test("the open case's title has its own header row, not a few letters", async ({ page }) => {

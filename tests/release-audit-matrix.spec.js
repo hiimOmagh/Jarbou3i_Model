@@ -3,6 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { openStep } from "./helpers/guided-flow.js";
+import { displayControl } from "./helpers/display-menu.js";
 
 const LOCALES = [
   { id: "ar", dir: "rtl", validationPrefix: "فشل فحص الصيغة" },
@@ -62,7 +63,7 @@ async function synchronizeAuditState(page, locale, theme) {
   const wantsDark = theme === "dark";
   const isDark = await page.locator("body").evaluate((body) => body.classList.contains("dark"));
   if (isDark !== wantsDark) {
-    const themeButton = page.locator("#themeBtn");
+    const themeButton = await displayControl(page, "themeBtn");
     await themeButton.focus();
     await expect(themeButton).toBeFocused();
     await themeButton.press("Enter");

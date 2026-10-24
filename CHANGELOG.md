@@ -71,6 +71,17 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### A lighter header
+
+- Density and theme moved into one Menu (⋯) at every width, so the header
+  holds five controls instead of six. On a phone the header is three short
+  rows: the wordmark with the language and the Menu, which also holds
+  Commands there; the title; the lens and the save state. At 375px it is
+  about 25px shorter (AR/EN/FR). The save state now ends the row, so the
+  keyboard follows the rows on a phone.
+- The command list still offers density and theme while they sit in the
+  closed Menu, and gives focus back to the Menu's button after one runs.
+
 ### A place for every AI reply
 
 - The reply to a completion, repair, language or connections prompt has its

@@ -28,11 +28,13 @@
   color: var(--j-fg-muted); font-size: var(--j-t-13);
 }
 .j-shell-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); margin-inline-start: auto; }
-/* Density and theme: in the header's row, or below 900px in the Display menu,
-   a popover the app places under its button. */
+/* Density and theme, and on a phone the commands: in the header's menu, a
+   popover the app places under its button (in the header's row where
+   popovers are not supported). */
 .j-shell-display { display: none; }
 .j-shell-tools { display: contents; color: inherit; }
 .j-shell-tool-name { display: none; }
+.j-shell-tools > #menuCommandsBtn { display: none; }
 
 .j-shell-bar {
   display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3);
@@ -84,7 +86,6 @@
 }
 /* Without popovers the controls stay in the header's row. */
 @supports selector(:popover-open) {
-@media (max-width: 900px) {
   .j-shell-display { display: inline-flex; }
   .j-shell-tools { display: none; }
   .j-shell-tools:popover-open {
@@ -96,9 +97,25 @@
   .j-shell-tools .j-btn, .j-shell-tools .j-btn[data-size="icon"] { width: 100%; padding: 0 var(--j-s-3); justify-content: flex-start; }
   .j-shell-tool-name { display: inline; }
   .j-shell-tools #densityLabel { margin-inline-start: auto; color: var(--j-fg-muted); }
+@media (max-width: 720px) {
+  .j-shell-tools > #menuCommandsBtn { display: inline-flex; }
+  .j-shell-cluster > #commandPaletteBtn { display: none; }
 }
 }
 @media (max-width: 720px) {
+  /* Three short rows: the wordmark with the language and the menu, then
+     the title, then the lens and the save state. The mascot waits for a
+     wider screen: the guide just below shows it. */
+  .j-shell-top { gap: var(--j-s-2); }
+  .j-shell-brand, .j-shell-cluster { display: contents; }
+  .j-shell-brand img { display: none; }
+  .j-shell-mark { padding-inline-end: 0; border-inline-end: 0; font-size: var(--j-t-16); }
+  .j-shell-cluster > .j-seg { order: 1; margin-inline-start: auto; }
+  .j-shell-cluster > .j-shell-display { order: 1; }
+  .j-shell-brand-text { order: 2; flex-basis: 100%; }
+  /* Its controls follow the reading order: language, menu, save state. */
+  .j-shell-tools > .j-btn { order: 1; }
+  .j-shell-cluster > .j-chip, .j-shell-cluster > .j-save-light { order: 4; }
   /* A phone's first screen holds the topic field; the lead line waits for a wider one. */
   .j-shell-phase-copy small, .j-shell-trust, .j-shell-lead { display: none; }
   .j-shell-nav { flex: 1 1 100%; }

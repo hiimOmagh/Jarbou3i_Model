@@ -26,13 +26,31 @@ test.describe("Command palette", () => {
     await expect(page.locator("#commandPalette")).toBeHidden();
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 
-    await page.locator("#commandPaletteBtn").click();
+    // On a phone the commands are in the header's menu, which closes first.
+    const header = page.locator("#commandPaletteBtn");
+    const opener = (await header.isVisible()) ? header : page.locator("#displayMenuBtn");
+    await opener.click();
+    if (opener !== header) await page.locator("#menuCommandsBtn").click();
+    await expect(page.locator("#displayMenu")).toBeHidden();
     await page.keyboard.type("zzzz");
     await expect(options(page)).toHaveCount(0);
     await expect(page.locator("#commandPaletteEmpty")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.locator("#commandPalette")).toBeHidden();
-    await expect(page.locator("#commandPaletteBtn")).toBeFocused();
+    await expect(opener).toBeFocused();
+  });
+
+  test("runs the theme from the header's closed menu and gives focus to its button", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    const dark = await page.locator("body").evaluate((body) => body.classList.contains("dark"));
+    await page.keyboard.press("Control+k");
+    await page.keyboard.type("toggle theme");
+    await expect(options(page)).toHaveCount(1);
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#commandPalette")).toBeHidden();
+    await expect.poll(() => page.locator("body").evaluate((body) => body.classList.contains("dark"))).toBe(!dark);
+    await expect(page.locator("#displayMenuBtn")).toBeFocused();
   });
 
   test("jumps to a case-file section of the open analysis", async ({ page }) => {

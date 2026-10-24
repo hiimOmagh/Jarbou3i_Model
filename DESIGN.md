@@ -292,7 +292,7 @@ Rounds and rules. Pills (999px) for every button, segment, chip and phase; 10px 
 - **Error:** crit-red edge with `aria-invalid`.
 
 ### Navigation
-- **Header:** an enamel bar closed by a 3px ink rule: mascot, Jarbou3i wordmark (18px/700 with a 2px rail divider), title and lead. Controls collapse to icons under 900px and density/theme move into a Display popover. The lead hides on phones so the topic field shows first.
+- **Header:** an enamel bar closed by a 3px ink rule: mascot, Jarbou3i wordmark (18px/700 with a 2px rail divider), title and lead. Controls in reading order: lens, Commands, language, Menu, save state. Density and theme live in the Menu (a ⋯ popover) at every width; other controls collapse to icons under 900px. On phones (≤720px) the header is three short rows: the wordmark (16px, no divider) with the language and the Menu, which then holds Commands too; the title; the lens and the save state. The mascot waits for a wider screen (the guide below shows it) and the lead hides so the topic field shows first.
 - **Case outline:** a vertical line of 16px stations; entries before the current one are ridden in ink, the current one is washed in signal and double-ringed in ink.
 
 ### Stations (signature)

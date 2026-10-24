@@ -41,8 +41,11 @@ export function createCommandPalette({ document, translate }) {
         : el.dataset.shellNav ? `[data-shell-nav="${escape(el.dataset.shellNav)}"]`
           : el.dataset.bioReview ? `#reviewNav [data-bio-review="${escape(el.dataset.bioReview)}"]`
             : `#reviewNav [data-review="${escape(el.dataset.review || "")}"]`;
+    // Density and theme sit in the header's closed menu: listed while its
+    // button is on screen.
+    const inMenu = (el) => el.closest("#displayMenu") && byId("displayMenuBtn")?.getClientRects().length;
     return entries
-      .filter(([el, text]) => el && text && !el.disabled && el.getClientRects().length)
+      .filter(([el, text]) => el && text && !el.disabled && (el.getClientRects().length || inMenu(el)))
       .map(([el, text]) => ({ el, text, selector: selectorOf(el) }));
   }
 
@@ -81,8 +84,10 @@ export function createCommandPalette({ document, translate }) {
     command.el.click();
     // Focus lands on the control just used, found again if the click
     // re-rendered it, unless the control moved focus itself (an outline jump,
-    // a dialog of its own).
-    const target = command.el.isConnected ? command.el : document.querySelector(command.selector);
+    // a dialog of its own). A control in the closed header menu gives it to
+    // the menu's button.
+    const found = command.el.isConnected ? command.el : document.querySelector(command.selector);
+    const target = found && !found.getClientRects().length && found.closest("#displayMenu") ? byId("displayMenuBtn") : found;
     const focused = document.activeElement;
     const moved = focused && focused !== document.body && focused !== returnTo;
     if (target && !target.disabled && !moved) target.focus();
@@ -107,6 +112,13 @@ export function createCommandPalette({ document, translate }) {
 
   function bind() {
     byId("commandPaletteBtn").addEventListener("click", (event) => open(event.currentTarget));
+    // On a phone the commands are in the header's menu: it closes first, so
+    // focus is back on its button when the command list closes.
+    byId("menuCommandsBtn")?.addEventListener("click", () => {
+      const menu = byId("displayMenu");
+      if (menu.matches(":popover-open")) menu.hidePopover();
+      open(byId("displayMenuBtn"));
+    });
     byId("commandPalette").addEventListener("close", () => {
       if (!ran && returnTo?.isConnected) returnTo.focus();
     });
