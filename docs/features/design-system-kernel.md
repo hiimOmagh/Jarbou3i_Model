@@ -408,12 +408,17 @@ its number and name say which it is.
 - **Layers:** `.j-layers` holds one `.j-layer` per layer: an `h4` whose
   `button.j-layer-head` (`data-acc` or `data-bio-acc`) has `aria-expanded` and
   `aria-controls`, and a `.j-layer-body` region that is `hidden` when closed
-  and open in print. A Strategic layer's records are `.j-rec` cards
+  and open in print. No box: each layer is a station on one line, its ring
+  (`.j-layer-n`) over a `--j-track` stretch (`.j-layer::before`) in its colour
+  down to the next ring; the body indents past the line (logical padding, so
+  Arabic mirrors it), and the line stops at the last ring while that layer is
+  closed. A Strategic layer's records are `.j-rec` cards
   (`data-records="layer"`, `itemCard()`), their model score a fact
   (`modelMetricFact()`); a Biopolitical layer's are `bioRecordHtml()` cards.
 
 Tests: `tests/evidence-intelligence.spec.js` (contracts of the map and the
-layers, a record card, opening and closing a layer).
+layers, a record card, opening and closing a layer), `tests/case-file.spec.js`
+(the line through every ring, no box, records clear of the line in Arabic).
 
 ## Overview
 

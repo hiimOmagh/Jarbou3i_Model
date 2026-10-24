@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The layers ride the line
+
+- The case file's layers are no longer boxes: each is a station on one
+  line, its numbered ring in its layer's colour with its name beside it,
+  and a stretch of line in that colour down to the next station. An open
+  layer's records sit beside its stretch; Arabic mirrors it (both lenses,
+  light and dark).
+
 ### Each open item said once
 
 - The overview's diagnostics no longer repeat what the gate lists: the

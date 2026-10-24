@@ -72,25 +72,31 @@
   .j-engine-map:not([data-layers="9"]) .j-engine-text { order: 1; }
 }
 
-/* The case file's layers. A layer's head: its number, name, records and
-   chevron, its description under its name; its body holds its records. */
-.j-layers { display: grid; gap: var(--j-s-3); }
-.j-layer {
-  min-width: 0; border: 2px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
+/* The case file's layers ride the model's line, with no box: each layer a
+   station, its name beside it, and its stretch of line down to the next
+   station, beside its records while it is open. A layer's head: its number,
+   name, records and chevron, its description under its name. The ring's
+   centre sits the head's padding plus 15px in. */
+.j-layers { --j-layer-pad: var(--j-s-4); display: grid; }
+.j-layer { position: relative; min-width: 0; }
+.j-layer::before {
+  content: ""; position: absolute; inset-block-start: calc(var(--j-s-3) + 15px); inset-inline-start: calc(var(--j-layer-pad) + 15px - var(--j-track) / 2);
+  inline-size: var(--j-track); block-size: 100%; background: var(--j-layer, var(--j-line-strong));
 }
+/* The line ends at the last station, unless that layer is open. */
+.j-layer:last-child:has(> .j-layer-body[hidden])::before { display: none; }
 .j-layer-h { margin: 0; font: inherit; }
 .j-layer-head {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: var(--j-s-1) var(--j-s-3);
-  inline-size: 100%; min-height: 44px; padding: var(--j-s-3) var(--j-s-4); border: 0; border-radius: var(--j-r-2);
+  inline-size: 100%; min-height: 44px; padding: var(--j-s-3) var(--j-layer-pad); border: 0; border-radius: var(--j-r-2);
   background: none; color: var(--j-fg); font: inherit; text-align: start; cursor: pointer;
 }
 .j-layer-head:hover { background: var(--j-raise); }
 .j-layer-head:focus-visible { outline: 3px solid var(--j-signal); outline-offset: -3px; }
-.j-layer-head[aria-expanded="true"] { border-end-start-radius: 0; border-end-end-radius: 0; }
-/* Its number in a ring of its line's colour, as on the map. */
+/* Its number in a ring of its line's colour, as on the map, over the line. */
 .j-layer-n {
-  grid-row: 1 / span 2; align-self: start; display: grid; place-items: center; inline-size: 30px; block-size: 30px; border-radius: 50%;
-  border: var(--j-station) solid var(--j-layer, var(--j-line-strong)); color: var(--j-fg); font: 700 var(--j-t-12)/1 var(--j-font-ui);
+  grid-row: 1 / span 2; align-self: start; position: relative; z-index: 1; display: grid; place-items: center; inline-size: 30px; block-size: 30px; box-sizing: border-box; border-radius: 50%;
+  border: var(--j-station) solid var(--j-layer, var(--j-line-strong)); background: var(--j-panel); color: var(--j-fg); font: 700 var(--j-t-12)/1 var(--j-font-ui);
 }
 .j-layer-name { font-size: var(--j-t-16); font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
 .j-layer-text { grid-column: 2 / -1; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; overflow-wrap: anywhere; }
@@ -102,8 +108,9 @@
   border-right: 2px solid var(--j-fg-muted); border-bottom: 2px solid var(--j-fg-muted); transform: translateY(-2px) rotate(45deg);
 }
 .j-layer-head[aria-expanded="true"] .j-layer-chev { transform: translateY(2px) rotate(-135deg); }
-/* No display here: a closed body keeps the browser's [hidden]. */
-.j-layer-body { padding: var(--j-s-4); border-block-start: 1px solid var(--j-line); }
+/* No display here: a closed body keeps the browser's [hidden]. Its records
+   sit beside the line, under the layer's name. */
+.j-layer-body { padding-block: var(--j-s-2) var(--j-s-5); padding-inline: calc(var(--j-layer-pad) + 30px + var(--j-s-3)) var(--j-layer-pad); }
 
 @media (prefers-reduced-motion: no-preference) {
   .j-layer-chev { transition: transform var(--j-dur-2) var(--j-ease-out); }
@@ -118,7 +125,7 @@
   .j-engine-map[data-loaded="true"] :is(.j-engine-n, .j-engine-name, .j-engine-count) { grid-row: 1; padding-block-start: 0; }
   .j-engine-map[data-loaded="true"] .j-engine-count { grid-column: 3; }
   .j-engine-map[data-loaded="true"] .j-engine-text { display: none; }
-  .j-layer-head, .j-layer-body { padding: var(--j-s-3); }
+  .j-layers { --j-layer-pad: var(--j-s-3); }
 }
 /* A printed case file shows every layer open. */
 @media print {
@@ -126,7 +133,7 @@
   .j-layer-chev { display: none; }
 }
 @media (forced-colors: active) {
-  .j-engine-step, .j-layer { border-color: CanvasText; }
+  .j-engine-step { border-color: CanvasText; }
   .j-engine-step[aria-current="true"] { outline: 2px solid Highlight; }
-  .j-engine-map > li::before { forced-color-adjust: none; background: CanvasText; }
+  .j-engine-map > li::before, .j-layer::before { forced-color-adjust: none; background: CanvasText; }
 }

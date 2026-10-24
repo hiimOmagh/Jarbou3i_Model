@@ -79,6 +79,40 @@ test.describe("Case file", () => {
     await expect(entry("pillars")).toHaveAttribute("aria-current", "location");
   });
 
+  test("the layers ride one line, a station each, with no box", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langAr").click();
+    await page.locator("#loadSampleBtn").click();
+    const layers = page.locator("#case-pillars .j-layer");
+    await expect(layers).toHaveCount(6);
+    // In Arabic the line runs down the right, through each ring's centre.
+    const lines = () => layers.evaluateAll((all) => all.map((layer) => {
+      const box = layer.getBoundingClientRect();
+      const ring = layer.querySelector(".j-layer-n").getBoundingClientRect();
+      const line = getComputedStyle(layer, "::before");
+      const lineLeft = box.right - parseFloat(line.right) - parseFloat(line.width);
+      const body = layer.querySelector(".j-layer-body");
+      return {
+        border: getComputedStyle(layer).borderTopWidth,
+        offCentre: Math.abs(ring.left + ring.width / 2 - (lineLeft + parseFloat(line.width) / 2)),
+        shown: line.display !== "none",
+        clear: body.hidden || body.getBoundingClientRect().right - parseFloat(getComputedStyle(body).paddingRight) <= lineLeft,
+      };
+    }));
+    const closed = await lines();
+    for (const layer of closed) {
+      expect(layer.border).toBe("0px");
+      expect(layer.offCentre).toBeLessThan(1);
+    }
+    // The line ends at the last station while that layer is closed.
+    expect(closed.map((layer) => layer.shown)).toEqual([true, true, true, true, true, false]);
+    // Open, the last layer's stretch runs beside its records, clear of them.
+    await page.locator("#case-pillars .j-layer-head").last().click();
+    const open = (await lines()).at(-1);
+    expect(open.shown).toBe(true);
+    expect(open.clear).toBe(true);
+  });
+
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langAr").click();

@@ -174,6 +174,7 @@ The interface is Arabic-first and equally English and French. Every direction-se
 - 3px ink rules open cards, briefs, dialogs, the header and the evidence summary instead of card borders.
 - Stations: rings with a 4px edge; the current one gets a second ring, in its line's colour on the model map and in ink everywhere else.
 - The model map is one continuous line whose stretches are as long as the record counts.
+- The case file's layers ride a line too: a station per layer, its name beside it, and a 6px track in its colour down to the next station and beside its records when open. No box around a layer.
 - Light "daylight map" and dark "midnight enamel" themes carry the same tokens.
 
 ## Colors
@@ -258,7 +259,7 @@ Flat at rest. Depth comes from tone (platform, enamel, raised enamel) and from i
 
 ## Shapes
 
-Rounds and rules. Pills (999px) for every button, segment, chip and phase; 10px for fields, notes, options and small tiles; 16px for map steps, layer panels, choices and the bottom of dialogs; 4px for keys and code chips. Cards and dialogs square their top corners under the ink rule and round only the bottom. Stations are true circles with a 4px edge (`--j-station`); tracks are 6px (`--j-track`) and the map's line 8px. Chevrons are drawn from two 2px borders; icons are 18px stroked SVG (1.75 stroke, round caps), never glyphs.
+Rounds and rules. Pills (999px) for every button, segment, chip and phase; 10px for fields, notes, options and small tiles; 16px for map steps, choices and the bottom of dialogs; 4px for keys and code chips. Cards and dialogs square their top corners under the ink rule and round only the bottom. Stations are true circles with a 4px edge (`--j-station`); tracks are 6px (`--j-track`) and the map's line 8px. Chevrons are drawn from two 2px borders; icons are 18px stroked SVG (1.75 stroke, round caps), never glyphs.
 
 ## Components
 
