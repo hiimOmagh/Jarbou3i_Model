@@ -41,10 +41,13 @@ test("strategic evidence reads as record cards with their strength and risk", as
   await expectKernel(page, "#case-evidence");
   // The strength is drawn in steps and named as a score.
   await expect(evidence.first().getByRole("img")).toHaveAccessibleName(/^[1-5]\/5$/);
-  // An assumption's risk is a chip in words; its tone is only an edge.
+  // An assumption's risk is a chip in words; its tone is only an edge. The
+  // facts do not repeat a standard level, and say what follows if it is wrong.
   const assumption = page.locator('#case-evidence [data-records="assumptions"] > li').first();
   await expect(assumption.locator(".j-chip").first()).toHaveText(/risk/i);
-  await expect(assumption.locator("dt")).toHaveText(["Risk", "Disproving test"]);
+  await expect(assumption.locator("dt")).toHaveText(["Disproving test", "If wrong"]);
+  // A lone assumption takes the section's width.
+  await expect(page.locator('#case-evidence [data-records="assumptions"]')).not.toHaveAttribute("data-cols");
 });
 
 test("strategic contradictions and scenarios read as record cards", async ({ page }) => {

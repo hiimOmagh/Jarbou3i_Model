@@ -5684,12 +5684,17 @@ function renderEvidence() {
     const riskText = a.risk || a.risk_level || "";
     const risk = riskInfo(riskText);
     const tone = riskText ? riskTone(riskText) : "";
-    const riskDetail = ["low", "medium", "high"].includes(normalizeToken(riskText))
-      ? risk.label
-      : riskText || labelText("No explicit risk stated.", "لا توجد مخاطر مصرح بها.");
-    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${recordFact(t("risk"), escapeHtml(riskDetail))}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}</dl></article></li>`;
+    // A standard level is said by its chip; a risk in the AI's own words, or
+    // none, is a fact. What follows if it is wrong is shown as in the report.
+    const riskFact = ["low", "medium", "high"].includes(normalizeToken(riskText))
+      ? ""
+      : recordFact(t("risk"), escapeHtml(riskText || labelText("No explicit risk stated.", "لا توجد مخاطر مصرح بها.")));
+    const ifWrong = a.implication_if_wrong
+      ? recordFact(labelText("If wrong", "إذا كان خاطئًا"), escapeHtml(a.implication_if_wrong))
+      : "";
+    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
   };
-  return `<h3>${t("evidence")}</h3>${ev.length ? `<ol class="j-recs" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" data-records="assumptions" data-cols="2">${as.map(assumptionRecord).join("")}</ol>` : empty}`;
+  return `<h3>${t("evidence")}</h3>${ev.length ? `<ol class="j-recs" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
 }
 function download(name, text, type = "text/plain") {
   const blob = new Blob([text], { type });

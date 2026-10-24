@@ -71,6 +71,12 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Assumptions read in full
+
+- An assumption now says what follows if it is wrong, as the report
+  already did, and no longer repeats its risk level under the chip that
+  states it. A lone assumption uses the section's width (AR/EN/FR).
+
 ### Counts without boxes
 
 - Counts (records, occurrences, sources, connections) are figures under a
