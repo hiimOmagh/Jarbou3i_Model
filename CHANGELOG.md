@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Counts without boxes
+
+- Counts (records, occurrences, sources, connections) are figures under a
+  thin rule instead of grey boxes, and the evidence summary in Inspection
+  opens under an ink rule like the briefs. On a phone the counts wrap as one
+  line instead of a box per count: about 180px less before the record
+  search.
+
 ### The verdict sooner on a phone
 
 - On a phone the review's outline is one line of stations again, across

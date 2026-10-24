@@ -9,9 +9,11 @@
 .j-idir-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--j-s-3) var(--j-s-5); }
 .j-idir-head .j-lede { margin-bottom: 0; }
 
+/* Under an ink rule like the briefs and records, not in a box. */
+.j-evi { border: 0; border-block-start: var(--j-rule) solid var(--j-ink); border-radius: 0; background: transparent; }
 .j-evi > summary {
   display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--j-s-4);
-  padding: var(--j-s-3) var(--j-s-4);
+  padding: var(--j-s-3) 0;
 }
 .j-evi-title { display: grid; gap: var(--j-s-1); }
 .j-evi-title strong { font-size: var(--j-t-16); }
@@ -20,7 +22,7 @@
 /* Clusters beside gaps; the review queue and the matrix span the body. */
 .j-evi-body {
   display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 0 var(--j-s-4);
-  padding: 0 var(--j-s-4) var(--j-s-4); border-top: 1px solid var(--j-line);
+  padding: 0 0 var(--j-s-4); border-top: 1px solid var(--j-line);
 }
 .j-evi-sec { display: grid; gap: var(--j-s-3); align-content: start; min-width: 0; padding-top: var(--j-s-4); }
 .j-evi-sec h4 { margin: 0; font-size: var(--j-t-14); }
@@ -61,7 +63,6 @@
   .j-evi > summary { grid-template-columns: minmax(0, 1fr) auto; }
   .j-evi > summary > .j-stats { grid-area: 2 / 1 / 3 / -1; }
   .j-evi > summary::after { grid-area: 1 / 2; }
-  .j-evi-body { padding-inline: var(--j-s-3); }
   .j-evi-acts { justify-content: stretch; }
   .j-evi-acts .j-btn { flex: 1 1 auto; }
 }

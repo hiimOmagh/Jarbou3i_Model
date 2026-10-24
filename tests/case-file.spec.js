@@ -126,6 +126,10 @@ test.describe("Case file", () => {
       return stop.x >= line.x - 1 && stop.x + stop.width <= line.x + line.width + 1;
     }).toBe(true);
     await page.evaluate(() => window.scrollTo(0, 0));
+    // Counts wrap as one line of figures, not a column of boxes.
+    const counts = await page.locator(".j-idir-head > .j-stats").boundingBox();
+    expect(counts.height).toBeLessThanOrEqual(64);
+    expect(await page.locator(".j-idir-head > .j-stats > span").first().evaluate((count) => getComputedStyle(count).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
 
     const back = page.locator("#caseOutlineReturn");
     await expect(back).toBeHidden();

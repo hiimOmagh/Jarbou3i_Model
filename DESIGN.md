@@ -171,7 +171,7 @@ The interface is Arabic-first and equally English and French. Every direction-se
 **Key Characteristics:**
 - One typeface, Readex Pro, for Arabic and Latin; code alone in monospace.
 - Ink plates mark the current phase, the selected segment and the one primary action.
-- 3px ink rules open cards, briefs, dialogs and the header instead of card borders.
+- 3px ink rules open cards, briefs, dialogs, the header and the evidence summary instead of card borders.
 - Stations: rings with a 4px edge; the current one gets a second ring, in its line's colour on the model map and in ink everywhere else.
 - The model map is one continuous line whose stretches are as long as the record counts.
 - Light "daylight map" and dark "midnight enamel" themes carry the same tokens.
@@ -193,7 +193,7 @@ A neutral daylight ground with ink as the dominant accent, one interaction blue,
 ### Neutral
 - **Platform White** (`platform-white` / `midnight-enamel`): the page ground.
 - **Enamel White** (`enamel-white` / `midnight-panel`): panels, fields, station fills.
-- **Platform Grey** (`platform-grey` / `midnight-panel-2`): counts, check rows, table heads.
+- **Platform Grey** (`platform-grey` / `midnight-panel-2`): count chips, check rows, table heads. Count figures (`.j-stats`) sit on the page under a 2px rail rule, never in a grey box; on phones they wrap as one line of figure and name.
 - **Raised Enamel** (`raised-enamel` / `midnight-raise`): hover fills, toasts, menus.
 - **Hairline** (`hairline` / `midnight-hairline`): 1px dividers and quiet borders.
 - **Rail Grey** (`rail-grey` / `midnight-rail`): secondary button edges, unridden stations, chip edges.
