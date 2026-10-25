@@ -165,6 +165,23 @@ test("one title names both lenses, with what the tool is for under it", async ({
   await expect(page).toHaveTitle(`${name} — Jarbou3i Model`);
 });
 
+test("a phone keeps the page 16px from the screen's edges", async ({ page }) => {
+  await page.goto("./");
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    const edges = await page.evaluate(() =>
+      ["header", "main"].map((selector) => {
+        const rect = document.querySelector(selector).getBoundingClientRect();
+        return [Math.round(rect.left), Math.round(innerWidth - rect.right)];
+      }),
+    );
+    for (const [start, end] of edges) {
+      expect(start).toBeGreaterThanOrEqual(16);
+      expect(end).toBeGreaterThanOrEqual(16);
+    }
+  }
+});
+
 test("a phone's first screen holds the topic field and one primary action", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("./");

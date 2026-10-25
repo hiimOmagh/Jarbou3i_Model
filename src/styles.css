@@ -92,9 +92,7 @@ body[data-density="compact"] .app{padding-top:12px;padding-bottom:54px}
 @media(max-width:940px){
   .app{padding-inline:18px}
 }
+/* Text that no longer sits in a box needs the page's own 16px gutter on a phone. */
 @media(max-width:720px){
-  .app{padding-inline:12px}
-}
-@media(max-width:480px){
-  .app{padding-inline:9px}
+  .app{padding-inline:16px}
 }

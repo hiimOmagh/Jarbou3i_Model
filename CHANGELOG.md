@@ -71,6 +71,12 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Room at the edges on a phone
+
+- On a phone the page now keeps 16px from the screen's edges (it was 9px
+  under 480px wide), so text that sits on rules rather than in boxes, such
+  as the welcome route, no longer runs close to the edge.
+
 ### The Strategic report follows the line
 
 - The exported Strategic report drops its boxes too: the header, scores,

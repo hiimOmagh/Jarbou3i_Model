@@ -235,7 +235,7 @@ The eight sizes are 12, 13, 14, 16, 18, 22, 28 and 36px; do not add others.
 
 ## Layout
 
-A single page column with a sticky side rail where the content earns it. Spacing follows a 4px-based scale (`s-1` to `s-7`); cards pad 32px with 24px gaps (16px and 12px when compact or under 620px).
+A single page column with a sticky side rail where the content earns it. Spacing follows a 4px-based scale (`s-1` to `s-7`); cards pad 32px with 24px gaps (16px and 12px when compact or under 620px). The page keeps a side gutter of 24px, 18px under 940px and 16px under 720px, never less: text that sits on rules rather than in boxes needs it.
 
 - **Setup flow:** a 260px guide rail (mascot, speech, the five step stations as a vertical line) beside the step. Under 900px the rail stacks above and the stations run across in five columns.
 - **Model map:** one line. Below 901px, and for the nine Biopolitical layers at any width, it runs down: a station per row with its name beside it and a stretch below it of 8px plus 6px per record (capped at 96px). Above 900px the six Strategic layers ride across, columns sized by record count from a 128px floor. From 621px the layer description sits in a third column. The phone treatment (one column of stations rather than "one station per screen") awaits user confirmation.

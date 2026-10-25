@@ -140,9 +140,9 @@ test.describe("Case file", () => {
     await expect(page.locator(".j-engine-text").first()).toBeHidden();
     const heights = await page.locator(".j-engine-step").evaluateAll((steps) => steps.map((step) => step.getBoundingClientRect().height));
     for (const height of heights) expect(height).toBeLessThanOrEqual(48);
-    // A section uses the width: one card around it, not three.
-    const section = await page.locator("#case-overview").boundingBox();
-    expect(section.width).toBeGreaterThanOrEqual(330);
+    // A section uses the page column's width: one card around it, not three.
+    const [section, column] = await Promise.all([page.locator("#case-overview").boundingBox(), page.locator("main").boundingBox()]);
+    expect(column.width - section.width).toBeLessThanOrEqual(32);
     // The outline is one line of stations scrolled sideways, so the verdict
     // comes soon; the page itself never scrolls sideways.
     const nav = page.locator("#reviewNav");
