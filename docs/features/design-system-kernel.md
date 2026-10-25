@@ -492,8 +492,15 @@ report renderer loads.
 - **Strategic** (`htmlReport()` in `src/app.js`, through `REPORT_THEME`):
   its stylesheet is the theme's `css` then the report's rules. A score ring
   (`.rRing`) carries `data-tone` from `pctTone()`, the app's score bands;
-  the hero's quality-gate line (`.gate`) the tone of `qualityGate()`. Below
-  820px an evidence row is a card whose cells show their `data-label`.
+  the hero's quality-gate line (`.gate`) the tone of `qualityGate()`. Rules,
+  not boxes: the hero, overall score, metrics, sections and formula open
+  under 3px ink rules; contradictions, scenarios and assumptions under 2px
+  ink rules; the evidence table is ruled rows; a warning (`.signal`) sits
+  under a 2px rule in `--j-warn`. Each layer's block (`.block.layer`) sets
+  `--j-layer`, and a CSS counter draws its number as a station before the
+  heading, so the heading's text stays the layer's name. Below 820px an
+  evidence row stacks under a 2px ink rule, its cells showing their
+  `data-label`.
 
 Tests: `tests/biopolitical-report-check.mjs` (the report's structure and
 text), `tests/export-contract.spec.js` (the exported file), the visual

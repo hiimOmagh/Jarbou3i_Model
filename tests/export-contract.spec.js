@@ -522,4 +522,32 @@ test.describe('Report provenance and print', () => {
     expect(look.ring.radius).toBe('50%');
     expect(look.ring.colour).toBe(look.ring.lineTwo);
   });
+
+  test('a Strategic report draws its layers as stations under rules, not boxes', async ({ page }, testInfo) => {
+    await exportSampleReport(page, testInfo, 'strategic');
+    await page.goto(pathToFileURL(testInfo.outputPath('en-strategic-export.html')).href);
+    const look = await page.evaluate(() => {
+      const style = (selector, pseudo) => getComputedStyle(document.querySelector(selector), pseudo);
+      const ring = getComputedStyle(document.querySelectorAll('.block.layer > header > h2')[1], '::before');
+      const probe = document.createElement('i');
+      probe.style.color = 'var(--j-l2)';
+      document.body.append(probe);
+      const lineTwo = getComputedStyle(probe).color;
+      probe.remove();
+      return {
+        boxes: ['.hero', '.overall', '.metric', '.block', '.formula', '.weights span', '.signal'].filter((selector) => document.querySelector(selector)).map((selector) => style(selector).borderInlineStartWidth),
+        recordRule: style('.conflict').borderBlockStartWidth,
+        layerNames: [...document.querySelectorAll('.block.layer h2')].map((heading) => heading.textContent),
+        ring: { radius: ring.borderRadius, colour: ring.borderTopColor, lineTwo },
+      };
+    });
+    // No side edges anywhere: rules across the top only.
+    expect(look.boxes.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(look.boxes)).toEqual(new Set(['0px']));
+    expect(look.recordRule).toBe('2px');
+    // The second layer's number is a ring in the second line's colour; its name stays plain text.
+    expect(look.layerNames).toHaveLength(6);
+    expect(look.ring.radius).toBe('50%');
+    expect(look.ring.colour).toBe(look.ring.lineTwo);
+  });
 });

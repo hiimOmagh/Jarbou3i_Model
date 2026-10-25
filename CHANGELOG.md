@@ -71,6 +71,15 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The Strategic report follows the line
+
+- The exported Strategic report drops its boxes too: the header, scores,
+  thesis, formula and each layer open under ink rules; contradictions,
+  scenarios and assumptions sit under thinner ink rules; the evidence table
+  is ruled rows; a warning sits under a rule in its colour. Each layer's
+  number is a station ringed in its line's colour, as in the app (AR/EN/FR,
+  light, dark and print).
+
 ### The Biopolitical report follows the line
 
 - The exported Biopolitical report drops its nested boxes: the header,
