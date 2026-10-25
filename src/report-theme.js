@@ -30,6 +30,16 @@
     "--j-warn-wash": "rgba(233, 162, 26, .14)",
     "--j-crit-wash": "rgba(200, 38, 42, .08)",
     "--j-shadow": "0 12px 32px rgba(21, 23, 27, .14), 0 2px 6px rgba(21, 23, 27, .08)",
+    // The lines of the model, one per layer.
+    "--j-l1": "#d62b2b",
+    "--j-l2": "#1f5bc4",
+    "--j-l3": "#e9a21a",
+    "--j-l4": "#1d8a4e",
+    "--j-l5": "#7a3f9e",
+    "--j-l6": "#15171b",
+    "--j-l7": "#d9621c",
+    "--j-l8": "#0f8a8f",
+    "--j-l9": "#8b5e34",
   });
   const DARK = Object.freeze({
     "--j-bg": "#0f1b30",
@@ -54,6 +64,15 @@
     "--j-warn-wash": "rgba(242, 179, 61, .14)",
     "--j-crit-wash": "rgba(255, 122, 112, .14)",
     "--j-shadow": "0 16px 40px rgba(3, 8, 18, .5), 0 2px 6px rgba(3, 8, 18, .3)",
+    "--j-l1": "#ee5248",
+    "--j-l2": "#5e8fea",
+    "--j-l3": "#f2b33d",
+    "--j-l4": "#3db06e",
+    "--j-l5": "#b37fe0",
+    "--j-l6": "#f2f0ea",
+    "--j-l7": "#f08a4b",
+    "--j-l8": "#36b9bf",
+    "--j-l9": "#c49561",
   });
   // Type, space and radius: the same in both themes.
   const SHARED = Object.freeze({
@@ -80,6 +99,7 @@
     "--j-r-3": "16px",
     "--j-r-pill": "999px",
     "--j-rule": "3px",
+    "--j-station": "4px",
   });
 
   const block = (tokens) => Object.entries(tokens).map(([name, value]) => `${name}:${value}`).join(";");

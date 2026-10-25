@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The Biopolitical report follows the line
+
+- The exported Biopolitical report drops its nested boxes: the header,
+  figures and overview open under ink rules, sections are divided by thin
+  rules, records sit under ink rules with their facts unboxed, and each
+  pillar's number is a station ringed in its layer's colour, as in the app.
+  Buttons and source links are pills (AR/EN/FR, light, dark and print).
+
 ### The layers ride the line
 
 - The case file's layers are no longer boxes: each is a station on one

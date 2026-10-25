@@ -497,4 +497,29 @@ test.describe('Report provenance and print', () => {
       expect(await closed.evaluate((card) => card.checkVisibility() && card.getBoundingClientRect().height > 0)).toBe(true);
     }
   });
+
+  test('a Biopolitical report draws its pillars as stations under rules, not boxes', async ({ page }, testInfo) => {
+    await exportSampleReport(page, testInfo, 'biopolitical');
+    await page.goto(pathToFileURL(testInfo.outputPath('en-biopolitical-export.html')).href);
+    const look = await page.evaluate(() => {
+      const style = (selector, pseudo) => getComputedStyle(document.querySelector(selector), pseudo);
+      const ring = style('[data-biopolitical-pillar="human_functions"] .sectionNumber');
+      const probe = document.createElement('i');
+      probe.style.color = 'var(--j-l2)';
+      document.body.append(probe);
+      const lineTwo = getComputedStyle(probe).color;
+      probe.remove();
+      return {
+        boxes: ['.hero', '.reportSection', '.recordCard', '.recordCard dl div'].map((selector) => style(selector).borderInlineStartWidth),
+        recordRule: style('.recordCard').borderBlockStartWidth,
+        ring: { radius: ring.borderRadius, colour: ring.borderTopColor, lineTwo },
+      };
+    });
+    // No side edges anywhere: rules across the top only.
+    expect(look.boxes).toEqual(['0px', '0px', '0px', '0px']);
+    expect(look.recordRule).toBe('2px');
+    // The second pillar's number is a ring in the second line's colour.
+    expect(look.ring.radius).toBe('50%');
+    expect(look.ring.colour).toBe(look.ring.lineTwo);
+  });
 });

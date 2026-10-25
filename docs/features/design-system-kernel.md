@@ -472,7 +472,8 @@ of the open summary, and the Strategic evidence cards).
 
 A report is a standalone HTML file that loads no stylesheet, so
 `src/report-theme.js` (`window.Jarbou3iReportTheme`) carries the kernel's
-tokens as text: `css` declares the colour, type, space and radius tokens,
+tokens as text: `css` declares the colour (with the nine layer lines,
+`--j-l1` to `--j-l9`), type, space, radius, rule and station tokens,
 light by default and in print, dark under `screen and
 (prefers-color-scheme: dark)`; `tokens` holds them by theme.
 `tests/ui-kernel-check.mjs` fails when a value differs from
@@ -484,6 +485,10 @@ report renderer loads.
   `.gateBadge` and the "Review first" card carry `data-tone` (`ok`, `warn`,
   `crit`) and the app's verdict (`Jarbou3iBiopolitics.health()` and
   `reviewable()`); `data-publication-gate` stays `passed` or `blocked`.
+  Rules, not boxes, as in the app: the hero, figures and overview open
+  under 3px ink rules, sections are divided by hairlines, records sit under
+  2px ink rules with their facts unboxed, and a section's number is a
+  station ringed in its layer's line (`--j-layer`, set per pillar).
 - **Strategic** (`htmlReport()` in `src/app.js`, through `REPORT_THEME`):
   its stylesheet is the theme's `css` then the report's rules. A score ring
   (`.rRing`) carries `data-tone` from `pctTone()`, the app's score bands;
