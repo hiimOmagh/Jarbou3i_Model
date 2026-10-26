@@ -229,6 +229,8 @@ test("removing the damaged analysis that is open leaves none open", async ({ pag
   await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
   await expect(page.locator("#workspaceExport")).toBeDisabled();
   await expect(page.locator("#workspaceResetCurrent")).toBeDisabled();
+  // The removed row took its button; focus stays in the panel.
+  await expect(page.locator("#workspaceDialog")).toBeFocused();
 });
 
 test("an older save finishing last does not take over the analysis imported after it", async ({ page }) => {
@@ -624,6 +626,8 @@ test("guarded reset removes the current workspace", async ({ page }) => {
   await page.locator("#workspaceResetCurrent").click();
   await expect(page.locator("#workspaceStatus")).toContainText("was removed");
   await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
+  // The button is disabled now; focus stays in the panel.
+  await expect(page.locator("#workspaceDialog")).toBeFocused();
 });
 
 // Separate from the guarded reset above: together they ran close to the test
@@ -638,6 +642,9 @@ test("full reset clears workspaces and preferences", async ({ page }) => {
   await page.locator("#workspaceResetAll").click();
   await expect(page.locator("#workspaceStatus")).toContainText("preferences were removed");
   await expect(page.locator("[data-workspace-row]")).toHaveCount(0);
+  // Disabled while it worked, the button may lose focus (Firefox sometimes
+  // keeps it); either way focus stays in the panel.
+  await expect.poll(() => page.evaluate(() => document.getElementById("workspaceDialog").contains(document.activeElement))).toBe(true);
   await page.reload();
   await expect(page.locator("#workspaceSaveState"))
   .toHaveAttribute("data-state", "empty");

@@ -228,5 +228,13 @@ test.describe("Work panel", () => {
       resetsLast: true,
     });
     await expectKernel(page, "#workspaceBackdrop", "#workspaceDialog");
+    // Opened from the keyboard, the other one becomes current and its button
+    // goes; focus stays in the panel instead of falling behind it.
+    const other = page.locator("[data-workspace-row]:not([aria-current])");
+    const id = await other.getAttribute("data-workspace-row");
+    await other.locator("[data-workspace-open]").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(`[data-workspace-row="${id}"]`)).toHaveAttribute("aria-current", "true");
+    await expect(page.locator("#workspaceDialog")).toBeFocused();
   });
 });

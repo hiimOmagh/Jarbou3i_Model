@@ -216,7 +216,9 @@ UX-0 work panel, built on the app's own workspace model.
   (`.j-ws-acts[data-tone="danger"]`), last. The open one has
   `aria-current="true"` and no actions (it is already open); a damaged one has
   `data-state="damaged"`. Both sit under a 2px rule, ink or critical, and say
-  so in words. Tests find rows by `[data-workspace-row]`.
+  so in words. Tests find rows by `[data-workspace-row]`. A button that goes
+  with its row (open, remove a damaged one) or is disabled while it works
+  (the resets) hands focus back to the panel (`keepWorkspaceFocus`).
 - **Tests:** `tests/work-panel.spec.js`.
 
 ## Canonical editor

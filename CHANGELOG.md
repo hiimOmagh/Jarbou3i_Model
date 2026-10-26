@@ -71,6 +71,12 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Focus stays in "Where your work is"
+
+- Opening another workspace, removing a damaged one or resetting from the
+  keyboard no longer drops focus behind the dialog: it returns to the
+  dialog, where the next Tab carries on.
+
 ### Workspaces without boxes
 
 - In "Where your work is", the list of workspaces sits under an ink rule like

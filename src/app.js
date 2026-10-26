@@ -8338,6 +8338,7 @@ async function renderWorkspaceList() {
         if (!workspace) return;
         discardTrip();
         await renderWorkspaceList();
+        keepWorkspaceFocus();
       };
     });
     target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceEdit); if (!workspace) return; closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
@@ -8364,6 +8365,7 @@ async function renderWorkspaceList() {
           setWorkspaceStatus("bad", workspaceFailureMessage(error));
         }
         await renderWorkspaceList();
+        keepWorkspaceFocus();
       };
     });
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceSaveState")); }; });
@@ -8397,6 +8399,15 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   $("workspaceBackdrop").classList.add("show");
   $("workspaceBackdrop").setAttribute("aria-hidden", "false");
   $("workspaceDialog").focus();
+}
+
+// A button removed with its row, or disabled while it works, takes focus with
+// it (Firefox drops it from a disabled button a frame later, if at all); focus
+// comes back to the panel instead of falling behind it.
+function keepWorkspaceFocus() {
+  const dialog = $("workspaceDialog");
+  const active = document.activeElement;
+  if ($("workspaceBackdrop").classList.contains("show") && (!dialog.contains(active) || active.disabled)) dialog.focus();
 }
 
 function closeWorkspaceDialog() {
@@ -9123,6 +9134,7 @@ $("workspaceResetCurrent").onclick = async () => {
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
   } finally {
     button.disabled = !state.activeWorkspaceId;
+    keepWorkspaceFocus();
   }
 };
 let resetAllArmedUntil = 0;
@@ -9166,6 +9178,7 @@ $("workspaceResetAll").onclick = async () => {
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
   } finally {
     button.disabled = false;
+    keepWorkspaceFocus();
   }
 };
 $("workspaceImportFile").onchange = async (event) => {
