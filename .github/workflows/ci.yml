@@ -45,7 +45,7 @@ jobs:
     # browser install past the job's limit). The tag is the lockfile's
     # Playwright version; tests/ci-script-contract-check.mjs holds them equal.
     container:
-      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
     needs: no-browser
     timeout-minutes: 15
@@ -126,7 +126,7 @@ jobs:
     # browser install past the job's limit). The tag is the lockfile's
     # Playwright version; tests/ci-script-contract-check.mjs holds them equal.
     container:
-      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
     needs: no-browser
     timeout-minutes: 15

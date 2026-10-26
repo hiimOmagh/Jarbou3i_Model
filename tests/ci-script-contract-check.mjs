@@ -278,8 +278,10 @@ for (const forbidden of ["pnpm", "corepack", "--no-frozen-lockfile"]) {
   }
 }
 
-if (pkg.devDependencies?.["@playwright/test"] !== "1.61.1") {
-  fail("@playwright/test must remain pinned to 1.61.1");
+// The runner is pinned to one exact version (no range can move it), the
+// version the lockfile installs and the CI image carries.
+if (pkg.devDependencies?.["@playwright/test"] !== playwrightVersion || !/^\d+\.\d+\.\d+$/.test(playwrightVersion)) {
+  fail(`@playwright/test must be pinned to the exact version the lockfile installs (${playwrightVersion})`);
 }
 
 console.log("CI script contract check passed.");
