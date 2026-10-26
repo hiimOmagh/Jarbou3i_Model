@@ -32,6 +32,20 @@ test("counts the connected records and draws one record's neighbours", async ({ 
   await expect(incoming.locator("button.j-conn-node")).toHaveCount(9);
   await expect(incoming.locator('[data-conn-focus="IV1"]')).toHaveAccessibleDescription("Supported by");
   await expect(page.locator('.j-conn-side[data-side="out"]')).toContainText("None");
+  // The map and each connection sit under thin rules, not in panels; a
+  // record's name in a link wraps with room between its lines.
+  const look = await page.evaluate(() => {
+    const style = (selector) => getComputedStyle(document.querySelector(selector));
+    const label = style("#connectionsView .j-ref-label");
+    return {
+      map: [style(".j-conn-map").borderInlineStartWidth, style(".j-conn-map").backgroundColor],
+      row: [style(".j-conn-list > li").borderInlineStartWidth, style(".j-conn-list > li").backgroundColor],
+      leading: parseFloat(label.lineHeight) / parseFloat(label.fontSize),
+    };
+  });
+  expect(look.map).toEqual(["0px", "rgba(0, 0, 0, 0)"]);
+  expect(look.row).toEqual(["0px", "rgba(0, 0, 0, 0)"]);
+  expect(look.leading).toBeGreaterThanOrEqual(1.3);
 
   // A neighbour moves to the middle and takes the focus; the list of records follows.
   await incoming.locator('[data-conn-focus="IV1"]').click();

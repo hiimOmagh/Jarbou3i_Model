@@ -23,11 +23,12 @@
 .j-conn-act > [hidden] { display: none; }
 
 /* The map: what points to the record, the record, what it points to. Read in
-   the page's direction; stacked when narrow. */
+   the page's direction under a thin rule, not in a panel; stacked when
+   narrow. */
 .j-conn-map {
   display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(12rem, .9fr) auto minmax(0, 1fr);
   align-items: center; gap: var(--j-s-3);
-  padding: var(--j-s-4); border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+  padding-block-start: var(--j-s-4); border-block-start: 1px solid var(--j-line);
 }
 .j-conn-side { display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; }
 .j-conn-side ul { display: grid; gap: var(--j-s-2); margin: 0; padding: 0; list-style: none; }
@@ -63,11 +64,11 @@ button.j-conn-node:focus-visible { outline: 3px solid var(--j-signal); outline-o
 }
 
 /* Every connection: "record · relation · record", then why, if the answer
-   says. */
+   says; one row under a thin rule each. */
 .j-conn [data-conn-layer] { display: grid; gap: var(--j-s-2); }
 .j-conn [data-conn-layer][hidden], .j-conn-list > li[hidden] { display: none; }
-.j-conn-list { display: grid; gap: var(--j-s-2); margin: 0; padding: 0; list-style: none; }
-.j-conn-list > li { padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2); }
+.j-conn-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.j-conn-list > li { padding-block: var(--j-s-2); border-block-start: 1px solid var(--j-line); }
 .j-conn-line { margin: 0; line-height: 1.9; overflow-wrap: anywhere; }
 .j-conn-line > .j-conn-rel { margin-inline: var(--j-s-1); }
 .j-conn-why { margin: var(--j-s-1) 0 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.55; overflow-wrap: anywhere; }

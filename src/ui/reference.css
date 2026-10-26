@@ -14,7 +14,7 @@
    with a pixel each way for a line that lands between device pixels. */
 .j-ref::after { content: ""; position: absolute; inset-inline: 0; top: 50%; height: calc(var(--j-control) + 2px); transform: translateY(-50%); }
 .j-ref:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
-.j-ref-label { min-width: 0; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+.j-ref-label { min-width: 0; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
 .j-ref-id {
   padding: 2px 5px; border-radius: var(--j-r-1); background: var(--j-panel); color: var(--j-signal);
   font: 600 var(--j-t-12)/1.3 var(--j-font-data); white-space: nowrap;

@@ -71,6 +71,13 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Connections without panels
+
+- In the Connections view, the map around one record no longer sits in a
+  grey panel, and each connection in the full list is a row under a thin
+  rule instead of a grey box. A record's name in a link (its chip) keeps
+  room between its lines when it wraps (AR/EN/FR, light and dark).
+
 ### The model's self-audit without boxes
 
 - In a Biopolitical case file, the AI's checks of its own answer are rows
