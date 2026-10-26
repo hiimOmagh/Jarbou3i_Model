@@ -40,6 +40,13 @@ jobs:
   browser-core:
     name: Browser core (${{ matrix.label }})
     runs-on: ubuntu-latest
+    # The browsers and their system libraries come in Playwright's image, so a
+    # job never waits on the Ubuntu package mirror (apt downloads stalled the
+    # browser install past the job's limit). The tag is the lockfile's
+    # Playwright version; tests/ci-script-contract-check.mjs holds them equal.
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      options: --user 1001
     needs: no-browser
     timeout-minutes: 15
     strategy:
@@ -48,42 +55,34 @@ jobs:
         include:
           - label: chromium
             project: chromium
-            browser: chromium
             shard: "1/1"
             artifact: chromium
           - label: firefox shard 1 of 2
             project: firefox
-            browser: firefox
             shard: "1/2"
             artifact: firefox-1-of-2
           - label: firefox shard 2 of 2
             project: firefox
-            browser: firefox
             shard: "2/2"
             artifact: firefox-2-of-2
           - label: webkit shard 1 of 4
             project: webkit
-            browser: webkit
             shard: "1/4"
             artifact: webkit-1-of-4
           - label: webkit shard 2 of 4
             project: webkit
-            browser: webkit
             shard: "2/4"
             artifact: webkit-2-of-4
           - label: webkit shard 3 of 4
             project: webkit
-            browser: webkit
             shard: "3/4"
             artifact: webkit-3-of-4
           - label: webkit shard 4 of 4
             project: webkit
-            browser: webkit
             shard: "4/4"
             artifact: webkit-4-of-4
           - label: mobile-chrome
             project: mobile-chrome
-            browser: chromium
             shard: "1/1"
             artifact: mobile-chrome
     steps:
@@ -101,9 +100,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run core suite for ${{ matrix.project }}
         run: >
@@ -125,6 +121,13 @@ jobs:
   browser-evidence:
     name: Browser evidence
     runs-on: ubuntu-latest
+    # The browsers and their system libraries come in Playwright's image, so a
+    # job never waits on the Ubuntu package mirror (apt downloads stalled the
+    # browser install past the job's limit). The tag is the lockfile's
+    # Playwright version; tests/ci-script-contract-check.mjs holds them equal.
+    container:
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      options: --user 1001
     needs: no-browser
     timeout-minutes: 15
     steps:
@@ -142,9 +145,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
 
       - name: Capture and review hosted evidence
         run: npm run test:browser:hosted

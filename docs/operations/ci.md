@@ -22,7 +22,7 @@ only; it does not replace either complete command.
 
 After `No-browser gates` succeeds, six browser runners execute concurrently:
 
-| Runner | Scope | Installed browser |
+| Runner | Scope | Browser |
 | --- | --- | --- |
 | `Browser core (chromium)` | Complete core suite, Chromium project | Chromium |
 | `Browser core (firefox)` | Complete core suite, Firefox project | Firefox |
@@ -32,6 +32,15 @@ After `No-browser gates` succeeds, six browser runners execute concurrently:
 | `Browser core (webkit shard 4 of 4)` | Last quarter of the WebKit core suite | WebKit |
 | `Browser core (mobile-chrome)` | Complete core suite, mobile Chromium project | Chromium |
 | `Browser evidence` | Hosted evidence and visual-audit evidence | Chromium |
+
+Browser runners run inside Playwright's image
+(`mcr.microsoft.com/playwright:v<version>-noble`, as user 1001), which already
+holds the browsers and their system libraries; no job installs them. Installing
+them on the runner (`npx playwright install --with-deps`) waited on the Ubuntu
+package mirror, and slow downloads pushed WebKit shards past the 15-minute
+limit before a test ran. The image tag must equal the `@playwright/test`
+version in `package-lock.json`; `tests/ci-script-contract-check.mjs` fails
+otherwise, so upgrade both together.
 
 Each core runner uses two Playwright workers. WebKit is split with Playwright's
 native `1/4` to `4/4` shards because a single WebKit job, and later the

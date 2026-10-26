@@ -180,8 +180,7 @@ for (const token of [
   "cache: npm",
   "npm ci",
   "npm run test:ci:no-browser",
-  "npx playwright install --with-deps ${{ matrix.browser }}",
-  "npx playwright install --with-deps chromium",
+  "options: --user 1001",
   "npm run test:browser:core --",
   "--project=${{ matrix.project }}",
   "--shard=${{ matrix.shard }}",
@@ -226,6 +225,14 @@ for (const retiredAction of [
     fail(`workflow retains a retired action runtime: ${retiredAction}`);
   }
 }
+// Browser jobs run in Playwright's image, whose browsers must match the
+// installed Playwright; no job installs browsers from the package mirror.
+const playwrightVersion = JSON.parse(read("package-lock.json")).packages["node_modules/@playwright/test"].version;
+const images = workflow.match(/image: mcr\.microsoft\.com\/playwright:v[\d.]+-noble/g) || [];
+if (images.length !== 2 || images.some((image) => image !== `image: mcr.microsoft.com/playwright:v${playwrightVersion}-noble`)) {
+  fail(`browser jobs must run in mcr.microsoft.com/playwright:v${playwrightVersion}-noble (found ${images.join(", ") || "none"})`);
+}
+if (workflow.includes("playwright install")) fail("workflow must not install browsers; they come with the Playwright image");
 if ((workflow.match(/actions\/upload-artifact@v7/g) || []).length !== 4) {
   fail("workflow must use upload-artifact@v7 for exactly four artifact steps");
 }
