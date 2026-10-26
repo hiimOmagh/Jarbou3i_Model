@@ -7386,9 +7386,11 @@ function renderCanonicalEditor() {
     + (meta.length ? `<p class="j-label">${escapeHtml(editorText("metadata"))}</p>${meta.map(section).join("")}` : "");
   $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => {
     button.onclick = () => {
+      // Applying an edit redraws the sections before the pick does.
+      const focused = document.activeElement === button;
       if (!applyEditorField()) return;
       state.editorPath = button.dataset.editorPath;
-      renderCanonicalEditor();
+      keepPickFocus($("editorSections"), button, "data-editor-path", renderCanonicalEditor, focused);
     };
   });
   const key = state.editorPath.slice(1);
@@ -7591,6 +7593,7 @@ async function saveEditorDraft() {
       editorCloseAfterSave = false;
       closeCanonicalEditor();
     }
+    keepDialogFocus($("editorDialog"));
   }
 }
 
@@ -7655,7 +7658,7 @@ async function renderRevisionHistory() {
   $("revisionList").querySelectorAll("[data-revision-id]").forEach((button) => {
     button.onclick = async () => {
       state.revisionSelectedId = button.dataset.revisionId;
-      await renderRevisionHistory();
+      await keepPickFocus($("revisionList"), button, "data-revision-id", renderRevisionHistory);
     };
   });
   if (!selected) return;
@@ -8082,7 +8085,7 @@ async function renderReviewLedger() {
   $("ledgerCounts").innerHTML = Object.entries(counts).map(([status, count]) => ledgerChip(status, `${count} ${ledgerText(status)}`)).join("");
   $("ledgerTaskList").innerHTML = rows.map((row) => `<button type="button" class="j-pick" aria-pressed="${row.task.id === selected?.task.id}" data-ledger-task="${escapeHtml(row.task.id)}"><span class="j-pick-top"><code>${escapeHtml(row.task.id)}</code>${row.current.is_stale ? ledgerChip("stale", ledgerText("stale")) : ledgerChip(row.current.status, ledgerText(row.current.status))}</span><strong>${escapeHtml(ledgerTaskLabels(row.task).reason)}</strong><small class="j-pick-meta"><span dir="ltr">${escapeHtml(row.task.targetId)}</span><span>${escapeHtml(ledgerTaskLabels(row.task).phase)}</span></small></button>`).join("");
   $("ledgerTaskList").querySelectorAll("[data-ledger-task]").forEach((button) => {
-    button.onclick = async () => { state.ledgerSelectedTaskId = button.dataset.ledgerTask; await renderReviewLedger(); };
+    button.onclick = async () => { state.ledgerSelectedTaskId = button.dataset.ledgerTask; await keepPickFocus($("ledgerTaskList"), button, "data-ledger-task", renderReviewLedger); };
   });
   if (!selected) {
     $("ledgerSelectedTask").textContent = ledgerText("choose");
@@ -8211,6 +8214,7 @@ async function applyReviewLedgerEvent() {
     $("ledgerStatus").dataset.tone = "crit";
     $("ledgerStatus").textContent = workspaceFailureMessage(error);
   }
+  keepDialogFocus($("ledgerDialog"), $("ledgerApply"));
 }
 
 async function exportReviewLedger() {
@@ -8338,7 +8342,7 @@ async function renderWorkspaceList() {
         if (!workspace) return;
         discardTrip();
         await renderWorkspaceList();
-        keepWorkspaceFocus();
+        keepDialogFocus($("workspaceDialog"));
       };
     });
     target.querySelectorAll("[data-workspace-edit]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceEdit); if (!workspace) return; closeWorkspaceDialog(); await openCanonicalEditor(workspace); }; });
@@ -8365,7 +8369,7 @@ async function renderWorkspaceList() {
           setWorkspaceStatus("bad", workspaceFailureMessage(error));
         }
         await renderWorkspaceList();
-        keepWorkspaceFocus();
+        keepDialogFocus($("workspaceDialog"));
       };
     });
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceSaveState")); }; });
@@ -8401,13 +8405,20 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   $("workspaceDialog").focus();
 }
 
-// A button removed with its row, or disabled while it works, takes focus with
-// it (Firefox drops it from a disabled button a frame later, if at all); focus
-// comes back to the panel instead of falling behind it.
-function keepWorkspaceFocus() {
-  const dialog = $("workspaceDialog");
+// A button removed by a redraw, or disabled while it works, takes focus with
+// it (Firefox drops it from a disabled button a frame later, if at all).
+// Focus comes back to `control` if it can take it again, else to the dialog,
+// instead of falling behind the dialog.
+function keepDialogFocus(dialog, control = null) {
   const active = document.activeElement;
-  if ($("workspaceBackdrop").classList.contains("show") && (!dialog.contains(active) || active.disabled)) dialog.focus();
+  if (!dialog.parentElement.classList.contains("show") || (dialog.contains(active) && !active.disabled)) return;
+  (control?.isConnected && !control.disabled ? control : dialog).focus();
+}
+
+// A pick list redrawn under the reader's focus keeps it on the same pick.
+async function keepPickFocus(list, pick, attribute, redraw, focused = document.activeElement === pick) {
+  await redraw();
+  if (focused) list.querySelector(`[${attribute}="${CSS.escape(pick.getAttribute(attribute))}"]`)?.focus();
 }
 
 function closeWorkspaceDialog() {
@@ -9134,7 +9145,7 @@ $("workspaceResetCurrent").onclick = async () => {
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
   } finally {
     button.disabled = !state.activeWorkspaceId;
-    keepWorkspaceFocus();
+    keepDialogFocus($("workspaceDialog"));
   }
 };
 let resetAllArmedUntil = 0;
@@ -9178,7 +9189,7 @@ $("workspaceResetAll").onclick = async () => {
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
   } finally {
     button.disabled = false;
-    keepWorkspaceFocus();
+    keepDialogFocus($("workspaceDialog"));
   }
 };
 $("workspaceImportFile").onchange = async (event) => {
@@ -9187,8 +9198,8 @@ $("workspaceImportFile").onchange = async (event) => {
   event.target.value = "";
 };
 $("editorClose").onclick = closeCanonicalEditor;
-$("editorUndo").onclick = () => { if (applyEditorField()) { state.editorSession?.undo(); renderCanonicalEditor(); scheduleEditorRecovery(); } };
-$("editorRedo").onclick = () => { if (applyEditorField()) { state.editorSession?.redo(); renderCanonicalEditor(); scheduleEditorRecovery(); } };
+$("editorUndo").onclick = () => { if (applyEditorField()) { state.editorSession?.undo(); renderCanonicalEditor(); scheduleEditorRecovery(); keepDialogFocus($("editorDialog")); } };
+$("editorRedo").onclick = () => { if (applyEditorField()) { state.editorSession?.redo(); renderCanonicalEditor(); scheduleEditorRecovery(); keepDialogFocus($("editorDialog")); } };
 $("editorSave").onclick = saveEditorDraft;
 $("editorRecoveryRestore").onclick = restoreEditorRecovery;
 $("editorRecoveryDiscard").onclick = discardEditorRecovery;

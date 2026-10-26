@@ -17,7 +17,13 @@ test.describe("Structured canonical editor", () => {
     await page.locator("#workspaceSaveState").click();
     await page.getByRole("button", { name: "Edit draft" }).click();
     await expect(page.locator("#editorDialog")).toBeVisible();
-    await page.locator('[data-editor-path="/subject"]').click();
+    // From the keyboard: a section keeps focus as the list redraws, and a
+    // button disabled by its own action hands focus to the dialog.
+    const section = page.locator('[data-editor-path="/subject"]');
+    await section.focus();
+    await page.keyboard.press("Enter");
+    await expect(section).toHaveAttribute("aria-current", "true");
+    await expect(section).toBeFocused();
     const field = page.locator("#editorField");
     const subject = JSON.parse(await field.inputValue());
     subject.title = "Editor persistence proof";
@@ -25,12 +31,18 @@ test.describe("Structured canonical editor", () => {
     await field.press("Control+Enter");
     await expect(page.locator("#editorDirty")).toContainText("Unsaved");
     await expect(page.locator("#editorUndo")).toBeEnabled();
-    await page.locator("#editorUndo").click();
+    await page.locator("#editorUndo").focus();
+    await page.keyboard.press("Enter");
     await expect(page.locator("#editorRedo")).toBeEnabled();
-    await page.locator("#editorRedo").click();
+    await expect(page.locator("#editorDialog")).toBeFocused();
+    await page.locator("#editorRedo").focus();
+    await page.keyboard.press("Enter");
     await expect.poll(async () => JSON.parse(await field.inputValue()).title).toBe("Editor persistence proof");
-    await page.locator("#editorSave").click();
+    await expect(page.locator("#editorDialog")).toBeFocused();
+    await page.locator("#editorSave").focus();
+    await page.keyboard.press("Enter");
     await expect(page.locator("#editorDirty")).toContainText("No unsaved");
+    await expect(page.locator("#editorDialog")).toBeFocused();
     await page.locator("#editorClose").click();
     await page.reload();
     await expect(page.locator("#topicInput")).toHaveValue("Editor persistence proof");
@@ -133,8 +145,13 @@ test.describe("Structured canonical editor", () => {
     const subject = JSON.parse(await field.inputValue());
     subject.title = "Section transition proof";
     await field.fill(JSON.stringify(subject, null, 2));
-    await page.locator('[data-editor-path="/actors"]').click();
+    // From the keyboard: applying the edit redraws the sections first, and
+    // focus still lands on the section picked.
+    const actors = page.locator('[data-editor-path="/actors"]');
+    await actors.focus();
+    await page.keyboard.press("Enter");
     await expect(page.locator("#editorPath")).toHaveText("/actors");
+    await expect(actors).toBeFocused();
     await expect(page.locator("#editorDirty")).toContainText("Unsaved");
     await page.locator('[data-editor-path="/subject"]').click();
     await expect.poll(async () => JSON.parse(await field.inputValue()).title).toBe("Section transition proof");

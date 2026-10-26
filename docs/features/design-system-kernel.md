@@ -218,7 +218,7 @@ UX-0 work panel, built on the app's own workspace model.
   `data-state="damaged"`. Both sit under a 2px rule, ink or critical, and say
   so in words. Tests find rows by `[data-workspace-row]`. A button that goes
   with its row (open, remove a damaged one) or is disabled while it works
-  (the resets) hands focus back to the panel (`keepWorkspaceFocus`).
+  (the resets) hands focus back to the panel (`keepDialogFocus`).
 - **Tests:** `tests/work-panel.spec.js`.
 
 ## Canonical editor
@@ -299,6 +299,12 @@ ledger.
   class and the focus traps are unchanged. The close button is a ghost icon
   `j-btn` named in the page language. The head is a `<div class="j-modal-head">`:
   a `<header>` inside a dialog is a second banner landmark.
+- **Focus that would fall:** a pick redrawn under the reader's focus (an
+  editor section, a revision, a ledger task) keeps it (`keepPickFocus`); a
+  button removed by a redraw or disabled by its own action (undo, redo,
+  save, append event, the workspace actions) hands it to the dialog, or back
+  to the button once usable again (`keepDialogFocus`), never to the page
+  behind.
 - **Shared parts:** the trust line (`.j-modal-trust`), section heads, actions,
   and the prompt's code block, which takes focus so the keyboard can scroll it.
 - **Pick list:** `.j-pick-list` of `.j-pick` buttons, contract `aria-pressed`;

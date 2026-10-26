@@ -24,9 +24,12 @@ async function openLedger(page, lang = "En") {
 async function append(page, action, rationale) {
   await page.locator("#ledgerAction").selectOption(action);
   await page.locator("#ledgerRationale").fill(rationale);
-  await page.locator("#ledgerApply").click();
+  // From the keyboard: disabled while it saves, the button gets focus back.
+  await page.locator("#ledgerApply").focus();
+  await page.keyboard.press("Enter");
   await expect(page.locator("#ledgerStatus")).toContainText(/integrity verified/i);
   await expect(page.locator("#ledgerApply")).toBeEnabled();
+  await expect(page.locator("#ledgerApply")).toBeFocused();
 }
 
 test.describe("Operational review ledger", () => {
@@ -36,6 +39,13 @@ test.describe("Operational review ledger", () => {
       "review-ledger-persistence-staleness",
     );
     await openLedger(page);
+    // Picked from the keyboard, a task keeps focus as the list redraws.
+    for (const pick of [page.locator("#ledgerTaskList [data-ledger-task]").nth(1), page.locator("#ledgerTaskList [data-ledger-task]").first()]) {
+      await pick.focus();
+      await page.keyboard.press("Enter");
+      await expect(pick).toHaveAttribute("aria-pressed", "true");
+      await expect(pick).toBeFocused();
+    }
     await expect(page.locator("#ledgerSelectedTask")).toContainText("Pending");
     await append(page, "task_started", "Review ownership accepted for provenance verification.");
     await expect(page.locator("#ledgerSelectedTask")).toContainText("In review");

@@ -70,6 +70,14 @@ test.describe("Revision history and safe restore", () => {
     await expect(page.locator('#revisionList [aria-pressed="true"]')).toContainText("Imported");
     await expect(page.locator("#revisionDiff")).toContainText("/subject/title");
     await expect(page.locator("#revisionRestore")).toBeEnabled();
+    // Picked from the keyboard, a revision keeps focus as the list redraws.
+    for (const pick of [page.locator("#revisionList [data-revision-id]").first(), page.locator("#revisionList [data-revision-id]").last()]) {
+      await pick.focus();
+      await page.keyboard.press("Enter");
+      await expect(pick).toHaveAttribute("aria-pressed", "true");
+      await expect(pick).toBeFocused();
+    }
+    await expect(page.locator("#revisionRestore")).toBeEnabled();
 
     await page.locator("#revisionRestore").click();
     await expect(page.locator("#resolutionDialog")).toBeVisible();

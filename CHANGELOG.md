@@ -71,6 +71,13 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Focus stays in every dialog
+
+- In the editor, revision history and review ledger, choosing a section, a
+  revision or a task from the keyboard keeps focus on it as the list
+  redraws. Undo, Redo and Save, when they become unavailable, hand focus to
+  the dialog; "Append event" gets it back once saved.
+
 ### Focus stays in "Where your work is"
 
 - Opening another workspace, removing a damaged one or resetting from the
