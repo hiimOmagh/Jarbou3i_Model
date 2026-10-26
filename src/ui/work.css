@@ -39,19 +39,21 @@
   .j-life-grid { grid-template-columns: 1fr; }
 }
 
-/* The workspaces on this device, under the open one's cards. */
-.j-ws { display: grid; gap: var(--j-s-3); margin-top: var(--j-s-4); background: transparent; }
+/* The workspaces on this device, under the open one's cards and an ink rule of
+   their own: a row per workspace under a thin rule, the resets last. */
+.j-ws { display: grid; gap: var(--j-s-3); margin-top: var(--j-s-4); padding-block-start: var(--j-s-3); border-block-start: var(--j-rule) solid var(--j-ink); background: transparent; }
 .j-ws-title { margin: 0; font-size: var(--j-t-14); }
 .j-ws-acts, .j-ws-row-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
-.j-ws-list { display: grid; gap: var(--j-s-2); }
+.j-ws-acts[data-tone="danger"] { padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-ws-list { display: grid; }
 .j-ws-row {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-3);
-  padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
+  padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line);
 }
 .j-ws-row > div:first-child { flex: 1 1 240px; min-width: 0; }
-/* The open one and a damaged one by a thicker edge too, not by colour alone. */
-.j-ws-row[aria-current="true"] { border: 2px solid var(--j-ink); }
-.j-ws-row[data-state="damaged"] { border: 2px solid var(--j-crit); background: var(--j-crit-wash); }
+/* The open one and a damaged one under a thicker rule, and said in words. */
+.j-ws-row:is([aria-current="true"], [data-state="damaged"]) { padding-block-start: calc(var(--j-s-3) - 1px); border-block-start: 2px solid var(--j-ink); }
+.j-ws-row[data-state="damaged"] { border-block-start-color: var(--j-crit); }
 .j-ws-name { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .j-ws-meta { display: flex; flex-wrap: wrap; gap: var(--j-s-1) var(--j-s-3); margin-top: var(--j-s-1); color: var(--j-fg-muted); font-size: var(--j-t-12); }
 .j-ws-meta strong { color: var(--j-fg); }

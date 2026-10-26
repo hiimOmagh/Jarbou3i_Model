@@ -209,12 +209,14 @@ UX-0 work panel, built on the app's own workspace model.
 - **What it reads:** one read of the repository and the recovery journal
   after each save, open, commit, reset and editor close. Edits in an open
   editor are not counted as a snapshot.
-- **The workspaces:** under the cards, in `.j-ws` (in `work.css`): the
-  actions (export, restore a file, protect storage, and the two resets as
-  `danger` buttons), the storage health and the status as notes, then one row
-  per workspace. The open one has `aria-current="true"`, a damaged one
-  `data-state="damaged"`; both have a thicker edge. Tests find rows by
-  `[data-workspace-row]`.
+- **The workspaces:** under the cards and an ink rule of their own, in `.j-ws`
+  (in `work.css`): the actions (export, restore a file, protect storage), the
+  storage health and the status as notes, one row per workspace under a thin
+  rule, then the two resets as `danger` buttons in their own group
+  (`.j-ws-acts[data-tone="danger"]`), last. The open one has
+  `aria-current="true"` and no actions (it is already open); a damaged one has
+  `data-state="damaged"`. Both sit under a 2px rule, ink or critical, and say
+  so in words. Tests find rows by `[data-workspace-row]`.
 - **Tests:** `tests/work-panel.spec.js`.
 
 ## Canonical editor

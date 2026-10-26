@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Workspaces without boxes
+
+- In "Where your work is", the list of workspaces sits under an ink rule like
+  the three places above it, each workspace a row under a thin rule instead
+  of a box. The open one no longer shows a greyed-out "Open" button, and the
+  two resets come last, apart from the other actions (AR/EN/FR, light and
+  dark).
+
 ### Connections without panels
 
 - In the Connections view, the map around one record no longer sits in a

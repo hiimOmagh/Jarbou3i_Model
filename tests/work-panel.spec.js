@@ -208,6 +208,25 @@ test.describe("Work panel", () => {
     await expect(page.locator("[data-workspace-row]")).toHaveCount(2);
     await expect(page.locator("[data-workspace-row][aria-current=true]")).toHaveCount(1);
     await expect(page.locator("#workspaceResetAll")).toHaveAttribute("data-variant", "danger");
+    // Rows under rules, not boxes; the open one has nothing to do; the resets come last.
+    await expect(page.locator("[data-workspace-row][aria-current=true] button")).toHaveCount(0);
+    await expect(page.locator("[data-workspace-row]:not([aria-current]) [data-workspace-open]")).toBeEnabled();
+    const layout = await page.evaluate(() => {
+      const edges = (element) => { const style = getComputedStyle(element); return { top: style.borderTopWidth, side: style.borderLeftWidth, wash: style.backgroundColor }; };
+      const list = document.getElementById("workspaceList");
+      return {
+        section: getComputedStyle(document.querySelector(".j-ws")).borderTopWidth,
+        open: edges(list.querySelector("[aria-current=true]")),
+        other: edges(list.querySelector("[data-workspace-row]:not([aria-current])")),
+        resetsLast: Boolean(list.compareDocumentPosition(document.getElementById("workspaceResetCurrent")) & Node.DOCUMENT_POSITION_FOLLOWING),
+      };
+    });
+    expect(layout).toEqual({
+      section: "3px",
+      open: { top: "2px", side: "0px", wash: "rgba(0, 0, 0, 0)" },
+      other: { top: "1px", side: "0px", wash: "rgba(0, 0, 0, 0)" },
+      resetsLast: true,
+    });
     await expectKernel(page, "#workspaceBackdrop", "#workspaceDialog");
   });
 });
