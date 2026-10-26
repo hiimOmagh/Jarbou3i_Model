@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 import { openStep } from "./helpers/guided-flow.js";
 import { expectKernel } from "./helpers/kernel-check.js";
+import { readIntakeDraft } from "./helpers/browser-persistence.js";
 
 test('shared results orientation prioritizes decision context across both lenses', async ({ page }) => {
   await page.goto('./');
@@ -136,7 +137,8 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
   // The analysis goes with it as data, so edits made in the app are kept.
   expect(JSON.parse(prompt.split('UNTRUSTED_ANALYSIS_MATERIAL_JSON:\n')[1]).subject.title).toBe(data.subject.title);
 
-  // The reply is awaited across a reload.
+  // The reply is awaited across a reload, once the page has kept that it is.
+  await expect.poll(async () => (await readIntakeDraft(page))?.reply_for).toBe('improve');
   await page.reload();
   await page.locator('#improveAnswer').click();
   const reply = page.locator('#continuationInput');

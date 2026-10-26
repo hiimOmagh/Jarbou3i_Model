@@ -174,8 +174,8 @@ for (const token of [
   "artifact: webkit-2-of-4",
   "artifact: webkit-3-of-4",
   "artifact: webkit-4-of-4",
-  "actions/checkout@v5",
-  "actions/setup-node@v5",
+  "actions/checkout@v7",
+  "actions/setup-node@v7",
   "node-version: 24",
   "cache: npm",
   "npm ci",
@@ -215,6 +215,10 @@ for (const token of [
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
 }
 for (const retiredAction of [
+  "actions/checkout@v5",
+  "actions/checkout@v6",
+  "actions/setup-node@v5",
+  "actions/setup-node@v6",
   "actions/upload-artifact@v5",
   "actions/upload-artifact@v6",
   "actions/configure-pages@v5",
