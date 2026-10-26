@@ -35,6 +35,14 @@ test.describe("Case file", () => {
     await expect(audit.locator('.j-status[data-tone="ok"]')).toHaveCount(0);
     // The concern stays in view; the passes are folded under their count.
     await expect(audit.locator(".j-status")).toHaveCount(1);
+    // Rows under rules, not boxes: the concern's rule is in its tone, beside its label.
+    const concern = await audit.locator(':scope > [data-tone="warn"]').evaluate((row) => {
+      const style = getComputedStyle(row);
+      return { side: style.borderInlineStartWidth, rule: style.borderBlockStartWidth, wash: style.backgroundColor };
+    });
+    expect(concern).toEqual({ side: "0px", rule: "2px", wash: "rgba(0, 0, 0, 0)" });
+    await expect(conclusion.locator("[data-self-audit-notes] > li").first()).toBeVisible();
+    await expect(conclusion.locator(".j-note", { hasText: "a pass is its claim" })).toHaveCount(0);
     const passed = conclusion.locator("[data-self-audit-passed]");
     await expect(passed.locator(":scope > summary")).toHaveText("17 checks it says it passed");
     await passed.locator(":scope > summary").click();

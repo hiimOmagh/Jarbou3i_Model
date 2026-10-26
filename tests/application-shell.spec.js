@@ -240,14 +240,16 @@ test("a phone's header keeps the language and the menu beside the wordmark", asy
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("./");
   await page.locator("#langAr").click();
-  const middle = async (selector) => {
-    const box = await page.locator(selector).boundingBox();
-    return box.y + box.height / 2;
-  };
-  const mark = await middle(".j-shell-mark");
-  expect(Math.abs((await middle("#languageSegment")) - mark)).toBeLessThanOrEqual(4);
-  expect(Math.abs((await middle("#displayMenuBtn")) - mark)).toBeLessThanOrEqual(4);
-  expect(await middle(".j-shell-brand h1")).toBeGreaterThan(mark + 24);
+  // Measured in one frame, so a scroll between two reads cannot skew them.
+  const [mark, language, menu, title] = await page.evaluate(() =>
+    [".j-shell-mark", "#languageSegment", "#displayMenuBtn", ".j-shell-brand h1"].map((selector) => {
+      const box = document.querySelector(selector).getBoundingClientRect();
+      return box.y + box.height / 2;
+    }),
+  );
+  expect(Math.abs(language - mark)).toBeLessThanOrEqual(4);
+  expect(Math.abs(menu - mark)).toBeLessThanOrEqual(4);
+  expect(title).toBeGreaterThan(mark + 24);
   await expect(page.locator("#commandPaletteBtn")).toBeHidden();
   // The keyboard follows the rows: the language, the menu, the save state.
   await page.locator("#langAr").focus();

@@ -6724,7 +6724,7 @@ function renderBiopoliticalConclusion() {
   const audit = `${others.length ? `<dl class="j-checks" data-records="self-audit">${others.map(check).join("")}</dl>` : ""}${
     passed.length ? `<details class="j-disclosure" data-self-audit-passed><summary>${escapeHtml(pluralText(passed.length, PASSED_CHECK_COUNT))}</summary><dl class="j-checks">${passed.map(check).join("")}</dl></details>` : ""
   }`;
-  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p>${audit}${a.self_audit_notes.length ? `<div class="j-note" data-tone="idle">${a.self_audit_notes.map((value) => `<p>${escapeHtml(value)}</p>`).join("")}</div>` : ""}`;
+  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p>${audit}${a.self_audit_notes.length ? `<ul class="j-rec-text" data-self-audit-notes>${a.self_audit_notes.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}`;
 }
 function renderBiopoliticalReviewNav() {
   const connectionLabel = labelText("Connections", "العلاقات", "Connexions");

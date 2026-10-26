@@ -71,6 +71,13 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The model's self-audit without boxes
+
+- In a Biopolitical case file, the AI's checks of its own answer are rows
+  under thin rules instead of four stacked boxes; a concern's rule is in the
+  warning colour beside its label. The explanation above them and the AI's
+  notes below them are plain text (AR/EN/FR, light and dark).
+
 ### Room at the edges on a phone
 
 - On a phone the page now keeps 16px from the screen's edges (it was 9px

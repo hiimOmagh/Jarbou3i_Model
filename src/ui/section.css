@@ -55,19 +55,18 @@ ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
 .j-note > p + p { margin-top: var(--j-s-1); }
 .j-note > p + .j-btn { margin-top: var(--j-s-2); }
 
-/* Checks, each a question beside its verdict (a .j-status), two to a row; a
-   concern is washed so it stands out among the passes. */
-.j-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--j-s-2); margin: 0; }
+/* Checks, each a question beside its verdict (a .j-status), two to a row
+   under thin rules; a concern's rule is in its tone, beside its label. */
+.j-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--j-s-5); margin: 0; }
 .j-checks > div {
   display: flex; align-items: center; justify-content: space-between; gap: var(--j-s-3); min-width: 0;
-  padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); background: var(--j-panel-2);
+  padding-block: var(--j-s-2); border-block-start: 1px solid var(--j-line);
 }
-.j-checks > [data-tone="warn"] { background: var(--j-warn-wash); }
+.j-checks > [data-tone="warn"] { padding-block-start: calc(var(--j-s-2) - 1px); border-block-start: 2px solid var(--j-warn); }
 .j-checks dt { color: var(--j-fg); font-size: var(--j-t-14); line-height: 1.45; overflow-wrap: anywhere; }
 .j-checks dd { margin: 0; }
-.j-checks + .j-note { margin-top: var(--j-s-3); }
 /* The passes, folded under their count after the checks to look at. */
-.j-checks + .j-disclosure[data-self-audit-passed], .j-disclosure[data-self-audit-passed] + .j-note { margin-top: var(--j-s-3); }
+.j-checks + .j-disclosure[data-self-audit-passed], :is(.j-checks, .j-disclosure[data-self-audit-passed]) + ul[data-self-audit-notes] { margin-top: var(--j-s-3); }
 .j-disclosure[data-self-audit-passed] > .j-checks { padding: 0 var(--j-s-3) var(--j-s-3); }
 
 /* Counts, each a figure over its name under a thin rule, no box; a tone

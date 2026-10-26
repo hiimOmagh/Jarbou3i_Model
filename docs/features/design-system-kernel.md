@@ -354,8 +354,9 @@ kernel reuses them.
   as prose take `data-prose` for a wider column, and a fact may hold a list. A card that opens the inspector is a
   `button.j-rec`; a record a search filters out is a `hidden` list item.
 - **Checks:** `dl.j-checks`, each row a question (`dt`) beside its verdict, a
-  `.j-status` (`dd`); two to a row, one at 760px and below. `data-tone="warn"`
-  on a row washes a concern so it stands out among the passes.
+  `.j-status` (`dd`); two to a row, one at 760px and below, each under a
+  thin rule. `data-tone="warn"` on a row draws its rule 2px in `--j-warn`,
+  beside the concern's label; no row is a box.
 - **Counts:** `.j-stats`, figures over their names in three columns (four with
   `data-cols="4"`), or one count per row at 620px and below; `data-tone` (`ok`,
   `warn`, `crit`) on a count colours its figure.
@@ -381,8 +382,10 @@ kernel reuses them.
 - **Conclusion (Biopolitical):** the calibrated judgment's groups are cards
   (`data-records="conclusion"`), each a heading over its points, or an idle
   note when it has none. The model self-audit is checks
-  (`data-records="self-audit"`): a pass is `ok`, a concern `warn` and a check
-  that does not apply `idle`. Its notes are one idle note.
+  (`data-records="self-audit"`) under a lede: a concern is `warn`, a pass
+  and a check that does not apply `idle` (a pass is the AI's claim). The
+  passes fold under their count; the AI's notes are a list
+  (`data-self-audit-notes`).
 
 ## Inspection directory
 
