@@ -498,6 +498,19 @@ test.describe('Report provenance and print', () => {
     }
   });
 
+  test('both reports keep their unbulleted lists announced as lists', async ({ page }, testInfo) => {
+    for (const lens of ['biopolitical', 'strategic']) {
+      const html = await exportSampleReport(page, testInfo, lens);
+      // The report on the app's origin, so the kernel's contract check can load.
+      await page.setContent(html);
+      const lists = await page.evaluate(async () => {
+        const { checkContracts } = await import('./src/ui/contracts.js');
+        return checkContracts(document).filter((entry) => entry.contract === 'list');
+      });
+      expect(lists, lens).toEqual([]);
+    }
+  });
+
   test('a Biopolitical report draws its pillars as stations under rules, not boxes', async ({ page }, testInfo) => {
     await exportSampleReport(page, testInfo, 'biopolitical');
     await page.goto(pathToFileURL(testInfo.outputPath('en-biopolitical-export.html')).href);

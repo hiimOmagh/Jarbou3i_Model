@@ -77,7 +77,7 @@
   revisions, the connections, the open items, the report's self-audit) now
   says `role="list"`, so Safari's VoiceOver still announces it as a list
   and counts its items. The design-system check flags any new one that
-  does not.
+  does not, in the app and in both exported reports.
 
 ### The prompt step's three stops without boxes
 
