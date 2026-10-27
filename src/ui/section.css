@@ -89,14 +89,23 @@ ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
 .j-meter > i[data-on] { background: var(--j-signal); }
 .j-meter > span { margin-inline-start: var(--j-s-1); color: var(--j-fg-muted); font: 600 var(--j-t-12)/1 var(--j-font-data); }
 
-/* A data table; wider than the page, it scrolls inside its frame. */
-.j-table-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--j-line); border-radius: var(--j-r-2); }
-.j-table { width: 100%; border-collapse: collapse; background: var(--j-panel); font-size: var(--j-t-13); }
+/* A data table on the line: its header sits on a record's rule, its rows under
+   hairlines, its first column flush with the text above; no frame, fill or
+   shaded header. Wider than the page, it scrolls, its scroll box reaching past
+   the text so a focused record's ring is not cut. In it, a record is its name
+   and ID on the row, not a box. */
+.j-table-wrap {
+  max-width: calc(100% + 2 * var(--j-s-2)); margin-inline: calc(-1 * var(--j-s-2)); padding-inline: var(--j-s-2); overflow-x: auto;
+}
+.j-table { width: 100%; border-collapse: collapse; font-size: var(--j-t-13); }
 .j-table :is(th, td) { padding: var(--j-s-2) var(--j-s-3); border-bottom: 1px solid var(--j-line); text-align: start; vertical-align: top; }
+.j-table :is(th, td):first-child { padding-inline-start: 0; }
 .j-table thead th {
-  background: var(--j-panel-2); color: var(--j-fg-muted); font: 700 var(--j-t-13)/1.3 var(--j-font-ui); white-space: nowrap;
+  border-bottom: 2px solid var(--j-line-strong); color: var(--j-fg-muted); font: 700 var(--j-t-13)/1.3 var(--j-font-ui); white-space: nowrap;
 }
 .j-table tbody tr:last-child > * { border-bottom: 0; }
+.j-table .j-insp-rec { padding-inline: 0; border: 0; border-radius: 0; background: none; }
+.j-table .j-insp-rec:hover > span { text-decoration: underline; }
 .j-table tbody th { min-width: 200px; font-weight: 400; }
 .j-table td code {
   display: inline-block; margin: 1px; padding: 2px 5px; border-radius: var(--j-r-1);
@@ -114,7 +123,7 @@ ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
   .j-stats b { font-size: var(--j-t-16); }
 }
 @media (forced-colors: active) {
-  .j-rec, .j-checks > div, .j-table-wrap, .j-stats > span { border-color: CanvasText; }
+  .j-rec, .j-checks > div, .j-stats > span { border-color: CanvasText; }
   .j-meter > i { border: 1px solid CanvasText; }
   .j-meter > i[data-on] { background: CanvasText; }
 }

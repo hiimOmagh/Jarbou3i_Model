@@ -386,7 +386,10 @@ kernel reuses them.
   five steps, with the score in figures beside them (`scoreMeter()` in
   `src/app.js`).
 - **Table:** `.j-table` in a `.j-table-wrap` that scrolls when the table is
-  wider than the page; row headers are `<th scope="row">`.
+  wider than the page; row headers are `<th scope="row">`, and every column
+  header has text. It sits on rules: the header on a 2px rule, rows under
+  hairlines, the first column flush with the text above; no frame, fill or
+  shaded header, and a record in a row is its name and ID, not a box.
 - **Evidence (Strategic):** evidence records and assumptions as cards
   (`data-records="evidence"`, `data-records="assumptions"`); basis, confidence
   and risk are kernel chips (`kernelChip()`), confidence and risk toned.

@@ -71,6 +71,15 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The claim–evidence table on rules, its first column named
+
+- The claim–evidence traceability table's first column had no header; it
+  now says Claim (الادعاء, Énoncé), so screen readers name each row's
+  column.
+- The table loses its frame, panel fill, shaded header and boxed record
+  buttons: the header sits on a rule, rows under hairlines. On a phone it is
+  about an eighth shorter (1072px to 932px at 390px wide).
+
 ### Lists without bullets still read as lists
 
 - Every list the app draws without bullets (the steps, the records, the

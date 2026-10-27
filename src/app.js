@@ -6049,6 +6049,7 @@ function evidenceIntelligenceCopy() {
     verified: labelText("Declared verified", "متحقق منه حسب الإعلان", "Déclaré vérifié"),
     matrix: labelText("Claim–evidence traceability", "تتبّع الادعاء والأدلة", "Traçabilité énoncé–preuve"),
     matrixIntro: labelText("Every row reflects authored evidence identifiers only.", "يعكس كل صف معرّفات الأدلة المؤلفة فقط.", "Chaque ligne reflète uniquement les identifiants de preuve rédigés."),
+    claim: labelText("Claim", "الادعاء", "Énoncé"),
     supporting: labelText("Supporting", "داعم", "À l’appui"),
     counter: labelText("Counter", "مضاد", "Contraire"),
     balance: labelText("Balance", "التوازن", "Équilibre"),
@@ -6162,7 +6163,7 @@ function renderEvidenceIntelligence(index) {
     const tone = balanceTone[row.balance];
     return `<tr data-traceability-record="${escapeHtml(row.recordId)}"><th scope="row">${recordButton(row.recordId, row.label)}</th><td>${codes(row.supportingIds)}</td><td>${codes(row.counterIds)}</td><td>${codes(row.clusterIds)}</td><td><span class="j-chip" data-balance="${escapeHtml(row.balance)}"${tone ? ` data-tone="${tone}"` : ""}>${escapeHtml(copy.balanceLabels[row.balance] || String(row.balance).replaceAll("_", " "))}</span></td></tr>`;
   }).join("");
-  const table = matrixRows ? `<div class="j-table-wrap"><table class="j-table"><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div>` : "";
+  const table = matrixRows ? `<div class="j-table-wrap"><table class="j-table"><thead><tr><th>${escapeHtml(copy.claim)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div>` : "";
   const uncited = unreferenced.length
     ? `<details class="j-disclosure" data-traceability-unreferenced><summary>${escapeHtml(pluralText(unreferenced.length, UNREFERENCED_COUNT))}</summary><ul class="j-insp-list" role="list">${unreferenced.map((row) => `<li data-traceability-record="${escapeHtml(row.recordId)}">${recordButton(row.recordId, row.label)}</li>`).join("")}</ul></details>`
     : "";

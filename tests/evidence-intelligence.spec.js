@@ -172,6 +172,16 @@ test("biopolitical manifest preserves authored support routes and source cluster
   const intervention = intelligence.locator('[data-traceability-record="IV1"]');
   await expect(intervention).toContainText("E1");
   await expect(intervention).toContainText("support only");
+  // Every column is named, and the table sits on rules: no frame, fill or boxed
+  // records. A record's focus ring (3px, 2px out) is not cut by the scroll box.
+  const table = intelligence.locator("[data-evidence-traceability] .j-table-wrap");
+  await expect(table.locator("thead th").first()).toHaveText("Claim");
+  const look = await table.evaluate((wrap) => {
+    const style = (selector) => getComputedStyle(selector ? wrap.querySelector(selector) : wrap);
+    const room = wrap.querySelector(".j-insp-rec").getBoundingClientRect().left - wrap.getBoundingClientRect().left;
+    return [style().borderTopWidth, style(".j-table").backgroundColor, style("thead th").borderBottomWidth, style(".j-insp-rec").borderTopWidth, room >= 5];
+  });
+  expect(look).toEqual(["0px", "rgba(0, 0, 0, 0)", "2px", "0px", true]);
 
   const manifest = await downloadManifest(page, intelligence);
   expect(manifest.analysis_lens).toBe("biopolitical");
