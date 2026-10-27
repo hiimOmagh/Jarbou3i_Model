@@ -6,18 +6,19 @@
 /* Inside the dialog panel, so it takes the panel's colour. */
 .j-commit { display: grid; gap: var(--j-s-3); margin-top: var(--j-s-3); background: transparent; }
 
-/* Base, source, validation and integrity: label above value. */
-.j-commit-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--j-s-2); margin: 0; }
-.j-commit-facts > div { min-width: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); }
+/* Base, source, validation and integrity: label above value, each under a
+   thin rule (label beside value on a phone). */
+.j-commit-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 var(--j-s-4); margin: 0; }
+.j-commit-facts > div { min-width: 0; padding-block: var(--j-s-2); border-block-start: 1px solid var(--j-line); }
 .j-commit-facts dt { color: var(--j-fg-muted); font-size: var(--j-t-12); }
 .j-commit-facts dd { margin: var(--j-s-1) 0 0; color: var(--j-fg); font-weight: 600; overflow-wrap: anywhere; }
 
 /* Not scroll boxes of their own: they have nothing to focus, so a keyboard
    could not scroll them. The dialog scrolls instead. */
-.j-diff { display: grid; gap: var(--j-s-2); margin: 0; padding: 0; list-style: none; }
+.j-diff { display: grid; margin: 0; padding: 0; list-style: none; }
 .j-diff-item {
   display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--j-s-2) var(--j-s-3);
-  padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2);
+  padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line);
 }
 .j-diff-path { min-width: 0; overflow-wrap: anywhere; color: var(--j-fg); font-size: var(--j-t-13); }
 .j-diff-vals { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: var(--j-s-2); }
@@ -40,4 +41,6 @@
 
 @media (max-width: 720px) {
   .j-commit-approve, .j-diff-vals, .j-rev-grid { grid-template-columns: 1fr; }
+  .j-commit-facts > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--j-s-3); }
+  .j-commit-facts dd { margin: 0; }
 }

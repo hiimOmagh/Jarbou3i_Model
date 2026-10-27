@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The working dialogs follow the line
+
+- The editor's commit, the revision history and the review ledger drop their
+  boxes: what each dialog guarantees sits under a thin rule, revisions and
+  tasks are rows, the pressed one under an ink rule, and a commit's or a
+  revision's facts and changes are rows too, one line per fact on a phone
+  (AR/EN/FR, light and dark).
+
 ### Focus stays in every dialog
 
 - In the editor, revision history and review ledger, choosing a section, a

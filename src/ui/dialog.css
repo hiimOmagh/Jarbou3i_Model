@@ -26,10 +26,10 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 .j-modal-head h3 { margin: 0; font-size: var(--j-t-22); }
 .j-modal-hint { margin: var(--j-s-1) 0 0; color: var(--j-fg-muted); }
 
-/* What a dialog guarantees, said once above its content. */
+/* What a dialog guarantees, said once above its content, under a signal rule. */
 .j-modal-trust {
-  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid color-mix(in srgb, var(--j-signal) 45%, transparent);
-  border-radius: var(--j-r-2); background: var(--j-signal-wash); color: var(--j-fg); font-size: var(--j-t-13);
+  margin: 0; padding-block-start: var(--j-s-2); border-block-start: 2px solid var(--j-signal);
+  color: var(--j-fg); font-size: var(--j-t-13);
 }
 .j-modal-sechead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--j-s-2); }
 .j-modal-sechead h4 { margin: 0; font-size: var(--j-t-14); }
@@ -44,15 +44,16 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 /* A list of choices, one pressed: revisions, ledger tasks. Its buttons take
    focus, so the keyboard can scroll it. Its rows keep their content's height
    when the list is too long to fit: auto rows would shrink to 44px. */
-.j-pick-list { display: grid; grid-auto-rows: max-content; gap: var(--j-s-1); max-height: 56vh; overflow-y: auto; padding: var(--j-s-1); }
+.j-pick-list { display: grid; grid-auto-rows: max-content; max-height: 56vh; overflow-y: auto; padding: var(--j-s-1); }
+/* Rows under a thin rule; the ring sits inside, clear of the next row. */
 .j-pick {
-  display: grid; gap: var(--j-s-1); min-height: 44px; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line);
-  border-radius: var(--j-r-2); background: transparent; color: var(--j-fg); text-align: start; cursor: pointer;
+  display: grid; gap: var(--j-s-1); min-height: 44px; padding: var(--j-s-2) var(--j-s-3); border: 0;
+  border-block-start: 1px solid var(--j-line); border-radius: 0; background: transparent; color: var(--j-fg); text-align: start; cursor: pointer;
 }
 .j-pick:hover { background: var(--j-raise); }
-.j-pick:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
-/* Pressed by a thicker leading edge too, not by colour alone. */
-.j-pick[aria-pressed="true"] { background: var(--j-signal-wash); border: 2px solid var(--j-ink); }
+.j-pick:focus-visible { outline: 3px solid var(--j-signal); outline-offset: -3px; }
+/* Pressed under an ink rule too, not by colour alone. */
+.j-pick[aria-pressed="true"] { padding-block-start: calc(var(--j-s-2) - 1px); border-block-start: 2px solid var(--j-ink); background: var(--j-signal-wash); }
 .j-pick-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); }
 .j-pick .j-chip { background: var(--j-panel); }
 .j-pick code { overflow-wrap: anywhere; font-size: var(--j-t-12); }
@@ -64,9 +65,9 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 .j-ledger-grid > section { display: grid; gap: var(--j-s-3); align-content: start; min-width: 0; }
 .j-ledger-grid h4 { margin: 0; font-size: var(--j-t-14); }
 .j-ledger-counts { display: flex; flex-wrap: wrap; gap: var(--j-s-1); }
-.j-ledger-selected { display: grid; gap: var(--j-s-1); justify-items: start; padding: var(--j-s-3); border: 1px solid var(--j-line); border-radius: var(--j-r-2); }
+.j-ledger-selected { display: grid; gap: var(--j-s-1); justify-items: start; padding-block-start: var(--j-s-3); border-block-start: 2px solid var(--j-ink); }
 .j-ledger-selected code, .j-ledger-selected small { overflow-wrap: anywhere; font-family: var(--j-font-code); font-size: var(--j-t-12); }
-.j-ledger-waiver { display: grid; gap: var(--j-s-3); padding: var(--j-s-3); border: 1px dashed var(--j-warn); border-radius: var(--j-r-2); }
+.j-ledger-waiver { display: grid; gap: var(--j-s-3); padding-block-start: var(--j-s-3); border-block-start: 2px solid var(--j-warn); }
 .j-ledger-history ol { display: grid; gap: var(--j-s-2); margin: 0; padding: 0 var(--j-s-3) var(--j-s-3) var(--j-s-6); font-size: var(--j-t-13); }
 .j-ledger-history li > div { display: flex; flex-wrap: wrap; gap: var(--j-s-1) var(--j-s-3); }
 .j-ledger-history p { margin: var(--j-s-1) 0 0; }

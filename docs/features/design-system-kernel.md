@@ -250,10 +250,13 @@ kernel controls.
 
 - **The diff:** both dialogs show a change the same way (`diffItem`): its
   operation as a chip named in the page language (added `ok`, changed `warn`,
-  removed `crit`), its path, and the values before and after.
+  removed `crit`), its path, and the values before and after. Each change is
+  a row under a thin rule; only the values keep their wells, edged in the
+  removal and addition tones.
 - **Facts:** the base, source, validation and integrity of a commit, and a
-  revision's metadata, are a `dl`; revision IDs and checksums read left to
-  right in monospace.
+  revision's metadata, are a `dl`, each fact under a thin rule (label beside
+  value on a phone); revision IDs and checksums read left to right in
+  monospace.
 - **Approval:** the approver and rationale are kernel fields; the
   confirmation is a 44px label.
 - **Revisions:** a pick list (see Dialogs); the current head carries an `ok`
@@ -305,11 +308,13 @@ ledger.
   save, append event, the workspace actions) hands it to the dialog, or back
   to the button once usable again (`keepDialogFocus`), never to the page
   behind.
-- **Shared parts:** the trust line (`.j-modal-trust`), section heads, actions,
-  and the prompt's code block, which takes focus so the keyboard can scroll it.
+- **Shared parts:** the trust line (`.j-modal-trust`, under a 2px signal
+  rule, no box), section heads, actions, and the prompt's code block, which
+  takes focus so the keyboard can scroll it.
 - **Pick list:** `.j-pick-list` of `.j-pick` buttons, contract `aria-pressed`;
-  the pressed one is marked by a thicker leading edge as well as colour. The
-  revisions and the ledger's tasks use it.
+  each a row under a thin rule, the pressed one under a 2px ink rule as well
+  as its wash. The revisions and the ledger's tasks use it. The ledger's
+  decision record sits under an ink rule, a waiver under a warning rule.
 - **Review ledger:** statuses are chips (`data-ledger-status`; in review and
   waived `warn`, completed `ok`, stale `crit`); a task's reason and phase use
   the review queue's names; the reviewer, decision and waiver are kernel

@@ -144,6 +144,30 @@ test.describe("Revision history and safe restore", () => {
     // Operations are named in the page language, not as codes.
     await expect(page.locator("#revisionDiff")).toContainText("عُدِّل");
     await expect(page.locator("#revisionDiff")).not.toContainText("replace");
+    // Rules, not boxes: the trust line, the picks, the facts and the changes
+    // sit under a rule with no side edge, no corners and no wash (the pressed
+    // pick keeps its wash and takes an ink rule).
+    await page.mouse.move(0, 0);
+    const parts = await page.evaluate(() => {
+      const edges = (selector) => {
+        const style = getComputedStyle(document.querySelector(`#revisionDialog ${selector}`));
+        return [style.borderTopWidth, style.borderLeftWidth, style.borderTopLeftRadius, style.backgroundColor === "rgba(0, 0, 0, 0)"];
+      };
+      return {
+        trust: edges(".j-modal-trust"),
+        pick: edges('.j-pick[aria-pressed="false"]'),
+        pressed: edges('.j-pick[aria-pressed="true"]').slice(0, 3),
+        fact: edges(".j-commit-facts > div"),
+        change: edges(".j-diff-item"),
+      };
+    });
+    expect(parts).toEqual({
+      trust: ["2px", "0px", "0px", true],
+      pick: ["1px", "0px", "0px", true],
+      pressed: ["2px", "0px", "0px"],
+      fact: ["1px", "0px", "0px", true],
+      change: ["1px", "0px", "0px", true],
+    });
     await expectKernel(page, "#revisionBackdrop", "#revisionDialog");
 
     await page.locator("#revisionRestore").click();
