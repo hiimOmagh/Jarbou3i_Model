@@ -16,6 +16,8 @@ test.describe("Guided flow", () => {
     await expect(step(page, "topic")).toHaveAttribute("aria-current", "step");
     await expect(page.locator("#flowStepOf")).toHaveText("Step 1 of 5");
     await expect(page.locator("#flowBack")).toBeHidden();
+    // The first guidance stays plain after the language switch, not a warning.
+    await expect(page.locator("#topicStatus")).toHaveAttribute("data-tone", "idle");
     // The step list and the examples are 44px targets.
     expect(await hitHeight(step(page, "lens"))).toBeGreaterThanOrEqual(44);
     expect(await hitHeight(page.locator(".j-flow-example").first())).toBeGreaterThanOrEqual(44);

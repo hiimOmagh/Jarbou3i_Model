@@ -218,13 +218,12 @@
 .j-chip[data-tone="warn"] { color: var(--j-warn); border-color: color-mix(in srgb, var(--j-warn) 45%, transparent); }
 .j-chip[data-tone="crit"] { color: var(--j-crit); border-color: color-mix(in srgb, var(--j-crit) 45%, transparent); }
 
-/* A sentence that says a state: the tone is an edge and a wash, the words say it. */
-.j-note {
-  margin: 0; padding: var(--j-s-2) var(--j-s-3); border: 1px solid var(--j-line);
-  border-radius: var(--j-r-2); color: var(--j-fg); font-size: var(--j-t-13);
-}
+/* A sentence that says a state in words. Good news and guidance are
+   plain text; only a warning or an error takes a box, edged and washed in its
+   tone, so what needs attention stands out. */
+.j-note { margin: 0; color: var(--j-fg); font-size: var(--j-t-13); }
 .j-note:empty { display: none; }
-.j-note[data-tone="ok"] { border-color: color-mix(in srgb, var(--j-ok) 55%, transparent); background: var(--j-ok-wash); }
+.j-note:is([data-tone="warn"], [data-tone="crit"]) { padding: var(--j-s-2) var(--j-s-3); border: 1px solid; border-radius: var(--j-r-2); }
 .j-note[data-tone="warn"] { border-color: color-mix(in srgb, var(--j-warn) 60%, transparent); background: var(--j-warn-wash); }
 .j-note[data-tone="crit"] { border-color: color-mix(in srgb, var(--j-crit) 55%, transparent); background: var(--j-crit-wash); }
 

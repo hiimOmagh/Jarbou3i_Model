@@ -71,6 +71,13 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Only warnings and errors in a box
+
+- Status lines that report good news or give guidance (the topic and answer
+  steps, the editor's format check, the workspace, history and approval
+  status, empty sections) are now plain text; a warning or an error keeps
+  its tinted box, so what needs attention stands out.
+
 ### Each revision's kind said once
 
 - In the revision history, an imported or restored revision no longer

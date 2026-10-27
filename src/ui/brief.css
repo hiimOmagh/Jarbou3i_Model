@@ -86,7 +86,8 @@
 .j-diag { display: grid; gap: var(--j-s-4); min-width: 0; }
 .j-diag h4 { margin: 0; color: var(--j-fg); font: 600 var(--j-t-16)/1.35 var(--j-font-display); }
 .j-diag > section { display: grid; gap: var(--j-s-2); min-width: 0; }
-.j-diag > .j-note { display: grid; gap: var(--j-s-2); padding: var(--j-s-3) var(--j-s-4); }
+.j-diag > .j-note { display: grid; gap: var(--j-s-2); }
+.j-diag > .j-note:is([data-tone="warn"], [data-tone="crit"]) { padding: var(--j-s-3) var(--j-s-4); }
 .j-diag > .j-note :is(p, ul) { margin: 0; }
 .j-diag > .j-note ul { padding-inline-start: var(--j-s-5); }
 .j-diag > .j-note li + li { margin-top: var(--j-s-1); }

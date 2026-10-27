@@ -1866,11 +1866,12 @@ function refreshDynamicMessages() {
   validateJsonInput();
   const status = $("topicStatus");
   if (!status) return;
+  // The first guidance is not a warning: plain, as the page first shows it.
   if (state.stage === "topic") {
-    status.dataset.tone = "warn";
+    status.dataset.tone = "idle";
     status.textContent = t("topicStatusStart");
   } else if (state.stage === "import") {
-    status.dataset.tone = state.lastPrompt ? "ok" : "warn";
+    status.dataset.tone = state.lastPrompt ? "ok" : "idle";
     status.textContent = state.lastPrompt
       ? t("promptCopied")
       : t("topicStatusStart");

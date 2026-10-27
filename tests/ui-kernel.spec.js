@@ -48,6 +48,16 @@ test.describe("Design-system kernel", () => {
     expect(option).toBeGreaterThanOrEqual(44);
   });
 
+  test("good news is plain text; only a failure note takes a box", async ({ page }) => {
+    await open(page, "lang=en&theme=dark");
+    const box = (tone) => page.locator(`.j-note[data-tone="${tone}"]`).first().evaluate((el) => {
+      const style = getComputedStyle(el);
+      return [style.borderTopWidth, style.paddingTop, style.backgroundColor === "rgba(0, 0, 0, 0)"];
+    });
+    expect(await box("ok")).toEqual(["0px", "0px", true]);
+    expect(await box("crit")).toEqual(["1px", "8px", false]);
+  });
+
   test("a segmented control moves with the arrows, mirrored in Arabic", async ({ page }) => {
     await open(page, "lang=en&theme=dark");
     await page.locator('[data-param="language"] [aria-checked="true"]').focus();
