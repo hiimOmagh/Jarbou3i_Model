@@ -241,10 +241,12 @@
 .j-mode-help dt { color: var(--j-fg); font-weight: 600; }
 .j-mode-help dd { margin: 0; }
 
-.j-flow-howto { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--j-s-3); counter-reset: how; }
+/* What to do with the prompt: three stops, each under a thin rule, its
+   number beside its words. */
+.j-flow-howto { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--j-s-4); counter-reset: how; }
 .j-flow-howto li {
-  counter-increment: how; display: grid; gap: var(--j-s-2); padding: var(--j-s-4);
-  border: 2px solid var(--j-line); border-radius: var(--j-r-3); background: var(--j-panel);
+  counter-increment: how; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--j-s-3);
+  padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line);
   color: var(--j-fg-muted); font-size: var(--j-t-14);
 }
 /* Its order as a station code: the number in an ink ring. */

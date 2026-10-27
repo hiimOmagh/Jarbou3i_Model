@@ -71,6 +71,12 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The prompt step's three stops without boxes
+
+- What to do with the prompt (open your assistant, paste and send, come back
+  with the full answer) is now three numbered stops under a thin rule, not
+  three boxes; on a phone they take about half the height (AR/EN/FR).
+
 ### Only warnings and errors in a box
 
 - Status lines that report good news or give guidance (the topic and answer

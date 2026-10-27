@@ -131,6 +131,9 @@ one at a time, with the mascot guide and a step list beside them.
   (`resolveShellCommand()` in `src/core/shell-navigation.js`), and pasting the
   answer once the prompt is copied; the flow tells the shell when the step
   changes.
+- **The prompt step:** what to do with the prompt is three stops
+  (`.j-flow-howto`), each under a thin rule with its number in an ink ring
+  beside its words: three across, one under another on a phone.
 - **Targets:** step rows and topic examples are 44px. The answer boxes are
   `dir="ltr"` (JSON); in Arabic their hint reads right to left while empty.
 - **Tests:** `tests/guided-flow.spec.js`; other specs open a step with

@@ -36,6 +36,14 @@ test.describe("Guided flow", () => {
     await page.locator("#flowBack").click();
     await expect(step(page, "topic")).toHaveAttribute("aria-current", "step");
 
+    // The prompt step's stops sit under a rule: no side edge, corners or panel.
+    await step(page, "prompt").click();
+    const stop = await page.locator(".j-flow-howto li").first().evaluate((el) => {
+      const style = getComputedStyle(el);
+      return [style.borderTopWidth, style.borderLeftWidth, style.borderTopLeftRadius, style.backgroundColor === "rgba(0, 0, 0, 0)"];
+    });
+    expect(stop).toEqual(["1px", "0px", "0px", true]);
+
     await step(page, "answer").click();
     await expect(page.locator("#flowStepOf")).toHaveText("Step 5 of 5");
     await expect(page.locator("#jsonInput")).toBeVisible();
