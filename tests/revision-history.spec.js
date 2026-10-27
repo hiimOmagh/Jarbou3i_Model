@@ -68,6 +68,9 @@ test.describe("Revision history and safe restore", () => {
     await expect(page.locator("#revisionCount")).toHaveText("2 revisions");
     await expect(page.locator("#revisionList [data-revision-id]")).toHaveCount(2);
     await expect(page.locator('#revisionList [aria-pressed="true"]')).toContainText("Imported");
+    // Said once, as the kind; the only chip is the current version's.
+    await expect(page.locator('#revisionList [aria-pressed="true"] .j-chip')).toHaveCount(0);
+    await expect(page.locator("#revisionList .j-chip")).toHaveText(["Current version"]);
     await expect(page.locator("#revisionDiff")).toContainText("/subject/title");
     await expect(page.locator("#revisionRestore")).toBeEnabled();
     // Picked from the keyboard, a revision keeps focus as the list redraws.

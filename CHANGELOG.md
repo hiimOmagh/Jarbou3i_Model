@@ -71,6 +71,12 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Each revision's kind said once
+
+- In the revision history, an imported or restored revision no longer
+  carries a chip that repeats its kind; the current version keeps its chip
+  (AR/EN/FR).
+
 ### The working dialogs follow the line
 
 - The editor's commit, the revision history and the review ledger drop their

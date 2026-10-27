@@ -260,7 +260,8 @@ kernel controls.
 - **Approval:** the approver and rationale are kernel fields; the
   confirmation is a 44px label.
 - **Revisions:** a pick list (see Dialogs); the current head carries an `ok`
-  chip, imported and restored a plain chip.
+  chip. Imported and restored are said once, as the revision's kind under
+  its name, not again as a chip.
 - **Status:** `#resolutionStatus`, `#revisionStatus` and `#revisionBlocked`
   are kernel notes.
 - **Counts:** `pluralText` uses the language's plural forms (Arabic has six).

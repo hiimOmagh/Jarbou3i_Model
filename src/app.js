@@ -7648,11 +7648,8 @@ async function renderRevisionHistory() {
   $("revisionCount").textContent = pluralText(history.revision_count, REVISION_COUNT);
   $("revisionRestore").textContent = revisionText("restore");
   $("revisionList").innerHTML = [...history.revisions].reverse().map((revision) => {
-    const badges = [
-      revision.is_head ? `<span class="j-chip" data-tone="ok">${escapeHtml(revisionText("head"))}</span>` : "",
-      revision.is_imported ? `<span class="j-chip">${escapeHtml(revisionText("imported"))}</span>` : "",
-      revision.kind === "restored_revision" ? `<span class="j-chip">${escapeHtml(revisionText("restored"))}</span>` : "",
-    ].join("");
+    // Imported and restored are said once, as the revision's kind below.
+    const badges = revision.is_head ? `<span class="j-chip" data-tone="ok">${escapeHtml(revisionText("head"))}</span>` : "";
     return `<button class="j-pick" type="button" data-revision-id="${escapeHtml(revision.revision_id)}" aria-pressed="${revision.revision_id === selected?.revision_id}"><span class="j-pick-top"><strong>${escapeHtml(revisionText("revision", { sequence: revision.sequence }))}</strong>${badges}</span><span class="j-pick-meta"><span>${escapeHtml(revisionKindText(revision.kind))}</span><time datetime="${escapeHtml(revision.created_at)}">${escapeHtml(new Date(revision.created_at).toLocaleString(state.lang))}</time></span></button>`;
   }).join("");
   $("revisionList").querySelectorAll("[data-revision-id]").forEach((button) => {
