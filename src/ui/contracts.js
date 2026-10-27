@@ -159,7 +159,7 @@ const FREE_CLASSES = [
 export const KERNEL_CLASSES = Object.freeze([...Object.keys(CONTRACTS), ...FREE_CLASSES].sort());
 
 const describe = (element) =>
-  `<${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""} class="${element.getAttribute("class")}">`;
+  `<${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""}${element.hasAttribute("class") ? ` class="${element.getAttribute("class")}"` : ""}>`;
 
 // Every contract break under root, and every .j-* class the kernel does not define.
 export function checkContracts(root) {
@@ -176,6 +176,12 @@ export function checkContracts(root) {
         if (problem) problems.push({ element: describe(element), contract: name, problem });
       }
     }
+  }
+  // Safari stops announcing a list as a list once its markers are hidden,
+  // unless it sits in navigation or says role="list".
+  for (const list of root.querySelectorAll("ul, ol")) {
+    if (getComputedStyle(list).listStyleType !== "none" || list.hasAttribute("role") || list.closest("nav, [aria-hidden='true']")) continue;
+    problems.push({ element: describe(list), contract: "list", problem: 'a list without markers needs role="list"' });
   }
   return problems;
 }

@@ -36,7 +36,9 @@ framework. The modern shell (UIX-2) is the first part of the app built on it.
   and so on. A button is plain, `primary`, `ghost` or `danger` (deletes and
   resets). A note (`.j-note`) is a sentence that says a state: it needs a
   tone, and is hidden while empty. `ok` and `idle` notes are plain text; only
-  `warn` and `crit` take a box, edged and washed in their tone. A class the registry does not know is an error. The stylesheet
+  `warn` and `crit` take a box, edged and washed in their tone. A list drawn
+  without markers (`list-style: none`) says `role="list"`, unless it sits in
+  `<nav>`: Safari drops the list semantics of an unmarked list otherwise. A class the registry does not know is an error. The stylesheet
   and the registry must list the same classes.
 - **Themes.** Dark first. Light is designed, not inverted. Without
   `data-theme` the theme follows the system.

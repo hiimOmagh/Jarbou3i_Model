@@ -113,7 +113,10 @@ test.describe("Design-system kernel", () => {
         <div class="j-toast" data-tone="bad">Done</div>
         <a class="j-skip" href="#nowhere">Skip</a>
         <button class="j-status j-save-light" data-tone="ok" data-state="lost">Saved</button>
-        <span class="j-banner">New</span>`;
+        <span class="j-banner">New</span>
+        <ul style="list-style: none"><li>Unmarked</li></ul>
+        <ul style="list-style: none" role="list"><li>Said</li></ul>
+        <nav aria-label="Steps"><ol style="list-style: none"><li>In navigation</li></ol></nav>`;
       document.body.append(broken);
       return window.kernelHarness.problems().map((entry) => `${entry.contract}: ${entry.problem}`);
     });
@@ -133,6 +136,7 @@ test.describe("Design-system kernel", () => {
       'j-save-light: needs aria-haspopup="dialog" and aria-controls naming the work panel it opens',
       'j-save-light: data-state="lost" is not one of empty, saving, saved, error',
       "j-banner: is not a kernel class",
+      'list: a list without markers needs role="list"',
     ]);
   });
 

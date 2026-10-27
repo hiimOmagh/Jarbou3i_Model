@@ -194,7 +194,7 @@
 
   function referenceList(ids, emptyCopy) {
     if (!ids?.length) return `<p class="j-note" data-tone="idle">${escapeHtml(emptyCopy)}</p>`;
-    return `<ul class="j-insp-list">${ids.map((id) => {
+    return `<ul class="j-insp-list" role="list">${ids.map((id) => {
       const node = graph.resolve(id);
       return `<li>${node ? `<button class="j-insp-rec" type="button" data-reference-id="${escapeHtml(id)}"><span>${escapeHtml(node.label)}</span><small>${escapeHtml(id)}</small></button>` : `<span>${escapeHtml(id)}</span>`}</li>`;
     }).join("")}</ul>`;
@@ -280,7 +280,7 @@
     };
     const occurrences = inspection?.occurrences || [];
     const content = occurrences.length
-      ? `<ol class="j-insp-list j-insp-occ">${occurrences.map((occurrence, index) => {
+      ? `<ol class="j-insp-list j-insp-occ" role="list">${occurrences.map((occurrence, index) => {
         const kind = kindLabel[occurrence.kind] || copy.occurrenceReference;
         const place = occurrencePlace(occurrence, inspection.canonicalId);
         return `<li><button class="j-insp-rec" type="button" data-reference-occurrence="${index}" aria-label="${escapeHtml([`${copy.occurrenceOpen}: ${kind}`, place].filter(Boolean).join(" — "))}"><span>${escapeHtml(kind)}</span>${place ? `<small>${escapeHtml(place)}</small>` : ""}</button></li>`;
@@ -306,7 +306,7 @@
     const incoming = graph.incoming(node.id);
     const outgoing = graph.outgoing(node.id);
     const connections = incoming.length + outgoing.length
-      ? `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4 class="j-label">${escapeHtml(copy.incoming)}</h4><ul class="j-insp-list">${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4 class="j-label">${escapeHtml(copy.outgoing)}</h4><ul class="j-insp-list">${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
+      ? `<section class="j-insp-sec" data-inspection-section="linked"><h3>${escapeHtml(copy.connections)}</h3>${incoming.length ? `<h4 class="j-label">${escapeHtml(copy.incoming)}</h4><ul class="j-insp-list" role="list">${incoming.map((edge) => relationHtml(edge, "incoming")).join("")}</ul>` : ""}${outgoing.length ? `<h4 class="j-label">${escapeHtml(copy.outgoing)}</h4><ul class="j-insp-list" role="list">${outgoing.map((edge) => relationHtml(edge, "outgoing")).join("")}</ul>` : ""}</section>`
       : "";
     const permanentLink = inspection.relationship?.deepLink
       ? `<div><dt class="j-label">${escapeHtml(copy.permanentLink)}</dt><dd><a data-permanent-link href="${escapeHtml(inspection.relationship.deepLink)}">${escapeHtml(copy.permanentLinkText)}</a></dd></div>`

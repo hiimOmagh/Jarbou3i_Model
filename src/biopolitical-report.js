@@ -304,7 +304,7 @@
     }).join("");
     const conclusion = `<details class="reportSection" id="conclusion">
       <summary><span class="sectionNumber">10</span><span class="sectionHeading"><strong>${escapeHtml(c.conclusion)}</strong><small>${escapeHtml(c.conclusionHint)}</small></span></summary>
-      <div class="sectionBody"><div class="conclusionGrid">${conclusionGroups}</div><p class="auditNote">${escapeHtml(bio.ui(locale, "selfAuditNote"))}</p><ul class="auditList">${audit}</ul></div>
+      <div class="sectionBody"><div class="conclusionGrid">${conclusionGroups}</div><p class="auditNote">${escapeHtml(bio.ui(locale, "selfAuditNote"))}</p><ul class="auditList" role="list">${audit}</ul></div>
     </details>`;
 
     const familyLabels = { explicit: c.authored, evidence: c.evidence, structural: c.structural };

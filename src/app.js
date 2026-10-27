@@ -5272,7 +5272,7 @@ function scoreFormulaHtml() {
 // left to right in Arabic too; the dash between its numbers would reverse it.
 function scoreBandsHtml() {
   const bands = [["crit", "0–34"], ["warn", "35–55"], ["", "56–75"], ["ok", "76–100"]];
-  return `<ul class="j-brief-bands" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands
+  return `<ul class="j-brief-bands" role="list" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands
     .map(([tone, range]) => `<li><span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:100%" aria-hidden="true"></span><span dir="ltr">${range}</span></li>`)
     .join("")}</ul>`;
 }
@@ -5286,7 +5286,7 @@ function diagNotesHtml(items, good, hook = "") {
   const notes = items.length
     ? items.map((item) => `<li class="j-note" data-tone="warn">${escapeHtml(item)}</li>`).join("")
     : `<li class="j-note" data-tone="ok">${escapeHtml(good)}</li>`;
-  return `<ul class="j-diag-notes"${hook ? ` data-diagnostic="${hook}"` : ""}>${notes}</ul>`;
+  return `<ul class="j-diag-notes" role="list"${hook ? ` data-diagnostic="${hook}"` : ""}>${notes}</ul>`;
 }
 // A Strategic layer's record: its ID and codes, its statement and rationale,
 // then its model score as a fact.
@@ -5532,7 +5532,7 @@ function resultsExplanationHtml(model) {
   const cards = model.sections
     .map((section) => {
       const items = section.items.length
-        ? `<ol class="j-brief-items">${section.items
+        ? `<ol class="j-brief-items" role="list">${section.items
             .map((item) => {
               const tags = item.meta.filter((value) => value !== undefined && value !== null && value !== "");
               return `<li><strong>${escapeHtml(item.name)}</strong>${item.summary ? `<p>${escapeHtml(item.summary)}</p>` : ""}${tags.length ? `<span class="j-brief-tags">${tags.map(chip).join("")}</span>` : ""}</li>`;
@@ -5542,7 +5542,7 @@ function resultsExplanationHtml(model) {
       return `<li><article class="j-rec" data-explanation-section="${escapeHtml(section.key)}" aria-labelledby="explanation-${escapeHtml(section.key)}"><header class="j-rec-head"><h5 class="j-rec-title" id="explanation-${escapeHtml(section.key)}">${escapeHtml(section.label)}</h5><span class="j-chip"><span aria-hidden="true">${section.total}</span><span class="j-sr-only">${escapeHtml(pluralText(section.total, ITEM_COUNT))}</span></span></header><p class="j-brief-desc">${escapeHtml(section.description)}</p>${items}<button class="j-btn j-brief-open" data-explanation-open type="button" data-explanation-review="${escapeHtml(section.target.review)}" data-explanation-pillar="${escapeHtml(section.target.pillar)}"><span>${escapeHtml(section.actionLabel)}</span><span aria-hidden="true">${state.lang === "ar" ? "←" : "→"}</span></button></article></li>`;
     })
     .join("");
-  return `<section class="j-brief" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="j-brief-head"><div><h4 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h4><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></div></header><ol class="j-brief-steps">${cards}</ol></section>`;
+  return `<section class="j-brief" data-results-explanation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsExplanationTitle"><header class="j-brief-head"><div><h4 id="resultsExplanationTitle">${escapeHtml(labelText("How the conclusion is built", "كيف بُنيت الخلاصة", "Comment la conclusion est construite"))}</h4><p>${escapeHtml(labelText("Follow the strongest authored signals, then open the complete analytical record.", "اتبع أقوى الإشارات المؤلفة ثم افتح السجل التحليلي الكامل.", "Suivez les signaux rédigés les plus forts, puis ouvrez le dossier analytique complet."))}</p></div></header><ol class="j-brief-steps" role="list">${cards}</ol></section>`;
 }
 function wireResultsExplanation(lens) {
   document.querySelectorAll("[data-explanation-open]").forEach((button) => {
@@ -5630,7 +5630,7 @@ function renderPillars() {
   return `<h3>${t("engine")}</h3><div class="j-layers">${PILLARS.map((p, index) => {
     const items = normalizeArray(state.analysis[p]);
     const body = items.length
-      ? `<ol class="j-recs" data-records="layer">${items.map((o) => itemCard(o, recordFactsHtml(modelMetricsFor(p, o)))).join("")}</ol>`
+      ? `<ol class="j-recs" role="list" data-records="layer">${items.map((o) => itemCard(o, recordFactsHtml(modelMetricsFor(p, o)))).join("")}</ol>`
       : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`;
     return layerAccordion({ prefix: "acc", key: p, index, color: COLORS[p], label: labels[p], count: items.length, body });
   }).join("")}</div>`;
@@ -5661,7 +5661,7 @@ function renderContradictions() {
       : kernelChip(labelText("Cross-layer", "عابر للطبقات"));
     return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(c)}><header class="j-rec-head">${recordIdCode(c)}${kernelChip(contradictionTypeLabel(c.contradiction_type || c.type))}${kernelChip(c.confidence ? confidenceInfo(c.confidence).label : "", confidenceTone(c.confidence))}${kernelChip(severity, tone)}</header><p class="j-rec-title">${escapeHtml(c.rhetoric || c.name || c.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("actionsResults"), factList(c.actions))}${recordFact(t("interpretation"), escapeHtml(c.interpretation || "—"))}</dl><dl class="j-rec-facts">${recordFact(analysisSignalLabel(), escapeHtml(contradictionMeaning(c)))}${recordFact(labelText("Impact", "الأثر"), escapeHtml(impactScope(c)))}${recordFact(labelText("Affected layers", "الطبقات المتأثرة"), layerChips)}</dl></article></li>`;
   };
-  return `<h3>${t("contradictions")}</h3>${items.length ? `<ol class="j-recs" data-records="contradictions">${items.map(contradictionRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
+  return `<h3>${t("contradictions")}</h3>${items.length ? `<ol class="j-recs" role="list" data-records="contradictions">${items.map(contradictionRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
 function renderScenarios() {
   const items = state.analysis.scenarios.items;
@@ -5669,7 +5669,7 @@ function renderScenarios() {
     const pct = Math.round(valuePct(Number(s.probability)));
     return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}<span class="j-chip">${escapeHtml(t("probability"))} <bdi>${pctText(pct)}</bdi></span>${kernelChip(s.timeframe ? `${t("timeframe")}${colonMark()} ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
   };
-  return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
+  return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" role="list" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
 function renderEvidence() {
   const ev = normalizeArray(state.analysis.evidence.items),
@@ -5702,7 +5702,7 @@ function renderEvidence() {
       : "";
     return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
   };
-  return `<h3>${t("evidence")}</h3>${ev.length ? `<ol class="j-recs" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
+  return `<h3>${t("evidence")}</h3>${ev.length ? `<ol class="j-recs" role="list" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" role="list" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
 }
 function download(name, text, type = "text/plain") {
   const blob = new Blob([text], { type });
@@ -6110,7 +6110,7 @@ function renderEvidenceIntelligence(index) {
       `<b>${cluster.traceableCount}</b> ${escapeHtml(copy.traceable)}`,
       `<b>${cluster.verifiedCount}</b> ${escapeHtml(copy.verified)}`,
     ].map((count) => `<span>${count}</span>`).join("");
-    return `<li><article class="j-rec" data-source-cluster="${escapeHtml(cluster.id)}"><header class="j-rec-head"><code class="j-rec-id">${escapeHtml(cluster.id)}</code><span class="j-label" data-cluster-basis>${escapeHtml(copy.identity)} · ${escapeHtml(copy.identityBases[cluster.identityBasis] || String(cluster.identityBasis).replaceAll("_", " "))}</span></header><h5 class="j-rec-title">${escapeHtml(cluster.label)}</h5><p class="j-evi-counts">${counts}</p><ul class="j-insp-list">${members}</ul></article></li>`;
+    return `<li><article class="j-rec" data-source-cluster="${escapeHtml(cluster.id)}"><header class="j-rec-head"><code class="j-rec-id">${escapeHtml(cluster.id)}</code><span class="j-label" data-cluster-basis>${escapeHtml(copy.identity)} · ${escapeHtml(copy.identityBases[cluster.identityBasis] || String(cluster.identityBasis).replaceAll("_", " "))}</span></header><h5 class="j-rec-title">${escapeHtml(cluster.label)}</h5><p class="j-evi-counts">${counts}</p><ul class="j-insp-list" role="list">${members}</ul></article></li>`;
   }).join("");
   const gapGroups = Object.entries(intelligence.gaps)
     .filter(([, ids]) => ids.length)
@@ -6122,7 +6122,7 @@ function renderEvidenceIntelligence(index) {
         const node = index.resolve(id);
         return `<li>${node ? recordButton(id, node.label) : `<code>${escapeHtml(id)}</code>`}</li>`;
       }).join("");
-      return `<li><article class="j-rec" data-evidence-gap="${escapeHtml(key)}"><header class="j-rec-head"><h5 class="j-rec-title">${escapeHtml(copy.gapLabels[key] || key)}</h5><span class="j-chip" data-tone="warn">${ids.length}</span></header><ul class="j-insp-list">${links}</ul></article></li>`;
+      return `<li><article class="j-rec" data-evidence-gap="${escapeHtml(key)}"><header class="j-rec-head"><h5 class="j-rec-title">${escapeHtml(copy.gapLabels[key] || key)}</h5><span class="j-chip" data-tone="warn">${ids.length}</span></header><ul class="j-insp-list" role="list">${links}</ul></article></li>`;
     }).join("");
   const traceability = index.traceability;
   const reviewPlan = index.reviewPlan;
@@ -6148,7 +6148,7 @@ function renderEvidenceIntelligence(index) {
       const group = tasks.filter((task) => task.reasonCode === reason);
       const shown = 5;
       const more = group.slice(shown);
-      return `<div class="j-evi-reason"><h6>${escapeHtml(copy.reasonLabels[reason] || reason)} <span class="j-chip">${group.length}</span></h6><ol class="j-evi-tasks">${group.slice(0, shown).map(taskItem).join("")}</ol>${more.length ? `<details class="j-disclosure"><summary>${escapeHtml(pluralText(more.length, MORE_TASK_COUNT))}</summary><ol class="j-evi-tasks">${more.map(taskItem).join("")}</ol></details>` : ""}</div>`;
+      return `<div class="j-evi-reason"><h6>${escapeHtml(copy.reasonLabels[reason] || reason)} <span class="j-chip">${group.length}</span></h6><ol class="j-evi-tasks" role="list">${group.slice(0, shown).map(taskItem).join("")}</ol>${more.length ? `<details class="j-disclosure"><summary>${escapeHtml(pluralText(more.length, MORE_TASK_COUNT))}</summary><ol class="j-evi-tasks" role="list">${more.map(taskItem).join("")}</ol></details>` : ""}</div>`;
     }).join("");
     return `<section class="j-rec" data-review-phase="${escapeHtml(phase)}"><header class="j-rec-head"><h5 class="j-rec-title">${escapeHtml(phaseLabels[phase])}</h5><span class="j-chip">${tasks.length}</span></header>${reasons}</section>`;
   }).join("");
@@ -6164,7 +6164,7 @@ function renderEvidenceIntelligence(index) {
   }).join("");
   const table = matrixRows ? `<div class="j-table-wrap"><table class="j-table"><thead><tr><th>${escapeHtml(copy.records)}</th><th>${escapeHtml(copy.supporting)}</th><th>${escapeHtml(copy.counter)}</th><th>${escapeHtml(copy.clusters)}</th><th>${escapeHtml(copy.balance)}</th></tr></thead><tbody>${matrixRows}</tbody></table></div>` : "";
   const uncited = unreferenced.length
-    ? `<details class="j-disclosure" data-traceability-unreferenced><summary>${escapeHtml(pluralText(unreferenced.length, UNREFERENCED_COUNT))}</summary><ul class="j-insp-list">${unreferenced.map((row) => `<li data-traceability-record="${escapeHtml(row.recordId)}">${recordButton(row.recordId, row.label)}</li>`).join("")}</ul></details>`
+    ? `<details class="j-disclosure" data-traceability-unreferenced><summary>${escapeHtml(pluralText(unreferenced.length, UNREFERENCED_COUNT))}</summary><ul class="j-insp-list" role="list">${unreferenced.map((row) => `<li data-traceability-record="${escapeHtml(row.recordId)}">${recordButton(row.recordId, row.label)}</li>`).join("")}</ul></details>`
     : "";
   const matrix = `<section class="j-evi-sec" data-evidence-traceability><header class="j-evi-head"><div><h4>${escapeHtml(copy.matrix)}</h4><p>${escapeHtml(copy.matrixIntro)}</p><small>${escapeHtml(copy.derivedNote)}</small></div><div class="j-evi-acts"><button class="j-btn" id="exportIntelligence" type="button">${escapeHtml(copy.export)}</button></div></header>${table}${uncited}</section>`;
   const stats = [
@@ -6172,7 +6172,7 @@ function renderEvidenceIntelligence(index) {
     [`${intelligence.stats.citedEvidence}/${intelligence.stats.evidenceRecords}`, copy.cited],
     [intelligence.stats.gapCount, copy.gaps],
   ].map(([value, label]) => `<span><b>${value}</b>${escapeHtml(label)}</span>`).join("");
-  return `<details class="j-disclosure j-evi" data-evidence-intelligence><summary><span class="j-evi-title"><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="j-stats">${stats}</span></summary><div class="j-evi-body"><section class="j-evi-sec"><h4>${escapeHtml(copy.clusters)}</h4>${clusterCards ? `<ul class="j-recs">${clusterCards}</ul>` : none(copy.empty)}</section><section class="j-evi-sec"><h4>${escapeHtml(copy.gaps)}</h4>${gapGroups ? `<ul class="j-recs">${gapGroups}</ul>` : none("0")}</section>${reviewQueue}${matrix}</div></details>`;
+  return `<details class="j-disclosure j-evi" data-evidence-intelligence><summary><span class="j-evi-title"><strong>${escapeHtml(copy.title)}</strong><small>${escapeHtml(copy.intro)}</small></span><span class="j-stats">${stats}</span></summary><div class="j-evi-body"><section class="j-evi-sec"><h4>${escapeHtml(copy.clusters)}</h4>${clusterCards ? `<ul class="j-recs" role="list">${clusterCards}</ul>` : none(copy.empty)}</section><section class="j-evi-sec"><h4>${escapeHtml(copy.gaps)}</h4>${gapGroups ? `<ul class="j-recs" role="list">${gapGroups}</ul>` : none("0")}</section>${reviewQueue}${matrix}</div></details>`;
 }
 // The layer a record belongs to, named in the interface language.
 function inspectionPillarLabel(lens, pillar) {
@@ -6202,7 +6202,7 @@ function renderInspectionDirectory(index) {
     [index.occurrenceCount, copy.occurrences, ""],
     [concerns, copy.concerns, concerns ? "warn" : "ok"],
   ].map(([value, label, tone]) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`).join("");
-  return `<section class="j-idir" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="j-idir-head"><div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p class="j-lede">${escapeHtml(copy.intro)}</p></div><span class="j-stats">${stats}</span></header>${renderEvidenceIntelligence(index)}<div class="j-field"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" class="j-input" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="j-sr-only" role="status" aria-live="polite"></span></div><ol class="j-recs" data-cols="2" id="inspectionDirectoryList">${cards}</ol>${cards ? "" : `<p class="j-note" data-tone="idle">${escapeHtml(copy.empty)}</p>`}<p class="j-note" data-tone="idle" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
+  return `<section class="j-idir" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="j-idir-head"><div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p class="j-lede">${escapeHtml(copy.intro)}</p></div><span class="j-stats">${stats}</span></header>${renderEvidenceIntelligence(index)}<div class="j-field"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" class="j-input" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="j-sr-only" role="status" aria-live="polite"></span></div><ol class="j-recs" role="list" data-cols="2" id="inspectionDirectoryList">${cards}</ol>${cards ? "" : `<p class="j-note" data-tone="idle">${escapeHtml(copy.empty)}</p>`}<p class="j-note" data-tone="idle" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
 }
 function wireInspectionDirectory() {
   const input = $("inspectionSearch");
@@ -6354,7 +6354,7 @@ function bioRecordHtml(item) {
 }
 function bioRecordsHtml(records) {
   return records.length
-    ? `<ol class="j-recs" data-records="bio">${records.map(bioRecordHtml).join("")}</ol>`
+    ? `<ol class="j-recs" role="list" data-records="bio">${records.map(bioRecordHtml).join("")}</ol>`
     : `<p class="j-note" data-tone="idle">${escapeHtml(BIO.ui(state.lang, "noRecords"))}</p>`;
 }
 // The Bio gate's verdict, which the quality gate and the brief both give.
@@ -6505,9 +6505,9 @@ function connectionsMapHtml(graph, node) {
         : `<span class="j-conn-node"><code>${escapeHtml(id)}</code></span>`}</li>`;
     };
     const groups = [...byRelation].map(([relation, ids], index) =>
-      `<li><span class="j-conn-rel" id="connRel-${key}-${index}">${escapeHtml(BIO.displayToken(state.lang, relation))}</span><ul>${ids.map(neighbour(`connRel-${key}-${index}`)).join("")}</ul></li>`,
+      `<li><span class="j-conn-rel" id="connRel-${key}-${index}">${escapeHtml(BIO.displayToken(state.lang, relation))}</span><ul role="list">${ids.map(neighbour(`connRel-${key}-${index}`)).join("")}</ul></li>`,
     ).join("");
-    return `<div class="j-conn-side" data-side="${key}"><h5>${escapeHtml(title)} <span class="j-chip">${edges.length}</span></h5>${groups ? `<ul>${groups}</ul>` : `<p class="j-help">${escapeHtml(labelText("None", "لا يوجد", "Aucune"))}</p>`}</div>`;
+    return `<div class="j-conn-side" data-side="${key}"><h5>${escapeHtml(title)} <span class="j-chip">${edges.length}</span></h5>${groups ? `<ul role="list">${groups}</ul>` : `<p class="j-help">${escapeHtml(labelText("None", "لا يوجد", "Aucune"))}</p>`}</div>`;
   };
   const arrow = `<span class="j-conn-arrow" aria-hidden="true">→</span>`;
   return `<div class="j-conn-map" id="connMap">${side("in", labelText("Linked from", "تُشير إليه", "Référencé par"), graph.incoming(node.id), (edge) => edge.source)}${arrow}<div class="j-conn-centre" id="connCentre" tabindex="-1"><span class="j-label">${escapeHtml(graph.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><code>${escapeHtml(node.id)}</code><button class="j-btn" type="button" data-reference-id="${escapeHtml(node.id)}">${escapeHtml(labelText("Open record", "فتح السجل", "Ouvrir la fiche"))}</button></div>${arrow}${side("out", labelText("Links to", "يُشير إلى", "Renvoie à"), graph.outgoing(node.id), (edge) => edge.target)}</div>`;
@@ -6524,7 +6524,7 @@ function connectionsGapsHtml(graph, loose) {
     "Ask the AI that wrote this answer to connect them. Its reply is checked and imported as a new answer; this one stays as it is.",
     "اطلب من الذكاء الاصطناعي الذي كتب هذه الإجابة أن يربطها. يُفحص رده ويُستورد إجابةً جديدة، وتبقى هذه الإجابة كما هي.",
     "Demandez à l’IA qui a rédigé cette réponse de les relier. Sa réponse est vérifiée et importée comme une nouvelle réponse ; celle-ci reste telle quelle.",
-  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ موجِّه لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the reply box", "الانتقال إلى مربع الرد", "Aller à la zone prévue"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
+  ))}</p><details class="j-disclosure"><summary>${escapeHtml(labelText("List the records", "قائمة السجلات", "Liste des fiches"))}</summary><ul class="j-conn-loose" role="list">${loose.map((node) => `<li>${namedBioText(node.id, graph)}</li>`).join("")}</ul></details><div class="j-conn-act"><button class="j-btn" type="button" id="connGapsCopy">${escapeHtml(labelText("Copy a prompt to connect them", "نسخ موجِّه لربطها", "Copier un prompt pour les relier"))}</button><button class="j-btn" data-variant="ghost" type="button" id="connGapsAnswer" hidden>${escapeHtml(labelText("Go to the reply box", "الانتقال إلى مربع الرد", "Aller à la zone prévue"))}</button></div><p id="connGapsStatus" role="status"></p></section>`;
 }
 // The prompt is in the answer's language, like the answer it adds to.
 async function copyConnectionsPrompt(event) {
@@ -6644,7 +6644,7 @@ function renderBiopoliticalConnections() {
     (groups.get(layer) || loose).push(row);
   }
   const group = (title, rows) => rows.length
-    ? `<div data-conn-layer><h5>${escapeHtml(title)} <span class="j-chip">${rows.length}</span></h5><ol class="j-conn-list">${rows.join("")}</ol></div>`
+    ? `<div data-conn-layer><h5>${escapeHtml(title)} <span class="j-chip">${rows.length}</span></h5><ol class="j-conn-list" role="list">${rows.join("")}</ol></div>`
     : "";
   const list = `<section class="j-conn-all" aria-labelledby="connAllTitle"><h4 id="connAllTitle">${escapeHtml(labelText("Every connection", "كل العلاقات", "Toutes les connexions"))}</h4><div class="j-field"><label for="connSearch">${escapeHtml(labelText("Find a record or relation", "ابحث عن سجل أو علاقة", "Rechercher une fiche ou une relation"))}</label><input class="j-input" type="search" id="connSearch" autocomplete="off" spellcheck="false" aria-describedby="connShown"><p class="j-help" id="connShown" role="status">${escapeHtml(connectionsShownText(graph.edges.length, graph.edges.length))}</p></div>${[...groups].map(([key, rows]) => group(layers[key]?.[0] || key, rows)).join("")}${group(labelText("Naming no record", "لا تسمّي سجلًا", "Ne nommant aucune fiche"), loose)}<p class="j-note" data-tone="idle" id="connNoMatch" hidden>${escapeHtml(labelText("No connection matches.", "لا توجد علاقة مطابقة.", "Aucune connexion ne correspond."))}</p></section>`;
   return `<div class="j-conn" id="connectionsView">${head}${gaps}${hop}${list}</div>`;
@@ -6725,7 +6725,7 @@ function renderBiopoliticalConclusion() {
   const audit = `${others.length ? `<dl class="j-checks" data-records="self-audit">${others.map(check).join("")}</dl>` : ""}${
     passed.length ? `<details class="j-disclosure" data-self-audit-passed><summary>${escapeHtml(pluralText(passed.length, PASSED_CHECK_COUNT))}</summary><dl class="j-checks">${passed.map(check).join("")}</dl></details>` : ""
   }`;
-  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p>${audit}${a.self_audit_notes.length ? `<ul class="j-rec-text" data-self-audit-notes>${a.self_audit_notes.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}`;
+  return `<h3>${escapeHtml(BIO.ui(state.lang, "conclusion"))}</h3><ul class="j-recs" role="list" data-cols="2" data-records="conclusion">${conclusion}</ul><h3>${escapeHtml(BIO.ui(state.lang, "selfAudit"))}</h3><p class="j-lede">${escapeHtml(BIO.ui(state.lang, "selfAuditNote"))}</p>${audit}${a.self_audit_notes.length ? `<ul class="j-rec-text" data-self-audit-notes>${a.self_audit_notes.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>` : ""}`;
 }
 function renderBiopoliticalReviewNav() {
   const connectionLabel = labelText("Connections", "العلاقات", "Connexions");
@@ -8536,7 +8536,7 @@ function renderWorkLife() {
   target.innerHTML = `<p class="j-life-help">${escapeHtml(lifeText("whereHint"))}</p><div class="j-life-grid">${
     card(lifeText("snapTitle"), snapshot)}${
     card(lifeText("draftTitle"), draft)}${
-    card(revisionText("revisions"), `<p class="j-life-help">${escapeHtml(revisionText("trust"))}</p><ol class="j-life-revs">${revisions}</ol><div class="j-life-acts">${lifeButton("history", revisionText("title"))}</div>`)
+    card(revisionText("revisions"), `<p class="j-life-help">${escapeHtml(revisionText("trust"))}</p><ol class="j-life-revs" role="list">${revisions}</ol><div class="j-life-acts">${lifeButton("history", revisionText("title"))}</div>`)
   }</div>`;
 }
 

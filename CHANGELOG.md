@@ -71,6 +71,14 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Lists without bullets still read as lists
+
+- Every list the app draws without bullets (the steps, the records, the
+  revisions, the connections, the open items, the report's self-audit) now
+  says `role="list"`, so Safari's VoiceOver still announces it as a list
+  and counts its items. The design-system check flags any new one that
+  does not.
+
 ### The prompt step's three stops without boxes
 
 - What to do with the prompt (open your assistant, paste and send, come back

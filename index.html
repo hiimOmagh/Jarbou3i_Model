@@ -115,7 +115,7 @@
           <button class="j-btn" id="rideExample" type="button" data-i18n="rideExample">جرّب المثال أولًا</button>
         </div>
       </div>
-      <ol class="j-ride-line">
+      <ol class="j-ride-line" role="list">
         <li class="j-ride-stop" style="--j-i:0" aria-current="step"><span class="j-ride-ring" aria-hidden="true">1</span><span class="j-ride-name"><span data-i18n="rideAsk">اسأل</span><span class="j-ride-here" data-i18n="rideHere">أنت هنا</span></span><span class="j-ride-time" data-i18n="rideAskTime">دقيقة</span><p class="j-ride-text" data-i18n="rideAskText">يصبح موضوعك، في جملة واحدة، موجِّهًا دقيقًا.</p></li>
         <li class="j-ride-stop" style="--j-i:1"><span class="j-ride-ring" aria-hidden="true">2</span><span class="j-ride-name" data-i18n="rideWrite">يكتب مساعدك</span><span class="j-ride-time" data-i18n="rideWriteTime">من 2 إلى 5 دقائق</span><p class="j-ride-text" data-i18n="rideWriteText">في ChatGPT أو Claude أو Gemini، بحسابك أنت.</p></li>
         <li class="j-ride-stop" style="--j-i:2"><span class="j-ride-ring" aria-hidden="true">3</span><span class="j-ride-name" data-i18n="rideCheck">تحقّق</span><span class="j-ride-time" data-i18n="rideCheckTime">من 5 إلى 10 دقائق</span><p class="j-ride-text" data-i18n="rideCheckText">كل ادعاء بجانب أدلته، وحكم على ما إذا كان التحليل قابلًا للنشر.</p></li>
@@ -128,7 +128,7 @@
           <img src="assets/jarbou3i-mascot-192.png" width="72" height="72" decoding="sync" fetchpriority="high" alt="">
           <p class="j-flow-say" id="flowSay">أخبرني بموضوعك في جملة واحدة، وسأحوّله إلى موجِّه دقيق لمساعدك الذكي.</p>
         </div>
-        <ol class="j-flow-steps">
+        <ol class="j-flow-steps" role="list">
           <li><button class="j-flow-step" type="button" data-flow-step="topic" aria-current="step"><span class="j-flow-step-n" aria-hidden="true">1</span><span data-i18n="flowStepTopic">الموضوع</span></button></li>
           <li><button class="j-flow-step" type="button" data-flow-step="lens"><span class="j-flow-step-n" aria-hidden="true">2</span><span data-i18n="flowStepLens">العدسة</span></button></li>
           <li><button class="j-flow-step" type="button" data-flow-step="settings"><span class="j-flow-step-n" aria-hidden="true">3</span><span data-i18n="flowStepSettings">الإعدادات</span></button></li>
@@ -194,7 +194,7 @@
           </div>
         </div>
         <div class="j-flow-panel" data-flow-panel="prompt" hidden>
-          <ol class="j-flow-howto">
+          <ol class="j-flow-howto" role="list">
             <li data-i18n="flowHowTo1">افتح مساعدك الذكي في تبويب آخر.</li>
             <li data-i18n="flowHowTo2">الصق الموجِّه وأرسله.</li>
             <li data-i18n="flowHowTo3">انتظر الإجابة كاملة ثم عد إلى هنا.</li>
@@ -242,7 +242,7 @@
         </div>
         <span class="j-status" data-tone="idle" id="analysisStateChip">لا يوجد تحليل بعد</span>
       </header>
-      <ol class="j-engine-map" id="engineNav"></ol>
+      <ol class="j-engine-map" role="list" id="engineNav"></ol>
     </section>
 
     <section class="j-card hide" id="reviewPanel" aria-labelledby="reviewTitle">
@@ -401,7 +401,7 @@
         <section class="j-rev-compare" aria-labelledby="revisionCompareTitle">
           <div class="j-modal-sechead"><h4 id="revisionCompareTitle"></h4><span class="j-chip" id="revisionChangeCount"></span></div>
           <dl class="j-commit-facts" id="revisionMetadata"></dl>
-          <ol class="j-diff" id="revisionDiff"></ol>
+          <ol class="j-diff" role="list" id="revisionDiff"></ol>
           <p class="j-note" data-tone="warn" id="revisionBlocked" role="status" aria-live="polite" hidden></p>
           <p class="j-note" data-tone="idle" id="revisionStatus" role="status" aria-live="polite"></p>
           <div class="j-modal-acts"><button class="j-btn" data-variant="primary" id="revisionRestore" type="button" disabled></button></div>
@@ -421,7 +421,7 @@
       <dl class="j-commit-facts" id="resolutionSummary"></dl>
       <section class="j-rev-compare" aria-labelledby="resolutionDiffTitle">
         <div class="j-modal-sechead"><h4 id="resolutionDiffTitle"></h4><span class="j-chip" id="resolutionChangeCount"></span></div>
-        <ol class="j-diff" id="resolutionDiff"></ol>
+        <ol class="j-diff" role="list" id="resolutionDiff"></ol>
       </section>
       <div class="j-commit-approve">
         <div class="j-field"><label id="resolutionReviewerLabel" for="resolutionReviewer"></label><input class="j-input" id="resolutionReviewer" type="text" maxlength="120" autocomplete="name" /></div>
