@@ -71,6 +71,15 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Records named in rows, not boxes
+
+- A record you can open from a list (a source cluster's evidence, the
+  records that cite no evidence, the inspector's linked records and
+  occurrences) is now a row under a hairline, its name then its ID in the
+  line's colour, instead of a grey box; no more boxes inside records. The
+  connections view keeps its boxed records: they are the stations of a
+  diagram.
+
 ### The claim–evidence table on rules, its first column named
 
 - The claim–evidence traceability table's first column had no header; it

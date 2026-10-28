@@ -93,7 +93,7 @@ ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
    hairlines, its first column flush with the text above; no frame, fill or
    shaded header. Wider than the page, it scrolls, its scroll box reaching past
    the text so a focused record's ring is not cut. In it, a record is its name
-   and ID on the row, not a box. */
+   and ID on the row, as in a list. */
 .j-table-wrap {
   max-width: calc(100% + 2 * var(--j-s-2)); margin-inline: calc(-1 * var(--j-s-2)); padding-inline: var(--j-s-2); overflow-x: auto;
 }
@@ -104,8 +104,6 @@ ul.j-rec-text > li + li { margin-top: var(--j-s-1); }
   border-bottom: 2px solid var(--j-line-strong); color: var(--j-fg-muted); font: 700 var(--j-t-13)/1.3 var(--j-font-ui); white-space: nowrap;
 }
 .j-table tbody tr:last-child > * { border-bottom: 0; }
-.j-table .j-insp-rec { padding-inline: 0; border: 0; border-radius: 0; background: none; }
-.j-table .j-insp-rec:hover > span { text-decoration: underline; }
 .j-table tbody th { min-width: 200px; font-weight: 400; }
 .j-table td code {
   display: inline-block; margin: 1px; padding: 2px 5px; border-radius: var(--j-r-1);
