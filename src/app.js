@@ -6223,22 +6223,28 @@ function renderInspectionDirectory(index) {
     return inspection?.provenance?.sourceStatus === "missing"
       || inspection?.provenance?.claimStatus === "mismatched";
   }).length + (index.diagnostics?.unresolved?.length || 0);
-  const cards = index.nodes.map((node) => {
+  // Every record is drawn in its own section too: here they fold under one
+  // line, layer by layer in the order the index meets them, each layer named
+  // once over its records.
+  const layers = new Map();
+  for (const node of index.nodes) {
     const inspection = index.inspect(node.id);
     const pillar = inspectionPillarLabel(index.lens, node.pillar);
     const search = [node.label, node.id, index.typeLabel(node.type), node.pillar, pillar]
       .join(" ")
       .toLocaleLowerCase(state.lang);
     const confidence = inspection?.confidence;
-    return `<li data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button class="j-rec" type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="j-rec-head"><code class="j-rec-id">${escapeHtml(node.id)}</code><span class="j-label">${escapeHtml(index.typeLabel(node.type))}</span>${kernelChip(pillar)}${confidence ? kernelChip(confidenceInfo(confidence).label, confidenceTone(confidence)) : ""}</span><span class="j-rec-title">${escapeHtml(node.label)}</span></button></li>`;
-  }).join("");
+    if (!layers.has(pillar)) layers.set(pillar, []);
+    layers.get(pillar).push(`<li data-inspection-directory-item data-inspection-search="${escapeHtml(search)}"><button class="j-rec" type="button" data-reference-id="${escapeHtml(node.id)}" aria-label="${escapeHtml(`${copy.open}: ${node.label}`)}"><span class="j-rec-head"><code class="j-rec-id">${escapeHtml(node.id)}</code><span class="j-label">${escapeHtml(index.typeLabel(node.type))}</span>${confidence ? kernelChip(confidenceInfo(confidence).label, confidenceTone(confidence)) : ""}</span><span class="j-rec-title">${escapeHtml(node.label)}</span></button></li>`);
+  }
+  const cards = [...layers].map(([pillar, items]) => `<section class="j-idir-layer" data-inspection-layer><h4>${escapeHtml(pillar)} <span class="j-chip">${items.length}</span></h4><ol class="j-recs" role="list" data-cols="2">${items.join("")}</ol></section>`).join("");
   const stats = [
     [index.nodes.length, copy.records, ""],
     [index.occurrenceCount, copy.occurrences, ""],
     // Only a concern is counted: none found is not a clean audit.
     ...(concerns ? [[concerns, copy.concerns, "warn"]] : []),
   ].map(([value, label, tone]) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`).join("");
-  return `<section class="j-idir" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="j-idir-head"><div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p class="j-lede">${escapeHtml(copy.intro)}</p></div><span class="j-stats">${stats}</span></header>${renderEvidenceIntelligence(index)}<div class="j-field"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" class="j-input" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="j-sr-only" role="status" aria-live="polite"></span></div><ol class="j-recs" role="list" data-cols="2" id="inspectionDirectoryList">${cards}</ol>${cards ? "" : `<p class="j-note" data-tone="idle">${escapeHtml(copy.empty)}</p>`}<p class="j-note" data-tone="idle" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
+  return `<section class="j-idir" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="j-idir-head"><div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p class="j-lede">${escapeHtml(copy.intro)}</p></div><span class="j-stats">${stats}</span></header>${renderEvidenceIntelligence(index)}<div class="j-field"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" class="j-input" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="j-sr-only" role="status" aria-live="polite"></span></div>${cards ? `<details class="j-disclosure j-idir-all" data-inspection-records><summary><span class="j-evi-title"><strong>${escapeHtml(labelText("Every record", "كل السجلات", "Toutes les fiches"))}</strong></span></summary><div class="j-idir-layers" id="inspectionDirectoryList">${cards}</div></details>` : `<p class="j-note" data-tone="idle">${escapeHtml(copy.empty)}</p>`}<p class="j-note" data-tone="idle" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
 }
 function wireInspectionDirectory() {
   const input = $("inspectionSearch");
@@ -6266,8 +6272,12 @@ function wireInspectionDirectory() {
     ledgerButton.onclick = () => openReviewLedger(index.reviewPlan.tasks, ledgerButton);
   }
   const items = [...document.querySelectorAll("[data-inspection-directory-item]")];
+  const fold = document.querySelector("[data-inspection-records]");
   const noMatch = $("inspectionDirectoryNoMatch");
   const status = $("inspectionSearchStatus");
+  // A search opens the fold and hides the layers it finds nothing in;
+  // cleared, the fold is as it was before it.
+  let openBefore = null;
   input.oninput = () => {
     const query = input.value.trim().toLocaleLowerCase(state.lang);
     let visible = 0;
@@ -6276,6 +6286,14 @@ function wireInspectionDirectory() {
       item.hidden = !match;
       if (match) visible += 1;
     });
+    document.querySelectorAll("[data-inspection-layer]").forEach((layer) => {
+      layer.hidden = !layer.querySelector("[data-inspection-directory-item]:not([hidden])");
+    });
+    if (fold) {
+      if (query && openBefore === null) openBefore = fold.open;
+      fold.open = query ? visible > 0 : openBefore ?? fold.open;
+      if (!query) openBefore = null;
+    }
     if (noMatch) noMatch.hidden = visible > 0 || !items.length;
     if (status) status.textContent = `${visible} / ${items.length}`;
   };

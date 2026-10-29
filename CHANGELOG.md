@@ -95,6 +95,17 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### The inspection directory folds its records
+
+- The inspection directory lists every record under one closed row, "Every
+  record"; they were all open, though each is drawn in its own section too.
+  Inside, the records go layer by layer, each layer named once over them
+  instead of on every card. Searching opens the row and hides the layers
+  with no match; clearing the search closes it again if it was closed. The
+  directory goes from 2,026px to 389px on a desktop (4,180px to 541px on a
+  phone), the sample case file from 12,448px to 10,811px (18,267px to
+  14,629px).
+
 ### The UX-0 prototype is removed
 
 - `prototypes/ux-0`, the clickable concept the case file was built from

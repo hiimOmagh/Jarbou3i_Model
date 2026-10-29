@@ -6,6 +6,12 @@ async function loadStrategicSample(page) {
   await page.locator("#langEn").click();
   await page.locator("#loadSampleBtn").click();
 }
+// The directory folds its records: a record is reached with its fold open.
+async function directoryRecord(page, id) {
+  const fold = page.locator("[data-inspection-records]");
+  if (!(await fold.evaluate((details) => details.open))) await fold.locator(":scope > summary").click();
+  return page.locator(`[data-inspection-directory-item] [data-reference-id="${id}"]`);
+}
 
 for (const lens of ["strategic", "biopolitical"]) {
   for (const language of ["ar", "fr"]) {
@@ -19,11 +25,11 @@ for (const lens of ["strategic", "biopolitical"]) {
       await page.locator("#loadSampleBtn").click();
       await page.locator(lens === "biopolitical" ? '[data-bio-review="inspection"]' : '[data-review="inspection"]').click();
       const directory = page.locator("[data-results-inspection]");
-      await expect(directory.locator("[data-inspection-directory-item]").first()).toBeVisible();
+      await expect(directory.locator("[data-inspection-records] > summary")).toBeVisible();
 
       if (language === "ar") {
         // Layer, confidence and evidence balance carry no Latin letters.
-        const labels = await directory.locator("[data-inspection-directory-item] .j-chip, [data-balance]").allTextContents();
+        const labels = await directory.locator("[data-inspection-directory-item] .j-chip, [data-inspection-layer] > h4, [data-balance]").allTextContents();
         expect(labels.length).toBeGreaterThan(0);
         expect(labels.filter((label) => /[A-Za-z]/.test(label))).toEqual([]);
       }
@@ -37,7 +43,7 @@ for (const lens of ["strategic", "biopolitical"]) {
       if (lens === "biopolitical") {
         // A record named by a coded field ("infrastructure", "litigation").
         for (const id of ["ASYM1", "RES1"]) {
-          await directory.locator(`[data-inspection-directory-item] [data-reference-id="${id}"]`).click();
+          await (await directoryRecord(page, id)).click();
           const summary = inspector.locator(".j-insp-summary");
           await expect(summary).toBeVisible();
           expect(await summary.textContent()).not.toMatch(/^[a-z][a-z_ ]*$/);
@@ -47,7 +53,7 @@ for (const lens of ["strategic", "biopolitical"]) {
 
       // The record drawer shows no coded value as its English code: lowercase
       // words such as "high" or "primary legal policy".
-      await directory.locator('[data-inspection-directory-item] [data-reference-id="E1"]').click();
+      await (await directoryRecord(page, "E1")).click();
       await expect(inspector).toBeVisible();
       const facts = await inspector.locator(".j-insp-facts > div").evaluateAll((rows) =>
         rows.map((row) => [row.querySelector("dt")?.textContent, row.querySelector("dd")?.textContent]),
@@ -115,7 +121,7 @@ test("strategic inspection exposes canonical provenance and navigable occurrence
 test("an empty inspector section is named once, and ratings say what they rate", async ({ page }) => {
   await loadStrategicSample(page);
   await page.locator('[data-review="inspection"]').click();
-  await page.locator('[data-inspection-directory-item] [data-reference-id="I1"]').click();
+  await (await directoryRecord(page, "I1")).click();
   const inspector = page.locator("#referenceInspector");
   await expect(inspector.locator("[data-inspection-missing]")).toContainText("Provenance");
   await expect(inspector.locator('[data-inspection-section="provenance"]')).toHaveCount(0);
@@ -140,9 +146,7 @@ test("biopolitical inspection traverses linked records without losing return foc
 
   const directory = page.locator("[data-results-inspection]");
   await expect(directory).toHaveAttribute("data-analysis-lens", "biopolitical");
-  const evidenceRecord = directory.locator(
-    '[data-inspection-directory-item] [data-reference-id="E1"]',
-  );
+  const evidenceRecord = await directoryRecord(page, "E1");
   await expect(evidenceRecord).toContainText("Rules linked defined health credentials");
   await evidenceRecord.focus();
   await evidenceRecord.press("Enter");
@@ -173,9 +177,7 @@ test("evidence trails expose back-references and stable cross-lens deep links", 
   await page.locator("#loadSampleBtn").click();
   await page.locator('[data-bio-review="inspection"]').click();
 
-  const intervention = page.locator(
-    '[data-inspection-directory-item] [data-reference-id="IV1"]',
-  );
+  const intervention = await directoryRecord(page, "IV1");
   await intervention.click();
   const inspector = page.locator("#referenceInspector");
   const trail = inspector.locator('[data-inspection-section="evidence-trail"]');

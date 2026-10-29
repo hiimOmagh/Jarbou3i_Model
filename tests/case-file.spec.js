@@ -251,6 +251,46 @@ test.describe("Case file", () => {
     expect(await openFolds()).toBe(0);
   });
 
+  // Every record is already drawn in its section: the directory folds them
+  // under one line, layer by layer, and its search opens the fold.
+  test("the inspection directory folds every record, each layer named once", async ({ page }) => {
+    test.skip(test.info().project.name !== "chromium", "Rendering rule, engine-independent.");
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    for (const [lens, query] of [["strategic", "historical power"], ["biopolitical", "competing"]]) {
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      const fold = page.locator("#case-inspection [data-inspection-records]");
+      const items = page.locator("[data-inspection-directory-item]");
+      await expect(fold).not.toHaveAttribute("open");
+      await expect(fold.locator(":scope > summary")).toHaveText("Every record");
+      await expect(items.first()).toBeHidden();
+      const layers = await fold.locator("[data-inspection-layer]").evaluateAll((groups) => groups.map((group) => [
+        group.querySelector("h4").firstChild.textContent.trim(),
+        Number(group.querySelector("h4 .j-chip").textContent),
+        group.querySelectorAll("[data-inspection-directory-item]").length,
+        [...group.querySelectorAll("[data-inspection-directory-item] .j-chip")].map((chip) => chip.textContent),
+      ]));
+      const names = layers.map(([name]) => name);
+      expect(new Set(names).size).toBe(names.length);
+      expect(layers.every(([, count, records]) => count === records)).toBe(true);
+      expect(layers.reduce((sum, [, count]) => sum + count, 0)).toBe(await items.count());
+      expect(layers.flatMap(([, , , chips]) => chips).filter((chip) => names.includes(chip))).toEqual([]);
+
+      const search = page.locator("#inspectionSearch");
+      await search.fill(query);
+      await expect(fold).toHaveAttribute("open", "");
+      const shown = await items.evaluateAll((rows) => rows.filter((row) => row.checkVisibility()).map((row) => row.dataset.inspectionSearch));
+      expect(shown.length).toBeGreaterThan(0);
+      expect(shown.every((text) => text.includes(query))).toBe(true);
+      expect(await fold.locator("[data-inspection-layer]").evaluateAll((groups) => groups.filter((group) => group.checkVisibility()).length)).toBeLessThan(layers.length);
+      await search.fill("");
+      await expect(fold).not.toHaveAttribute("open");
+      expect(await fold.locator("[data-inspection-layer][hidden]").count()).toBe(0);
+    }
+  });
+
   test("the outline jumps to a section and follows the reader", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();

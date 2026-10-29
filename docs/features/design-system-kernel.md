@@ -451,12 +451,19 @@ kernel reuses them.
 
 ## Inspection directory
 
-`src/ui/evidence.css` (`.j-idir`, `.j-idir-head`): the inspection section's
-record directory (`data-results-inspection`). Its heading and lede sit beside
-its counts (`.j-stats`); below them come the evidence summary, a `.j-field`
-search over the records, and the records as `button.j-rec` cards in a
-two-column `.j-recs` list (`data-inspection-directory-item`), each with its ID,
-type, layer and confidence. Tests: `tests/results-inspection.spec.js`.
+`src/ui/evidence.css` (`.j-idir`, `.j-idir-head`, `.j-idir-all`,
+`.j-idir-layer`): the inspection section's record directory
+(`data-results-inspection`). Its heading and lede sit beside its counts
+(`.j-stats`); below them come the evidence summary, a `.j-field` search over
+the records, and every record folded, closed, under one row ("Every record",
+`details.j-disclosure.j-idir-all`, `data-inspection-records`) under an ink
+rule like the evidence summary. Inside, the records go layer by layer
+(`section.j-idir-layer`, `data-inspection-layer`): the layer named once in an
+`h4` with its count, then its records as `button.j-rec` cards in a two-column
+`.j-recs` list (`data-inspection-directory-item`), each with its ID, type and
+confidence. A search opens the fold and hides the layers it finds nothing in;
+cleared, the fold is as it was. Tests: `tests/results-inspection.spec.js`,
+`tests/case-file.spec.js`.
 
 ## Model engine
 

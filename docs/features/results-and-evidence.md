@@ -49,6 +49,10 @@ record can show:
 | Strategic | IDs authored on the six causal layers, contradictions, scenarios, evidence, and assumptions; explicit `links` only |
 | Biopolitical | The canonical relationship graph plus the shared provenance, evidence-balance, audit, and occurrence projection |
 
+Every record is drawn in its own section too, so the directory folds them
+under one row, "Every record", layer by layer with each layer named once. Its
+search opens the fold.
+
 A Strategic import without authored IDs shows an honest empty directory. The
 inspector is a modal dialog with Escape closure, a focus trap, and focus
 restoration. Source links render only for valid HTTP(S) URLs and open with

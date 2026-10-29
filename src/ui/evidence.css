@@ -4,14 +4,19 @@
    counts .j-stats, its records .j-insp-rec buttons and its matrix a .j-table. */
 
 /* The directory: its heading beside its counts, then the evidence summary, a
-   search field, and every record as a card that opens the inspector. */
+   search field, and every record folded (.j-idir-all), layer by layer
+   (.j-idir-layer), each a card that opens the inspector. */
 .j-idir { display: grid; gap: var(--j-s-4); min-width: 0; }
 .j-idir-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--j-s-3) var(--j-s-5); }
 .j-idir-head .j-lede { margin-bottom: 0; }
+.j-idir-layers { display: grid; gap: var(--j-s-5); padding: var(--j-s-4) 0; border-top: 1px solid var(--j-line); }
+.j-idir-layer { display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-idir-layer[hidden] { display: none; }
+.j-idir-layer > h4 { display: flex; align-items: baseline; gap: var(--j-s-2); margin: 0; font-size: var(--j-t-14); }
 
 /* Under an ink rule like the briefs and records, not in a box. */
-.j-evi { border: 0; border-block-start: var(--j-rule) solid var(--j-ink); border-radius: 0; background: transparent; }
-.j-evi > summary {
+.j-evi, .j-idir-all { border: 0; border-block-start: var(--j-rule) solid var(--j-ink); border-radius: 0; background: transparent; }
+:is(.j-evi, .j-idir-all) > summary {
   display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--j-s-4);
   padding: var(--j-s-3) 0;
 }
