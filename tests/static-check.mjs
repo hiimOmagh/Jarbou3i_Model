@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
+import path from "node:path";
 
 const fail = (message) => {
   console.error(`Static check failed: ${message}`);
@@ -559,6 +560,26 @@ for (const token of [
       fail(`labelText "${match[1]}" has no French form`);
     }
   }
+}
+
+// index.html preloads every module the app imports at start, and only those:
+// the browser then fetches them all at once, not one level of imports at a time.
+{
+  const startModules = new Set();
+  const walk = (file) => {
+    if (startModules.has(file)) return;
+    startModules.add(file);
+    for (const [, specifier] of read(file).matchAll(/^\s*import\s+(?:[^"']*?from\s+)?["'](\.[^"']+)["']/gm)) {
+      walk(path.posix.join(path.posix.dirname(file), specifier));
+    }
+  };
+  walk("src/app.js");
+  startModules.delete("src/app.js");
+  const preloaded = [...index.matchAll(/<link rel="modulepreload" href="([^"]+)"/g)].map(([, href]) => href);
+  const missing = [...startModules].filter((file) => !preloaded.includes(file));
+  const extra = preloaded.filter((file) => !startModules.has(file));
+  if (missing.length) fail(`index.html does not preload ${missing.join(", ")}`);
+  if (extra.length || preloaded.length !== startModules.size) fail(`index.html preloads what the app does not import at start: ${extra.join(", ") || "a module twice"}`);
 }
 
 console.log("Static checks passed.");

@@ -52,6 +52,11 @@ in deterministic dependency order and calls `createPlatformRuntime`
 Measurements stay in memory and are never transmitted or persisted. Visible
 rendering stays synchronous to avoid focus and interaction races.
 
+`index.html` also names every module `src/app.js` imports at start in
+`<link rel="modulepreload">` links, so the browser fetches them all with the
+page instead of one level of imports at a time. `tests/static-check.mjs`
+fails when the links and the imports differ: a new import needs its link.
+
 Two heavy features load only when a view needs them, with a retry on failure:
 the Biopolitical graph (`src/biopolitics-graph.js`) and the Biopolitical report
 renderer (`src/biopolitical-report.js`).

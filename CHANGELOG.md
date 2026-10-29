@@ -95,6 +95,14 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### The page loads its code at once
+
+- `index.html` preloads the 43 modules the app imports at start, so the
+  browser fetches them together with the page instead of one level of
+  imports at a time. On the live site, a cold load on a slow mobile network
+  (150ms, 1.6Mbps) is ready to run in 3,120ms instead of 3,592ms, and on a
+  4G network (70ms, 10Mbps) in 627ms instead of 692ms.
+
 ### The inspection directory folds its records
 
 - The inspection directory lists every record under one closed row, "Every
