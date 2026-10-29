@@ -113,7 +113,7 @@ test('the analysis’s own assessment is shown as its claim, in the page languag
   await expect(assessment.locator('h4')).toHaveText("The AI's own assessment, not verified");
   await expect(assessment.locator('p')).toHaveText('Weakest layer: Evidence & assumptions · Publication risk: medium');
   await page.locator('#langFr').click();
-  await expect(assessment.locator('p')).toHaveText('Couche la plus faible : Preuves & hypothèses · Risque de publication : moyen');
+  await expect(assessment.locator('p')).toHaveText('Couche la plus faible : Preuves et hypothèses · Risque de publication : moyen');
 });
 
 test('the recommended next action is asked of the AI, whose whole answer comes back in the reply box', async ({ page }) => {

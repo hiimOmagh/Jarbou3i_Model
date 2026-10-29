@@ -24,6 +24,32 @@ test.describe("Case file", () => {
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "connections", "evidence", "conclusion", "inspection", "exports"].map((key) => `case-${key}`));
   });
 
+  // One idea, one word: a station names its section in the words of the
+  // section's own heading, in each language and lens (Arabic's article and
+  // French elision aside), and an English title is in sentence case.
+  test("each outline station uses its section's own words", async ({ page }) => {
+    test.skip(test.info().project.name !== "chromium", "the words are the same in every engine");
+    const words = (text) => text.toLocaleLowerCase().split(/[\s,&’']+/u).filter(Boolean).map((word) => word.replace(/^ال/u, ""));
+    await page.goto("./");
+    for (const lens of ["strategic", "biopolitical"]) {
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      await expect(page.locator(lens === "biopolitical" ? "#case-conclusion" : "#case-scenarios")).toBeAttached();
+      for (const lang of ["En", "Fr", "Ar"]) {
+        await page.locator(`#lang${lang}`).click();
+        await expect(page.locator("html")).toHaveAttribute("lang", lang.toLowerCase());
+        const pairs = await page.locator("#reviewNav .j-case-link").evaluateAll((links) => links.map((link) => {
+          const key = link.dataset.review || link.dataset.bioReview;
+          return [link.querySelector("strong").textContent, document.querySelector(`#case-${key} h3`).textContent];
+        }));
+        const drift = pairs.filter(([station, heading]) => !words(station).every((word) => words(heading).includes(word)));
+        expect.soft(drift, `${lens} ${lang}`).toEqual([]);
+        if (lang === "En") await expect.soft(page.locator("#reviewTitle")).toHaveText(/^[A-Z][a-z]+ analysis review$/);
+      }
+    }
+  });
+
   // A Bio case fills in after the scroll; the page still lands on its top.
   for (const way of ["sample", "import"]) {
     test(`a Bio case opened by ${way} lands on the top of the review`, async ({ page }) => {

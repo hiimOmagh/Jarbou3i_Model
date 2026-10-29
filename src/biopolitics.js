@@ -169,7 +169,7 @@
         "Analytical coverage uses six weighted dimensions. Decision readiness cannot exceed the epistemic ceiling set by source traceability and independent human review.",
       nav: {
         overview: "Overview",
-        pillars: "Protocol",
+        pillars: "Pillars",
         evidence: "Evidence & explanations",
         conclusion: "Judgment",
         inspection: "Inspection",
@@ -279,8 +279,8 @@
       formula:
         "تستخدم التغطية التحليلية ستة أبعاد موزونة. ولا يمكن أن تتجاوز جاهزية القرار السقف المعرفي الذي تحدده قابلية تتبع المصادر والمراجعة البشرية المستقلة.",
       nav: {
-        overview: "الخلاصة",
-        pillars: "البروتوكول",
+        overview: "نظرة عامة",
+        pillars: "الركائز",
         evidence: "الأدلة والتفسيرات",
         conclusion: "الحكم",
         inspection: "الفحص",
@@ -392,7 +392,7 @@
         "La couverture analytique utilise six dimensions pondérées. La préparation à la décision ne peut dépasser le plafond épistémique fixé par la traçabilité des sources et la revue humaine indépendante.",
       nav: {
         overview: "Vue d’ensemble",
-        pillars: "Protocole",
+        pillars: "Piliers",
         evidence: "Preuves et explications",
         conclusion: "Jugement",
         inspection: "Inspection",

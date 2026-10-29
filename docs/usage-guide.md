@@ -71,7 +71,7 @@ The score combines:
 
 It is a readiness measure, not a truth probability.
 
-### Protocol
+### Pillars
 
 Inspect all nine pillars:
 

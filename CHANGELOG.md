@@ -71,6 +71,19 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### One word for one idea
+
+- The outline names each section in its heading's own words: the
+  Biopolitical "Protocol" station is now "Pillars" (Piliers, الركائز), and
+  "Exports" is "Export" in both lenses.
+- French says "Vue d’ensemble" for the overview in both lenses (it was
+  "Synthèse" under one name and "Vue d’ensemble" over the other), and
+  "Preuves et hypothèses", like "Preuves et explications".
+- Arabic names the overview "نظرة عامة": "الخلاصة" now means only the
+  analysis's conclusion, which the overview names right under its title.
+- The review titles are in sentence case in English, like every other
+  heading.
+
 ### Small things a screen reader or keyboard met
 
 - On a phone or narrow window, a control reached by keyboard is no longer

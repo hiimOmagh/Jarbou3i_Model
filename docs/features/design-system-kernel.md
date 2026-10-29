@@ -173,6 +173,20 @@ document in reading order instead of tabs.
 - **The document:** every review section is rendered in order, each a
   focusable `section#case-<key>` named by its outline entry. The sections keep
   their own views.
+- **Words:** one idea, one word in each language. An outline entry uses the
+  words of its section's heading (`tests/case-file.spec.js` checks every
+  language and lens). The entries the two lenses share:
+
+  | Idea | English | Français | العربية |
+  | --- | --- | --- | --- |
+  | Overview (verdict and scores) | Overview | Vue d’ensemble | نظرة عامة |
+  | The analysis's conclusion | Conclusion | Conclusion | الخلاصة |
+  | Bio protocol's nine parts | Pillars | Piliers | الركائز |
+  | Strategic model's six parts | Layers | Couches | الطبقات |
+  | Evidence and its partner | Evidence & … | Preuves et … | الأدلة و… |
+  | Saving a report or the JSON | Export | Export | التصدير |
+
+  English titles and headings are in sentence case.
 - **The outline:** the review nav (`#reviewNav`, entries keep `data-review` /
   `data-bio-review`) jumps to a section and focuses it. It marks the reader's
   location with `aria-current="location"`: the section that last took focus
