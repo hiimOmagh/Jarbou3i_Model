@@ -234,7 +234,8 @@ test.describe("Release Candidate visual audit evidence", () => {
       });
       expect(activeBadgeContrast).toBeGreaterThanOrEqual(4.5);
 
-      const relationshipText = await page.locator("#connectionsView").innerText();
+      // textContent, not innerText: the folded layers are read too.
+      const relationshipText = await page.locator("#connectionsView").textContent();
       if (locale.id !== "en") {
         expect(relationshipText).not.toMatch(/\b(?:Enables|Classifies|Distributes|Resists|Supported|Countered)\b/i);
         expect(relationshipText).not.toContain("litigation");

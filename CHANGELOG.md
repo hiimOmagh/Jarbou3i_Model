@@ -71,6 +71,17 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### A shorter Connections view
+
+- *Every connection* folds each layer to its name and count, one row each
+  under a thin rule. Opened, a layer names each record once, then each of
+  its connections under it, instead of repeating the record on every line.
+  The sample Biopolitical answer's Connections view is less than half as
+  long (4,182px to 1,845px on a desktop, 6,967px to 2,197px on a phone).
+- A search opens the layers it finds; cleared, the layers are as they were
+  before it.
+- A side of the map with no connection says "None" as a plain note.
+
 ### Plain words where people read most
 
 - The verdict says why and what to do in plain words: "Parts of the

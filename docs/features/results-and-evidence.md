@@ -70,10 +70,12 @@ and how many cite evidence. Below it:
   that asks the AI that wrote the answer for new links only. Its reply, pasted
   in the reply box under the answer, is added after the answer's links, checked, and imported
   as a new answer; the original stays as it is.
-- **Every connection**: each connection as a line, "record · relation ·
-  record", under the layer of the record it starts from, with the reason the
-  answer gives. A search finds records, IDs and relations, and says how many
-  lines it shows.
+- **Every connection**: under the layer of the record it starts from, each
+  layer folded to its name and count. Opened, a layer names each record once,
+  then "relation · record" for each of its connections, with the reason the
+  answer gives. A search finds records, IDs and relations, opens the layers
+  it finds, and says how many lines it shows; cleared, the layers are as they
+  were before it.
 
 Both are plain HTML lists and buttons, so the view reads the same to a screen
 reader as on screen. Each Biopolitical record also lists its own connections

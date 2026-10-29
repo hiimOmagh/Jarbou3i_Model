@@ -63,14 +63,20 @@ button.j-conn-node:focus-visible { outline: 3px solid var(--j-signal); outline-o
   [dir="rtl"] .j-conn-arrow { transform: rotate(90deg); }
 }
 
-/* Every connection: "record · relation · record", then why, if the answer
-   says; one row under a thin rule each. */
-.j-conn [data-conn-layer] { display: grid; gap: var(--j-s-2); }
-.j-conn [data-conn-layer][hidden], .j-conn-list > li[hidden] { display: none; }
-.j-conn-list { display: grid; margin: 0; padding: 0; list-style: none; }
-.j-conn-list > li { padding-block: var(--j-s-2); border-block-start: 1px solid var(--j-line); }
+/* Every connection: each layer folded to its name and count under a thin
+   rule, not in a box. Opened, each record once, then "relation · record" and
+   why, if the answer says, for each of its connections. */
+.j-conn-layers { border-block-end: 1px solid var(--j-line); }
+.j-conn-layers > .j-disclosure { border: 0; border-block-start: 1px solid var(--j-line); border-radius: 0; background: transparent; }
+.j-conn-layers > .j-disclosure > summary { padding-inline: 0; color: var(--j-fg); font-size: var(--j-t-14); }
+.j-conn-layers > .j-disclosure[open] > summary { margin-block-end: var(--j-s-1); }
+.j-conn [data-conn-layer][hidden], .j-conn :is(.j-conn-list, .j-conn-to) > li[hidden] { display: none; }
+.j-conn-list { display: grid; margin: 0; padding: 0 0 var(--j-s-3); list-style: none; }
+.j-conn-list > li { display: grid; gap: var(--j-s-1); padding-block: var(--j-s-2); border-block-start: 1px solid var(--j-line); }
+.j-conn-from { margin: 0; line-height: 1.9; overflow-wrap: anywhere; }
+.j-conn-to { display: grid; gap: var(--j-s-1); margin: 0; padding: 0; padding-inline-start: var(--j-s-4); list-style: none; }
 .j-conn-line { margin: 0; line-height: 1.9; overflow-wrap: anywhere; }
-.j-conn-line > .j-conn-rel { margin-inline: var(--j-s-1); }
+.j-conn-line > .j-conn-rel { margin-inline-end: var(--j-s-1); }
 .j-conn-why { margin: var(--j-s-1) 0 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.55; overflow-wrap: anywhere; }
 
 @media (forced-colors: active) {

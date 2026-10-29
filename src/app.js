@@ -6532,7 +6532,7 @@ function connectionsMapHtml(graph, node) {
     const groups = [...byRelation].map(([relation, ids], index) =>
       `<li><span class="j-conn-rel" id="connRel-${key}-${index}">${escapeHtml(BIO.displayToken(state.lang, relation))}</span><ul role="list">${ids.map(neighbour(`connRel-${key}-${index}`)).join("")}</ul></li>`,
     ).join("");
-    return `<div class="j-conn-side" data-side="${key}"><h5>${escapeHtml(title)} <span class="j-chip">${edges.length}</span></h5>${groups ? `<ul role="list">${groups}</ul>` : `<p class="j-help">${escapeHtml(labelText("None", "لا يوجد", "Aucune"))}</p>`}</div>`;
+    return `<div class="j-conn-side" data-side="${key}"><h5>${escapeHtml(title)} <span class="j-chip">${edges.length}</span></h5>${groups ? `<ul role="list">${groups}</ul>` : `<p class="j-note" data-tone="idle">${escapeHtml(labelText("None", "لا يوجد", "Aucune"))}</p>`}</div>`;
   };
   const arrow = `<span class="j-conn-arrow" aria-hidden="true">→</span>`;
   return `<div class="j-conn-map" id="connMap">${side("in", labelText("Linked from", "تُشير إليه", "Référencé par"), graph.incoming(node.id), (edge) => edge.source)}${arrow}<div class="j-conn-centre" id="connCentre" tabindex="-1"><span class="j-label">${escapeHtml(graph.typeLabel(node.type))}</span><strong>${escapeHtml(node.label)}</strong><code>${escapeHtml(node.id)}</code><button class="j-btn" type="button" data-reference-id="${escapeHtml(node.id)}">${escapeHtml(labelText("Open record", "فتح السجل", "Ouvrir la fiche"))}</button></div>${arrow}${side("out", labelText("Links to", "يُشير إلى", "Renvoie à"), graph.outgoing(node.id), (edge) => edge.target)}</div>`;
@@ -6654,24 +6654,31 @@ function renderBiopoliticalConnections() {
     "اختر سجلًا هنا، أو سجلًا مرتبطًا في الخريطة، لوضعه في الوسط.",
     "Choisissez une fiche ici, ou une fiche liée dans la carte, pour la placer au centre.",
   ))}</p></div>${connectionsMapHtml(graph, focus)}</section>`;
-  // Every connection as "record · relation · record", under the layer of the
-  // record it starts from; the search reads names, IDs, relations and why.
-  const groups = new Map(BIO.PILLARS.map((pillar) => [pillar.key, []]));
-  const loose = [];
+  // Every connection under the layer of the record it starts from, each layer
+  // folded to its name and count. In a layer each record is named once, then
+  // "relation · record" for each of its connections; the search reads names,
+  // IDs, relations and why.
+  const groups = new Map(BIO.PILLARS.map((pillar) => [pillar.key, new Map()]));
+  const loose = new Map();
   for (const edge of graph.edges) {
     const source = graph.resolve(edge.source);
     const target = graph.resolve(edge.target);
     const relation = BIO.displayToken(state.lang, edge.relation);
     const search = [source?.label, edge.source, relation, target?.label, edge.target, BIO_GRAPH.plainText(edge.mechanism, graph)]
       .filter(Boolean).join(" ").toLocaleLowerCase();
-    const row = `<li data-conn-text="${escapeHtml(search)}"><p class="j-conn-line">${namedBioText(edge.source, graph)} <span class="j-conn-rel">${escapeHtml(relation)}</span> ${namedBioText(edge.target, graph)}</p>${edge.mechanism ? `<p class="j-conn-why">${namedBioText(edge.mechanism, graph)}</p>` : ""}</li>`;
-    const layer = source?.pillar || target?.pillar;
-    (groups.get(layer) || loose).push(row);
+    const row = `<li data-conn-text="${escapeHtml(search)}"><p class="j-conn-line"><span class="j-conn-rel">${escapeHtml(relation)}</span> ${namedBioText(edge.target, graph)}</p>${edge.mechanism ? `<p class="j-conn-why">${namedBioText(edge.mechanism, graph)}</p>` : ""}</li>`;
+    const records = groups.get(source?.pillar || target?.pillar) || loose;
+    const key = source?.id || edge.source;
+    if (!records.has(key)) records.set(key, { from: edge.source, rows: [] });
+    records.get(key).rows.push(row);
   }
-  const group = (title, rows) => rows.length
-    ? `<div data-conn-layer><h5>${escapeHtml(title)} <span class="j-chip">${rows.length}</span></h5><ol class="j-conn-list" role="list">${rows.join("")}</ol></div>`
-    : "";
-  const list = `<section class="j-conn-all" aria-labelledby="connAllTitle"><h4 id="connAllTitle">${escapeHtml(labelText("Every connection", "كل العلاقات", "Toutes les connexions"))}</h4><div class="j-field"><label for="connSearch">${escapeHtml(labelText("Find a record or relation", "ابحث عن سجل أو علاقة", "Rechercher une fiche ou une relation"))}</label><input class="j-input" type="search" id="connSearch" autocomplete="off" spellcheck="false" aria-describedby="connShown"><p class="j-help" id="connShown" role="status">${escapeHtml(connectionsShownText(graph.edges.length, graph.edges.length))}</p></div>${[...groups].map(([key, rows]) => group(layers[key]?.[0] || key, rows)).join("")}${group(labelText("Naming no record", "لا تسمّي سجلًا", "Ne nommant aucune fiche"), loose)}<p class="j-note" data-tone="idle" id="connNoMatch" hidden>${escapeHtml(labelText("No connection matches.", "لا توجد علاقة مطابقة.", "Aucune connexion ne correspond."))}</p></section>`;
+  const group = (title, records) => {
+    const count = [...records.values()].reduce((sum, record) => sum + record.rows.length, 0);
+    return count
+      ? `<details class="j-disclosure" data-conn-layer><summary>${escapeHtml(title)} <span class="j-chip">${count}</span></summary><ol class="j-conn-list" role="list">${[...records.values()].map((record) => `<li data-conn-record><p class="j-conn-from">${namedBioText(record.from, graph)}</p><ul class="j-conn-to" role="list">${record.rows.join("")}</ul></li>`).join("")}</ol></details>`
+      : "";
+  };
+  const list = `<section class="j-conn-all" aria-labelledby="connAllTitle"><h4 id="connAllTitle">${escapeHtml(labelText("Every connection", "كل العلاقات", "Toutes les connexions"))}</h4><div class="j-field"><label for="connSearch">${escapeHtml(labelText("Find a record or relation", "ابحث عن سجل أو علاقة", "Rechercher une fiche ou une relation"))}</label><input class="j-input" type="search" id="connSearch" autocomplete="off" spellcheck="false" aria-describedby="connShown"><p class="j-help" id="connShown" role="status">${escapeHtml(connectionsShownText(graph.edges.length, graph.edges.length))}</p></div><div class="j-conn-layers">${[...groups].map(([key, records]) => group(layers[key]?.[0] || key, records)).join("")}${group(labelText("Naming no record", "لا تسمّي سجلًا", "Ne nommant aucune fiche"), loose)}</div><p class="j-note" data-tone="idle" id="connNoMatch" hidden>${escapeHtml(labelText("No connection matches.", "لا توجد علاقة مطابقة.", "Aucune connexion ne correspond."))}</p></section>`;
   return `<div class="j-conn" id="connectionsView">${head}${gaps}${hop}${list}</div>`;
 }
 function wireConnectionsView() {
@@ -6695,18 +6702,30 @@ function wireConnectionsView() {
     if (neighbour) show(neighbour.dataset.connFocus, true);
   });
   const search = $("connSearch");
+  const layers = [...view.querySelectorAll("[data-conn-layer]")];
+  // A search opens the layers it finds; cleared, the layers are as they were
+  // before it.
+  let openBefore = null;
   search.addEventListener("input", () => {
     const query = search.value.trim().toLocaleLowerCase();
+    if (query && !openBefore) openBefore = new Set(layers.filter((layer) => layer.open));
     let shown = 0;
-    view.querySelectorAll("[data-conn-layer]").forEach((layer) => {
+    for (const layer of layers) {
       let matches = 0;
-      layer.querySelectorAll("li[data-conn-text]").forEach((row) => {
-        row.hidden = Boolean(query) && !row.dataset.connText.includes(query);
-        if (!row.hidden) matches += 1;
+      layer.querySelectorAll("[data-conn-record]").forEach((record) => {
+        let rows = 0;
+        record.querySelectorAll("li[data-conn-text]").forEach((row) => {
+          row.hidden = Boolean(query) && !row.dataset.connText.includes(query);
+          if (!row.hidden) rows += 1;
+        });
+        record.hidden = !rows;
+        matches += rows;
       });
       layer.hidden = !matches;
+      layer.open = query ? matches > 0 : openBefore ? openBefore.has(layer) : layer.open;
       shown += matches;
-    });
+    }
+    if (!query) openBefore = null;
     $("connShown").textContent = connectionsShownText(shown, graph.edges.length);
     $("connNoMatch").hidden = shown > 0;
   });

@@ -66,17 +66,41 @@ test("counts the connected records and draws one record's neighbours", async ({ 
   await expectKernel(page, "#connectionsView");
 });
 
+test("folds every connection by layer and names each record once", async ({ page }) => {
+  await openConnections(page);
+  // Each layer folds to its name and count; in it each record is named once,
+  // its connections under it.
+  const layers = await page.locator("[data-conn-layer]").evaluateAll((items) => items.map((item) => ({
+    open: item.open,
+    count: Number(item.querySelector(":scope > summary .j-chip").textContent),
+    rows: item.querySelectorAll("[data-conn-text]").length,
+    from: [...item.querySelectorAll("[data-conn-record] > .j-conn-from")].map((from) => from.textContent),
+  })));
+  expect(layers.filter((layer) => layer.open || layer.count !== layer.rows)).toEqual([]);
+  expect(layers.reduce((sum, layer) => sum + layer.rows, 0)).toBe(28);
+  for (const layer of layers) expect(new Set(layer.from).size).toBe(layer.from.length);
+  expect(layers.reduce((sum, layer) => sum + layer.from.length, 0)).toBeLessThan(28);
+  await expect(page.locator("[data-conn-text]").first()).toBeHidden();
+  await expectKernel(page, "#connectionsView");
+});
+
 test("finds a connection by record, ID or relation", async ({ page }) => {
   await openConnections(page);
-  const shown = page.locator(".j-conn-list > li:not([hidden])");
+  const shown = page.locator("[data-conn-text]:not([hidden])");
   await expect(shown).toHaveCount(28);
   await expect(page.locator("#connShown")).toHaveText("Shown: 28 of 28");
+  // A layer opened by hand stays open when the search is cleared.
+  const first = page.locator("[data-conn-layer]").first();
+  await first.locator(":scope > summary").click();
 
-  // An ID finds the connections at either end; layers with none fold away.
+  // An ID finds the connections at either end; the layers that have them
+  // open, the rest fold away.
   await page.locator("#connSearch").fill("ins1");
   await expect(shown).toHaveCount(3);
   await expect(page.locator("#connShown")).toHaveText("Shown: 3 of 28");
-  await expect(page.locator("[data-conn-layer]:not([hidden]) > h5")).toHaveText([/^Human functions/, /^Mechanisms/, /^Intervention/]);
+  await expect(page.locator("[data-conn-layer]:not([hidden]) > summary")).toHaveText([/^Human functions/, /^Mechanisms/, /^Intervention/]);
+  await expect(page.locator("[data-conn-layer]:not([hidden]):not([open])")).toHaveCount(0);
+  for (const row of await shown.all()) await expect(row).toBeVisible();
   // A relation, in the page's words.
   await page.locator("#connSearch").fill("countered by");
   await expect(shown).toHaveCount(6);
@@ -89,6 +113,8 @@ test("finds a connection by record, ID or relation", async ({ page }) => {
   await page.locator("#connSearch").fill("");
   await expect(shown).toHaveCount(28);
   await expect(page.locator("#connNoMatch")).toBeHidden();
+  await expect(page.locator("[data-conn-layer][open]")).toHaveCount(1);
+  await expect(first).toHaveAttribute("open", "");
 });
 
 test("asks the AI to connect the records no connection reaches", async ({ page }) => {

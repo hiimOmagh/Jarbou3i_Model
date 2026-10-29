@@ -86,6 +86,8 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
           await expect(page.locator('[data-bio-review="connections"]')).toHaveAttribute("aria-current", "location");
           await expect(page.locator("#connMap")).toBeVisible();
           await expectNoPageOverflow(page);
+          // Every connection is folded by layer: the first layer opens.
+          await page.locator("#connectionsView [data-conn-layer] > summary").first().click();
 
           const clippedControls = await clippedConnectionControls(page);
           expect(clippedControls, JSON.stringify(clippedControls, null, 2)).toEqual([]);
