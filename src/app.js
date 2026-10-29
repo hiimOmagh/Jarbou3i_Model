@@ -4106,9 +4106,9 @@ function qualityGate(a = state.analysis) {
       status: t("publishReady"),
       tone: "ok",
       summary: labelText(
-        "Structural and independent evidence-review gates passed; final editorial verification remains required.",
-        "اجتاز التحليل بوابة البنية ومراجعة الأدلة المستقلة؛ وتبقى المراجعة التحريرية النهائية مطلوبة.",
-        "Les contrôles structurel et indépendant des preuves sont satisfaits ; la vérification éditoriale finale reste requise.",
+        "The analysis passes the structure check and an independent review of its evidence; a final edit is still needed.",
+        "يجتاز التحليل فحص البنية ومراجعة مستقلة لأدلته؛ وتبقى مراجعة تحريرية أخيرة مطلوبة.",
+        "L’analyse passe le contrôle de structure et une revue indépendante de ses preuves ; une relecture éditoriale finale reste nécessaire.",
       ),
       issues: [],
     };
@@ -4117,9 +4117,9 @@ function qualityGate(a = state.analysis) {
       status: t("reviewNeeded"),
       tone: "warn",
       summary: labelText(
-        "Structurally reviewable, but publication is blocked until every evidence record receives independent human approval.",
-        "المسودة قابلة للمراجعة بنيويًا، لكن النشر محظور حتى يعتمد مراجع بشري مستقل كل سجل دليل.",
-        "Brouillon structurellement révisable, mais publication bloquée tant que chaque preuve n’a pas reçu une approbation humaine indépendante.",
+        "Complete enough to review, but not to publish: a person must check and approve each evidence record first.",
+        "مكتمل بما يكفي للمراجعة لا للنشر: يجب أن يراجع شخصٌ كل سجل دليل ويعتمده أولًا.",
+        "Assez complète pour être relue, pas pour être publiée : une personne doit d’abord vérifier et approuver chaque preuve.",
       ),
       issues: hard,
     };
@@ -4127,9 +4127,9 @@ function qualityGate(a = state.analysis) {
     status: t("doNotPublish"),
     tone: "crit",
     summary: labelText(
-      "The analysis is structurally weak. Strengthen missing pillars, evidence, scenarios, and contradictions first.",
-      "التحليل ضعيف بنيويًا. قوِّ الطبقات الناقصة والأدلة والسيناريوهات والتناقضات أولًا.",
-      "L’analyse est structurellement faible. Renforcez d’abord les couches, preuves, scénarios et contradictions manquants.",
+      "Parts of the analysis are missing. Fill in the missing layers, evidence, scenarios and contradictions first.",
+      "أجزاء من التحليل ناقصة. أكمل الطبقات والأدلة والسيناريوهات والتناقضات الناقصة أولًا.",
+      "Des parties de l’analyse manquent. Complétez d’abord les couches, preuves, scénarios et contradictions manquants.",
     ),
     issues: hard,
   };
@@ -6407,14 +6407,14 @@ function bioGateSummary(a, scores, health) {
       )
     : review
       ? labelText(
-          "The analysis is usable for review but is not publication-ready; it requires targeted epistemic repair.",
-          "التحليل قابل للاستخدام في المراجعة لكنه غير جاهز للنشر؛ ويحتاج إلى إصلاح إبستيمي موجّه.",
-          "L’analyse est utilisable pour la révision mais n’est pas prête à être publiée ; elle exige une correction épistémique ciblée.",
+          "You can review the analysis, but it is not ready to publish: some of its evidence or claims need fixing first.",
+          "يمكن مراجعته، لكنه غير جاهز للنشر: بعض أدلته أو ادعاءاته تحتاج إلى إصلاح أولًا.",
+          "Vous pouvez relire l’analyse, mais elle n’est pas prête à être publiée : certaines preuves ou affirmations doivent d’abord être corrigées.",
         )
       : labelText(
-          "This analysis is not publication-ready; resolve the format and evidence blockers first.",
-          "هذا التحليل غير جاهز للنشر؛ عالج عوائق الصيغة والأدلة أولًا.",
-          "Cette analyse n’est pas publiable ; corrigez d’abord les blocages de format et de preuves.",
+          "The analysis is not ready to publish: fix the problems with its format and evidence first.",
+          "التحليل غير جاهز للنشر: أصلح مشكلات صيغته وأدلته أولًا.",
+          "L’analyse n’est pas prête à être publiée : corrigez d’abord les problèmes de format et de preuves.",
         );
 }
 function renderBiopoliticalEngineNav() {
@@ -7179,7 +7179,7 @@ function workspaceText(key, values = {}) {
       "L’analyse est affichée mais n’a pas été enregistrée sur cet appareil. Ouvrez les espaces de travail pour en voir la raison.",
     ],
     saved: ["Workspace saved locally.", "تم حفظ مساحة العمل محليًا.", "Espace enregistré localement."],
-    opened: ["Workspace reopened with integrity verified.", "أُعيد فتح مساحة العمل بعد التحقق من سلامتها.", "Espace rouvert après vérification d’intégrité."],
+    opened: ["Workspace reopened; its saved data is intact.", "أُعيد فتح مساحة العمل؛ بياناتها المحفوظة سليمة.", "Espace rouvert ; ses données enregistrées sont intactes."],
     imported: ["Portable workspace restored locally.", "تمت استعادة مساحة العمل محليًا.", "Espace portable restauré localement."],
     exported: ["Workspace bundle exported.", "تم تصدير حزمة مساحة العمل.", "Paquet d’espace exporté."],
     conflict: ["This workspace changed in another tab or window. Nothing was overwritten. Copy any unsaved edits, then reopen the workspace to load the latest version.", "تغيّرت مساحة العمل هذه في علامة تبويب أو نافذة أخرى. لم تتم الكتابة فوق أي بيانات. انسخ أي تعديلات غير محفوظة، ثم أعد فتح مساحة العمل لتحميل أحدث نسخة.", "Cet espace a été modifié dans un autre onglet ou une autre fenêtre. Aucune donnée n’a été écrasée. Copiez vos modifications non enregistrées, puis rouvrez l’espace pour charger la dernière version."],
@@ -7190,11 +7190,11 @@ function workspaceText(key, values = {}) {
     ],
     failed: ["Workspace operation failed safely.", "فشلت عملية مساحة العمل بأمان.", "L’opération a échoué sans altérer les données."],
     storageFull: ["Local workspace storage is full.", "مساحة التخزين المحلية لمساحات العمل ممتلئة.", "Le stockage local des espaces est plein."],
-    verified: ["Integrity verified", "سلامتها متحقق منها", "Intégrité vérifiée"],
+    verified: ["Saved data intact", "البيانات المحفوظة سليمة", "Données enregistrées intactes"],
     removeDamaged: ["Remove", "إزالة", "Supprimer"],
     removeDamagedConfirm: ["Click again to remove it for good", "انقر مجددًا لإزالتها نهائيًا", "Cliquez à nouveau pour la supprimer définitivement"],
     removedDamaged: ["The damaged workspace was removed.", "أُزيلت مساحة العمل التالفة.", "L’espace endommagé a été supprimé."],
-    damaged: ["Its saved data failed the integrity check.", "فشلت بياناتها المحفوظة في فحص السلامة.", "Ses données enregistrées ont échoué au contrôle d’intégrité."],
+    damaged: ["Its saved data is damaged.", "بياناتها المحفوظة تالفة.", "Ses données enregistrées sont endommagées."],
     duplicate: ["This workspace already exists. Nothing was overwritten.","مساحة العمل هذه موجودة. لم تتم الكتابة فوق أي بيانات.", "Cet espace existe déjà. Aucune donnée n’a été écrasée."],
     error: ["Workspace operation failed safely: {message}", "فشلت عملية مساحة العمل بأمان: {message}", "L’opération a échoué sans altérer les données : {message}"],
   }[key] || [key, key, key];
@@ -7330,7 +7330,7 @@ const EDITOR_META_KEYS = new Set(["schema_version", "analysis_contract", "contra
 function editorText(key) {
   const copy = {
     title: ["Analysis editor", "محرر التحليل", "Éditeur de l’analyse"],
-    hint: ["Edits affect only the working draft. Imported and committed revisions remain immutable.", "تؤثر التعديلات في مسودة العمل فقط. تبقى النسخ المستوردة والمعتمدة غير قابلة للتغيير.", "Les modifications concernent uniquement le brouillon. Les révisions importées et validées restent immuables."],
+    hint: ["Edits change only your draft. Imported and committed revisions never change.", "تغيّر التعديلات مسودتك فقط. لا تتغير النسخ المستوردة والمعتمدة أبدًا.", "Les modifications ne touchent que votre brouillon. Les révisions importées et validées ne changent jamais."],
     edit: ["Edit draft", "تعديل المسودة", "Modifier le brouillon"],
     undo: ["Undo", "تراجع", "Annuler"], redo: ["Redo", "إعادة", "Rétablir"],
     save: ["Save draft", "حفظ المسودة", "Enregistrer le brouillon"],
@@ -7346,12 +7346,12 @@ function editorText(key) {
     parse: ["Enter valid JSON for this field.", "أدخل JSON صالحًا لهذا الحقل.", "Saisissez un JSON valide pour ce champ."],
     saved: ["Working draft saved locally.", "تم حفظ مسودة العمل محليًا.", "Brouillon enregistré localement."],
     invalid: ["Fix the format errors before saving.", "أصلح أخطاء الصيغة قبل الحفظ.", "Corrigez les erreurs de format avant l’enregistrement."],
-    recoveryTitle: ["Unsaved recovery snapshot found", "تم العثور على لقطة استرداد غير محفوظة", "Un instantané de récupération non enregistré a été trouvé"],
-    recoveryHint: ["It matches this exact saved draft. Restore it or discard it before continuing.", "تطابق هذه اللقطة المسودة المحفوظة نفسها. استعدها أو تجاهلها قبل المتابعة.", "Il correspond exactement à ce brouillon enregistré. Restaurez-le ou supprimez-le avant de continuer."],
-    restore: ["Restore snapshot", "استعادة اللقطة", "Restaurer l’instantané"],
-    discard: ["Discard snapshot", "تجاهل اللقطة", "Supprimer l’instantané"],
+    recoveryTitle: ["Unsaved work was interrupted", "انقطع عمل غير محفوظ", "Un travail non enregistré a été interrompu"],
+    recoveryHint: ["It matches this exact saved draft. Restore it or discard it before continuing.", "يطابق هذا العمل المسودة المحفوظة نفسها. استعده أو تجاهله قبل المتابعة.", "Il correspond exactement à ce brouillon enregistré. Restaurez-le ou abandonnez-le avant de continuer."],
+    restore: ["Restore that work", "استعادة ذلك العمل", "Restaurer ce travail"],
+    discard: ["Discard that work", "تجاهل ذلك العمل", "Abandonner ce travail"],
     recovered: ["Unsaved editor state restored.", "تمت استعادة حالة المحرر غير المحفوظة.", "L’état non enregistré de l’éditeur a été restauré."],
-    discarded: ["Recovery snapshot discarded.", "تم تجاهل لقطة الاسترداد.", "L’instantané de récupération a été supprimé."],
+    discarded: ["Interrupted work discarded.", "تم تجاهل العمل المنقطع.", "Travail interrompu abandonné."],
     review: ["Review & commit", "مراجعة واعتماد", "Vérifier et valider"],
     sections: ["Analysis sections", "أقسام التحليل", "Sections de l’analyse"],
     close: ["Close editor", "إغلاق المحرر", "Fermer l’éditeur"],
@@ -7663,9 +7663,9 @@ let revisionRestorePending = false;
 function revisionText(key, values = {}) {
   const copy = {
     title: ["Revision history", "سجل النسخ", "Historique des révisions"],
-    hint: ["Browse immutable local revisions, compare any historical state with the current version, and restore only through reviewed append-only history.", "تصفح النسخ المحلية غير القابلة للتغيير، وقارن أي حالة تاريخية بالنسخة الحالية، واستعدها فقط عبر سجل إضافي خاضع للمراجعة.", "Parcourez les révisions locales immuables, comparez un état historique à la version actuelle et restaurez-le uniquement par ajout contrôlé."],
+    hint: ["Browse the revisions saved on this device, compare any of them with the current version, and restore one as a new revision.", "تصفح النسخ المحفوظة على هذا الجهاز، وقارن أيًّا منها بالنسخة الحالية، واستعد إحداها كنسخة جديدة.", "Parcourez les révisions enregistrées sur cet appareil, comparez-en une à la version actuelle et restaurez-la comme nouvelle révision."],
     trust: ["Read-only history · a restore adds a new revision and never overwrites one", "سجل للقراءة فقط · تضيف الاستعادة نسخة جديدة ولا تستبدل أي نسخة", "Historique en lecture seule · une restauration ajoute une révision et n’en écrase aucune"],
-    revisions: ["Immutable revisions", "النسخ غير القابلة للتغيير", "Révisions immuables"],
+    revisions: ["Saved revisions", "النسخ المحفوظة", "Révisions enregistrées"],
     compare: ["Compared with the current version", "مقارنة بالنسخة الحالية", "Comparaison avec la version actuelle"],
     revision: ["Revision {sequence}", "النسخة {sequence}", "Révision {sequence}"],
     imported: ["Imported", "مستوردة", "Importée"],
@@ -7815,8 +7815,8 @@ let resolutionCommitPending = false;
 function resolutionText(key) {
   const copy = {
     title: ["Resolution transaction", "معاملة اعتماد التعديلات", "Transaction de résolution"],
-    hint: ["Inspect the exact changes, whole-document validation, and local approval before creating an immutable revision.", "افحص التغييرات بدقة والتحقق من المستند كاملًا والموافقة المحلية قبل إنشاء نسخة غير قابلة للتغيير.", "Inspectez les modifications exactes, la validation intégrale et l’approbation locale avant de créer une révision immuable."],
-    trust: ["Commit creates a new immutable revision · it never rewrites imported or earlier committed history", "ينشئ الاعتماد نسخة جديدة غير قابلة للتغيير · ولا يعيد كتابة النسخ المستوردة أو المعتمدة سابقًا", "La validation crée une nouvelle révision immuable sans réécrire l’historique importé ou déjà validé"],
+    hint: ["Check the exact changes, that the whole analysis is still valid, and your approval before creating a new revision.", "تحقّق من التغييرات بدقة، ومن أن التحليل كله ما زال صالحًا، ومن موافقتك قبل إنشاء نسخة جديدة.", "Vérifiez les modifications exactes, la validité de toute l’analyse et votre approbation avant de créer une nouvelle révision."],
+    trust: ["Committing creates a new revision · it never changes imported or earlier revisions", "ينشئ الاعتماد نسخة جديدة · ولا يغيّر النسخ المستوردة أو السابقة أبدًا", "La validation crée une nouvelle révision · elle ne modifie jamais les révisions importées ou antérieures"],
     diff: ["Exact proposed changes", "التغييرات المقترحة الدقيقة", "Modifications exactes proposées"],
     base: ["Base revision", "النسخة الأساس", "Révision de base"],
     validation: ["Whole-draft validation", "التحقق من كامل المسودة", "Validation du brouillon entier"],
@@ -7825,8 +7825,8 @@ function resolutionText(key) {
     failed: ["Failed", "لم يجتز التحقق", "Échouée"],
     reviewer: ["Approver display name", "اسم المعتمد", "Nom affiché de l’approbateur"],
     rationale: ["Commit rationale", "تبرير الاعتماد", "Justification de la validation"],
-    confirm: ["I inspected this exact diff and approve creating a new immutable local revision. This local identity is not account-verified.", "فحصت هذا الفرق الدقيق وأوافق على إنشاء نسخة محلية جديدة غير قابلة للتغيير. هذه الهوية المحلية غير متحقق منها عبر حساب.", "J’ai inspecté ce diff exact et j’approuve la création d’une nouvelle révision locale immuable. Cette identité locale n’est pas vérifiée par un compte."],
-    commit: ["Commit immutable revision", "اعتماد نسخة غير قابلة للتغيير", "Valider la révision immuable"],
+    confirm: ["I checked these exact changes and approve creating a new revision on this device. The name I gave is not checked against any account.", "راجعت هذه التغييرات بدقة وأوافق على إنشاء نسخة جديدة على هذا الجهاز. لا يُتحقَّق من الاسم الذي أدخلته عبر أي حساب.", "J’ai vérifié ces modifications exactes et j’approuve la création d’une nouvelle révision sur cet appareil. Le nom saisi n’est vérifié par aucun compte."],
+    commit: ["Commit revision", "اعتماد النسخة", "Valider la révision"],
     committing: ["Validating and committing…", "جارٍ التحقق والاعتماد…", "Validation et enregistrement…"],
     committed: ["Resolution committed and diagnostics regenerated.", "تم اعتماد التعديلات وإعادة توليد التشخيصات.", "Résolution validée et diagnostics régénérés."],
     noChanges: ["The working draft has no saved changes to commit.", "لا تحتوي مسودة العمل على تغييرات محفوظة لاعتمادها.", "Le brouillon ne contient aucune modification enregistrée à valider."],
@@ -7842,7 +7842,7 @@ function resolutionText(key) {
     restoreTrust: ["Restore adds a new revision after the current version · the selected history stays unchanged", "تضيف الاستعادة نسخة جديدة بعد النسخة الحالية · ويبقى التاريخ المحدد دون تعديل", "La restauration ajoute une révision après la version actuelle · l’historique sélectionné reste inchangé"],
     restoreCommit: ["Approve & append restored revision", "الموافقة وإضافة النسخة المستعادة", "Approuver et ajouter la révision restaurée"],
     source: ["Historical source", "المصدر التاريخي", "Source historique"],
-    restored: ["Historical state restored as a new immutable revision.", "تمت استعادة الحالة التاريخية كنسخة جديدة غير قابلة للتغيير.", "État historique restauré sous forme d’une nouvelle révision immuable."],
+    restored: ["Earlier version restored as a new revision.", "استُعيدت نسخة سابقة كنسخة جديدة.", "Version antérieure restaurée comme nouvelle révision."],
   }[key] || [key, key, key];
   const template = state.lang === "ar" ? copy[1] : state.lang === "fr" ? copy[2] : copy[0];
   return template;
@@ -8080,10 +8080,10 @@ function ledgerText(key) {
     waiverExpiry: ["Expiry (optional)", "تاريخ الانتهاء (اختياري)", "Expiration (facultative)"],
     apply: ["Append event", "إضافة الحدث", "Ajouter l’événement"],
     export: ["Export audit trail", "تصدير سجل التدقيق", "Exporter la piste d’audit"],
-    history: ["Immutable event history", "سجل الأحداث غير القابل للتغيير", "Historique immuable"],
+    history: ["Review history", "سجل المراجعة", "Historique de revue"],
     choose: ["Select a task to record review work.", "اختر مهمة لتسجيل عمل المراجعة.", "Sélectionnez une tâche pour enregistrer le travail de revue."],
     noEvents: ["No review events for this task yet.", "لا أحداث مراجعة لهذه المهمة بعد.", "Aucun événement de revue pour cette tâche pour l’instant."],
-    saved: ["Review event appended and integrity verified.", "أُضيف حدث المراجعة وتم التحقق من سلامته.", "Événement ajouté et intégrité vérifiée."],
+    saved: ["Review event saved; the history is intact.", "حُفظ حدث المراجعة؛ والسجل سليم.", "Événement de revue enregistré ; l’historique est intact."],
     saving: ["Appending review event…", "جارٍ إضافة حدث المراجعة…", "Ajout de l’événement de revue…"],
     identityRequired: ["Enter the reviewer display name before recording an event.", "أدخل اسم المراجع قبل تسجيل الحدث.", "Saisissez le nom du réviseur avant d’enregistrer un événement."],
     pending: ["Pending", "معلّقة", "En attente"],
@@ -8386,7 +8386,7 @@ async function renderWorkspaceList() {
           const active = entry.workspace_id === state.activeWorkspaceId;
           const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" })
             .format(new Date(entry.metadata.updated_at));
-          return `<article class="j-ws-row"${active ? ' aria-current="true"' : ""} data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="j-ws-name">${escapeHtml(entry.metadata.title)}</p><div class="j-ws-meta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span dir="ltr">${escapeHtml(entry.analysis_identity.schema_version)}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div>${active ? "" : `<div class="j-ws-row-acts"><button class="j-btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="j-btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="j-btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}<button class="j-btn" data-variant="primary" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}">${escapeHtml(workspaceText("open"))}</button></div>`}</article>`;
+          return `<article class="j-ws-row"${active ? ' aria-current="true"' : ""} data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="j-ws-name">${escapeHtml(entry.metadata.title)}</p><div class="j-ws-meta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div>${active ? "" : `<div class="j-ws-row-acts"><button class="j-btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="j-btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="j-btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}<button class="j-btn" data-variant="primary" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}">${escapeHtml(workspaceText("open"))}</button></div>`}</article>`;
         }).join("")
       : `<p class="j-ws-empty">${escapeHtml(workspaceText("empty"))}</p>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
@@ -8493,17 +8493,17 @@ function closeWorkspaceDialog() {
 function lifeText(key, values = {}) {
   const copy = {
     where: ["Where your work is", "أين عملك", "Où en est votre travail"],
-    whereHint: ["Three separate places, so nothing is lost or silently overwritten: the recovery snapshot, the working draft and the immutable revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء أو يُستبدل بصمت: لقطة الاسترداد، ومسودة العمل، والنسخ غير القابلة للتغيير.", "Trois emplacements distincts, pour que rien ne soit perdu ni écrasé en silence : l’instantané de récupération, le brouillon et les révisions immuables."],
-    snapTitle: ["Recovery snapshot", "لقطة الاسترداد", "Instantané de récupération"],
+    whereHint: ["Three separate places, so nothing is lost or replaced without you knowing: interrupted work, your draft, and saved revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء ولا يُستبدل دون علمك: العمل المنقطع، ومسودتك، والنسخ المحفوظة.", "Trois endroits séparés, pour que rien ne se perde ni ne soit remplacé à votre insu : le travail interrompu, votre brouillon et les révisions enregistrées."],
+    snapTitle: ["Interrupted work", "العمل المنقطع", "Travail interrompu"],
     snapshot: ["Recovery found", "استرداد متاح", "Récupération"],
-    snapNone: ["None. No unsaved work was interrupted.", "لا توجد. لم يُقاطَع أي عمل غير محفوظ.", "Aucun. Aucun travail non enregistré n’a été interrompu."],
-    draftTitle: ["Working draft", "مسودة العمل", "Brouillon de travail"],
+    snapNone: ["None. No unsaved work was interrupted.", "لا يوجد. لم يُقاطَع أي عمل غير محفوظ.", "Aucun. Aucun travail non enregistré n’a été interrompu."],
+    draftTitle: ["Your draft", "مسودتك", "Votre brouillon"],
     notCommitted: ["Not committed", "غير معتمدة", "Non validé"],
     uncommitted: ["Draft saved locally, not committed yet. Revision {n} is the current version.", "المسودة محفوظة محليًا ولم تُعتمد بعد. النسخة {n} هي النسخة الحالية.", "Brouillon enregistré localement, pas encore validé. La révision {n} est la version actuelle."],
     matchesHead: ["Matches revision {n}, the current version.", "تطابق النسخة {n}، وهي النسخة الحالية.", "Identique à la révision {n}, la version actuelle."],
     reviewCommit: ["Review and commit", "مراجعة واعتماد", "Examiner et valider"],
-    damagedOne: ["One saved workspace failed its integrity check. Nothing was loaded from it.", "فشلت مساحة عمل محفوظة في فحص السلامة. لم يُحمَّل منها أي شيء.", "Un espace enregistré a échoué au contrôle d’intégrité. Rien n’en a été chargé."],
-    damagedMany: ["Saved workspaces that failed their integrity check: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة فشلت في فحص السلامة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés ayant échoué au contrôle d’intégrité : {n}. Rien n’en a été chargé."],
+    damagedOne: ["One saved workspace is damaged. Nothing was loaded from it.", "مساحة عمل محفوظة واحدة تالفة. لم يُحمَّل منها أي شيء.", "Un espace enregistré est endommagé. Rien n’en a été chargé."],
+    damagedMany: ["Damaged saved workspaces: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة تالفة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés endommagés : {n}. Rien n’en a été chargé."],
     reviewWorkspaces: ["Review workspaces", "مراجعة مساحات العمل", "Examiner les espaces"],
     offline: ["You are offline. Everything here runs on this device; only the AI chat you paste the prompt into needs a connection.", "أنت غير متصل. كل ما هنا يعمل على هذا الجهاز؛ وحدها محادثة الذكاء الاصطناعي التي تلصق فيها الموجِّه تحتاج إلى اتصال.", "Vous êtes hors ligne. Tout fonctionne sur cet appareil ; seul le chat d’IA où vous collez le prompt a besoin d’une connexion."],
     workspaces: ["Workspaces", "مساحات العمل", "Espaces de travail"],

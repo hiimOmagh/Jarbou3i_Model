@@ -14,7 +14,7 @@ test('shared results orientation prioritizes decision context across both lenses
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'strategic');
   // The verdict opens the overview, as its heading, and says why.
   await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('Do not publish yet');
-  await expect(orientation.locator('[data-orientation="gate"] p')).toContainText('structurally weak');
+  await expect(orientation.locator('[data-orientation="gate"] p')).toContainText('Parts of the analysis are missing');
   await expect(page.locator('#case-overview .j-brief-topic')).toHaveText('Sample: World War II outcomes');
   await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('bipolar order');
   // One verdict: the brief says what the quality gate says.

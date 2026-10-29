@@ -226,7 +226,9 @@ UX-0 work panel, built on the app's own workspace model.
   naming the panel, a known `data-state` and, if set, a known `data-life`. It
   is a kernel status too, 44px high like the header's other controls.
 - **Where your work is:** the Workspaces dialog shows three cards for the open
-  workspace: the recovery snapshot, the working draft and the revisions. Their
+  workspace, named in plain words: *Interrupted work* (a recovery snapshot),
+  *Your draft* and *Saved revisions*; the storage terms (snapshot, immutable,
+  integrity) stay in the code and `docs/features/workspace.md`. Their
   actions open the existing editor, commit and history dialogs. Other
   workspaces keep their own actions in the list.
 - **Banners:** `#lifeBanners`, above the flow and the case file, raises a

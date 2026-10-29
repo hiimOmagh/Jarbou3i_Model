@@ -53,6 +53,9 @@ test.describe("Work panel", () => {
     await expect(page.locator("#workspaceDialogTitle")).toHaveText("Where your work is");
     const panel = page.locator("#workLife");
     await expect(panel.locator(".j-life-card")).toHaveCount(3);
+    // Its three places in plain words, without the storage jargon.
+    await expect(panel.locator(".j-life-card > h4")).toHaveText(["Interrupted work", "Your draft", "Saved revisions"]);
+    await expect(panel).not.toContainText(/immutable|snapshot|integrity|append-only/i);
     await expect(panel).toContainText("None. No unsaved work was interrupted.");
     await expect(panel).toContainText("Matches revision 1, the current version.");
     await expect(panel.locator(".j-life-revs li")).toHaveCount(1);
@@ -79,10 +82,10 @@ test.describe("Work panel", () => {
     await page.locator("#loadSampleBtn").click();
     await interruptEdit(page, "Recovered from the banner");
     const banner = page.locator('#lifeBanners [data-tone="warn"]');
-    await expect(banner).toContainText("Unsaved recovery snapshot found");
+    await expect(banner).toContainText("Unsaved work was interrupted");
     await expect(light(page)).toHaveText("Recovery found");
     await expect(light(page)).toHaveAttribute("data-life", "snapshot");
-    await banner.getByRole("button", { name: "Restore snapshot" }).click();
+    await banner.getByRole("button", { name: "Restore that work" }).click();
     await expect(page.locator("#editorField")).toHaveValue(/"title": "Recovered from the banner"/);
     await expect(page.locator("#editorDirty")).toContainText("Unsaved");
   });
@@ -92,7 +95,7 @@ test.describe("Work panel", () => {
     await interruptEdit(page, "Left behind");
     await light(page).click();
     await expect(page.locator("#workLife")).toContainText("Recovery found");
-    await page.locator("#workLife").getByRole("button", { name: "Discard snapshot" }).click();
+    await page.locator("#workLife").getByRole("button", { name: "Discard that work" }).click();
     await expect(page.locator("#workLife")).toContainText("None. No unsaved work was interrupted.");
     await expect(page.locator("#workspaceDialog")).toBeFocused();
     await expect(page.locator("#lifeBanners")).toBeHidden();
@@ -168,7 +171,7 @@ test.describe("Work panel", () => {
     await damageFirstWorkspace(page);
     await page.reload();
     const banner = page.locator('#lifeBanners [data-tone="crit"]');
-    await expect(banner).toContainText("One saved workspace failed its integrity check.");
+    await expect(banner).toContainText("One saved workspace is damaged.");
     await banner.getByRole("button", { name: "Review workspaces" }).click();
     await expect(page.locator("#workspaceDialog")).toBeFocused();
     await expect(page.locator("[data-workspace-row][data-state=damaged]")).toHaveCount(1);

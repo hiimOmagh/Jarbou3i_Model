@@ -46,6 +46,8 @@ test.describe("Case file", () => {
         const drift = pairs.filter(([station, heading]) => !words(station).every((word) => words(heading).includes(word)));
         expect.soft(drift, `${lens} ${lang}`).toEqual([]);
         if (lang === "En") await expect.soft(page.locator("#reviewTitle")).toHaveText(/^[A-Z][a-z]+ analysis review$/);
+        // The verdict and the score rule say it in plain words.
+        if (lang === "En") await expect.soft(page.locator("#case-overview")).not.toContainText(/epistemic|structurally/i);
       }
     }
   });

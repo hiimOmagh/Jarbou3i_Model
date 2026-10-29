@@ -71,6 +71,23 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Plain words where people read most
+
+- The verdict says why and what to do in plain words: "Parts of the
+  analysis are missing" instead of "structurally weak"; "You can review the
+  analysis, but it is not ready to publish: some of its evidence or claims need fixing
+  first" instead of "targeted epistemic repair". The Biopolitical score
+  rule no longer speaks of an "epistemic ceiling".
+- "Where your work is" names its three places *Interrupted work*, *Your
+  draft* and *Saved revisions*, not "recovery snapshot", "working draft"
+  and "immutable revisions". The commit and history dialogs say what a
+  revision does ("never changes earlier revisions") instead of
+  "immutable" and "append-only".
+- A saved workspace reads "Saved data intact" or "damaged", not "Integrity
+  verified" beside a raw format version.
+- The record inspector's last section is *Technical details*, not "Audit
+  details", and gives evidence strength out of 5.
+
 ### Figures that do not contradict the verdict
 
 - No score is green any more. Under a "Do not publish yet" gate, a green

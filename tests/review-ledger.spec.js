@@ -27,7 +27,7 @@ async function append(page, action, rationale) {
   // From the keyboard: disabled while it saves, the button gets focus back.
   await page.locator("#ledgerApply").focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator("#ledgerStatus")).toContainText(/integrity verified/i);
+  await expect(page.locator("#ledgerStatus")).toContainText(/history is intact/i);
   await expect(page.locator("#ledgerApply")).toBeEnabled();
   await expect(page.locator("#ledgerApply")).toBeFocused();
 }

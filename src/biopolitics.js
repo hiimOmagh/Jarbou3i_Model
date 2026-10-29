@@ -166,7 +166,7 @@
           "Resistance, counter-conduct, feasible alternatives, calibrated conclusion, and self-audit.",
       },
       formula:
-        "Analytical coverage uses six weighted dimensions. Decision readiness cannot exceed the epistemic ceiling set by source traceability and independent human review.",
+        "Analytical coverage uses six weighted dimensions. Decision readiness can go no higher than source traceability and independent human review allow.",
       nav: {
         overview: "Overview",
         pillars: "Pillars",
@@ -277,7 +277,7 @@
           "المقاومة والسلوك المضاد والبدائل الممكنة والخلاصة المُعايرة والمراجعة الذاتية.",
       },
       formula:
-        "تستخدم التغطية التحليلية ستة أبعاد موزونة. ولا يمكن أن تتجاوز جاهزية القرار السقف المعرفي الذي تحدده قابلية تتبع المصادر والمراجعة البشرية المستقلة.",
+        "تستخدم التغطية التحليلية ستة أبعاد موزونة. ولا يمكن أن تتجاوز جاهزية القرار ما تسمح به قابلية تتبع المصادر والمراجعة البشرية المستقلة.",
       nav: {
         overview: "نظرة عامة",
         pillars: "الركائز",
@@ -389,7 +389,7 @@
           "Résistance, contre-conduite, alternatives faisables, conclusion calibrée et auto-audit.",
       },
       formula:
-        "La couverture analytique utilise six dimensions pondérées. La préparation à la décision ne peut dépasser le plafond épistémique fixé par la traçabilité des sources et la revue humaine indépendante.",
+        "La couverture analytique utilise six dimensions pondérées. La préparation à la décision ne peut dépasser ce que permettent la traçabilité des sources et la revue humaine indépendante.",
       nav: {
         overview: "Vue d’ensemble",
         pillars: "Piliers",

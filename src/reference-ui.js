@@ -25,7 +25,7 @@
       approvalEligible: "Approval eligible", unavailable: "Not given in the record",
       evidence: "Evidence balance", supporting: "Supporting evidence",
       counter: "Counter-evidence records", counterText: "Authored counter-evidence",
-      audit: "Audit details", schemaVersion: "Format version", contractStatus: "Format status",
+      audit: "Technical details", schemaVersion: "Format version", contractStatus: "Format status",
       modelStatus: "Model status", analysisId: "Analysis ID", uncertainty: "Uncertainty",
       limitations: "Limitations", evidenceStrength: "Evidence strength",
       unresolvedLinks: "Unresolved links", occurrences: "Occurrences",
@@ -52,7 +52,7 @@
       approvalEligible: "مؤهل للاعتماد", unavailable: "غير وارد في السجل",
       evidence: "توازن الأدلة", supporting: "الأدلة الداعمة",
       counter: "سجلات الأدلة المضادة", counterText: "الدليل المضاد المؤلف",
-      audit: "تفاصيل التدقيق", schemaVersion: "إصدار الصيغة", contractStatus: "حالة الصيغة",
+      audit: "تفاصيل تقنية", schemaVersion: "إصدار الصيغة", contractStatus: "حالة الصيغة",
       modelStatus: "حالة النموذج", analysisId: "معرّف التحليل", uncertainty: "عدم اليقين",
       limitations: "القيود", evidenceStrength: "قوة الدليل",
       unresolvedLinks: "الروابط غير المحلولة", occurrences: "مواضع الظهور",
@@ -79,7 +79,7 @@
       approvalEligible: "Éligible à l’approbation", unavailable: "Non fourni dans la fiche",
       evidence: "Équilibre des preuves", supporting: "Preuves à l’appui",
       counter: "Fiches de contre-preuve", counterText: "Contre-preuve rédigée",
-      audit: "Détails d’audit", schemaVersion: "Version du format", contractStatus: "Statut du format",
+      audit: "Détails techniques", schemaVersion: "Version du format", contractStatus: "Statut du format",
       modelStatus: "Statut du modèle", analysisId: "Identifiant de l’analyse", uncertainty: "Incertitude",
       limitations: "Limites", evidenceStrength: "Force de la preuve",
       unresolvedLinks: "Liens non résolus", occurrences: "Occurrences",
@@ -247,7 +247,7 @@
       fact(copy.modelStatus, audit.modelStatus, { code: true }), fact(copy.analysisId, audit.analysisId),
       fact(copy.path, inspection?.path, { raw: true }),
       fact(copy.uncertainty, audit.uncertainty), fact(copy.limitations, audit.limitations),
-      fact(copy.evidenceStrength, audit.evidenceStrength), fact(copy.unresolvedLinks, audit.unresolvedLinks),
+      fact(copy.evidenceStrength, audit.evidenceStrength && `${audit.evidenceStrength}/5`), fact(copy.unresolvedLinks, audit.unresolvedLinks),
     ].filter(Boolean).join("");
     return `<section class="j-insp-sec" data-inspection-section="audit"><h3>${escapeHtml(copy.audit)}</h3>${facts ? `<dl class="j-insp-facts">${facts}</dl>` : `<p class="j-note" data-tone="idle">${escapeHtml(copy.unavailable)}</p>`}</section>`;
   }
