@@ -8742,9 +8742,9 @@ function renderAll() {
 }
 // A Bio review needs its graph: loaded before the review is shown, the page
 // lands on the whole review, not on its loading note. A failure shows there.
-async function loadReviewGraph(analysis) {
-  if (analysis.analysis_lens === "biopolitical") await loadBiopoliticalGraph().catch(() => {});
-}
+// Any other review renders in the click's own task: the example ride starts
+// on it straight after the click, so nothing awaits there.
+const needsReviewGraph = (analysis) => analysis.analysis_lens === "biopolitical";
 // An analysis just imported or loaded: the outline draws itself from the top
 // and the readiness bars fill, once. A reopened analysis does not replay it.
 // A render during it shows a bar whole rather than starting it over.
@@ -9032,7 +9032,7 @@ $("importBtn").onclick = async () => {
   $("topicStatus").dataset.tone = "ok";
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"), "", { announce: false });
-  await loadReviewGraph(a);
+  if (needsReviewGraph(a)) await loadBiopoliticalGraph().catch(() => {});
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
@@ -9105,7 +9105,7 @@ $("loadSampleBtn").onclick = async (event) => {
   $("importBtn").disabled = true;
   showReplyImported();
   toast(t("sampleLoaded"));
-  await loadReviewGraph(a);
+  if (needsReviewGraph(a)) await loadBiopoliticalGraph().catch(() => {});
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
