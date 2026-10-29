@@ -71,6 +71,19 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### A setup that says where you are
+
+- A Biopolitical case, by import or sample, now opens at the top of its
+  review. Before, it stopped part-way down the model map, because the page
+  scrolled while the review was still a loading note.
+- A setup step skipped by jumping ahead is no longer drawn done: the topic
+  station stays open until there is a topic.
+- With no topic, Copy and Preview prompt show "Edit topic" beside them,
+  leading back to the first step.
+- One ink button per view: Continue is a plain button on the prompt step,
+  where Copy prompt is the action, and the header's next action turns ink
+  once there is an analysis to review.
+
 ### The review by keyboard
 
 - Six buttons in the review (copy the next-step prompt, open the review

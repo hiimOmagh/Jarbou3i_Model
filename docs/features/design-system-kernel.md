@@ -79,7 +79,9 @@ tests use.
 - The bar holds:
   - the three phases, with the current one marked by more than colour;
   - local processing;
-  - the single primary next action. Its arrow mirrors itself in Arabic.
+  - the next action. Its arrow mirrors itself in Arabic. It is an ink
+    plate only once there is an analysis to review; in setup the step on
+    screen carries the one ink action.
 - The app's dark theme (`body.dark`) is mirrored on the root as
   `data-theme="dark|light"`, which the kernel reads. Density was already on
   `body` (`data-density`).
@@ -128,7 +130,12 @@ one at a time, with the mascot guide and a step list beside them.
 - **What it owns:** which step is open. The steps hold the app's own controls,
   with their IDs, so the flow cannot disagree with them.
 - **Moving:** Continue and Back, or any step in the list. Continue needs a
-  topic on the first step; the answer step's action is Import.
+  topic on the first step; the answer step's action is Import. A step passed
+  by jumping ahead is drawn done only once it is complete.
+- **One ink action per step:** Continue, unless the step has its own primary
+  button (Copy prompt), where Continue is a plain button.
+- **No topic yet:** Copy or Preview prompt says so and shows "Edit topic"
+  beside them, back to the first step.
 - **The guide:** it explains each step and reacts to the pasted answer
   (complete, notes, cut off, broken), with more than colour.
 - **Reaching a control:** the shell's next action and the app open the step

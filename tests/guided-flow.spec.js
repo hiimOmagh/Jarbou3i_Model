@@ -52,6 +52,33 @@ test.describe("Guided flow", () => {
     await expect(step(page, "topic")).toHaveAttribute("data-state", "done");
   });
 
+  test("draws a step done only once complete, leads back to an empty topic, and keeps one ink action in view", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    const ink = page.locator('.j-btn[data-variant="primary"]:visible');
+    await expect(ink).toHaveCount(1);
+    // Jumping ahead with no topic leaves the topic undone.
+    await step(page, "prompt").click();
+    await expect(step(page, "topic")).toHaveAttribute("data-state", "next");
+    await expect(step(page, "lens")).toHaveAttribute("data-state", "done");
+    // The step's own action is the ink one; Continue steps back.
+    await expect(ink).toHaveCount(1);
+    await expect(ink).toHaveId("copyPromptBtn");
+    // The error leads back to the topic.
+    await page.locator("#copyPromptBtn").click();
+    await expect(page.locator("#topicStatus")).toHaveText("Enter an analysis topic first.");
+    await page.locator("#editTopicBtn").click();
+    await expect(step(page, "topic")).toHaveAttribute("aria-current", "step");
+    await expect(page.locator("#flowStepTitle")).toBeFocused();
+    await page.locator(".j-flow-example").first().click();
+    await step(page, "prompt").click();
+    await expect(step(page, "topic")).toHaveAttribute("data-state", "done");
+    // The header's next action takes the ink once there is an analysis.
+    await expect(page.locator("#shellNextAction")).not.toHaveAttribute("data-variant", "primary");
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#shellNextAction")).toHaveAttribute("data-variant", "primary");
+  });
+
   test("the guide reacts to the pasted answer", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();

@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { openStep } from "./helpers/guided-flow.js";
 
 // The review as the UX-0 case file (ADR-0002): one document in reading order,
@@ -21,6 +23,27 @@ test.describe("Case file", () => {
     await expect(page.locator("#case-conclusion")).toBeAttached();
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "connections", "evidence", "conclusion", "inspection", "exports"].map((key) => `case-${key}`));
   });
+
+  // A Bio case fills in after the scroll; the page still lands on its top.
+  for (const way of ["sample", "import"]) {
+    test(`a Bio case opened by ${way} lands on the top of the review`, async ({ page }) => {
+      await page.goto("./");
+      await page.locator("#langEn").click();
+      if (way === "sample") {
+        await openStep(page, "lens");
+        await page.locator('[data-lens="biopolitical"]').click();
+        await page.locator("#loadSampleBtn").click();
+      } else {
+        await openStep(page, "answer");
+        await page.locator("#jsonInput").fill(await fs.readFile(path.join(process.cwd(), "fixtures", "sample-analysis-bio-en.json"), "utf8"));
+        await page.locator("#importBtn").click();
+      }
+      await expect(page.locator("#case-conclusion")).toBeAttached();
+      const top = await page.locator("#reviewPanel").evaluate((el) => el.getBoundingClientRect().top);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(top).toBeLessThanOrEqual(24);
+    });
+  }
 
   test("the model's own checks read as its claims, not as verification", async ({ page }) => {
     await page.goto("./");

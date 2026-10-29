@@ -115,6 +115,10 @@ export function createApplicationShell({
     const nextAction = byId("shellNextAction");
     if (nextAction) {
       nextAction.dataset.shellCommand = command.id;
+      // In setup the step on screen carries the one ink action; the header's
+      // takes it once there is an analysis to review.
+      if (command.id === "review") nextAction.dataset.variant = "primary";
+      else delete nextAction.dataset.variant;
       nextAction.setAttribute(
         "aria-label",
         `${translate("nextActionLabel")}: ${commandLabel}`,

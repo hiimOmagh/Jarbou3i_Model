@@ -8740,6 +8740,11 @@ async function restoreAfterLoad() {
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
 }
+// A Bio review needs its graph: loaded before the review is shown, the page
+// lands on the whole review, not on its loading note. A failure shows there.
+async function loadReviewGraph(analysis) {
+  if (analysis.analysis_lens === "biopolitical") await loadBiopoliticalGraph().catch(() => {});
+}
 // An analysis just imported or loaded: the outline draws itself from the top
 // and the readiness bars fill, once. A reopened analysis does not replay it.
 // A render during it shows a bar whole rather than starting it over.
@@ -8911,6 +8916,8 @@ $("copyPromptBtn").onclick = async (event) => {
     toast(t("topicNeeded"), "crit", { announce: false });
     $("topicStatus").dataset.tone = "crit";
     $("topicStatus").textContent = t("topicNeeded");
+    // The way back to the topic, beside the buttons.
+    $("editTopicBtn").classList.remove("hide");
     return;
   }
   if (state.evidenceAccess === "provided" && !$("sourcesInput").value.trim()) {
@@ -8933,6 +8940,7 @@ $("previewPromptBtn").onclick = (event) => {
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
     toast(t("topicNeeded"), "crit");
+    $("editTopicBtn").classList.remove("hide");
     return;
   }
   if (state.evidenceAccess === "provided" && !$("sourcesInput").value.trim()) {
@@ -9024,13 +9032,14 @@ $("importBtn").onclick = async () => {
   $("topicStatus").dataset.tone = "ok";
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"), "", { announce: false });
+  await loadReviewGraph(a);
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
-  // whatever the user is clicking by then.
+  // whatever the user is clicking by then. To the review's top, however tall.
   document
     .getElementById("reviewPanel")
-    .scrollIntoView({ behavior: "auto", block: "nearest" });
+    .scrollIntoView({ behavior: "auto", block: "start" });
   arriveAtReview();
   if (await persistImportedAnalysis(a)) discardTrip();
 };
@@ -9096,13 +9105,14 @@ $("loadSampleBtn").onclick = async (event) => {
   $("importBtn").disabled = true;
   showReplyImported();
   toast(t("sampleLoaded"));
+  await loadReviewGraph(a);
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
-  // whatever the user is clicking by then.
+  // whatever the user is clicking by then. To the review's top, however tall.
   document
     .getElementById("reviewPanel")
-    .scrollIntoView({ behavior: "auto", block: "nearest" });
+    .scrollIntoView({ behavior: "auto", block: "start" });
   arriveAtReview();
   if (await persistImportedAnalysis(a)) discardTrip();
   } catch (error) {

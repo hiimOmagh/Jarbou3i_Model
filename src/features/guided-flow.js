@@ -22,9 +22,10 @@ export function createGuidedFlow({
     root.querySelectorAll("[data-flow-panel]").forEach((panel) => {
       panel.hidden = panel.dataset.flowPanel !== current;
     });
+    // A step passed by jumping ahead is drawn done only once it is complete.
     root.querySelectorAll("[data-flow-step]").forEach((button) => {
       const at = FLOW_STEPS.indexOf(button.dataset.flowStep);
-      button.dataset.state = at < index ? "done" : at === index ? "current" : "next";
+      button.dataset.state = at < index && canContinue(button.dataset.flowStep) ? "done" : at === index ? "current" : "next";
       if (at === index) button.setAttribute("aria-current", "step");
       else button.removeAttribute("aria-current");
     });
@@ -42,6 +43,10 @@ export function createGuidedFlow({
     byId("flowBack").hidden = index === 0;
     byId("flowNext").hidden = index === FLOW_STEPS.length - 1;
     byId("flowNext").disabled = !canContinue(current);
+    // One ink action per step: Continue, unless the step has its own.
+    const own = root.querySelector(`[data-flow-panel="${current}"] .j-btn[data-variant="primary"]`);
+    if (own) delete byId("flowNext").dataset.variant;
+    else byId("flowNext").dataset.variant = "primary";
     if (focus) byId("flowStepTitle").focus();
   }
 
