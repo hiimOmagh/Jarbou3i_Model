@@ -77,7 +77,8 @@ and how many cite evidence. Below it:
 
 Both are plain HTML lists and buttons, so the view reads the same to a screen
 reader as on screen. Each Biopolitical record also lists its own connections
-("Links to", "Linked from").
+("Links to", "Linked from"), a line each: "relation: record". A long name
+wraps under its relation, which reads as its label.
 
 Biopolitical review cards show a referenced record's name next to its stable ID;
 selecting it opens its type, pillar, confidence, and relationships. Standalone

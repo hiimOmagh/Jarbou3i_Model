@@ -38,7 +38,9 @@ framework. The modern shell (UIX-2) is the first part of the app built on it.
   tone, and is hidden while empty. `ok` and `idle` notes are plain text; only
   `warn` and `crit` take a box, edged and washed in their tone. A list drawn
   without markers (`list-style: none`) says `role="list"`, unless it sits in
-  `<nav>`: Safari drops the list semantics of an unmarked list otherwise. A class the registry does not know is an error. The stylesheet
+  `<nav>`: Safari drops the list semantics of an unmarked list otherwise. A
+  name (`aria-label`, `aria-labelledby`) sits on an element whose role takes
+  one, never on a plain `div`, `span` or `p`. A class the registry does not know is an error. The stylesheet
   and the registry must list the same classes.
 - **Themes.** Dark first. Light is designed, not inverted. Without
   `data-theme` the theme follows the system.
@@ -184,6 +186,8 @@ document in reading order instead of tabs.
   1120px and below one column, the outline above the document, its entries
   bordered tiles in three columns at 940px, then two at 760px. Headings in the document keep their size unless
   a view styles its own (`:where(.j-case-doc) h3`, so any view's rule wins).
+  Once the outline has scrolled away, *Back to the outline* floats at the
+  foot; a control reached by keyboard under it scrolls clear of it.
 - **Heavy parts stay lazy:** the relationship map loads when its section
   comes near the view, or at once when its outline entry is chosen (the
   observer's turn comes late in Firefox and WebKit). While it, or the

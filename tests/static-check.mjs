@@ -185,9 +185,11 @@ for (const token of [
   'role="radiogroup"',
   'role="radio"',
   'aria-checked="true"',
-  // The review is a case file: a labelled outline beside one document.
+  // The review is a case file named by its title: a labelled outline beside
+  // one document.
+  'id="reviewPanel" aria-labelledby="reviewTitle"',
   'class="j-case-outline" id="reviewNav"',
-  'id="reviewContent" tabindex="-1" aria-labelledby="reviewTitle"',
+  'id="reviewContent" tabindex="-1"',
   'aria-modal="true"',
 ]) {
   if (!index.includes(token)) fail(`index accessibility token missing: ${token}`);

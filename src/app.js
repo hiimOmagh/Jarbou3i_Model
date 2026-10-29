@@ -6307,18 +6307,18 @@ function openBiopoliticalRecord(node) {
   focusInspectionRecord(node, `[data-reference-id="${CSS.escape(node.id)}"]`);
 }
 // A record's connections that its facts do not already name: the links it
-// authors, then every record that points to it. Each reads "relation ·
-// record", so the relation stays in view beside a long name.
+// authors, then every record that points to it. Each reads "relation:
+// record"; a long name wraps under its relation, which reads as its label.
 function bioConnectionFacts(node, graph) {
   const relation = (edge) => escapeHtml(BIO.displayToken(state.lang, edge.relation));
   const list = (edges, line) => `<ul>${edges.map((edge) => `<li>${line(edge)}</li>`).join("")}</ul>`;
   const { authored, incoming } = graph.cardConnections(node.id);
   return [
     authored.length
-      ? recordFact(labelText("Links to", "يُشير إلى", "Renvoie à"), list(authored, (edge) => `${relation(edge)} · ${namedBioText(edge.target, graph)}`))
+      ? recordFact(labelText("Links to", "يُشير إلى", "Renvoie à"), list(authored, (edge) => `${relation(edge)}${colonMark()} ${namedBioText(edge.target, graph)}`))
       : "",
     incoming.length
-      ? recordFact(labelText("Linked from", "تُشير إليه", "Référencé par"), list(incoming, (edge) => `${relation(edge)} · ${namedBioText(edge.source, graph)}`))
+      ? recordFact(labelText("Linked from", "تُشير إليه", "Référencé par"), list(incoming, (edge) => `${relation(edge)}${colonMark()} ${namedBioText(edge.source, graph)}`))
       : "",
   ].join("");
 }
@@ -6845,6 +6845,22 @@ document.addEventListener("focusin", (event) => {
   caseJump = { key: section.id.slice("case-".length), y: window.scrollY };
   markCaseLocation();
 });
+// A control reached by keyboard under the return button comes clear of it,
+// as far above it as the button stands above the foot. It moves after the
+// browser's own focus scroll, which WebKit makes a frame late; a tap is
+// never moved.
+$("reviewContent").addEventListener("focusin", (event) => {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    syncOutlineReturn();
+    const pill = $("caseOutlineReturn");
+    if (pill.hidden || !event.target.matches(":focus-visible")) return;
+    const box = event.target.getBoundingClientRect();
+    const over = pill.getBoundingClientRect();
+    if (box.bottom <= over.top || box.top >= over.bottom || box.right <= over.left || box.left >= over.right) return;
+    const shift = Math.min(box.bottom - over.top + (window.innerHeight - over.bottom), box.top);
+    if (shift > 0) window.scrollBy({ top: shift });
+  }));
+});
 // On a phone a browser leaves a station that is partly in the line's view
 // where it is: one reached by keyboard comes fully into view.
 $("reviewNav").addEventListener("focusin", (event) => {
@@ -6873,7 +6889,6 @@ function renderBiopoliticalReview() {
     const requestedAnalysis = state.analysis;
     $("reviewPanel").classList.remove("hide");
     $("reviewNav").innerHTML = "";
-    $("reviewContent").setAttribute("aria-labelledby", "reviewTitle");
     $("reviewContent").innerHTML =
       `<div class="j-note" data-tone="idle" role="status">${escapeHtml(labelText("Loading the biopolitical graph…", "جارٍ تحميل الرسم البياني للسياسة الحيوية…", "Chargement du graphe biopolitique…"))}</div>`;
     loadBiopoliticalGraph()

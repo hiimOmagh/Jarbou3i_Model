@@ -71,6 +71,18 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Small things a screen reader or keyboard met
+
+- On a phone or narrow window, a control reached by keyboard is no longer
+  left partly under the floating *Back to the outline* button: it scrolls
+  clear of it, in every browser.
+- A record's connections read "Supported by: record". The dot that used to
+  separate them was left alone at the end of its line, since the record
+  always sits on the line below.
+- The review's document is no longer given a name it cannot carry (the
+  review itself is named by its title), and the design-system check now
+  flags any such name.
+
 ### A setup that says where you are
 
 - A Biopolitical case, by import or sample, now opens at the top of its

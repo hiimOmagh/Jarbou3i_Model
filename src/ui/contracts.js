@@ -183,5 +183,10 @@ export function checkContracts(root) {
     if (getComputedStyle(list).listStyleType !== "none" || list.hasAttribute("role") || list.closest("nav, [aria-hidden='true']")) continue;
     problems.push({ element: describe(list), contract: "list", problem: 'a list without markers needs role="list"' });
   }
+  // ARIA gives a plain div, span or paragraph no name: screen readers drop
+  // one set on it, or read it inconsistently.
+  for (const named of root.querySelectorAll(":is(div, span, p):is([aria-label], [aria-labelledby]):not([role])")) {
+    problems.push({ element: describe(named), contract: "name", problem: "a name needs a role that can be named" });
+  }
   return problems;
 }

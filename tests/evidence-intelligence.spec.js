@@ -125,10 +125,10 @@ test("biopolitical records read as record cards in each pillar and the evidence 
   await expect(record.locator(".j-rec-title")).toHaveText("QR credential and verification rule");
   await expect(record.locator("dt")).toHaveText(["Stated purpose", "Ownership", "Oversight", "Scale", "Links to", "Linked from"]);
   // Then its connections: the link it authors, and the records that point to
-  // it, each "relation · record".
+  // it, each "relation: record".
   await expect(record.locator("dd li")).toHaveText([
     "Individual", "Institutional", "National",
-    /^Classifies · Eligible/, /^Enables · Mobility/, /^Uses · Conditional access/,
+    /^Classifies: Eligible/, /^Enables: Mobility/, /^Uses: Conditional access/,
   ]);
   await expect(record.locator("dd li .j-ref")).toHaveText([/CLASS1$/, /HF1$/, /IV1$/]);
   // A record it names opens in the inspector, whose "Open full record" lands

@@ -240,6 +240,24 @@ test.describe("Case file", () => {
     await expect(page.locator('#reviewNav [data-review="evidence"]')).toBeFocused();
     await expect(back).toBeHidden();
 
+    // Tabbing down the document, no control is left under that button.
+    await page.locator("#reviewTitle").focus();
+    const covered = [];
+    for (let step = 0; step < 80; step += 1) {
+      await page.keyboard.press("Tab");
+      const at = await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+        const control = document.activeElement;
+        if (!control?.closest("#reviewPanel")) return done(null);
+        const pill = document.getElementById("caseOutlineReturn");
+        const [box, over] = [control.getBoundingClientRect(), pill.getBoundingClientRect()];
+        const under = control !== pill && !pill.hidden && box.bottom > over.top && box.top < over.bottom && box.right > over.left && box.left < over.right;
+        done(under ? control.textContent.trim().slice(0, 40) : "");
+      })))));
+      if (at === null) break;
+      if (at) covered.push(at);
+    }
+    expect(covered).toEqual([]);
+
     // Beside the document, the outline stays in reach on its own.
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.locator('#reviewNav [data-review="evidence"]').click();
