@@ -113,15 +113,25 @@ header, opens a native modal `<dialog>` (`.j-dialog`). Its combobox filters a
 - **What it lists:** every enabled, rendered control of the shell and of the
   open review: phases, the next action, review sections, workspaces, language,
   density and theme. Each appears under its own on-screen label.
+- **Actions:** the setup steps' buttons (`.j-btn[id]` in a
+  `[data-flow-panel]`, and Load sample) and the case file's
+  (`.j-btn[id]` in a `.j-case-sec`) are listed too, each after the name of
+  its step or of its section as the outline gives it. They are listed while
+  enabled, even in a step not open or under a closed fold. A button that
+  throws work away for good, such as Clear in the answer step, carries
+  `data-palette-skip` and is left out.
 - **What a command does:** it clicks that control. The palette owns no
-  behaviour, so it cannot disagree with the buttons it stands for.
+  behaviour, so it cannot disagree with the buttons it stands for. For an
+  action, it first opens the closed folds around it, and its step by
+  clicking that step.
 - **Focus:** it lands on the control just used. If the click re-rendered the
   control, the palette finds it again; if the control opened a dialog of its
   own, focus stays in that dialog.
 - **Limits:** it never opens over another dialog. Accents and Arabic
   diacritics are ignored when filtering.
 - **Tests:** `tests/command-palette.spec.js` covers opening, filtering, running,
-  Escape and focus return, review sections, Arabic labels, contracts and axe.
+  Escape and focus return, review sections, actions behind a step or a fold,
+  Arabic labels, contracts and axe.
 
 ## Guided flow
 

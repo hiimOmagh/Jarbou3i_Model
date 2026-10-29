@@ -95,6 +95,17 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### The command list runs the page's actions
+
+- Ctrl/⌘ K now lists the page's actions as well as its places: copy or
+  preview the prompt, load the sample, and in the case file copy a prompt,
+  export the report, the JSON or the review plan, or open the review ledger.
+  Each is named by its step or its section ("Prompt: Copy prompt",
+  "Export: Export HTML report"), and only when it can run now. Clear, which
+  empties the pasted answer for good, stays a click on its own button.
+- An action in a step that is not open, or under a closed fold, opens that
+  step or fold first, so focus lands on the button used.
+
 ### The page loads its code at once
 
 - `index.html` preloads the 43 modules the app imports at start, so the

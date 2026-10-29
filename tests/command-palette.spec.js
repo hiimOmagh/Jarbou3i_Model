@@ -68,6 +68,46 @@ test.describe("Command palette", () => {
     await expect(page.locator("#case-evidence")).toBeFocused();
   });
 
+  test("runs the page's own actions, opening the fold or the step that holds them", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    // Nothing to export before an analysis is open.
+    await page.keyboard.press("Control+k");
+    await page.keyboard.type("export");
+    await expect(options(page)).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#case-exports")).toBeAttached();
+
+    // A case-file action is named by its section; the closed fold that holds
+    // it opens, so focus can land on it.
+    await page.keyboard.press("Control+k");
+    await page.keyboard.type("export review plan");
+    await expect(options(page)).toHaveText(["Inspection: Export review plan"]);
+    const download = page.waitForEvent("download");
+    await page.keyboard.press("Enter");
+    expect((await download).suggestedFilename()).toMatch(/evidence-review-plan\.json$/);
+    await expect(page.locator("#exportReviewPlan")).toBeFocused();
+
+    // A setup action is named by its step, which opens first.
+    await page.evaluate(() => {
+      window.__copied = [];
+      Object.defineProperty(navigator.clipboard, "writeText", { configurable: true, value: async (text) => { window.__copied.push(text); } });
+    });
+    await page.keyboard.press("Control+k");
+    await page.keyboard.type("copy prompt");
+    await expect(options(page)).toHaveText(["Prompt: Copy prompt", "Overview: Copy a prompt to do this"]);
+    await page.keyboard.press("Enter");
+    await expect.poll(() => page.evaluate(() => window.__copied.length)).toBe(1);
+    await expect(page.locator('[data-flow-step="prompt"]')).toHaveAttribute("aria-current", "step");
+    await expect(page.locator("#copyPromptBtn")).toBeFocused();
+
+    // What throws work away without a way back stays a click on its button.
+    await page.keyboard.press("Control+k");
+    await page.keyboard.type("clear");
+    await expect(options(page)).toHaveCount(0);
+  });
+
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langAr").click();
