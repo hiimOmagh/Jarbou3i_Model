@@ -36,7 +36,7 @@ async function saveTitle(page, title) {
 
 async function approve(page, rationale) {
   await expect(page.locator("#resolutionDialog")).toBeVisible();
-  await expect(page.locator("#resolutionTrust")).toContainText(/never rewrites/i);
+  await expect(page.locator("#resolutionTrust")).toContainText(/never changes imported or earlier revisions/i);
   await expect(page.locator("#resolutionDiff")).toContainText("/subject/title");
   await expect(page.locator("#resolutionCommit")).toBeDisabled();
   await page.locator("#resolutionReviewer").fill("Resolution Reviewer");
@@ -107,7 +107,7 @@ test.describe("Resolution transactions", () => {
     await saveTitle(page, "Committed biopolitical resolution");
     await page.locator("#editorClose").click();
     await page.locator("#workspaceSaveState").click();
-    await expect(page.locator("[data-workspace-row][aria-current=true]")).toContainText("verified");
+    await expect(page.locator("[data-workspace-row][aria-current=true]")).toContainText("Saved data intact");
     await page.getByRole("button", { name: "Review and commit" }).click();
     await approve(page, "Approved after full Biopolitical contract validation and exact diff review.");
     await expect(page.locator("#topicInput")).toHaveValue("Committed biopolitical resolution");
