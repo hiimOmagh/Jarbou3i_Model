@@ -6276,6 +6276,9 @@ function focusInspectionRecord(node, fallbackSelector) {
     const anchor = `[data-inspection-id="${CSS.escape(node.id)}"]`;
     const target = document.querySelector(`#case-${CSS.escape(state.activeReview)} ${anchor}`)
       || document.querySelector(anchor) || document.querySelector(fallbackSelector) || $("reviewContent");
+    // A target folded away (a card's later facts, a connection layer) opens first.
+    const fold = target?.closest?.("details:not([open])");
+    if (fold) fold.open = true;
     target?.scrollIntoView({ behavior: "auto", block: "center" });
     target?.focus?.({ preventScroll: true });
   });
@@ -6341,7 +6344,25 @@ function bioConnectionFacts(node, graph) {
     incoming.length
       ? recordFact(labelText("Linked from", "تُشير إليه", "Référencé par"), list(incoming, (edge) => `${relation(edge)}${colonMark()} ${namedBioText(edge.source, graph)}`))
       : "",
-  ].join("");
+  ];
+}
+// A card shows up to six facts; a longer one shows its first four and folds
+// the rest under one line that counts them.
+const FACTS_SHOWN = 4;
+const FACTS_UNFOLDED = 6;
+const MORE_FACT_COUNT = {
+  en: { one: "{count} more detail", other: "{count} more details" },
+  ar: { one: "تفصيل آخر", two: "تفصيلان آخران", few: "{count} تفاصيل أخرى", many: "{count} تفصيلًا آخر", other: "{count} تفصيل آخر" },
+  fr: { one: "{count} autre détail", other: "{count} autres détails" },
+};
+function recordFactsFolded(facts) {
+  if (!facts.length) return "";
+  const fold = facts.length > FACTS_UNFOLDED;
+  const shown = fold ? facts.slice(0, FACTS_SHOWN) : facts;
+  const more = fold ? facts.slice(FACTS_SHOWN) : [];
+  return `<dl class="j-rec-facts" data-prose>${shown.join("")}</dl>${more.length
+    ? `<details class="j-disclosure j-rec-more"><summary>${escapeHtml(pluralText(more.length, MORE_FACT_COUNT))}</summary><dl class="j-rec-facts" data-prose>${more.join("")}</dl></details>`
+    : ""}`;
 }
 // A Biopolitical record as a kernel card: its qualifiers, its statement, its
 // summary, then its facts, lists and connections. Every pillar and the
@@ -6373,9 +6394,9 @@ function bioRecordHtml(item) {
           .join("")}</ul>`,
       ),
     ),
-    node ? bioConnectionFacts(node, graph) : "",
-  ].join("");
-  return `<li><article class="j-rec"${node ? recordAnchor(item) : ""}>${chips ? `<header class="j-rec-head">${chips}</header>` : ""}<p class="j-rec-title">${namedBioText(item.title || "—", graph)}</p>${item.summary ? `<p class="j-rec-text">${namedBioText(item.summary, graph)}</p>` : ""}${facts ? `<dl class="j-rec-facts" data-prose>${facts}</dl>` : ""}</article></li>`;
+    ...(node ? bioConnectionFacts(node, graph) : []),
+  ].filter(Boolean);
+  return `<li><article class="j-rec"${node ? recordAnchor(item) : ""}>${chips ? `<header class="j-rec-head">${chips}</header>` : ""}<p class="j-rec-title">${namedBioText(item.title || "—", graph)}</p>${item.summary ? `<p class="j-rec-text">${namedBioText(item.summary, graph)}</p>` : ""}${recordFactsFolded(facts)}</article></li>`;
 }
 function bioRecordsHtml(records) {
   return records.length
@@ -6900,6 +6921,16 @@ $("reviewContent").addEventListener("focusin", (event) => {
     const shift = Math.min(box.bottom - over.top + (window.innerHeight - over.bottom), box.top);
     if (shift > 0) window.scrollBy({ top: shift });
   }));
+});
+// The case file prints whole: its folds open for the print and close after.
+let foldsOpenedToPrint = [];
+window.addEventListener("beforeprint", () => {
+  foldsOpenedToPrint = [...$("reviewContent").querySelectorAll("details:not([open])")];
+  for (const fold of foldsOpenedToPrint) fold.open = true;
+});
+window.addEventListener("afterprint", () => {
+  for (const fold of foldsOpenedToPrint) fold.open = false;
+  foldsOpenedToPrint = [];
 });
 // On a phone a browser leaves a station that is partly in the line's view
 // where it is: one reached by keyboard comes fully into view.

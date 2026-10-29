@@ -71,6 +71,18 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Long records show four facts first
+
+- A Biopolitical record card with more than six facts shows its first
+  four, then one line that counts the rest ("13 more details", in each
+  language) and opens them. Shorter cards are unchanged. In the sample
+  answer, 8 of 49 cards fold: an evidence record goes from 17 facts to 4,
+  and the evidence section from 4,728px to 2,957px on a desktop (6,946px
+  to 4,291px on a phone).
+- The inspector opens a fold when it sends you to something inside it.
+- The case file prints whole: its folds open for the print and close
+  after, connection layers included.
+
 ### The UX-0 prototype is removed
 
 - `prototypes/ux-0`, the clickable concept the case file was built from

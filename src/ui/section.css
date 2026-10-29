@@ -45,6 +45,11 @@ h5.j-rec-title { font-size: var(--j-t-14); line-height: 1.35; }
 .j-rec-facts[data-prose] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
 .j-rec-facts dd > ul { margin: 0; padding-inline-start: var(--j-s-4); }
 .j-rec-facts dd li + li { margin-top: var(--j-s-1); }
+/* A long record's later facts, folded under one line that counts them: a row
+   of the card with its chevron, not a box inside it. */
+.j-rec-more { border: 0; border-radius: 0; background: none; }
+.j-rec-more > summary { padding-inline: 0; color: var(--j-fg); }
+.j-rec-more > .j-rec-facts { padding-block: var(--j-s-1) var(--j-s-2); }
 /* A fact that is a set of qualifiers, such as the layers a record touches. */
 .j-rec-facts dd:has(> .j-chip) { display: flex; flex-wrap: wrap; gap: var(--j-s-1); }
 /* A summary that is a list of points. */

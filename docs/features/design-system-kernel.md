@@ -408,7 +408,10 @@ kernel reuses them.
   `data-inspection-id` and `tabindex="-1"`. A summary under the statement is
   `.j-rec-text` (a `ul.j-rec-text` when it is a list of points); facts written
   as prose take `data-prose` for a wider column, and a fact may hold a list. A card that opens the inspector is a
-  `button.j-rec`; a record a search filters out is a `hidden` list item.
+  `button.j-rec`; a record a search filters out is a `hidden` list item. A
+  Biopolitical card shows up to six facts; a longer one shows its first four
+  and folds the rest in `details.j-disclosure.j-rec-more`, a row of the card
+  whose summary counts them ("13 more details"), not a box inside it.
 - **Checks:** `dl.j-checks`, each row a question (`dt`) beside its verdict, a
   `.j-status` (`dd`); two to a row, one at 760px and below, each under a
   thin rule. `data-tone="warn"` on a row draws its rule 2px in `--j-warn`,

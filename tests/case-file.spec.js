@@ -141,6 +141,47 @@ test.describe("Case file", () => {
     await expect(page.locator('#reviewNav [data-bio-review="evidence"]')).toHaveAttribute("aria-current", "location");
   });
 
+  // A long record shows its first four facts and folds the rest under one
+  // line that counts them; a short one shows every fact.
+  test("a long record folds its facts after the first four", async ({ page }) => {
+    test.skip(test.info().project.name !== "chromium", "Rendering rule, engine-independent.");
+    const counts = { en: "13 more details", ar: "13 تفصيلًا آخر", fr: "13 autres détails" };
+    await page.goto("./");
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+    for (const lang of ["en", "ar", "fr"]) {
+      await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+      await page.locator("#loadSampleBtn").click();
+      const record = page.locator('#case-evidence [data-inspection-id="E1"]');
+      await expect(record.locator(":scope > .j-rec-facts > div")).toHaveCount(4);
+      const more = record.locator(":scope > .j-rec-more");
+      await expect(more.locator(":scope > summary")).toHaveText(counts[lang]);
+      await expect(more).not.toHaveAttribute("open");
+      await expect(more.locator(".j-rec-facts > div")).toHaveCount(13);
+    }
+    // Opened, the rest read like the first four, connections and all.
+    await page.locator("#langEn").click();
+    const record = page.locator('#case-evidence [data-inspection-id="E1"]');
+    await record.locator(".j-rec-more > summary").click();
+    await expect(record.locator(".j-rec-more dt", { hasText: /^Linked from$/ })).toBeVisible();
+    // No card shows more than six facts at once; a card of six or fewer has no fold.
+    const cards = await page.locator('[data-records="bio"] > li > .j-rec').evaluateAll((items) => items.map((item) => ({
+      shown: item.querySelectorAll(":scope > .j-rec-facts > div").length,
+      folded: item.querySelectorAll(":scope > .j-rec-more .j-rec-facts > div").length,
+    })));
+    expect(cards.filter((card) => card.shown > 6 || (card.folded && (card.shown !== 4 || card.folded < 3)))).toEqual([]);
+    expect(cards.filter((card) => card.folded).length).toBeGreaterThan(0);
+    // Printed, the case file is whole: every fold opens, and closes after.
+    const closed = page.locator("#reviewContent details:not([open])");
+    const before = await closed.count();
+    expect(before).toBeGreaterThan(0);
+    await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
+    await expect(closed).toHaveCount(0);
+    await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+    await expect(closed).toHaveCount(before);
+    await expect(record.locator(".j-rec-more")).toHaveAttribute("open", "");
+  });
+
   test("the outline jumps to a section and follows the reader", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();
