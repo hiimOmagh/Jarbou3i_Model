@@ -103,6 +103,27 @@ test.describe("Case file", () => {
     await expect(facts.locator("dt", { hasText: /^Not applicable$/ }).first().locator("xpath=following-sibling::dd")).toContainText("Denominator");
   });
 
+  // A figure reads as what it measures, never as a pass the case has not
+  // earned: no score is green under a closed gate, finding no audit concern
+  // is not shown as a clean audit, and high confidence on weak evidence says so.
+  test("no figure reads as a pass the case has not earned", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    for (const lens of ["strategic", "biopolitical"]) {
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      await expect(page.locator(lens === "biopolitical" ? "#case-conclusion" : "#case-scenarios")).toBeAttached();
+      await expect(page.locator('#reviewContent [data-metric] .j-brief-bar:not([data-tone])').first()).toBeAttached();
+      await expect(page.locator('#reviewContent :is(.j-brief-bar, .j-stats > span)[data-tone="ok"]')).toHaveCount(0);
+      await expect(page.locator(".j-idir-head .j-stats")).not.toContainText("Audit concerns");
+      if (lens === "strategic") {
+        await expect(page.locator('#case-evidence [data-inspection-id="E1"] .j-chip[data-tone="warn"]')).toHaveText("High confidence on weak evidence");
+        await expect(page.locator('[data-explanation-section] .j-chip[data-tone="warn"]')).toHaveText(["High confidence on weak evidence"]);
+      }
+    }
+  });
+
   test("an evidence record is drawn once, in its own section", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();

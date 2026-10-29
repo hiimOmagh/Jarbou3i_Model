@@ -491,13 +491,18 @@ then its detailed diagnostics.
   (`qualityGate()`, `bioGateVerdict()`), so the overview never shows two; the conclusion (`.j-brief-claim`); readiness
   and coverage in a `dl.j-brief-figures`, each figure with a `.j-brief-bar`
   (`--j-pct`, its tone from `pctTone()`, the score legend's bands; hidden from
-  assistive technology, which reads the figure); the principal uncertainty and
+  assistive technology, which reads the figure). A tone names a problem: under
+  35 `crit`, under 56 `warn`, else none, an ink bar. No score is green: none
+  says an analysis is sound, and the gate already says whether it is. The
+  principal uncertainty and
   the next action as `.j-brief-signal` blocks. Its parts carry
   `data-orientation` (`gate`, `conclusion`, `metrics`, `uncertainty`, `action`).
 - **How the conclusion is built** (`data-results-explanation`): an
   `ol.j-brief-steps` of five `.j-rec` cards (`data-explanation-section`), each
   with an `h5` title, a count chip, its strongest records (`.j-brief-items`,
   chips in `.j-brief-tags`) and a `.j-btn.j-brief-open` to the full record.
+  High confidence on evidence of strength 2/5 or less is one `warn` chip,
+  "High confidence on weak evidence", here, on the record and in the report.
 - `.j-brief-divider` starts the detailed diagnostics; print hides it and the
   links.
 - **Diagnostics** (`.j-diag`): the quality gate, a `.j-note` toned by its

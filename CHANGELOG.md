@@ -71,6 +71,18 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### Figures that do not contradict the verdict
+
+- No score is green any more. Under a "Do not publish yet" gate, a green
+  100/100 read as a pass the case had not earned. A low score still warns
+  (amber under 56, red under 35); the rest are plain ink bars, and the
+  legend has three bands, not four. The same goes for both reports.
+- A claim the answer rates "High confidence" on evidence it rates 2/5 or
+  less now says "High confidence on weak evidence" (amber), on its record,
+  in the overview and in the report.
+- The inspection directory counts audit concerns only when there are some:
+  a green "0" read as a clean audit beside 0% source traceability.
+
 ### One word for one idea
 
 - The outline names each section in its heading's own words: the

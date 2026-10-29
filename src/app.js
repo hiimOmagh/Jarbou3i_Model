@@ -4701,6 +4701,23 @@ function kernelChip(label, tone = "") {
 }
 // Confidence is the AI's own claim, not a check: no level reads as verified
 // or failed; only a low one asks for attention.
+// An evidence item's confidence read with its strength: high confidence on
+// evidence of strength 2/5 or less is a level of its own, so the item's two
+// ratings do not seem to disagree. The record, the overview's tags and the
+// report all name it.
+const WEAK_EVIDENCE = "high_on_weak_evidence";
+function evidenceConfidenceLevel(item) {
+  const strength = Number(item.evidence_strength);
+  return confidenceScore(item.confidence) >= 90 && strength > 0 && strength <= 2 ? WEAK_EVIDENCE : item.confidence;
+}
+function confidenceLabel(level) {
+  return level === WEAK_EVIDENCE
+    ? labelText("High confidence on weak evidence", "ثقة عالية بدليل ضعيف", "Confiance élevée, preuve faible")
+    : confidenceInfo(level).label;
+}
+function confidenceChip(level) {
+  return kernelChip(level ? confidenceLabel(level) : "", level === WEAK_EVIDENCE ? "warn" : confidenceTone(level));
+}
 function confidenceTone(value) {
   return confidenceScore(value) < 40 ? "warn" : "";
 }
@@ -5274,7 +5291,7 @@ function scoreFormulaHtml() {
 // What the colour of a score's bar says: the bands of pctTone(). A range reads
 // left to right in Arabic too; the dash between its numbers would reverse it.
 function scoreBandsHtml() {
-  const bands = [["crit", "0–34"], ["warn", "35–55"], ["", "56–75"], ["ok", "76–100"]];
+  const bands = [["crit", "0–34"], ["warn", "35–55"], ["", "56–100"]];
   return `<ul class="j-brief-bands" role="list" aria-label="${escapeHtml(labelText("Score bands", "مستويات الدرجة"))}">${bands
     .map(([tone, range]) => `<li><span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:100%" aria-hidden="true"></span><span dir="ltr">${range}</span></li>`)
     .join("")}</ul>`;
@@ -5302,10 +5319,13 @@ function itemCard(obj, metric = "") {
   const head = `${recordIdCode(obj)}${chip(obj.type || obj.category || obj.frame || obj.basis)}${confidence}${chip(obj.horizon || obj.timeframe)}${chip(obj.stakes)}`;
   return `<li><article class="j-rec"${recordAnchor(obj)}>${head ? `<header class="j-rec-head">${head}</header>` : ""}<p class="j-rec-title">${escapeHtml(obj.name || obj.title || obj.description || obj.claim || obj.assumption || obj.rhetoric || "—")}</p>${obj.rationale ? `<p class="j-rec-text">${escapeHtml(obj.rationale)}</p>` : ""}${metric ? `<dl class="j-rec-facts">${metric}</dl>` : ""}</article></li>`;
 }
-// A share of 100 as a tone; scoreBandsHtml() is its legend.
+// A share of 100 as a tone; scoreBandsHtml() is its legend. A tone names a
+// problem: a low score warns, a very low one is critical, the rest are plain
+// ink. None is green: no one score says an analysis is sound; the publication
+// gate says whether it is.
 function pctTone(value) {
   const n = valuePct(value);
-  return n >= 76 ? "ok" : n >= 56 ? "" : n >= 35 ? "warn" : "crit";
+  return n >= 56 ? "" : n >= 35 ? "warn" : "crit";
 }
 // A bar of a figure out of 100; it repeats the figure, so it is hidden.
 function briefBar(value) {
@@ -5404,7 +5424,7 @@ function strategicResultsExplanation(a) {
       item.source_note,
       item.uncertainty,
     ),
-    meta: [item.basis, item.confidence],
+    meta: [item.basis, evidenceConfidenceLevel(item)],
   }));
   const sections = {
     actors: explanationSection(
@@ -5529,8 +5549,8 @@ function biopoliticalResultsExplanation(a) {
 function resultsExplanationHtml(model) {
   if (!model) return "";
   const chip = (value) =>
-    ["high", "medium", "low"].includes(normalizeToken(value))
-      ? kernelChip(confidenceInfo(String(value)).label, confidenceTone(value))
+    value === WEAK_EVIDENCE || ["high", "medium", "low"].includes(normalizeToken(value))
+      ? confidenceChip(value)
       : kernelChip(displayEnum(String(value)));
   const cards = model.sections
     .map((section) => {
@@ -5689,7 +5709,7 @@ function renderEvidence() {
       recordFact(t("sourceNote"), `${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}`),
       counter ? recordFact(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"), escapeHtml(counter)) : "",
     ].join("");
-    return `<li><article class="j-rec"${recordAnchor(e)}><header class="j-rec-head">${recordIdCode(e)}${kernelChip(e.basis ? basisInfo(e.basis).label : "")}${kernelChip(e.confidence ? confidenceInfo(e.confidence).label : "", confidenceTone(e.confidence))}</header><p class="j-rec-title">${escapeHtml(e.claim || e.name || "—")}</p><dl class="j-rec-facts">${facts}</dl></article></li>`;
+    return `<li><article class="j-rec"${recordAnchor(e)}><header class="j-rec-head">${recordIdCode(e)}${kernelChip(e.basis ? basisInfo(e.basis).label : "")}${confidenceChip(evidenceConfidenceLevel(e))}</header><p class="j-rec-title">${escapeHtml(e.claim || e.name || "—")}</p><dl class="j-rec-facts">${facts}</dl></article></li>`;
   };
   const assumptionRecord = (a) => {
     const riskText = a.risk || a.risk_level || "";
@@ -5868,7 +5888,7 @@ function htmlReport() {
         const counter = e.counter_evidence || e.counterEvidence || "";
         const uncertainty = e.uncertainty ? `<br><span class="muted">${escapeHtml(labelText("Uncertainty", "عدم اليقين", "Incertitude"))}${colonMark()} ${escapeHtml(e.uncertainty)}</span>` : "";
         const strength = e.evidence_strength ? `<br><span class="muted">${escapeHtml(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"))}${colonMark()} ${escapeHtml(e.evidence_strength)}/5</span>` : "";
-        return `<tr><td>${rid(e)}<b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}${colonMark()} ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceInfo(e.confidence).label)}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
+        return `<tr><td>${rid(e)}<b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}${colonMark()} ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceLabel(evidenceConfidenceLevel(e)))}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
       })
       .join("") || `<tr><td colspan="4">${escapeHtml(t("noItems"))}</td></tr>`;
   const assumptions =
@@ -5895,8 +5915,8 @@ function htmlReport() {
     .gate[data-tone="ok"]{color:var(--j-ok);background:var(--j-ok-wash)}.gate[data-tone="ok"]::before{border-radius:50%;background:var(--j-ok)}
     .gate[data-tone="warn"]{color:var(--j-warn);background:var(--j-warn-wash)}.gate[data-tone="warn"]::before{width:0;height:0;border-inline:5px solid transparent;border-bottom:9px solid var(--j-warn)}
     .gate[data-tone="crit"]{color:var(--j-crit);background:var(--j-crit-wash)}.gate[data-tone="crit"]::before{background:var(--j-crit)}
-    .rRing{--v:0;--tone:var(--j-signal);--hole:var(--j-bg);position:relative;display:flex;direction:ltr;flex:none;align-items:baseline;justify-content:center;gap:1px;width:96px;height:96px;padding-top:31px;border-radius:50%;background:conic-gradient(var(--tone) calc(var(--v)*1%),var(--j-line) 0)}
-    .rRing[data-tone="ok"]{--tone:var(--j-ok)}.rRing[data-tone="warn"]{--tone:var(--j-warn)}.rRing[data-tone="crit"]{--tone:var(--j-crit)}
+    .rRing{--v:0;--tone:var(--j-ink);--hole:var(--j-bg);position:relative;display:flex;direction:ltr;flex:none;align-items:baseline;justify-content:center;gap:1px;width:96px;height:96px;padding-top:31px;border-radius:50%;background:conic-gradient(var(--tone) calc(var(--v)*1%),var(--j-line) 0)}
+    .rRing[data-tone="warn"]{--tone:var(--j-warn)}.rRing[data-tone="crit"]{--tone:var(--j-crit)}
     .rRing::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--hole)}
     .rRing span,.rRing small{position:relative}
     .rRing span{font:700 var(--j-t-28)/1 var(--j-font-data);font-variant-numeric:tabular-nums}
@@ -6204,7 +6224,8 @@ function renderInspectionDirectory(index) {
   const stats = [
     [index.nodes.length, copy.records, ""],
     [index.occurrenceCount, copy.occurrences, ""],
-    [concerns, copy.concerns, concerns ? "warn" : "ok"],
+    // Only a concern is counted: none found is not a clean audit.
+    ...(concerns ? [[concerns, copy.concerns, "warn"]] : []),
   ].map(([value, label, tone]) => `<span${tone ? ` data-tone="${tone}"` : ""}><b>${value}</b>${escapeHtml(label)}</span>`).join("");
   return `<section class="j-idir" data-results-inspection data-analysis-lens="${escapeHtml(index.lens)}" aria-labelledby="inspectionDirectoryTitle"><header class="j-idir-head"><div><h3 id="inspectionDirectoryTitle">${escapeHtml(copy.title)}</h3><p class="j-lede">${escapeHtml(copy.intro)}</p></div><span class="j-stats">${stats}</span></header>${renderEvidenceIntelligence(index)}<div class="j-field"><label for="inspectionSearch">${escapeHtml(copy.search)}</label><input id="inspectionSearch" class="j-input" type="search" autocomplete="off" placeholder="${escapeHtml(copy.searchHint)}" aria-controls="inspectionDirectoryList"><span id="inspectionSearchStatus" class="j-sr-only" role="status" aria-live="polite"></span></div><ol class="j-recs" role="list" data-cols="2" id="inspectionDirectoryList">${cards}</ol>${cards ? "" : `<p class="j-note" data-tone="idle">${escapeHtml(copy.empty)}</p>`}<p class="j-note" data-tone="idle" id="inspectionDirectoryNoMatch" hidden>${escapeHtml(copy.noMatch)}</p></section>`;
 }

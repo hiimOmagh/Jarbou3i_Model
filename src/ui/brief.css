@@ -40,10 +40,9 @@
 .j-brief-figures b { color: var(--j-fg); font: 700 var(--j-t-28)/1 var(--j-font-data); font-variant-numeric: tabular-nums; }
 /* A share of the whole; the band of the score legend colours it. */
 .j-brief-bar { display: block; height: 6px; overflow: hidden; border-radius: 3px; background: var(--j-line); }
-.j-brief-bar::before { content: ""; display: block; inline-size: var(--j-pct); block-size: 100%; border-radius: inherit; background: var(--j-signal); transform-origin: left center; }
+.j-brief-bar::before { content: ""; display: block; inline-size: var(--j-pct); block-size: 100%; border-radius: inherit; background: var(--j-ink); transform-origin: left center; }
 /* It fills from where the reader starts a line (the app animates it on arrival). */
 [dir="rtl"] .j-brief-bar::before { transform-origin: right center; }
-.j-brief-bar[data-tone="ok"]::before { background: var(--j-ok); }
 .j-brief-bar[data-tone="warn"]::before { background: var(--j-warn); }
 .j-brief-bar[data-tone="crit"]::before { background: var(--j-crit); }
 
