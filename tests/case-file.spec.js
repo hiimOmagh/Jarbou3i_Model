@@ -136,6 +136,40 @@ test.describe("Case file", () => {
     expect(serious, JSON.stringify(serious, null, 2)).toEqual([]);
   });
 
+  test("on a phone, a station reached by keyboard comes fully into the outline's view", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await page.locator("#loadSampleBtn").click();
+    const nav = page.locator("#reviewNav");
+    const stops = nav.locator(".j-case-link");
+    await stops.first().focus();
+    for (let index = 1; index < (await stops.count()); index += 1) {
+      await page.keyboard.press("Tab");
+      await expect(stops.nth(index)).toBeFocused();
+      await expect.poll(async () => {
+        const [stop, line] = await Promise.all([stops.nth(index).boundingBox(), nav.boundingBox()]);
+        return stop.x >= line.x - 1 && stop.x + stop.width <= line.x + line.width + 1;
+      }).toBe(true);
+    }
+  });
+
+  test("the skip link leads to the review once a case is open, in the page language", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    const skip = page.locator(".j-skip");
+    await expect(skip).toHaveAttribute("href", "#workflowPanel");
+    await page.locator("#loadSampleBtn").click();
+    await expect(skip).toHaveAttribute("href", "#reviewPanel");
+    await expect(skip).toHaveText("Skip to the review");
+    await skip.focus();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => document.getElementById("reviewPanel").contains(document.activeElement))).toBe(true);
+    await page.locator("#langAr").click();
+    await expect(skip).toHaveText("انتقل إلى المراجعة");
+  });
+
   test("on a phone the case file holds one card less, comes sooner, and leads back to its outline", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("./");

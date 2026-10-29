@@ -79,6 +79,7 @@ const I18N = {
     themeTitle: "تبديل الوضع",
     languageLabel: "اختيار اللغة",
     skipToWorkspace: "انتقل إلى مساحة العمل",
+    skipToReview: "انتقل إلى المراجعة",
     lensContextStrategic: "العدسة الاستراتيجية",
     lensContextBiopolitical: "عدسة السياسة الحيوية",
     densityTitle: "تبديل كثافة العرض",
@@ -405,6 +406,7 @@ const I18N = {
     themeTitle: "Toggle theme",
     languageLabel: "Language selector",
     skipToWorkspace: "Skip to workspace",
+    skipToReview: "Skip to the review",
     lensContextStrategic: "Strategic lens",
     lensContextBiopolitical: "Biopolitical lens",
     densityTitle: "Toggle display density",
@@ -742,6 +744,7 @@ const I18N = {
     themeTitle: "Changer de thème",
     languageLabel: "Sélecteur de langue",
     skipToWorkspace: "Aller à l’espace de travail",
+    skipToReview: "Aller à la revue",
     lensContextStrategic: "Perspective stratégique",
     lensContextBiopolitical: "Perspective biopolitique",
     densityTitle: "Changer la densité d’affichage",
@@ -6842,6 +6845,25 @@ document.addEventListener("focusin", (event) => {
   caseJump = { key: section.id.slice("case-".length), y: window.scrollY };
   markCaseLocation();
 });
+// On a phone a browser leaves a station that is partly in the line's view
+// where it is: one reached by keyboard comes fully into view.
+$("reviewNav").addEventListener("focusin", (event) => {
+  const nav = $("reviewNav");
+  if (nav.scrollWidth <= nav.clientWidth) return;
+  const box = event.target.getBoundingClientRect();
+  const view = nav.getBoundingClientRect();
+  const pad = parseFloat(getComputedStyle(nav).paddingInlineStart) || 0;
+  const shift = box.left < view.left + pad ? box.left - view.left - pad : box.right > view.right - pad ? box.right - view.right + pad : 0;
+  if (shift) nav.scrollBy({ left: shift });
+});
+// The skip link leads to the review once a case is open, else to the setup.
+new MutationObserver(() => {
+  const skip = document.querySelector(".j-skip");
+  const toReview = !$("reviewPanel").classList.contains("hide");
+  skip.href = toReview ? "#reviewPanel" : "#workflowPanel";
+  skip.dataset.i18n = toReview ? "skipToReview" : "skipToWorkspace";
+  skip.textContent = t(skip.dataset.i18n);
+}).observe($("reviewPanel"), { attributes: true, attributeFilter: ["class"] });
 function renderBiopoliticalReview() {
   if (!state.analysis || state.analysis.analysis_lens !== "biopolitical") {
     $("reviewPanel").classList.add("hide");

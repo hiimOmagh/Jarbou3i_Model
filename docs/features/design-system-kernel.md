@@ -86,7 +86,11 @@ tests use.
 - On phones, workspaces and density become 44px icon buttons. Their accessible
   names come from the app.
 - The skip link (`a.j-skip`, a link to an element on the page) waits above the
-  view and slides in on the first Tab, on the inline start.
+  view and slides in on the first Tab, on the inline start. It leads to the
+  setup, or to the review once a case is open ("Skip to the review").
+- A `.j-btn` wears its own 3px focus ring, so it holds outside a `.j-root`
+  too (the review panel). On a phone, a review outline station reached by
+  keyboard scrolls fully into the outline's view.
 - The toast (`#toast.j-toast`, `role="status"`) stays in the page as a live
   region: `data-open="false"` slides it below the view and fades it, rather
   than removing it, so a message set while it opens is still read.

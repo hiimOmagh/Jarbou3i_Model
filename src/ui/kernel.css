@@ -166,6 +166,8 @@
 .j-btn:hover:not(:disabled) { border-color: var(--j-ink); background: var(--j-raise); }
 .j-btn:active:not(:disabled) { transform: scale(.98); }
 .j-btn:disabled { opacity: .45; cursor: not-allowed; }
+/* The ring is the button's own, so it holds outside a .j-root (the review). */
+.j-btn:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 /* The one primary action: an ink pill, like the line's own name plate. */
 .j-btn[data-variant="primary"] { background: var(--j-ink); border-color: var(--j-ink); color: var(--j-on-ink); }
 .j-btn[data-variant="primary"]:hover:not(:disabled) { background: var(--j-ink-hover); border-color: var(--j-ink-hover); }

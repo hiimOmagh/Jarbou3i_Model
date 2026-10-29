@@ -71,6 +71,17 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The review by keyboard
+
+- Six buttons in the review (copy the next-step prompt, open the review
+  ledger, export the review plan and the evidence map, copy the gaps
+  prompt) now show the same 3px focus ring as every other button, not the
+  browser's thin one.
+- On a phone, a station of the review's outline reached with Tab now
+  scrolls fully into view; before, one partly in view stayed mostly hidden.
+- Once a case is open, the skip link says "Skip to the review" and leads
+  there, instead of to the setup (AR/EN/FR).
+
 ### A record row says it opens
 
 - Each record row ends on a small chevron pointing on (to the left in

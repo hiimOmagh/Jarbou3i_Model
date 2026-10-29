@@ -130,6 +130,12 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
   });
   const next = (await page.locator('[data-next-action]').textContent()).trim();
   await expect(page.locator('#improveAnswer')).toBeHidden();
+  // Reached by keyboard, the button wears the kernel's 3px ring, here in the review too.
+  await page.locator('#improveCopy').focus();
+  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#improveCopy')).toBeFocused();
+  expect(await page.locator('#improveCopy').evaluate((button) => [getComputedStyle(button).outlineWidth, getComputedStyle(button).outlineStyle])).toEqual(['3px', 'solid']);
   await page.locator('#improveCopy').click();
   await expect(page.locator('#improveStatus')).toHaveText(/^Prompt copied/);
   const prompt = await page.evaluate(() => window.__copied.at(-1));
