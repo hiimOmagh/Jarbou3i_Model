@@ -182,12 +182,14 @@ test("biopolitical manifest preserves authored support routes and source cluster
     return [style().borderTopWidth, style(".j-table").backgroundColor, style("thead th").borderBottomWidth, style(".j-insp-rec").borderTopWidth, room >= 5];
   });
   expect(look).toEqual(["0px", "rgba(0, 0, 0, 0)", "2px", "0px", true]);
-  // In a list too, a record is a row under a hairline, not a box.
+  // In a list too, a record is a row under a hairline, not a box, ending on a
+  // chevron that says it opens.
   const row = await intelligence.locator("[data-source-cluster] .j-insp-list > li").first().evaluate((li) => {
     const button = getComputedStyle(li.querySelector(".j-insp-rec"));
-    return [getComputedStyle(li).borderTopWidth, button.borderTopWidth, button.backgroundColor];
+    const chevron = getComputedStyle(li.querySelector(".j-insp-rec"), "::after");
+    return [getComputedStyle(li).borderTopWidth, button.borderTopWidth, button.backgroundColor, chevron.borderRightWidth];
   });
-  expect(row).toEqual(["1px", "0px", "rgba(0, 0, 0, 0)"]);
+  expect(row).toEqual(["1px", "0px", "rgba(0, 0, 0, 0)", "2px"]);
 
   const manifest = await downloadManifest(page, intelligence);
   expect(manifest.analysis_lens).toBe("biopolitical");

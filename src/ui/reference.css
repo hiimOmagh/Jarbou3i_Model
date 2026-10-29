@@ -51,11 +51,19 @@
 .j-insp-list > li { border-block-start: 1px solid var(--j-line); }
 .j-disclosure > .j-insp-list { padding: 0 var(--j-s-3) var(--j-s-1); }
 .j-insp-rec {
-  display: grid; gap: 2px; width: 100%; min-height: 44px; padding: var(--j-s-2) 0;
+  position: relative; display: grid; gap: 2px; width: 100%; min-height: 44px; padding-block: var(--j-s-2); padding-inline: 0 var(--j-s-5);
   border: 0; background: none; color: var(--j-fg);
   font: inherit; text-align: start; cursor: pointer;
 }
+/* It opens the record: a chevron at the row's end points on, drawn as the
+   disclosure's that points down, so a row reads as one to press without a hover. */
+.j-insp-rec::after {
+  content: ""; position: absolute; inset-inline-end: var(--j-s-1); top: 50%; inline-size: 8px; block-size: 8px;
+  border-right: 2px solid var(--j-fg-muted); border-bottom: 2px solid var(--j-fg-muted); transform: translateY(-50%) rotate(-45deg);
+}
+[dir="rtl"] .j-insp-rec::after { transform: translateY(-50%) rotate(135deg); }
 .j-insp-rec:hover > span { text-decoration: underline; }
+.j-insp-rec:hover::after { border-color: var(--j-signal); }
 .j-insp-rec:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 .j-insp-rec > span { font-size: var(--j-t-13); font-weight: 600; overflow-wrap: anywhere; }
 .j-insp-rec > :is(small, code) { color: var(--j-signal); font: 600 var(--j-t-12)/1.3 var(--j-font-code); overflow-wrap: anywhere; white-space: normal; }

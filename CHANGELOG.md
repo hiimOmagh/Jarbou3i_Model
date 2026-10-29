@@ -71,6 +71,12 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### A record row says it opens
+
+- Each record row ends on a small chevron pointing on (to the left in
+  Arabic), drawn like the one on a disclosure, so on a phone, with no
+  hover, a row still reads as one to press.
+
 ### Records named in rows, not boxes
 
 - A record you can open from a list (a source cluster's evidence, the

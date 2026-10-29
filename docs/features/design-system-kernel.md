@@ -348,7 +348,9 @@ and the sheet that inspects it (`src/reference-ui.js`).
   two-column `.j-insp-facts` list; support beside counter-evidence
   `.j-insp-pair`; linked records and occurrences 44px `.j-insp-rec` buttons,
   occurrences numbered. A record button is a row, not a box: its name, then
-  its ID in the line's colour, each row of a `.j-insp-list` under a hairline. Escape, the close button or the scrim closes it, and
+  its ID in the line's colour, each row of a `.j-insp-list` under a hairline,
+  ending on a chevron that points on (mirrored in Arabic) so it reads as one
+  to press without a hover. Escape, the close button or the scrim closes it, and
   focus goes back to the reference that opened it.
 - **Focus:** closing reads the reference's box before focusing it. WebKit's
   `focus()` does not apply the page's removed `inert` while a stylesheet is
