@@ -126,7 +126,7 @@ header, opens a native modal `<dialog>` (`.j-dialog`). Its combobox filters a
 ## Guided flow
 
 `src/features/guided-flow.js` and `src/ui/flow.css` (`.j-flow-*`): the setup
-phase as the UX-0 prototype's steps (topic, lens, settings, prompt, answer),
+phase as the UX-0 concept's steps (topic, lens, settings, prompt, answer),
 one at a time, with the mascot guide and a step list beside them.
 
 - **What it owns:** which step is open. The steps hold the app's own controls,

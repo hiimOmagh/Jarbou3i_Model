@@ -1,4 +1,4 @@
-/* Guided flow (ADR-0002): the setup phase as the UX-0 prototype's steps, one
+/* Guided flow (ADR-0002): the setup phase as the UX-0 concept's steps, one
    at a time, with the guide beside them. It shows and hides the app's own
    controls and owns no analytical state; the app tells it when to move. */
 

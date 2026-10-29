@@ -36,7 +36,7 @@ Success: a reader who started confused can say who wants what, how they pursue i
 
 - Static site (index.html + src/*.js + src/ui/*.css), deployed on Cloudflare Pages; no network calls at runtime, no remote fonts, no framework without an ADR (docs/decisions/).
 - UI is built on a CSS design-system kernel: `j-` classes registered in src/ui/contracts.js, kernel selectors scoped with `.j-`.
-- Every label exists in AR/EN/FR; wording changes apply to all three and to the UX-0 prototype (prototypes/ux-0).
+- Every label exists in AR/EN/FR; wording changes apply to all three.
 - Quality gates: Playwright suite on Chromium, Firefox, WebKit and mobile Chrome (CI fails on flaky tests), axe checks, a visual-audit evidence suite, and node contract checks.
 - Open decision: how the product will be commercialized (planned later; no pricing, tiers or service defined).
 

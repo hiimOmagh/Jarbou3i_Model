@@ -71,6 +71,13 @@
   small text in a corner under "What matters first", which is gone; the
   topic now sits under "Overview" (AR/EN/FR, both lenses).
 
+### The UX-0 prototype is removed
+
+- `prototypes/ux-0`, the clickable concept the case file was built from
+  (ADR-0002), is gone: the app now carries everything it showed. Branch
+  preview builds no longer publish it, and wording changes apply to the
+  app's three languages only.
+
 ### A shorter Connections view
 
 - *Every connection* folds each layer to its name and count, one row each

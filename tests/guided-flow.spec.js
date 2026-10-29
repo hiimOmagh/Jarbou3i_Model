@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { hitHeight } from "./helpers/kernel-check.js";
 
-// The setup phase as the UX-0 prototype's guided flow (src/features/guided-flow.js):
+// The setup phase as the UX-0 concept's guided flow (src/features/guided-flow.js):
 // one step at a time, the guide beside it, the app's own controls inside.
 const step = (page, name) => page.locator(`[data-flow-step="${name}"]`);
 const answer = async (name) => fs.readFile(path.join(process.cwd(), "fixtures", name), "utf8");
