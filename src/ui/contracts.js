@@ -149,7 +149,7 @@ const FREE_CLASSES = [
   "j-engine-map", "j-engine-step", "j-engine-n", "j-engine-name", "j-engine-text", "j-engine-count",
   "j-layers", "j-layer", "j-layer-h", "j-layer-head", "j-layer-n", "j-layer-name", "j-layer-text", "j-layer-count", "j-layer-chev", "j-layer-body",
   "j-brief", "j-brief-head", "j-brief-topic", "j-brief-gate", "j-brief-main", "j-brief-claim", "j-brief-figures", "j-brief-bar", "j-brief-signals", "j-brief-signal", "j-brief-acts",
-  "j-brief-steps", "j-brief-desc", "j-brief-items", "j-brief-tags", "j-brief-open", "j-brief-divider", "j-brief-alert", "j-brief-bands",
+  "j-brief-steps", "j-brief-desc", "j-brief-items", "j-brief-tags", "j-brief-open", "j-diag-fold", "j-brief-alert", "j-brief-bands",
   "j-diag", "j-diag-notes",
   "j-evi", "j-evi-title", "j-evi-body", "j-evi-sec", "j-evi-head", "j-evi-acts", "j-evi-counts",
   "j-evi-phases", "j-evi-reason", "j-evi-tasks", "j-evi-seq", "j-evi-target",

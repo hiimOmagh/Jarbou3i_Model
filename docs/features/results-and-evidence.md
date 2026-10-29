@@ -83,7 +83,10 @@ reader as on screen. Each Biopolitical record also lists its own connections
 wraps under its relation, which reads as its label. A record with more than
 six facts, connections included, shows its first four and folds the rest
 under one line that counts them ("13 more details"); a record the inspector
-sends you to inside a fold opens it.
+sends you to inside a fold opens it. The overview folds its detailed diagnostics under one
+line that counts the items blocking publication. A fold you open stays open
+when the case file is drawn again for the same answer, as on a change of
+language.
 
 Biopolitical review cards show a referenced record's name next to its stable ID;
 selecting it opens its type, pillar, confidence, and relationships. Standalone

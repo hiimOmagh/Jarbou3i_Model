@@ -508,9 +508,12 @@ then its detailed diagnostics.
   chips in `.j-brief-tags`) and a `.j-btn.j-brief-open` to the full record.
   High confidence on evidence of strength 2/5 or less is one `warn` chip,
   "High confidence on weak evidence", here, on the record and in the report.
-- `.j-brief-divider` starts the detailed diagnostics; print hides it and the
-  links.
-- **Diagnostics** (`.j-diag`): the quality gate, a `.j-note` toned by its
+- The links (`.j-brief-open`) do not print.
+- **Diagnostics** (`.j-diag`), folded after the brief in
+  `details.j-disclosure.j-diag-fold` (`data-diagnostics`), closed: one row
+  between rules, "Detailed diagnostics" over how many items the gate lists
+  ("5 items to fix before publishing"; no count when it lists none). Print
+  opens it. Inside: the quality gate, a `.j-note` toned by its
   verdict (`data-diagnostic="gate"`: an `h4`, why, and every open item, each
   said once in the diagnostics); the six
   scores, a `dl.j-brief-figures[data-layout="grid"]` (`data-diagnostic="scores"`) of figures out of 100 with

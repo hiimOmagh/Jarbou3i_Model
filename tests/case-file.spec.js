@@ -182,6 +182,75 @@ test.describe("Case file", () => {
     await expect(record.locator(".j-rec-more")).toHaveAttribute("open", "");
   });
 
+  // The overview ends on one line for its detailed diagnostics: its name and
+  // how many items block publishing, each listed once in the gate inside.
+  test("the detailed diagnostics fold under one line that counts what blocks publishing", async ({ page }) => {
+    test.skip(test.info().project.name !== "chromium", "Rendering rule, engine-independent.");
+    const counts = {
+      // The French sample cites a source, so its gate lists nothing and no count shows.
+      strategic: { en: "1 item to fix before publishing", ar: "بند واحد يجب إصلاحه قبل النشر", fr: null },
+      biopolitical: { en: "5 items to fix before publishing", ar: "5 بنود يجب إصلاحها قبل النشر", fr: "5 points à corriger avant publication" },
+    };
+    await page.goto("./");
+    for (const lens of ["strategic", "biopolitical"]) {
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      for (const lang of ["en", "ar", "fr"]) {
+        await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+        await page.locator("#loadSampleBtn").click();
+        const fold = page.locator("#case-overview [data-diagnostics]");
+        await expect(fold).not.toHaveAttribute("open");
+        const count = fold.locator(":scope > summary small");
+        const items = await fold.locator('[data-diagnostic="gate"] li').count();
+        if (!counts[lens][lang]) {
+          expect(items).toBe(0);
+          await expect(count).toHaveCount(0);
+          continue;
+        }
+        await expect(count).toHaveText(counts[lens][lang]);
+        expect(counts[lens][lang]).toContain(String(items === 1 && lang === "ar" ? "واحد" : items));
+      }
+      await page.locator("#langEn").click();
+      const fold = page.locator("#case-overview [data-diagnostics]");
+      await expect(fold.locator(":scope > summary")).toHaveText(/^Detailed diagnostics/);
+      await expect(page.locator('[data-diagnostic="scores"]')).toBeHidden();
+      // The case file prints whole.
+      await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
+      await expect(fold).toHaveAttribute("open", "");
+      await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+      await expect(fold).not.toHaveAttribute("open");
+      await fold.locator(":scope > summary").click();
+      await expect(page.locator('[data-diagnostic="scores"]')).toBeVisible();
+    }
+  });
+
+  // Changing the language draws the case file again: the folds the reader
+  // opened stay open; another answer starts with them closed.
+  test("opened folds stay open when the case file is drawn again", async ({ page }) => {
+    test.skip(test.info().project.name !== "chromium", "Rendering rule, engine-independent.");
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "lens");
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#loadSampleBtn").click();
+    const diagnostics = page.locator("#case-overview [data-diagnostics]");
+    const more = page.locator("#case-evidence .j-rec-more");
+    await diagnostics.locator(":scope > summary").click();
+    await more.nth(1).locator(":scope > summary").click();
+    const openFolds = () => page.locator("#reviewContent details[open]").evaluateAll((folds) => folds.length);
+    expect(await openFolds()).toBe(2);
+    for (const lang of ["ar", "fr"]) {
+      await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+      await expect(diagnostics).toHaveAttribute("open", "");
+      await expect(more.nth(0)).not.toHaveAttribute("open");
+      await expect(more.nth(1)).toHaveAttribute("open", "");
+      expect(await openFolds()).toBe(2);
+    }
+    await page.locator("#loadSampleBtn").click();
+    await expect(diagnostics).not.toHaveAttribute("open");
+    expect(await openFolds()).toBe(0);
+  });
+
   test("the outline jumps to a section and follows the reader", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();

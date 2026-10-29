@@ -4143,6 +4143,17 @@ function qualityGateHtml(a = state.analysis) {
 function gateNoteHtml(tone, status, summary, issues) {
   return `<div class="j-note" data-tone="${tone}" data-diagnostic="gate"><h4>${escapeHtml(t("qualityGate"))}${colonMark()} ${escapeHtml(status)}</h4><p>${escapeHtml(summary)}</p>${issues.length ? `<ul>${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>` : ""}</div>`;
 }
+// The diagnostics fold under one line after the brief: their name, then how
+// many items the gate inside lists as blocking publication.
+const OPEN_ITEM_COUNT = {
+  en: { one: "{count} item to fix before publishing", other: "{count} items to fix before publishing" },
+  ar: { one: "بند واحد يجب إصلاحه قبل النشر", two: "بندان يجب إصلاحهما قبل النشر", few: "{count} بنود يجب إصلاحها قبل النشر", many: "{count} بندًا يجب إصلاحه قبل النشر", other: "{count} بند يجب إصلاحه قبل النشر" },
+  fr: { one: "{count} point à corriger avant publication", other: "{count} points à corriger avant publication" },
+};
+function diagnosticsFoldHtml(openItems, body) {
+  const count = openItems ? ` <small>${escapeHtml(pluralText(openItems, OPEN_ITEM_COUNT))}</small>` : "";
+  return `<details class="j-disclosure j-diag-fold" data-diagnostics><summary><span>${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}${count}</span></summary><div class="j-diag">${body}</div></details>`;
+}
 function schemaHealth(a = state.analysis) {
   if (!a) return { pct: 0, missing: [], next: t("healthMissingPillars") };
   const missing = [];
@@ -5339,7 +5350,7 @@ function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
   // The topic, then the verdict as the brief's heading and why; the
   // conclusion and its figures follow.
-  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}<p class="j-label j-brief-divider">${escapeHtml(labelText("Detailed diagnostics", "التشخيصات التفصيلية", "Diagnostics détaillés"))}</p>`;
+  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}`;
 }
 // The next action, asked of the AI; its reply goes in the reply box.
 function improvePromptHtml() {
@@ -5646,7 +5657,7 @@ function renderOverview() {
     // The analysis's own next step, or a gap the structure check found.
     nextActionImprovable: strategicNextAction(a, h) !== h.next || h.missing.length > 0,
   });
-  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}<div class="j-diag">${qualityGateHtml(a)}${strategicSelfAssessmentHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}</div>`;
+  return `<h3>${t("overview")}</h3>${resultsOrientationHtml(orientation, strategicResultsExplanation(a))}${diagnosticsFoldHtml(h.missing.length, `${qualityGateHtml(a)}${strategicSelfAssessmentHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metricCard("completeness", t("scoreCompleteness"), b.completeness, t("scoreCompletenessHint"))}${metricCard("coherence", t("scoreCoherence"), b.coherence, t("scoreCoherenceHint"))}${metricCard("contradictions", t("scoreContradictions"), b.contradictions, t("scoreContradictionsHint"))}${metricCard("falsifiability", t("scoreFalsifiability"), b.falsifiability, t("scoreFalsifiabilityHint"))}${metricCard("evidence", t("scoreEvidence"), b.evidence, t("scoreEvidenceHint"))}${metricCard("readiness", t("scoreReadiness"), b.readiness, t("scoreReadinessHint"))}</dl>${scoreFormulaHtml()}${healthStatsHtml(h.pct, b.provenance, h.missing.length)}${diagNotesHtml(warnings, t("warnings").good, "warnings")}`)}`;
 }
 function renderPillars() {
   const labels = t("pillars");
@@ -6505,7 +6516,7 @@ function renderBiopoliticalOverview() {
     nextAction: health.next,
     nextActionImprovable: health.missing.length > 0,
   });
-  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}<div class="j-diag">${bioGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metrics}</dl><div class="j-rec"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p class="j-brief-desc">${escapeHtml(BIO.ui(state.lang, "formula"))}</p>${scoreBandsHtml()}</div>${healthStatsHtml(health.pct, scores.provenance, health.missing.length)}</div>`;
+  return `<h3>${escapeHtml(t("overview"))}</h3>${migration}${resultsOrientationHtml(orientation, biopoliticalResultsExplanation(a))}${diagnosticsFoldHtml(health.missing.length, `${bioGateHtml(a)}<dl class="j-brief-figures" data-layout="grid" data-diagnostic="scores" aria-label="${escapeHtml(t("scoreSystem"))}">${metrics}</dl><div class="j-rec"><h4>${escapeHtml(labelText("Decision-readiness rule", "قاعدة جاهزية القرار", "Règle de préparation à la décision"))}</h4><p class="j-brief-desc">${escapeHtml(BIO.ui(state.lang, "formula"))}</p>${scoreBandsHtml()}</div>${healthStatsHtml(health.pct, scores.provenance, health.missing.length)}`)}`;
 }
 function renderBiopoliticalPillars() {
   const labels = t("pillars");
@@ -6839,6 +6850,27 @@ function renderBiopoliticalReviewNav() {
 // every section is rendered, and the outline jumps to one and names it.
 const caseSection = (key, html) =>
   `<section class="j-case-sec" id="case-${key}" tabindex="-1">${html}</section>`;
+// Drawing the same answer again, as a change of language does, keeps each
+// fold as the reader left it. A fold is known by its section, its kind and its
+// place among its kind there; another answer starts with every fold as drawn.
+let caseFileAnswer = null;
+function caseFolds(root) {
+  const seen = new Map();
+  return [...root.querySelectorAll("details")].map((fold) => {
+    const data = [...fold.attributes].filter((attr) => attr.name.startsWith("data-")).map((attr) => attr.name);
+    const kind = [fold.closest(".j-case-sec")?.id, fold.className, ...data].join("|");
+    const place = seen.get(kind) || 0;
+    seen.set(kind, place + 1);
+    return [`${kind}|${place}`, fold];
+  });
+}
+function drawCaseFile(html) {
+  const root = $("reviewContent");
+  const left = caseFileAnswer === state.analysis ? new Map(caseFolds(root).map(([key, fold]) => [key, fold.open])) : new Map();
+  root.innerHTML = html;
+  caseFileAnswer = state.analysis;
+  for (const [key, fold] of caseFolds(root)) if (left.has(key)) fold.open = left.get(key);
+}
 function wireCaseOutline(selector, datasetKey) {
   document.querySelectorAll(`#reviewNav ${selector}`).forEach((button) => {
     const key = button.dataset[datasetKey];
@@ -7007,9 +7039,7 @@ function renderBiopoliticalReview() {
     inspection: () => renderInspectionDirectory(currentResultsInspectionIndex("biopolitical")),
     exports: renderExports,
   };
-  $("reviewContent").innerHTML = valid
-    .map((key) => caseSection(key, sections[key]()))
-    .join("");
+  drawCaseFile(valid.map((key) => caseSection(key, sections[key]())).join(""));
   wireCaseOutline("[data-bio-review]", "bioReview");
   document.querySelectorAll("[data-bio-jump]").forEach((button) => {
     button.onclick = () => $("reviewNav").querySelector(`[data-bio-review="${button.dataset.bioJump}"]`)?.click();
@@ -7164,9 +7194,7 @@ function renderReview() {
     inspection: () => renderInspectionDirectory(currentResultsInspectionIndex("strategic")),
     exports: renderExports,
   };
-  $("reviewContent").innerHTML = validTabs
-    .map((key) => caseSection(key, sections[key]()))
-    .join("");
+  drawCaseFile(validTabs.map((key) => caseSection(key, sections[key]())).join(""));
   wireCaseOutline("[data-review]", "review");
   wireResultsExplanation("strategic");
   bindResultsInspection("strategic");

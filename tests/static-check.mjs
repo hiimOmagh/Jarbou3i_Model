@@ -328,7 +328,7 @@ if ((app.match(/querySelectorAll\("#analysisLens \[data-lens\]"\)/g) || []).leng
   fail("lens-control rendering and event binding must remain scoped to #analysisLens");
 }
 const briefStyles = read("src/ui/brief.css");
-for (const token of [".j-brief-gate", ".j-brief-claim", ".j-brief-figures", ".j-brief-signals", ".j-brief-divider"]) {
+for (const token of [".j-brief-gate", ".j-brief-claim", ".j-brief-figures", ".j-brief-signals", ".j-diag-fold"]) {
   if (!briefStyles.includes(token)) fail(`Phase 3 results-orientation style token missing: ${token}`);
 }
 for (const token of [

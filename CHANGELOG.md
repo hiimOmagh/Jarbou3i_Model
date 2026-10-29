@@ -83,6 +83,18 @@
 - The case file prints whole: its folds open for the print and close
   after, connection layers included.
 
+### The diagnostics fold after the brief
+
+- The overview ends on one row, "Detailed diagnostics", with how many
+  items block publishing ("5 items to fix before publishing", in each
+  language); it opens the gate, scores, score rule and caps, which were
+  always open. The overview goes from 2,066px to 1,439px on a desktop
+  (4,131px to 2,785px on a phone), the sample case file from 13,075px to
+  12,448px (19,613px to 18,267px).
+- A fold you opened stays open when the case file is drawn again, as it is
+  when you change the language: the diagnostics, a record's details, a layer
+  of connections. Another answer starts with every fold closed.
+
 ### The UX-0 prototype is removed
 
 - `prototypes/ux-0`, the clickable concept the case file was built from

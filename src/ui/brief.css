@@ -74,9 +74,12 @@
 .j-brief-open { justify-content: space-between; width: 100%; font-size: var(--j-t-14); }
 .j-brief-open:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 
-/* Where the brief ends and the diagnostics begin. */
-.j-brief-divider { display: flex; align-items: center; gap: var(--j-s-3); margin: var(--j-s-2) 0 var(--j-s-4); }
-.j-brief-divider::before, .j-brief-divider::after { content: ""; flex: 1; height: 1px; background: var(--j-line); }
+/* The diagnostics, folded after the brief under one row between rules: their
+   name over how many items block publishing. */
+.j-diag-fold { margin-top: var(--j-s-2); border: 0; border-block: 1px solid var(--j-line); border-radius: 0; background: none; }
+.j-diag-fold > summary { padding: var(--j-s-2) 0; color: var(--j-fg); font-size: var(--j-t-14); }
+.j-diag-fold > summary small { display: block; color: var(--j-fg-muted); font-size: var(--j-t-13); font-weight: 400; }
+.j-diag-fold > .j-diag { padding-block: var(--j-s-2) var(--j-s-4); }
 /* A note above the brief, such as a migrated import. */
 .j-brief-alert { margin-bottom: var(--j-s-4); }
 
@@ -113,7 +116,7 @@
 }
 @media print {
   .j-brief, .j-brief-steps .j-rec { break-inside: avoid; }
-  .j-brief-open, .j-brief-divider { display: none; }
+  .j-brief-open { display: none; }
 }
 @media (forced-colors: active) {
   .j-brief-gate, .j-brief-claim, .j-brief-figures > div, .j-brief-signal { border-color: CanvasText; }
