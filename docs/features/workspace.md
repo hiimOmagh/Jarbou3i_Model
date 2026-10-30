@@ -30,7 +30,10 @@ and `schema/workspace-bundle.schema.json`.
 Substantive content lives in the `jarbou3i-model-workspaces` IndexedDB database,
 never in `localStorage`, which holds only preferences and the active-workspace
 pointer. `createWorkspaceRepository()` separates domain operations from the
-backend; a memory backend keeps no-browser tests deterministic.
+backend; a memory backend keeps no-browser tests deterministic. Research
+dossiers live in a database of their own, `jarbou3i-model-dossiers`, so this
+one's version and records never change because of them
+([ADR-0004](../decisions/0004-research-dossier-store.md)).
 
 - Every write must present the previously read repository revision and advance
   it by exactly one. Stale writes and deletes fail with `WRITE_CONFLICT`, so two

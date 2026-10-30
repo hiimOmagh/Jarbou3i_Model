@@ -83,8 +83,12 @@ for (const spec of [
   "tests/case-file.spec.js",
   "tests/work-panel.spec.js",
   "tests/reflow-audit.spec.js",
+  "tests/research-dossier.spec.js",
 ]) {
   if (!core.includes(spec)) fail(`browser core is missing ${spec}`);
+}
+if (!(pkg.scripts?.["test:ci:no-browser"] || "").includes("npm run test:dossier") || pkg.scripts?.["test:dossier"] !== "node tests/research-dossier-check.mjs") {
+  fail("the research dossier check is not part of the no-browser gate");
 }
 if (pkg.scripts?.["test:browser:reflow"] !== "node scripts/run-playwright.mjs tests/reflow-audit.spec.js") {
   fail("dedicated reflow audit script is missing");

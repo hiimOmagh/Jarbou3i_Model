@@ -4,6 +4,7 @@ import { createWorkspace, createWorkspaceBundle } from "../src/core/workspace-co
 import { appendReviewEvent } from "../src/core/review-ledger.js";
 import { writeEditorDraft } from "../src/core/canonical-editor.js";
 import { commitResolution, createResolutionProposal } from "../src/core/resolution-transaction.js";
+import { createDossier, linkAnalysis, updateDossier } from "../src/core/research-dossier.js";
 
 const fail = (message) => {
   console.error(`Schema check failed: ${message}`);
@@ -195,6 +196,30 @@ try {
   if (!validateBundle(bundle)) fail(`workspace bundle failed published schema: ${JSON.stringify(validateBundle.errors)}`);
 } catch (error) {
   fail(`workspace schemas could not compile or validate: ${error.message}`);
+}
+
+// The published research dossier matches the records the contract writes.
+try {
+  const dossierAjv = new Ajv2020({ allErrors: true, strict: true });
+  const validateDossier = dossierAjv.compile(readJson("schema/research-dossier.schema.json"));
+  const clock = () => "2026-10-30T12:00:00.000Z";
+  const dossier = await createDossier({
+    framing: { question: "Schema question", contested_terms: [{ term: "Scope", working_definition: "What is in." }] },
+    completion: [{ criterion_id: "C1", text: "Open criterion" }, { criterion_id: "C2", text: "Met criterion", status: "met", rationale: "Checked." }],
+    clock,
+    idFactory: (prefix) => `${prefix}_schema`,
+  });
+  const linked = await linkAnalysis(await updateDossier(dossier, { framing: { question: "Edited" } }, { clock }), {
+    workspace_id: "workspace_schema", revision_id: "revision_schema", payload_checksum: "a".repeat(64),
+  }, { clock });
+  for (const record of [dossier, linked]) {
+    if (!validateDossier(record)) fail(`research dossier failed published schema: ${JSON.stringify(validateDossier.errors)}`);
+  }
+  if (validateDossier({ ...linked, analyses: [{ ...linked.analyses[0], claim: "copied evidence" }] })) {
+    fail("research dossier schema accepted evidence copied into an analysis link");
+  }
+} catch (error) {
+  fail(`research dossier schema could not compile or validate: ${error.message}`);
 }
 
 console.log("Schema checks passed.");

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jarbou3i.example/schema/research-dossier-v1.schema.json",
+  "title": "Jarbou3i Research Dossier v1",
+  "description": "The analyst's case framing and completion contract (ADR-0004). Analyses are referenced by id and checksum; evidence is never copied here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "format_version", "dossier_id", "revision", "created_at", "updated_at", "framing", "completion", "analyses", "checksum"],
+  "properties": {
+    "format": { "const": "jarbou3i-research-dossier" },
+    "format_version": { "const": 1 },
+    "dossier_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "updated_at": { "type": "string", "minLength": 1 },
+    "framing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "timeframe", "scope_in", "scope_out", "contested_terms", "limits"],
+      "properties": {
+        "question": { "$ref": "#/$defs/text" },
+        "timeframe": { "$ref": "#/$defs/text" },
+        "scope_in": { "$ref": "#/$defs/texts" },
+        "scope_out": { "$ref": "#/$defs/texts" },
+        "contested_terms": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["term", "working_definition"],
+            "properties": {
+              "term": { "type": "string", "minLength": 1, "maxLength": 4000 },
+              "working_definition": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "limits": { "$ref": "#/$defs/texts" }
+      }
+    },
+    "completion": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criterion_id", "text", "status", "rationale", "decided_at"],
+        "properties": {
+          "criterion_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "text": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "status": { "enum": ["open", "met"] },
+          "rationale": { "$ref": "#/$defs/text" },
+          "decided_at": { "type": ["string", "null"] }
+        },
+        "if": { "properties": { "status": { "const": "met" } } },
+        "then": { "properties": { "rationale": { "type": "string", "minLength": 1 }, "decided_at": { "type": "string", "minLength": 1 } } },
+        "else": { "properties": { "rationale": { "type": "string", "maxLength": 0 }, "decided_at": { "type": "null" } } }
+      }
+    },
+    "analyses": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["workspace_id", "revision_id", "payload_checksum", "linked_at"],
+        "properties": {
+          "workspace_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "revision_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "payload_checksum": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "linked_at": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "checksum": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": { "const": "SHA-256" },
+        "value": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "maxLength": 4000 },
+    "texts": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/text" } }
+  }
+}

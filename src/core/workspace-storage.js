@@ -19,14 +19,14 @@ function storageError(code, message, cause) {
   return new WorkspaceStorageError(code, message, cause);
 }
 
-function requestResult(request) {
+export function requestResult(request) {
   return new Promise((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || storageError("REQUEST_FAILED", "Storage request failed."));
   });
 }
 
-function transactionDone(transaction) {
+export function transactionDone(transaction) {
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error || storageError("TRANSACTION_FAILED", "Storage transaction failed."));
@@ -34,7 +34,7 @@ function transactionDone(transaction) {
   });
 }
 
-function mapStorageFailure(error) {
+export function mapStorageFailure(error) {
   if (error instanceof WorkspaceStorageError || error instanceof WorkspaceContractError) return error;
   if (error?.name === "QuotaExceededError") {
     return storageError("STORAGE_QUOTA_EXCEEDED", "Local workspace storage quota is exhausted.", error);

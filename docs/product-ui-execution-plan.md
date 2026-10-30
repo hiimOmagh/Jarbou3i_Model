@@ -299,3 +299,7 @@ prototype's structure, one at a time: the guided flow (setup), the case file (`U
 both exported reports, are on the design-system kernel
 ([design-system-kernel.md](features/design-system-kernel.md)); the visual overhaul is closed.
 `RESEARCH-1` is next in order and is not yet authorized.
+
+**Amendment (2026-10-30, [ADR-0004](decisions/0004-research-dossier-store.md)):** the product
+owner authorized `RESEARCH-1`. `RESEARCH-1A`'s Definition of Ready and slice plan are in
+[research-dossier.md](features/research-dossier.md).

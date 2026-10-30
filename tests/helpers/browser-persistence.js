@@ -187,6 +187,14 @@ export function readFirstWorkspace(page) {
   return workspaceDatabaseOperation(page, "first-workspace");
 }
 
+// Each IndexedDB database of the page's origin, by name, with its version.
+export function readDatabaseVersions(page) {
+  return page.evaluate((timeoutMs) => Promise.race([
+    indexedDB.databases().then((databases) => Object.fromEntries(databases.map(({ name, version }) => [name, version]))),
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`IndexedDB database listing exceeded ${timeoutMs} ms`)), timeoutMs)),
+  ]), INDEXED_DB_OPERATION_TIMEOUT_MS);
+}
+
 // Restores a workspace bundle whose analysis is a draft, as saved before pasted
 // drafts were held back: the app no longer imports a draft, but a saved one
 // still opens. The bundle is made by the app's own workspace contract.

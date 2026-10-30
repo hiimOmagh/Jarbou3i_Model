@@ -95,6 +95,19 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### The research dossier has a place to live (RESEARCH-1A, slice 1)
+
+- RESEARCH-1 starts. The research dossier will hold what the analyst asks
+  for, before and across the AI's answers: the question, what is in and out
+  of scope, the terms in dispute, the limits, and when the case is done.
+  ADR-0004 and `docs/features/research-dossier.md` set its Definition of
+  Ready.
+- This slice adds its record and storage only, with no screen yet: a checked
+  record (`jarbou3i-research-dossier` v1, `schema/research-dossier.schema.json`)
+  in its own database, `jarbou3i-model-dossiers`. The workspace database, its
+  version and its records do not change, so an earlier app still opens every
+  workspace.
+
 ### The French Strategic sample is the English one in French
 
 - The French Strategic sample was a different analysis: another
