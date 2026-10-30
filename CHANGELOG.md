@@ -95,6 +95,14 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### The editor's sections sit under the case file's pillars
+
+- The analysis editor lists a Biopolitical analysis's 24 sections under the
+  nine pillars that show them in the case file ("Question & context":
+  Subject, Framing, Legal framework…), then Connections and Judgment; they
+  were one flat list in the order of the format. Each pillar, and "Identity
+  and metadata" in both lenses, is a named group for screen readers.
+
 ### The command list runs the page's actions
 
 - Ctrl/⌘ K now lists the page's actions as well as its places: copy or

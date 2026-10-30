@@ -7422,6 +7422,26 @@ function editorKeyLabel(key) {
   const label = EDITOR_KEY_LABELS[key];
   return layer || (label ? label[state.lang === "ar" ? 1 : state.lang === "fr" ? 2 : 0] : key);
 }
+// A Biopolitical analysis has 24 sections: each goes under the pillar, or
+// the outline section, that shows it in the case file.
+const BIO_EDITOR_PLACES = [
+  ["question_context", ["subject", "framing", "legal_framework", "international_comparison", "capture_levels", "theoretical_comparison", "migration"]],
+  ["human_functions", ["human_functions"]],
+  ["actors_institutions", ["power_map"]],
+  ["mechanisms_infrastructure", ["mechanisms"]],
+  ["meaning_classification", ["meaning_systems"]],
+  ["intervention_capture", ["intervention_assessment", "consent_exit"]],
+  ["distribution_effects", ["distribution", "scale_time"]],
+  ["evidence_explanations", ["competing_explanations", "evidence", "assumptions"]],
+  ["agency_alternatives", ["resistance_agency", "alternatives"]],
+  ["connections", ["links"]],
+  ["conclusion", ["calibrated_conclusion", "self_audit", "self_audit_notes"]],
+];
+function bioEditorPlace(place) {
+  if (place === "connections") return editorKeyLabel("links");
+  if (place === "conclusion") return tFor(state.lang, "nav", "biopolitical")?.conclusion || place;
+  return tFor(state.lang, "pillars", "biopolitical")?.[place]?.[0] || place;
+}
 const EDITOR_META_KEYS = new Set(["schema_version", "analysis_contract", "contract_status", "analysis_id", "generated_at", "language", "model_mode", "analysis_lens"]);
 function editorText(key) {
   const copy = {
@@ -7538,8 +7558,16 @@ function renderCanonicalEditor() {
     const count = issues.filter((issue) => String(issue.path || "/").split("/")[1] === key).length;
     return `<button class="j-editor-sec" type="button" data-editor-path="/${escapeHtml(key)}"${state.editorPath === `/${key}` ? ' aria-current="true"' : ""}${state.editorRecovery ? " disabled" : ""}><span>${escapeHtml(editorKeyLabel(key))}</span>${count ? `<span class="j-chip" data-tone="crit">${escapeHtml(editorText("toFix").replace("{n}", count))}</span>` : ""}</button>`;
   };
-  $("editorSections").innerHTML = content.map(section).join("")
-    + (meta.length ? `<p class="j-label">${escapeHtml(editorText("metadata"))}</p>${meta.map(section).join("")}` : "");
+  const bio = snapshot.payload.analysis_lens === "biopolitical";
+  const placed = bio ? BIO_EDITOR_PLACES.flatMap(([, placeKeys]) => placeKeys) : [];
+  const groups = [
+    ...(bio ? BIO_EDITOR_PLACES.map(([place, placeKeys]) => [bioEditorPlace(place), placeKeys.filter((key) => content.includes(key))]) : []),
+    // A section the case file does not show (none today) keeps its own name.
+    ...content.filter((key) => bio && !placed.includes(key)).map((key) => [editorKeyLabel(key), [key]]),
+    [editorText("metadata"), meta],
+  ].filter(([, groupKeys]) => groupKeys.length);
+  $("editorSections").innerHTML = (bio ? "" : content.map(section).join(""))
+    + groups.map(([name, groupKeys], index) => `<div class="j-editor-group" role="group" aria-labelledby="editorGroup${index}"><p class="j-label" id="editorGroup${index}">${escapeHtml(name)}</p>${groupKeys.map(section).join("")}</div>`).join("");
   $("editorSections").querySelectorAll("[data-editor-path]").forEach((button) => {
     button.onclick = () => {
       // Applying an edit redraws the sections before the pick does.

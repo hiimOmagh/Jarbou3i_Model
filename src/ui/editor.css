@@ -13,7 +13,10 @@
 /* The sections beside the field; content first, identity and metadata after. */
 .j-editor-grid { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); gap: var(--j-s-4); }
 .j-editor-nav { display: grid; align-content: start; gap: var(--j-s-1); max-height: 62vh; overflow-y: auto; padding: var(--j-s-1); }
-.j-editor-nav > .j-label { margin: var(--j-s-3) 0 var(--j-s-1); }
+/* A group of sections under its name: a Biopolitical pillar, or the metadata. */
+.j-editor-group { display: grid; gap: var(--j-s-1); }
+.j-editor-group > .j-label { margin: var(--j-s-3) 0 var(--j-s-1); }
+.j-editor-nav > .j-editor-group:first-child > .j-label { margin-top: 0; }
 .j-editor-sec {
   display: flex; align-items: center; justify-content: space-between; gap: var(--j-s-2);
   min-height: 44px; padding: 0 var(--j-s-3); border: 1px solid transparent; border-radius: var(--j-r-2);
@@ -37,7 +40,8 @@
 @media (max-width: 720px) {
   .j-editor-grid { grid-template-columns: 1fr; }
   .j-editor-nav { display: flex; overflow-x: auto; max-height: none; }
-  .j-editor-nav > .j-label { flex: none; align-self: center; margin: 0 var(--j-s-2); }
+  .j-editor-group { display: flex; flex: none; align-items: center; }
+  .j-editor-group > .j-label { flex: none; margin: 0 var(--j-s-2); }
   .j-editor-sec { flex: none; }
   .j-editor .j-editor-json { min-height: 280px; }
 }

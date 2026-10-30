@@ -277,9 +277,13 @@ time.
 - **The bar:** Undo, Redo and the unsaved state (`#editorDirty`, a `j-status`
   that turns `warn`) on one side; "Review & commit" and Save on the other.
 - **Sections:** the content first, then "Identity and metadata"
-  (`EDITOR_META_KEYS`). The open section has `aria-current="true"`; a section
-  with problems carries a "{n} to fix" chip. The dialog opens on the first
-  content section.
+  (`EDITOR_META_KEYS`). A Strategic section is named as the case file names
+  it (the six layers by their layer names). The 24 Biopolitical sections go
+  under the pillar, or the outline section (Connections, Judgment), that shows
+  them in the case file (`BIO_EDITOR_PLACES`). Each such set, and the
+  metadata, is a `.j-editor-group` with `role="group"` named by its label.
+  The open section has `aria-current="true"`; a section with problems carries
+  a "{n} to fix" chip. The dialog opens on the first content section.
 - **The field:** a kernel field whose help is the JSON path. Its check
   (`#editorFieldStatus`, a kernel note) sets `data-tone` `ok`, `warn` (valid only as a
   draft) or `crit`, and the field gets `aria-invalid`.

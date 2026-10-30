@@ -131,7 +131,7 @@ const FREE_CLASSES = [
   "j-flow-howto", "j-flow-row", "j-flow-actions", "j-mode-field", "j-mode-help",
   "j-case", "j-case-outline", "j-case-link", "j-case-count", "j-case-doc", "j-case-sec", "j-case-return",
   "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
-  "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-sec", "j-editor-main",
+  "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-group", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-errors",
   "j-commit", "j-commit-facts", "j-commit-approve", "j-commit-confirm",
   "j-diff", "j-diff-item", "j-diff-path", "j-diff-vals", "j-diff-val",

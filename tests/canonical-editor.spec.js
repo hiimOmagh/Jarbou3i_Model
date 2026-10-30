@@ -306,13 +306,35 @@ test.describe("Structured canonical editor", () => {
     await expect(page.locator("#editorClose")).toHaveAttribute("aria-label", "إغلاق المحرر");
     // Content first; identity and metadata after it.
     await expect(page.locator("#editorPath")).toHaveText("/subject");
-    await expect(page.locator(".j-editor-nav > .j-label")).toHaveText("الهوية والبيانات الوصفية");
+    await expect(page.locator("#editorSections").getByRole("group", { name: "الهوية والبيانات الوصفية" })).toBeVisible();
     const field = page.locator("#editorField");
     await field.fill("{}");
     await field.press("Control+Enter");
     await expect(page.locator("#editorFieldStatus")).toHaveAttribute("data-tone", "crit");
     await expect(field).toHaveAttribute("aria-invalid", "true");
     await expect(page.locator('[data-editor-path="/subject"] .j-chip')).toContainText("للإصلاح");
+    await expectKernel(page, "#editorBackdrop", "#editorDialog");
+  });
+
+  test("puts each Biopolitical section under the pillar the case file shows it in", async ({ page }) => {
+    await page.locator('[data-flow-step="lens"]').click();
+    await page.locator('[data-lens="biopolitical"]').click();
+    await page.locator("#loadSampleBtn").click();
+    await page.locator("#workspaceSaveState").click();
+    await page.locator("#workLife").getByRole("button", { name: "Edit draft" }).click();
+    const groups = page.locator("#editorSections [role=group]");
+    await expect(groups.locator(":scope > .j-label")).toHaveText([
+      "Question & context", "Human functions", "Actors & populations", "Mechanisms & infrastructure",
+      "Meaning & classification", "Intervention & capture test", "Distribution & effects",
+      "Evidence & explanations", "Agency & alternatives", "Connections", "Judgment", "Identity and metadata",
+    ]);
+    const sections = (name) => page.locator("#editorSections").getByRole("group", { name, exact: true }).locator("[data-editor-path]");
+    await expect(sections("Question & context")).toHaveText(["Subject", "Framing", "Legal framework", "International comparison", "Capture levels", "Theoretical comparison", "Migration"]);
+    await expect(sections("Intervention & capture test")).toHaveText(["Intervention assessment", "Consent and exit"]);
+    await expect(sections("Judgment")).toHaveText(["Calibrated conclusion", "Self-audit", "Self-audit notes"]);
+    // Every section sits in one group, and the editor still opens on the first.
+    await expect(groups.locator("[data-editor-path]")).toHaveCount(await page.locator("#editorSections [data-editor-path]").count());
+    await expect(page.locator("#editorPath")).toHaveText("/subject");
     await expectKernel(page, "#editorBackdrop", "#editorDialog");
   });
 });
