@@ -68,6 +68,36 @@ test("sample topics follow the chosen interface language for both lenses", async
   }
 });
 
+// What a sample says is translated; its records, figures and categories are
+// not, so every language reaches the same verdict.
+const KINDS = new Set([
+  "id", "type", "horizon", "stakes", "confidence", "category", "frame", "power_balance_impact", "adapts",
+  "speed", "contradiction_type", "basis", "source_type", "risk", "relation", "from", "to", "affected_layers",
+]);
+const shape = (value, key = "") =>
+  Array.isArray(value) ? value.map((item) => shape(item, key))
+    : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, shape(v, k)]))
+      : typeof value === "string" && !KINDS.has(key) ? "text" : value;
+
+test("the Strategic sample is the same analysis in every language", async ({ page }) => {
+  test.skip(test.info().project.name !== "chromium", "The sample's content is the same in every engine.");
+  await page.goto("./");
+  const seen = {};
+  for (const locale of LOCALES) {
+    await page.locator(locale.button).click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#reviewPanel")).toBeVisible();
+    const { language, analysis_id, ...sample } = await readLoadedSample(page);
+    expect(language).toBe(locale.id);
+    seen[locale.id] = {
+      shape: shape(sample),
+      gate: await page.locator('[data-orientation="gate"]').getAttribute("data-tone"),
+    };
+  }
+  expect(seen.ar).toEqual(seen.en);
+  expect(seen.fr).toEqual(seen.en);
+});
+
 test("an explicit analysis-language override persists and can be relinked", async ({
   page,
 }) => {

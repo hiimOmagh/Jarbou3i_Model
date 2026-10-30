@@ -95,6 +95,15 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### The French Strategic sample is the English one in French
+
+- The French Strategic sample was a different analysis: another
+  contradiction and scenario, one tool and one result fewer, and its evidence
+  marked as sourced, so it read "Review needed" where English and Arabic read
+  "Do not publish yet". It is now the English sample translated: same
+  records, figures and categories, the same verdict and the same item to fix.
+  A test holds the three languages to the same analysis.
+
 ### The editor's sections sit under the case file's pillars
 
 - The analysis editor lists a Biopolitical analysis's 24 sections under the

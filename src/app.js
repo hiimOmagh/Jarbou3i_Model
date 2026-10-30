@@ -3350,6 +3350,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
     model_mode: mode,
     analysis_lens: "strategic",
   };
+  // The English sample in French: only the words change.
   const fr = lang === "fr";
   if (fr)
     return normalizeAnalysis({
@@ -3358,9 +3359,9 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
         title: "Exemple : résultats de la Seconde Guerre mondiale",
         context: "1939–1947, ordre international",
         question:
-          "Comment les résultats de la Seconde Guerre mondiale ont-ils remodelé l’ordre international ?",
+          "Comment les résultats de la Seconde Guerre mondiale ont-ils remodelé le système mondial ?",
         executive_thesis:
-          "La guerre a déplacé le centre de gravité du système international vers les États-Unis et l’Union soviétique, tout en créant une architecture institutionnelle destinée à empêcher une nouvelle guerre totale.",
+          "La Seconde Guerre mondiale a mis fin à l’ancien équilibre européen des puissances et ouvert un ordre bipolaire dirigé par les États-Unis et l’Union soviétique, soutenu par de nouvelles institutions internationales et un cadre de légitimité centré sur la prévention d’une nouvelle guerre totale.",
       },
       interests: [
         {
@@ -3372,18 +3373,18 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           stakes: "existential",
           confidence: "high",
           rationale:
-            "Deux guerres mondiales ont transformé le contrôle de la puissance allemande en priorité de sécurité.",
+            "La répétition de deux guerres mondiales a fait de l’endiguement de l’Allemagne un intérêt de sécurité central pour les Alliés.",
         },
         {
           id: "I2",
-          name: "Reconstruire l’économie internationale",
+          name: "Reconstruire l’économie mondiale",
           type: "economic",
           intensity: 4,
           horizon: "long",
           stakes: "important",
           confidence: "high",
           rationale:
-            "La destruction matérielle imposait des mécanismes de financement, de commerce et de stabilisation.",
+            "Les destructions massives ont créé un besoin de financement, de reconstruction et de stabilisation des échanges.",
         },
       ],
       actors: [
@@ -3398,7 +3399,7 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           media_influence: 4,
           confidence: "high",
           rationale:
-            "Leur capacité industrielle, financière et militaire leur permettait d’organiser l’ordre d’après-guerre.",
+            "Leur capacité financière, industrielle et militaire leur a permis de diriger le nouvel ordre.",
         },
         {
           id: "A2",
@@ -3411,13 +3412,13 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           media_influence: 3,
           confidence: "high",
           rationale:
-            "Sa domination militaire en Europe de l’Est lui donnait un poids structurel.",
+            "Son contrôle de l’Europe de l’Est et son poids militaire rendaient son influence structurelle.",
         },
       ],
       tools: [
         {
           id: "T1",
-          name: "Institutions internationales",
+          name: "Nouvelles institutions internationales",
           type: "diplomatic",
           cost: 3,
           risk: 2,
@@ -3426,7 +3427,20 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           deniability: 1,
           confidence: "high",
           rationale:
-            "L’ONU et Bretton Woods ont fourni des instruments de coordination et de légitimité.",
+            "L’ONU et les institutions de Bretton Woods ont fourni des mécanismes de coordination et de légitimité.",
+        },
+        {
+          id: "T2",
+          name: "Occupation et reconstruction",
+          type: "legal",
+          cost: 4,
+          risk: 3,
+          speed: 2,
+          reversibility: 2,
+          deniability: 1,
+          confidence: "high",
+          rationale:
+            "Administrer l’Allemagne et le Japon exigeait des outils de gouvernement et de réforme institutionnelle.",
         },
       ],
       narrative: [
@@ -3439,49 +3453,59 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           public_acceptance: 5,
           confidence: "high",
           rationale:
-            "Le traumatisme humain et matériel rendait ce cadrage très puissant.",
+            "Le récit était cohérent après des pertes humaines et matérielles sans précédent.",
         },
       ],
       results: [
         {
           id: "R1",
-          name: "Ordre bipolaire",
+          name: "Montée de la bipolarité",
           type: "direct",
-          goal_achieved_pct: 75,
+          goal_achieved_pct: 70,
           cost_benefit: 3,
           power_balance_impact: "strengthened",
           confidence: "high",
           rationale:
-            "Le pouvoir s’est concentré autour de Washington et Moscou.",
+            "L’Europe a cessé d’être le centre de la puissance tandis que Washington et Moscou s’imposaient.",
+        },
+        {
+          id: "R2",
+          name: "Début de la guerre froide",
+          type: "unintended",
+          goal_achieved_pct: 30,
+          cost_benefit: 2,
+          power_balance_impact: "weakened",
+          confidence: "high",
+          rationale:
+            "Les arrangements d’après-guerre ont produit une nouvelle rivalité idéologique et sécuritaire.",
         },
       ],
       feedback: [
         {
           id: "F1",
           description:
-            "La rivalité entre alliés a transformé la coopération militaire en compétition idéologique.",
-          adapts: "actors",
+            "La peur mutuelle entre les deux superpuissances a conduit aux alliances militaires et à la course aux armements.",
+          adapts: "tools",
           speed: "fast",
           confidence: "high",
           rationale:
-            "Les intérêts de sécurité ont divergé dès la reconstruction.",
+            "Les résultats en matière de sécurité ont remodelé les outils et les alliances.",
         },
       ],
       contradictions: {
         items: [
           {
             id: "C1",
-            rhetoric:
-              "La sécurité collective empêcherait une nouvelle guerre mondiale.",
-            contradiction_type: "result_vs_intention",
+            rhetoric: "Libérer les peuples et empêcher la tyrannie",
+            contradiction_type: "rhetoric_vs_action",
             actions: [
-              "Le Conseil de sécurité a donné un veto aux grandes puissances.",
-              "La rivalité Est-Ouest a limité l’application collective.",
+              "Partage de sphères d’influence en Europe",
+              "Acceptation de régimes dépendants dans la sphère soviétique",
+              "Recours à l’occupation militaire pour remodeler les États vaincus",
             ],
-            affected_layers: ["narrative", "results", "feedback"],
             interpretation:
-              "La sécurité collective dépendait d’une hiérarchie de puissances plutôt que d’une égalité souveraine complète.",
-            severity: 8,
+              "La rhétorique morale allait de pair avec de durs calculs de sécurité et de puissance.",
+            severity: 4,
             confidence: "high",
           },
         ],
@@ -3490,23 +3514,25 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
         items: [
           {
             id: "S1",
-            name: "Normalisation institutionnelle contenue",
-            probability: 45,
+            name: "Consolidation de l’ordre bipolaire",
+            probability: 70,
             timeframe: "1947–1955",
             drivers: [
-              "Reconstruction européenne",
-              "Dépendance à l’aide américaine",
-              "Institutionnalisation multilatérale",
+              "Polarisation idéologique",
+              "Alliances militaires",
+              "Reconstruction sous la direction des blocs",
             ],
             early_signals: [
-              "Plans de reconstruction",
-              "Nouvelles alliances",
-              "Coordination économique",
+              "Plan Marshall",
+              "Doctrine Truman",
+              "Création de l’OTAN",
             ],
             disproven_if: [
-              "Les grandes puissances acceptent une gouvernance réellement égalitaire.",
+              "Un accord de sécurité paneuropéen aboutit",
+              "Les superpuissances réduisent vite leur présence militaire",
             ],
-            rationale: "L’ordre devient stable mais hiérarchisé.",
+            rationale:
+              "Les premiers indicateurs allaient dans le sens d’une division institutionnelle et militaire.",
           },
         ],
       },
@@ -3515,14 +3541,13 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           {
             id: "E1",
             claim:
-              "Les États-Unis sortent de la guerre avec une puissance industrielle et financière exceptionnelle.",
-            basis: "source_based",
+              "L’Europe a perdu sa place centrale dans le système international après la guerre.",
+            basis: "inference",
             source_title: "Référence sur la distribution historique de la puissance",
             source_url: "",
             source_date: "2026-07-17",
             source_type: "internal_sample",
-            source_note:
-              "Données historiques générales sur la production et le financement de guerre.",
+            source_note: "Déduit de la distribution de la puissance après 1945",
             evidence_strength: 1,
             counter_evidence:
               "Certains États européens ont conservé une capacité institutionnelle et économique substantielle après 1945.",
@@ -3537,12 +3562,12 @@ function sampleStrategicAnalysis(lang = state.lang, mode = state.promptMode) {
           {
             id: "AS1",
             assumption:
-              "La stabilité d’après-guerre dépend de la capacité américaine à financer la reconstruction.",
+              "Les grandes puissances préféreront la stabilité institutionnelle à un retour à l’isolement d’avant-guerre.",
             risk: "medium",
             disproving_test:
-              "Montrer une reconstruction équivalente sans financement américain.",
+              "Retrait américain rapide d’Europe et échec des institutions de Bretton Woods",
             implication_if_wrong:
-              "Le poids causal des institutions américaines serait surestimé.",
+              "L’ordre deviendrait plus fluide et moins prévisible.",
           },
         ],
       },

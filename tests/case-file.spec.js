@@ -187,8 +187,7 @@ test.describe("Case file", () => {
   test("the detailed diagnostics fold under one line that counts what blocks publishing", async ({ page }) => {
     test.skip(test.info().project.name !== "chromium", "Rendering rule, engine-independent.");
     const counts = {
-      // The French sample cites a source, so its gate lists nothing and no count shows.
-      strategic: { en: "1 item to fix before publishing", ar: "بند واحد يجب إصلاحه قبل النشر", fr: null },
+      strategic: { en: "1 item to fix before publishing", ar: "بند واحد يجب إصلاحه قبل النشر", fr: "1 point à corriger avant publication" },
       biopolitical: { en: "5 items to fix before publishing", ar: "5 بنود يجب إصلاحها قبل النشر", fr: "5 points à corriger avant publication" },
     };
     await page.goto("./");
@@ -202,11 +201,6 @@ test.describe("Case file", () => {
         await expect(fold).not.toHaveAttribute("open");
         const count = fold.locator(":scope > summary small");
         const items = await fold.locator('[data-diagnostic="gate"] li').count();
-        if (!counts[lens][lang]) {
-          expect(items).toBe(0);
-          await expect(count).toHaveCount(0);
-          continue;
-        }
         await expect(count).toHaveText(counts[lens][lang]);
         expect(counts[lens][lang]).toContain(String(items === 1 && lang === "ar" ? "واحد" : items));
       }
