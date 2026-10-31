@@ -205,6 +205,10 @@
    in the page's direction while the box is empty. */
 [dir="rtl"] .j-flow-answer:placeholder-shown { direction: rtl; }
 
+/* What the analysis covers: optional, folded under the topic. */
+.j-case-fields { display: grid; gap: var(--j-s-3); padding: 0 var(--j-s-3) var(--j-s-3); }
+.j-case-fold > [role="status"]:not(:empty) { padding: 0 var(--j-s-3) var(--j-s-3); }
+
 .j-flow-examples { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); color: var(--j-fg-muted); font-size: var(--j-t-13); }
 .j-flow-example-list { display: contents; }
 .j-flow-example {

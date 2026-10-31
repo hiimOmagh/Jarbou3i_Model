@@ -95,6 +95,22 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### Say what the analysis covers before asking the AI (RESEARCH-1A, slice 2)
+
+- The topic step has a fold, **What the analysis covers**, in Arabic,
+  English and French. It holds what is in scope, what is out of scope, the
+  terms in dispute (the term, a colon, then what you mean by it) and the
+  limits of the research, one item per line.
+- These go into the prompt with your context, which the prompt already
+  fences as your material. With the fold empty, the prompt is the same as
+  before.
+- They are kept on this device in the case's dossier. An answer you import
+  for the case is linked to it, and the topic stays as you wrote it rather
+  than becoming the AI's title. Reopening that analysis, or reloading,
+  brings the case back.
+- Loading the sample or opening another analysis empties the fields and
+  leaves the dossier as it was. **Reset app data** removes every dossier.
+
 ### The research dossier has a place to live (RESEARCH-1A, slice 1)
 
 - RESEARCH-1 starts. The research dossier will hold what the analyst asks

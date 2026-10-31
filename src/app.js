@@ -39,6 +39,16 @@ import {
   createRecoveryJournal,
 } from "./core/recovery-journal.js";
 import {
+  createDossier,
+  createDossierRepository,
+  createIndexedDbDossierBackend,
+  fieldsFromFraming,
+  framingFromFields,
+  hasFraming,
+  linkAnalysis,
+  updateDossier,
+} from "./core/research-dossier.js";
+import {
   appendReviewEvent,
   projectReviewLedger,
   reviewLedgerManifest,
@@ -117,6 +127,14 @@ const I18N = {
     sourcesLabel: "المصادر المقدمة",
     sourcesPlaceholder: "الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها.",
     sourcesHelp: "الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب الموجِّه من المساعد قراءتها والاستشهاد بكل ملف باسمه.",
+    caseFold: "ما الذي يشمله التحليل",
+    caseHelp: "اختياري. بند واحد في كل سطر؛ وللمصطلح اكتبه ثم نقطتين ثم ما تقصده به. يُضاف إلى الموجِّه ويُحفظ على هذا الجهاز.",
+    caseScopeIn: "ضمن النطاق",
+    caseScopeOut: "خارج النطاق",
+    caseTerms: "مصطلحات موضع خلاف",
+    caseLimits: "حدود هذا البحث",
+    caseNotSaved: "لم يُحفظ على هذا الجهاز، ونصّك ما زال هنا.",
+    caseTooLong: "اجعل كل قائمة في 50 سطرًا على الأكثر، وكل سطر في أقل من 4000 حرف.",
     copyPrompt: "انسخ الموجِّه",
     previewPrompt: "معاينة الموجِّه",
     editTopic: "تعديل الموضوع",
@@ -444,6 +462,14 @@ const I18N = {
     sourcesLabel: "Supplied sources",
     sourcesPlaceholder: "Paste the sources the AI should rely on: titles, links, excerpts, and the names of files you attach.",
     sourcesHelp: "Paste text or links, and list the names of files you will attach in your AI assistant's chat. The prompt tells the assistant to read them and cite each file by name.",
+    caseFold: "What the analysis covers",
+    caseHelp: "Optional. One item per line; for a term, write it, a colon, then what you mean by it. Added to the prompt and kept on this device.",
+    caseScopeIn: "In scope",
+    caseScopeOut: "Out of scope",
+    caseTerms: "Terms in dispute",
+    caseLimits: "Limits of this research",
+    caseNotSaved: "Not saved on this device. Your text is still here.",
+    caseTooLong: "Keep each list to 50 lines, and each line under 4,000 characters.",
     copyPrompt: "Copy prompt",
     previewPrompt: "Preview prompt",
     editTopic: "Edit topic",
@@ -782,6 +808,14 @@ const I18N = {
     sourcesLabel: "Sources fournies",
     sourcesPlaceholder: "Collez les sources sur lesquelles l’IA doit s’appuyer : titres, liens, extraits et noms des fichiers que vous joignez.",
     sourcesHelp: "Collez des textes ou des liens, et listez les noms des fichiers que vous joindrez dans la conversation de votre assistant IA. Le prompt lui demande de les lire et de citer chaque fichier par son nom.",
+    caseFold: "Ce que couvre l’analyse",
+    caseHelp: "Facultatif. Un élément par ligne ; pour un terme, écrivez-le, deux-points, puis ce que vous entendez par là. Ajouté au prompt et conservé sur cet appareil.",
+    caseScopeIn: "Dans le périmètre",
+    caseScopeOut: "Hors périmètre",
+    caseTerms: "Termes contestés",
+    caseLimits: "Limites de cette recherche",
+    caseNotSaved: "Non enregistré sur cet appareil. Votre texte est toujours là.",
+    caseTooLong: "Gardez chaque liste sous 50 lignes, et chaque ligne sous 4 000 caractères.",
     copyPrompt: "Copier le prompt",
     previewPrompt: "Aperçu du prompt",
     editTopic: "Modifier le sujet",
@@ -1361,6 +1395,120 @@ const RECOVERY_BACKEND = createIndexedDbRecoveryBackend();
 const RECOVERY_JOURNAL = createRecoveryJournal({
   backend: RECOVERY_BACKEND,
 });
+// What the analysis covers (RESEARCH-1A, ADR-0004): the analyst's framing of
+// the case, in a dossier of its own database. The case on screen is the
+// dossier its fields were saved to; an answer imported for it is linked to it,
+// and while it is on screen nothing but the analyst rewrites its question.
+const DOSSIER_REPOSITORY = createDossierRepository({ backend: createIndexedDbDossierBackend() });
+const CASE_FIELDS = { scope_in: "caseScopeIn", scope_out: "caseScopeOut", terms: "caseTerms", limits: "caseLimits" };
+let caseDossier = null;
+// Raised when another case is shown, so a write still running for the one
+// before does not take its place.
+let caseShown = 0;
+let caseTimer = 0;
+let caseWrites = Promise.resolve();
+const caseFieldText = () => Object.fromEntries(Object.entries(CASE_FIELDS).map(([key, id]) => [key, $(id).value]));
+const caseFraming = () => framingFromFields({ question: $("topicInput").value, timeframe: $("timeframeInput").value, ...caseFieldText() });
+const caseOnScreen = () => Boolean(caseDossier) || hasFraming(caseFraming());
+const caseHolds = (workspaceId) => Boolean(caseDossier?.analyses.some((link) => link.workspace_id === workspaceId));
+// A dossier's framing in the fields, or none: the fields empty.
+function showCase(dossier) {
+  clearTimeout(caseTimer);
+  caseShown += 1;
+  caseDossier = dossier || null;
+  const text = dossier ? fieldsFromFraming(dossier.framing) : {};
+  for (const [key, id] of Object.entries(CASE_FIELDS)) $(id).value = text[key] || "";
+  $("caseFold").open = Boolean(dossier && hasFraming(dossier.framing));
+  showCaseStatus(null);
+}
+function showCaseStatus(error) {
+  const status = $("caseStatus");
+  if (!error) {
+    status.replaceChildren();
+    return;
+  }
+  const note = document.createElement("p");
+  note.className = "j-note";
+  note.dataset.tone = "warn";
+  note.textContent = `${t("caseNotSaved")} ${error?.code === "DOSSIER_SHAPE_INVALID" ? t("caseTooLong") : workspaceFailureMessage(error)}`;
+  status.replaceChildren(note);
+}
+// Saved half a second after the last keystroke; each write waits for the one before.
+function scheduleCaseSave() {
+  clearTimeout(caseTimer);
+  caseTimer = setTimeout(() => { caseWrites = caseWrites.then(saveCase); }, 500);
+}
+function flushCaseSave() {
+  clearTimeout(caseTimer);
+  caseWrites = caseWrites.then(saveCase);
+  return caseWrites;
+}
+async function saveCase() {
+  const shown = caseShown;
+  const framing = caseFraming();
+  try {
+    if (!caseDossier) {
+      // A topic alone is not kept here: the analysis being prepared holds it.
+      if (!hasFraming(framing)) return;
+      const created = await createDossier({ framing });
+      await DOSSIER_REPOSITORY.create(created);
+      if (shown !== caseShown) return;
+      caseDossier = created;
+      keepTrip();
+    } else if (JSON.stringify(framing) !== JSON.stringify(caseDossier.framing)) {
+      let current = caseDossier;
+      let saved;
+      try {
+        saved = await DOSSIER_REPOSITORY.save(await updateDossier(current, { framing }), { expectedRevision: current.revision });
+      } catch (error) {
+        if (error?.code !== "WRITE_CONFLICT") throw error;
+        // Changed in another tab: the text on this screen is the newer.
+        current = await DOSSIER_REPOSITORY.get(current.dossier_id);
+        if (!current) throw error;
+        saved = await DOSSIER_REPOSITORY.save(await updateDossier(current, { framing }), { expectedRevision: current.revision });
+      }
+      if (shown !== caseShown) return;
+      caseDossier = saved;
+    }
+    showCaseStatus(null);
+  } catch (error) {
+    if (shown === caseShown) showCaseStatus(error);
+  }
+}
+// An answer imported for the case on screen is linked to its dossier by
+// reference: the workspace, its revision and checksum, never its content.
+async function linkCase(workspace) {
+  await flushCaseSave();
+  caseWrites = caseWrites.then(async () => {
+    const shown = caseShown;
+    const head = workspace.revisions.find((revision) => revision.revision_id === workspace.head_revision_id);
+    if (!caseDossier || !head) return;
+    try {
+      const next = await linkAnalysis(caseDossier, { workspace_id: workspace.workspace_id, revision_id: head.revision_id, payload_checksum: head.payload_checksum });
+      if (next === caseDossier) return;
+      const saved = await DOSSIER_REPOSITORY.save(next, { expectedRevision: caseDossier.revision });
+      if (shown === caseShown) caseDossier = saved;
+    } catch (error) {
+      if (shown === caseShown) showCaseStatus(error);
+    }
+  });
+  return caseWrites;
+}
+// The dossier that holds a saved analysis, newest first; none when unreadable.
+async function caseFor(workspaceId) {
+  const dossiers = await DOSSIER_REPOSITORY.list().catch(() => []);
+  return dossiers.find((dossier) => dossier.integrity_status === "verified" && dossier.analyses.some((link) => link.workspace_id === workspaceId)) || null;
+}
+// The framing goes with the context, which both prompts already fence as the
+// user's material, under the field names in the analysis language.
+function casePromptText(lang) {
+  const text = fieldsFromFraming(caseFraming());
+  const words = I18N[lang] || I18N.en;
+  return [["caseScopeIn", text.scope_in], ["caseScopeOut", text.scope_out], ["caseTerms", text.terms], ["caseLimits", text.limits]]
+    .filter(([, lines]) => lines)
+    .map(([key, lines]) => `${words[key]}:\n${lines.split("\n").map((line) => `- ${line}`).join("\n")}`)
+    .join("\n");
+}
 // The analysis being prepared (topic, prompt, pasted answer), kept until it is
 // imported so a reload, or a phone closing the tab while the user is in the AI
 // app, does not lose it. It sits in the recovery store under its own key.
@@ -1445,6 +1593,8 @@ function keepTrip() {
     topic: $("topicInput").value,
     context: $("timeframeInput").value,
     sources: $("sourcesInput").value,
+    case_fields: caseFieldText(),
+    dossier_id: caseDossier?.dossier_id || null,
     mode: state.promptMode,
     prompt: state.lastPrompt || "",
     reply: $("jsonInput").value,
@@ -1570,6 +1720,14 @@ async function restoreTrip(untouched, record) {
     $("timeframeInput").value = record.context;
   }
   if (typeof record.sources === "string") $("sourcesInput").value = record.sources;
+  if (record.case_fields && typeof record.case_fields === "object") {
+    caseShown += 1;
+    caseDossier = record.dossier || null;
+    for (const [key, id] of Object.entries(CASE_FIELDS)) {
+      if (typeof record.case_fields[key] === "string") $(id).value = record.case_fields[key];
+    }
+    $("caseFold").open = Object.values(CASE_FIELDS).some((id) => $(id).value.trim());
+  }
   if (["simple", "expert", "research"].includes(record.mode)) {
     state.promptMode = record.mode;
     $("promptMode").value = record.mode;
@@ -1798,8 +1956,8 @@ function setAnalysisLens(lens) {
     // set aside comes back. That one stays current in Workspaces.
     tabStorage.set(TAB_WORKSPACE_KEY, "");
     const intake = keptIntakes[lens];
-    if (intake) {
-      delete keptIntakes[lens];
+    if (intake) delete keptIntakes[lens];
+    if (intake && !caseOnScreen()) {
       state.topic = intake.topic;
       state.context = intake.context;
       $("topicInput").value = intake.topic;
@@ -1824,10 +1982,12 @@ function setAnalysisLens(lens) {
       // It may have been saved while the other lens was on screen.
       state.workspaceSaveState = "saved";
     }
-    state.topic = kept.topic;
-    state.context = kept.context;
-    $("topicInput").value = kept.topic;
-    $("timeframeInput").value = kept.context;
+    if (!caseOnScreen()) {
+      state.topic = kept.topic;
+      state.context = kept.context;
+      $("topicInput").value = kept.topic;
+      $("timeframeInput").value = kept.context;
+    }
     if (!hasPendingReply()) {
       const input = $("jsonInput");
       if (input) input.value = kept.json;
@@ -3327,9 +3487,7 @@ function buildPrompt() {
     lang,
     mode: state.promptMode,
     topic: state.topic,
-    context: sources
-      ? [state.context, `${sourcesHeading}:\n${sources}`].filter(Boolean).join("\n\n")
-      : state.context,
+    context: [state.context, casePromptText(lang), sources && `${sourcesHeading}:\n${sources}`].filter(Boolean).join("\n\n"),
     evidenceAccess: state.evidenceAccess,
   });
 }
@@ -8484,8 +8642,18 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   state.activeReview = "overview";
   state.activePillar = null;
   if (isSupportedLanguage(analysis.language)) setAnalysisLanguage(analysis.language);
-  state.topic = analysis.subject?.title || workspace.metadata.title;
-  state.context = analysis.subject?.context || "";
+  // The case that holds this analysis gives its question; another case on
+  // screen keeps its own; with none, the analysis gives it.
+  if (caseHolds(workspace.workspace_id)) {
+    state.topic = caseDossier.framing.question || analysis.subject?.title || workspace.metadata.title;
+    state.context = caseDossier.framing.timeframe;
+  } else if (caseOnScreen()) {
+    state.topic = $("topicInput").value;
+    state.context = $("timeframeInput").value;
+  } else {
+    state.topic = analysis.subject?.title || workspace.metadata.title;
+    state.context = analysis.subject?.context || "";
+  }
   $("topicInput").value = state.topic;
   $("timeframeInput").value = state.context;
   // An edit saved to the analysis leaves a reply pasted but not imported yet.
@@ -8512,7 +8680,10 @@ async function openStoredWorkspace(id, { announce = true, canApply = () => true 
   try {
     const workspace = await WORKSPACE_REPOSITORY.get(id);
     if (!workspace) throw new Error("Workspace was not found on this device.");
+    await flushCaseSave();
+    const dossier = await caseFor(workspace.workspace_id);
     if (!canApply()) return null;
+    showCase(dossier);
     applyWorkspaceAnalysis(workspace);
     if (announce) setWorkspaceStatus("good", workspaceText("opened"));
     return workspace;
@@ -8875,6 +9046,7 @@ async function importWorkspaceFile(file) {
     }
     const workspace = await parseWorkspaceBundle(await file.text());
     await WORKSPACE_REPOSITORY.create(workspace);
+    showCase(await caseFor(workspace.workspace_id));
     applyWorkspaceAnalysis(workspace);
     discardTrip();
     setWorkspaceStatus("good", workspaceText("imported"));
@@ -8898,6 +9070,7 @@ function restorableInputs() {
     $("topicInput").value,
     $("timeframeInput").value,
     $("sourcesInput").value,
+    ...Object.values(caseFieldText()),
     $("jsonInput").value,
     repairBase,
     replyFor,
@@ -8912,6 +9085,8 @@ async function restoreAfterLoad() {
   let expected = restorableInputs();
   const untouched = () => restorableInputs().every((value, index) => value === expected[index]);
   const trip = await tripWrites.then(findTrip).catch(() => null);
+  // The case the analysis being prepared was framed in, read before anything is shown.
+  if (trip?.dossier_id) trip.dossier = await DOSSIER_REPOSITORY.get(trip.dossier_id).catch(() => null);
   // The analysis open in this tab before the reload, else the one its
   // analysis being prepared went with, else the last one opened.
   const own = tabStorage.get(TAB_WORKSPACE_KEY);
@@ -9202,8 +9377,11 @@ $("importBtn").onclick = async () => {
   state.shellSection = "review";
   state.activeReview = "overview";
   state.activePillar = null;
-  $("topicInput").value = a.subject.title || state.topic;
-  $("timeframeInput").value = a.subject.context || state.context;
+  // An answer for the analyst's case leaves their question as they wrote it.
+  if (!caseOnScreen()) {
+    $("topicInput").value = a.subject.title || state.topic;
+    $("timeframeInput").value = a.subject.context || state.context;
+  }
   state.topic = $("topicInput").value;
   state.context = $("timeframeInput").value;
   // Present the accepted canonical payload, not the provider's irregular spacing.
@@ -9226,7 +9404,10 @@ $("importBtn").onclick = async () => {
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "start" });
   arriveAtReview();
-  if (await persistImportedAnalysis(a)) discardTrip();
+  const saved = await persistImportedAnalysis(a);
+  if (!saved) return;
+  await linkCase(saved);
+  discardTrip();
 };
 $("repairPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
@@ -9278,6 +9459,8 @@ $("loadSampleBtn").onclick = async (event) => {
   state.shellSection = "review";
   state.activeReview = "overview";
   state.activePillar = null;
+  // The sample is not the analyst's case: their dossier stays on the device.
+  showCase(null);
   state.topic = a.subject.title;
   state.context = a.subject.context;
   $("topicInput").value = state.topic;
@@ -9378,6 +9561,10 @@ $("workspaceResetAll").onclick = async () => {
   try {
     await WORKSPACE_REPOSITORY.clear();
     await RECOVERY_JOURNAL.clear();
+    // Emptied first, so no save still waiting writes a dossier after the clear.
+    showCase(null);
+    await caseWrites;
+    await DOSSIER_REPOSITORY.clear();
     tripKept = false;
     for (const lens of Object.keys(keptResults)) delete keptResults[lens];
     for (const lens of Object.keys(keptIntakes)) delete keptIntakes[lens];
@@ -9500,11 +9687,19 @@ $("modalCopy").onclick = async () => {
 $("topicInput").addEventListener("input", () => {
   state.topic = $("topicInput").value;
   keepTrip();
+  scheduleCaseSave();
 });
 $("timeframeInput").addEventListener("input", () => {
   state.context = $("timeframeInput").value;
   keepTrip();
+  scheduleCaseSave();
 });
+for (const id of Object.values(CASE_FIELDS)) {
+  $(id).addEventListener("input", () => {
+    keepTrip();
+    scheduleCaseSave();
+  });
+}
 $("sourcesInput").addEventListener("input", () => keepTrip());
 PLATFORM.performance.measure(
   "boot.initialize",

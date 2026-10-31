@@ -6,6 +6,9 @@ import {
   createDossierRepository,
   createIndexedDbDossierBackend,
   createMemoryDossierBackend,
+  fieldsFromFraming,
+  framingFromFields,
+  hasFraming,
   linkAnalysis,
   updateDossier,
   verifyDossier,
@@ -49,6 +52,28 @@ assert(dossier.analyses.length === 0, "a new dossier invented a linked analysis"
 assert(dossier.completion[0].decided_at === null, "an open criterion carries a decision time");
 assert((await verifyDossier(dossier)).checksum.value === dossier.checksum.value, "a fresh dossier did not verify");
 assert(DOSSIER_DATABASE_NAME !== WORKSPACE_DATABASE_NAME, "dossiers share the workspace database");
+
+// The topic step's fields: one item per line, a term split from its meaning
+// at the first colon, blank lines dropped; read back as the same text.
+const fields = {
+  question: " Who decides? ",
+  timeframe: "2020–2022",
+  scope_in: "Digital passes\n\n  Exit routes ",
+  scope_out: "",
+  terms: "Proportionality : least restrictive means\nTriage\nالتناسب: أقل الوسائل تقييدًا",
+  limits: "No procurement files",
+};
+const framed = framingFromFields(fields);
+assert(framed.question === "Who decides?" && framed.scope_in.join("|") === "Digital passes|Exit routes", "field lines were not read one per line");
+assert(JSON.stringify(framed.contested_terms) === JSON.stringify([
+  { term: "Proportionality", working_definition: "least restrictive means" },
+  { term: "Triage", working_definition: "" },
+  { term: "التناسب", working_definition: "أقل الوسائل تقييدًا" },
+]), "a term was not split from its meaning at the first colon");
+assert(hasFraming(framed) && !hasFraming(framingFromFields({ question: "Only a topic", timeframe: "2024" })), "the topic alone counted as framing");
+const back = fieldsFromFraming(framed);
+assert(back.terms === "Proportionality: least restrictive means\nTriage\nالتناسب: أقل الوسائل تقييدًا" && back.scope_in === "Digital passes\nExit routes", "framing did not read back as field text");
+assert(JSON.stringify(framingFromFields(back)) === JSON.stringify(framed), "field text did not round-trip");
 
 // Tampering, an unknown format and broken shapes are refused.
 const tampered = structuredClone(dossier);

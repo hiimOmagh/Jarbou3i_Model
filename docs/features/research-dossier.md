@@ -101,12 +101,39 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
    (create, update, link, verify; memory and IndexedDB backends; repository),
    `schema/research-dossier.schema.json`, `tests/research-dossier-check.mjs`,
    `tests/research-dossier.spec.js` (real IndexedDB in all four engines).
-2. **S2, framing in the guided flow.** "What this case covers" in the topic
-   step; the import links the analysis and keeps the analyst's question;
-   "Reset app data" clears dossiers.
+2. **S2, framing in the guided flow (built).** "What the analysis covers" in
+   the topic step; the import links the analysis and keeps the analyst's
+   question; "Reset app data" clears dossiers. `tests/case-framing.spec.js`.
 3. **S3, completion contract.** Criteria in the case file overview and the
    work panel; met or open, set by a person with a rationale.
 4. **S4, export and restore** of a dossier as its own file.
+
+## In the guided flow (S2)
+
+- **Fields.** A fold under the topic, **What the analysis covers**, holds four
+  fields, one item per line: in scope, out of scope, terms in dispute (the
+  term, a colon, the working definition) and limits. The topic and the
+  timeframe are the framing's question and timeframe.
+- **When a dossier exists.** Half a second after the analyst writes in one of
+  the four fields. A topic alone makes none: the analysis being prepared
+  already keeps it. Once it exists, the topic and timeframe are saved to it
+  too. A write that fails leaves the text on screen with "Not saved on this
+  device".
+- **The case on screen.** The tab's analysis being prepared keeps the four
+  fields and the dossier id for a reload. While a case is on screen, an
+  imported answer, a lens switch or a saved edit never rewrites its question.
+- **Prompt.** The four fields go into the prompt's context, under their names
+  in the analysis language. The prompt already fences that context as the
+  user's material. With the fields empty, the prompt is unchanged.
+- **Import.** A pasted answer for the case is linked to its dossier (workspace,
+  head revision, payload checksum). Reopening that analysis, or reloading,
+  shows its case.
+- **Elsewhere.** The sample, another analysis or a restored bundle that no
+  dossier holds empties the fields. The dossier stays on the device,
+  unchanged.
+- **Known limit until a later slice lists dossiers:** a case left before any
+  answer was imported for it cannot be brought back on screen. "Reset app
+  data" removes it.
 
 ## Record (format version 1)
 

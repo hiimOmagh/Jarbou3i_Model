@@ -13,7 +13,7 @@ Switching lenses hides an imported analysis from the other contract, so its fiel
 1. Select the interface language and the analysis output language separately.
 2. Select the lens.
 3. Enter a specific topic.
-4. Add a time and geographic context where possible.
+4. Add a time and geographic context where possible. Optionally, open **What the analysis covers** and write, one item per line, what is in scope, what is out of scope, the terms in dispute (the term, a colon, then what you mean by it) and the limits of the research. These go into the prompt with your context, and are kept on this device with the case: an answer you import for it is linked to it, keeps your question as you wrote it, and brings the case back when you reopen that analysis.
 5. Choose Focused, Expert, or Research.
 6. Choose the source access: no access (a conceptual draft), sources supplied in context, or live web research. With supplied sources, paste text or links into the **Supplied sources** box, and list there the names of any files you will attach in your AI assistant's chat; the box is added to the prompt, which tells the assistant to read the attached files and cite each by its file name. Evidence from a file has no web link. In the Biopolitical lens its page or section (`source_locator`) makes it traceable, and like every source it is verified by a reviewer before publication; in the Strategic lens the evidence summary lists it as a source that is not traceable, for review.
 7. Preview or copy the prompt.

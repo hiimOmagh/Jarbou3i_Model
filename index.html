@@ -73,6 +73,7 @@
 <link rel="modulepreload" href="src/core/workspace-storage.js" />
 <link rel="modulepreload" href="src/core/canonical-editor.js" />
 <link rel="modulepreload" href="src/core/recovery-journal.js" />
+<link rel="modulepreload" href="src/core/research-dossier.js" />
 <link rel="modulepreload" href="src/core/revision-history.js" />
 <link rel="modulepreload" href="src/strategic-integrity.js" />
 <link rel="modulepreload" href="src/core/storage-health.js" />
@@ -203,6 +204,29 @@
             <label for="timeframeInput" data-i18n="timeframeLabel">السياق الزمني/الجغرافي</label>
             <input id="timeframeInput" class="j-input" type="text" data-i18n-placeholder="timeframePlaceholder" placeholder="اختياري: من 2022 إلى 2026، أوروبا" />
           </div>
+          <details class="j-disclosure j-case-fold" id="caseFold">
+            <summary data-i18n="caseFold">ما الذي يشمله التحليل</summary>
+            <div class="j-case-fields">
+              <p class="j-flow-note" id="caseHelp" data-i18n="caseHelp">اختياري. بند واحد في كل سطر؛ وللمصطلح اكتبه ثم نقطتين ثم ما تقصده به. يُضاف إلى الموجِّه ويُحفظ على هذا الجهاز.</p>
+              <div class="j-field">
+                <label for="caseScopeIn" data-i18n="caseScopeIn">ضمن النطاق</label>
+                <textarea id="caseScopeIn" class="j-input" rows="2" aria-describedby="caseHelp"></textarea>
+              </div>
+              <div class="j-field">
+                <label for="caseScopeOut" data-i18n="caseScopeOut">خارج النطاق</label>
+                <textarea id="caseScopeOut" class="j-input" rows="2" aria-describedby="caseHelp"></textarea>
+              </div>
+              <div class="j-field">
+                <label for="caseTerms" data-i18n="caseTerms">مصطلحات موضع خلاف</label>
+                <textarea id="caseTerms" class="j-input" rows="2" aria-describedby="caseHelp"></textarea>
+              </div>
+              <div class="j-field">
+                <label for="caseLimits" data-i18n="caseLimits">حدود هذا البحث</label>
+                <textarea id="caseLimits" class="j-input" rows="2" aria-describedby="caseHelp"></textarea>
+              </div>
+            </div>
+            <div id="caseStatus" role="status" aria-live="polite"></div>
+          </details>
         </div>
         <div class="j-flow-panel" data-flow-panel="lens" hidden>
           <div class="j-flow-choices" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">

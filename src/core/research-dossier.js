@@ -73,6 +73,38 @@ function framingOf(value = {}) {
   };
 }
 
+// The framing as the topic step's fields hold it: one item per line, and a
+// term split from its working definition at the first colon.
+const fieldLines = (value) => String(value || "").split("\n").map((line) => line.trim()).filter(Boolean);
+export function framingFromFields({ question, timeframe, scope_in, scope_out, terms, limits } = {}) {
+  return {
+    question: String(question || "").trim(),
+    timeframe: String(timeframe || "").trim(),
+    scope_in: fieldLines(scope_in),
+    scope_out: fieldLines(scope_out),
+    contested_terms: fieldLines(terms).map((line) => {
+      const at = line.search(/[:：]/);
+      return at > 0
+        ? { term: line.slice(0, at).trim(), working_definition: line.slice(at + 1).trim() }
+        : { term: line, working_definition: "" };
+    }),
+    limits: fieldLines(limits),
+  };
+}
+export function fieldsFromFraming(framing) {
+  return {
+    question: framing.question,
+    timeframe: framing.timeframe,
+    scope_in: framing.scope_in.join("\n"),
+    scope_out: framing.scope_out.join("\n"),
+    terms: framing.contested_terms.map(({ term, working_definition }) => (working_definition ? `${term}: ${working_definition}` : term)).join("\n"),
+    limits: framing.limits.join("\n"),
+  };
+}
+// More than a topic and a timeframe: what makes a dossier worth keeping.
+export const hasFraming = (framing) =>
+  ["scope_in", "scope_out", "contested_terms", "limits"].some((key) => framing[key].length > 0);
+
 // A criterion is open, or met by the analyst's decision: met needs a reason
 // and keeps the time it was decided until the reason changes; reopened, it
 // loses both. The time comes from the record before, never from the caller.

@@ -84,6 +84,7 @@ for (const spec of [
   "tests/work-panel.spec.js",
   "tests/reflow-audit.spec.js",
   "tests/research-dossier.spec.js",
+  "tests/case-framing.spec.js",
 ]) {
   if (!core.includes(spec)) fail(`browser core is missing ${spec}`);
 }

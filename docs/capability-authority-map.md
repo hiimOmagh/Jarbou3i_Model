@@ -29,7 +29,7 @@ do not override this map.
 | Layer | Capability | Status | Current authority | Principal gap or next action |
 |---|---|---|---|---|
 | Intake | Question, context, language, and source-access mode | Partial | Application setup and prompt generation | No durable research-case scope, contested-term register, or completion criteria |
-| Intake | Research dossier | Partial | `RESEARCH-1A`: contract and store ([ADR-0004](decisions/0004-research-dossier-store.md)) | Framing in the guided flow, completion contract, export; compose existing evidence authorities, never a second evidence model |
+| Intake | Research dossier | Partial | `RESEARCH-1A`: contract and store ([ADR-0004](decisions/0004-research-dossier-store.md)); framing in the guided flow, linked on import | Completion contract, export; compose existing evidence authorities, never a second evidence model |
 | Measurement | Human task benchmark | Planned | `GATE-0` benchmark contract | Run at least three comparable completed trials per lens before Alpha.56 is frozen |
 | Evidence | Canonical evidence records and provenance assessment | Complete | Lens schemas, provenance service, integrity gates | Preserve source claim versus analyst inference distinction in the next intake workflow |
 | Evidence | Source clustering and gap intelligence | Complete | Evidence intelligence projection | Promote gaps into the research dossier without duplicating storage |
