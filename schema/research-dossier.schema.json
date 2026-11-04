@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jarbou3i.example/schema/research-dossier.schema.json",
   "title": "Jarbou3i Research Dossier formats 1 and 2",
-  "description": "Framing, completion and analysis references (format 1), plus analyst sources and excerpts (format 2, ADR-0005). Released framing remains readable. The reader also refuses what this schema cannot state: duplicate source or excerpt ids, two sources with the same normalized link (or, without links, the same normalized title), an excerpt naming a source the record does not hold, more than 50 excerpts for one source, and a record that does not match its checksum.",
+  "description": "Framing, completion and analysis references (format 1), plus analyst sources and excerpts (format 2, ADR-0005). Released framing remains readable. The reader also refuses what this schema cannot state: duplicate source or excerpt ids, two sources with the same normalized link (or, without links, the same normalized title), an excerpt naming a source the record does not hold, more than 50 excerpts for one source, two pointers on one excerpt to the same workspace and evidence id, text longer than its limit in UTF-16 units (this schema counts characters), and a record that does not match its checksum.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "format_version", "dossier_id", "revision", "created_at", "updated_at", "framing", "completion", "analyses", "checksum"],
@@ -157,7 +157,21 @@
         "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
         "locator": { "$ref": "#/$defs/sourceLine" },
         "check": { "$ref": "#/$defs/check" },
-        "added_at": { "$ref": "#/$defs/instant" }
+        "added_at": { "$ref": "#/$defs/instant" },
+        "promotions": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/promotion" } }
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace_id", "revision_id", "evidence_id", "promoted_at", "kind", "changed_since"],
+      "properties": {
+        "workspace_id": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\r\\n\\u2028\\u2029]+$" },
+        "revision_id": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\r\\n\\u2028\\u2029]+$" },
+        "evidence_id": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\r\\n\\u2028\\u2029]+$" },
+        "promoted_at": { "$ref": "#/$defs/instant" },
+        "kind": { "enum": ["new", "fill"] },
+        "changed_since": { "type": "boolean" }
       }
     }
   },

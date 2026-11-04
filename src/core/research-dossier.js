@@ -20,11 +20,14 @@ export const DOSSIER_DATABASE_VERSION = 1;
 export const DOSSIER_STORE_NAME = "dossiers";
 export const DOSSIER_TEXT_LIMIT = 4000;
 export const DOSSIER_LIST_LIMIT = 50;
-// The maximal contract export is 20,469,050 bytes, including pretty printing
-// and six-byte escapes (tests/fixtures/research-dossier-maximal.mjs).
-export const DOSSIER_FILE_LIMIT = 24 * 1024 * 1024;
+// The maximal contract export is 28,117,051 bytes, including pretty printing,
+// six-byte escapes and ten pointers on each excerpt
+// (tests/fixtures/research-dossier-maximal.mjs).
+export const DOSSIER_FILE_LIMIT = 28 * 1024 * 1024;
 export const DOSSIER_SOURCE_LIMIT = 50;
 export const DOSSIER_EXCERPT_LIMIT = 200;
+export const DOSSIER_PROMOTION_LIMIT = 10;
+export const DOSSIER_POINTER_ID_LIMIT = 200;
 export const DOSSIER_EXCERPTS_PER_SOURCE_LIMIT = 50;
 export const DOSSIER_SOURCE_TEXT_LIMIT = 500;
 export const DOSSIER_EXCERPT_TEXT_LIMIT = 2000;
@@ -216,6 +219,36 @@ function checkOf(value) {
   }
   return { status: value.status, reason, decided_at: instant(value.decided_at, "check.decided_at") };
 }
+function promotionOf(value) {
+  const keys = ["workspace_id", "revision_id", "evidence_id", "promoted_at", "kind", "changed_since"];
+  if (!isRecord(value) || Object.keys(value).some((key) => !keys.includes(key))) invalid("Invalid evidence pointer.");
+  for (const key of keys.slice(0, 3)) {
+    if (typeof value[key] !== "string" || !value[key].length || value[key].length > DOSSIER_POINTER_ID_LIMIT || /[\r\n\u2028\u2029]/.test(value[key])) invalid("Invalid evidence pointer id.");
+  }
+  if (!["new", "fill"].includes(value.kind) || typeof value.changed_since !== "boolean") invalid("Invalid evidence pointer.");
+  return { workspace_id: value.workspace_id, revision_id: value.revision_id, evidence_id: value.evidence_id, promoted_at: instant(value.promoted_at, "pointer time"), kind: value.kind, changed_since: value.changed_since };
+}
+function promotionsOf(entries) {
+  if (!Array.isArray(entries) || entries.length > DOSSIER_PROMOTION_LIMIT) invalid("Invalid evidence pointer list.");
+  const result = entries.map(promotionOf);
+  if (new Set(result.map((p) => JSON.stringify([p.workspace_id, p.evidence_id]))).size !== result.length) invalid("Repeated evidence pointer.");
+  return result;
+}
+const markPromotions = (excerpt) => excerpt.promotions ? { ...excerpt, promotions: excerpt.promotions.map((p) => ({ ...p, changed_since: true })) } : excerpt;
+export function addPromotion(dossier, excerptId, pointerFields, basis, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }, now) => {
+    const before = excerpts.find((item) => item.excerpt_id === excerptId);
+    if (!before) fail("EXCERPT_GONE", "The excerpt was removed.");
+    const source = sources.find((item) => item.source_id === before.source_id);
+    const changed_since = before.text !== basis?.text || before.locator !== basis?.locator || ["title", "url", "source_date"].some((key) => source[key] !== basis?.source?.[key]);
+    const pointer = promotionOf({ ...pointerFields, promoted_at: now, changed_since });
+    const entries = before.promotions || [];
+    const found = entries.findIndex((p) => p.workspace_id === pointer.workspace_id && p.evidence_id === pointer.evidence_id);
+    if (found < 0 && entries.length >= DOSSIER_PROMOTION_LIMIT) fail("PROMOTION_LIST_FULL", `This excerpt already became evidence ${DOSSIER_PROMOTION_LIMIT} times.`);
+    const promotions = found < 0 ? [...entries, pointer] : entries.map((p, i) => i === found ? pointer : p);
+    return { sources, excerpts: excerpts.map((item) => item === before ? { ...before, promotions } : item) };
+  }, options);
+}
 function excerptOf(entry) {
   if (!isRecord(entry)) invalid("An excerpt must be an object.");
   return {
@@ -223,6 +256,7 @@ function excerptOf(entry) {
     text: materialText(entry.text, "excerpt.text", DOSSIER_EXCERPT_TEXT_LIMIT, false, true),
     locator: materialText(entry.locator, "excerpt.locator", DOSSIER_SOURCE_TEXT_LIMIT),
     check: checkOf(entry.check), added_at: instant(entry.added_at, "excerpt.added_at"),
+    ...(entry.promotions === undefined ? {} : { promotions: promotionsOf(entry.promotions) }),
   };
 }
 function sourceUniqueness(sources, code = "DOSSIER_SHAPE_INVALID") {
@@ -274,7 +308,7 @@ export function editSource(dossier, seen, fields, options) {
     const source = sourceOf({ ...before, ...fields, source_id: before.source_id, added_at: before.added_at });
     const next = sources.map((item) => item === before ? source : item);
     sourceUniqueness(next, "SOURCE_EXISTS");
-    return { sources: next, excerpts };
+    return { sources: next, excerpts: excerpts.map((item) => item.source_id === before.source_id && ["title", "url", "source_date"].some((key) => source[key] !== before[key]) ? markPromotions(item) : item) };
   }, options);
 }
 export function removeSource(dossier, seen, seenExcerpts, options) {
@@ -297,7 +331,10 @@ export function editExcerpt(dossier, seen, fields, options) {
   return changeMaterial(dossier, ({ sources, excerpts }) => {
     const before = seenItem(excerpts, seen, "excerpt_id");
     const next = excerptOf({ ...before, text: fields.text ?? before.text, locator: fields.locator ?? before.locator });
-    if (next.text !== before.text || next.locator !== before.locator) next.check = unchecked();
+    if (next.text !== before.text || next.locator !== before.locator) {
+      next.check = unchecked();
+      if (next.promotions) next.promotions = markPromotions(next).promotions;
+    }
     return { sources, excerpts: excerpts.map((item) => item === before ? next : item) };
   }, options);
 }

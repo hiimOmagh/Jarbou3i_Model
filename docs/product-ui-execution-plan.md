@@ -302,4 +302,7 @@ both exported reports, are on the design-system kernel
 
 **Amendment (2026-10-30, [ADR-0004](decisions/0004-research-dossier-store.md)):** the product
 owner authorized `RESEARCH-1`. `RESEARCH-1A`'s Definition of Ready and slice plan are in
-[research-dossier.md](features/research-dossier.md).
+[research-dossier.md](features/research-dossier.md); `RESEARCH-1B`'s in
+[research-sources.md](features/research-sources.md) ([ADR-0005](decisions/0005-sources-in-the-dossier-record.md));
+`RESEARCH-1C`'s in [research-promotion.md](features/research-promotion.md)
+([ADR-0006](decisions/0006-promotion-through-resolution.md)).

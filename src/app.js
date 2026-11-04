@@ -25,6 +25,7 @@ import { linkCitation } from "./core/relationship-intelligence.js";
 import { createStrategicLensAdapter } from "./lenses/strategic/adapter.js";
 import { createBiopoliticalLensAdapter } from "./lenses/biopolitical/adapter.js";
 import {
+  canonicalStringify,
   createWorkspace,
   createWorkspaceBundle,
   parseWorkspaceBundle,
@@ -40,7 +41,9 @@ import {
 } from "./core/recovery-journal.js";
 import {
   addSource, editSource, removeSource, addExcerpt, editExcerpt, removeExcerpt, checkExcerpt, reopenExcerpt,
+  addPromotion,
   DOSSIER_FILE_LIMIT,
+  DOSSIER_PROMOTION_LIMIT,
   DossierError,
   completionFromLines,
   createDossier,
@@ -53,6 +56,9 @@ import {
   readDossierFile,
   updateDossier,
 } from "./core/research-dossier.js";
+import { relateEvidence } from "./core/source-relations.js";
+import { canVerify, filledEvidence, newEvidenceFrom, nextEvidenceId, pointerIdOk, preparePromotion, withEvidence } from "./core/promotion.js";
+import { normalizedText, normalizedUrl } from "./core/evidence-intelligence.js";
 import {
   appendReviewEvent,
   projectReviewLedger,
@@ -175,6 +181,34 @@ const I18N = {
     caseNewer: "أُنشئ بإصدار أحدث من هذا التطبيق",
     caseSources: "المصادر",
     sourceSaved: "حُفظ على هذا الجهاز.",
+    excerptUnchecked: "لم يُتحقَّق منه بعد",
+    caseSourceFrom: "من مصدرك: «{title}»",
+    caseSourceSameTitle: "العنوان نفسه",
+    caseSourcesIn: "في هذا التحليل: {ids}",
+    caseSourcesNone: "لا دليل هنا بهذا الرابط أو العنوان",
+    caseSourcesShared: "يحمل عدد من مصادرك هذا العنوان؛ لا يرتبط به أيّ منها.",
+    ledgerYourSource: "مصدرك: «{title}»",
+    ledgerMatching: "المقتطفات المطابقة: {n}",
+    ledgerFromSource: "من مصدرك «{title}»، في {locator}، تُحقّق منه في {date}: {reason}",
+    ledgerFromSourceNoLocator: "من مصدرك «{title}»، تُحقّق منه في {date}: {reason}",
+    promoteOpen: "اجعله دليلًا",
+    promoteNew: "سجل دليل جديد",
+    promoteFill: "املأ {id} من مصدرك",
+    promoteReview: "راجع التغيير",
+    promoteNotSaved: "{id} في التحليل. تعذّر على هذه القضية حفظ ذلك.",
+    promoteSaveAgain: "أعد الحفظ",
+    promoteListFull: "صار هذا المقتطف دليلًا 10 مرات في أي تحليل. أضفه من جديد كمقتطف جديد لتستعمله مرة أخرى.",
+    promoteNotMatching: "تغيّر المقتطف أو لم يعد يطابق مصدره. تحقّق منه من جديد.",
+    promoteNotLinked: "هذا التحليل غير مرتبط بهذه القضية.",
+    promoteDraft: "تحتوي مسودة العمل تغييرات غير معتمدة. اعتمد المسودة أو أزل تغييراتها أولًا.",
+    promoteBadId: "لا تستطيع القضية حفظ هذا المعرّف: فارغ أو طويل جدًا أو على أكثر من سطر.",
+    promoteChoose: "اختر",
+    promotePointer: "الدليل {id} (النسخة {n})",
+    promotePointerBare: "الدليل {id}",
+    promoteChangedSince: "تغيّر منذ ذلك",
+    promoteNoLonger: "لم يعد في هذا التحليل",
+    promoteExcerptGone: "لم يعد هذا المقتطف في القضية.",
+    promoteNotRelated: "لم يعد مصدرك مرتبطًا بالسجل {id}.",
     caseHelp: "اختياري. بند واحد في كل سطر؛ وللمصطلح اكتبه ثم نقطتين ثم ما تقصده به. يُضاف إلى الموجِّه ويُحفظ على هذا الجهاز.",
     caseScopeIn: "ضمن النطاق",
     caseScopeOut: "خارج النطاق",
@@ -556,6 +590,34 @@ const I18N = {
     caseNewer: "Made by a newer version of this app",
     caseSources: "Sources",
     sourceSaved: "Saved on this device.",
+    excerptUnchecked: "Not checked yet",
+    caseSourceFrom: "From your source: {title}",
+    caseSourceSameTitle: "same title",
+    caseSourcesIn: "In this analysis: {ids}",
+    caseSourcesNone: "No evidence here has this link or title",
+    caseSourcesShared: "Several of your sources have this title; none is related.",
+    ledgerYourSource: "Your source: {title}",
+    ledgerMatching: "matching excerpts: {n}",
+    ledgerFromSource: "From your source “{title}”, at {locator}, checked {date}: {reason}",
+    ledgerFromSourceNoLocator: "From your source “{title}”, checked {date}: {reason}",
+    promoteOpen: "Make it evidence",
+    promoteNew: "New evidence record",
+    promoteFill: "Fill {id} from your source",
+    promoteReview: "Review the change",
+    promoteNotSaved: "{id} is in the analysis. This case could not save it.",
+    promoteSaveAgain: "Save again",
+    promoteListFull: "This excerpt already became evidence 10 times, in any analysis. Add it again as a new excerpt to use it once more.",
+    promoteNotMatching: "The excerpt changed or no longer matches its source. Check it again.",
+    promoteNotLinked: "This analysis is not linked to this case.",
+    promoteDraft: "The working draft has uncommitted changes. Commit or remove that draft first.",
+    promoteBadId: "The case cannot keep this id: it is empty, too long or on more than one line.",
+    promoteChoose: "Choose",
+    promotePointer: "Evidence {id} (revision {n})",
+    promotePointerBare: "Evidence {id}",
+    promoteChangedSince: "Changed since",
+    promoteNoLonger: "No longer in this analysis",
+    promoteExcerptGone: "This excerpt is no longer in the case.",
+    promoteNotRelated: "Your source is no longer related to {id}.",
     caseHelp: "Optional. One item per line; for a term, write it, a colon, then what you mean by it. Added to the prompt and kept on this device.",
     caseScopeIn: "In scope",
     caseScopeOut: "Out of scope",
@@ -948,6 +1010,34 @@ const I18N = {
     caseNewer: "Créé avec une version plus récente de cette application",
     caseSources: "Sources",
     sourceSaved: "Enregistré sur cet appareil.",
+    excerptUnchecked: "Pas encore vérifié",
+    caseSourceFrom: "De votre source : « {title} »",
+    caseSourceSameTitle: "même titre",
+    caseSourcesIn: "Dans cette analyse : {ids}",
+    caseSourcesNone: "Aucune preuve ici n’a ce lien ou ce titre",
+    caseSourcesShared: "Plusieurs de vos sources portent ce titre ; aucune n’est reliée.",
+    ledgerYourSource: "Votre source : « {title} »",
+    ledgerMatching: "extraits conformes : {n}",
+    ledgerFromSource: "De votre source « {title} », à {locator}, vérifié le {date} : {reason}",
+    ledgerFromSourceNoLocator: "De votre source « {title} », vérifié le {date} : {reason}",
+    promoteOpen: "En faire une preuve",
+    promoteNew: "Nouvelle fiche de preuve",
+    promoteFill: "Compléter {id} depuis votre source",
+    promoteReview: "Examiner la modification",
+    promoteNotSaved: "{id} est dans l’analyse. Ce dossier n’a pas pu l’enregistrer.",
+    promoteSaveAgain: "Enregistrer à nouveau",
+    promoteListFull: "Cet extrait est déjà devenu une preuve 10 fois, toutes analyses confondues. Ajoutez-le comme nouvel extrait pour l’utiliser encore.",
+    promoteNotMatching: "L’extrait a changé ou n’est plus conforme à sa source. Vérifiez-le à nouveau.",
+    promoteNotLinked: "Cette analyse n’est pas liée à ce dossier.",
+    promoteDraft: "Le brouillon contient des modifications non validées. Validez-les ou supprimez-les d’abord.",
+    promoteBadId: "Le dossier ne peut pas garder cet identifiant : vide, trop long ou sur plusieurs lignes.",
+    promoteChoose: "Choisir",
+    promotePointer: "Preuve {id} (révision {n})",
+    promotePointerBare: "Preuve {id}",
+    promoteChangedSince: "Modifié depuis",
+    promoteNoLonger: "N’est plus dans cette analyse",
+    promoteExcerptGone: "Cet extrait n’est plus dans le dossier.",
+    promoteNotRelated: "Votre source n’est plus reliée à {id}.",
     caseHelp: "Facultatif. Un élément par ligne ; pour un terme, écrivez-le, deux-points, puis ce que vous entendez par là. Ajouté au prompt et conservé sur cet appareil.",
     caseScopeIn: "Dans le périmètre",
     caseScopeOut: "Hors périmètre",
@@ -1587,13 +1677,37 @@ const caseFieldText =() => Object.fromEntries(Object.entries(CASE_FIELDS).map(([
 const caseFraming = () => framingFromFields({ question: $("topicInput").value, timeframe: $("timeframeInput").value, ...caseFieldText() });
 // The completion contract as its field holds it, keeping each kept line's decision.
 const caseCompletion = (previous = caseDossier?.completion || []) => completionFromLines($("caseDone").value, previous);
-const caseOnScreen = () => Boolean(caseDossier) || hasFraming(caseFraming()) || caseCompletion().length > 0;
+// A first source being saved is making one.
+const caseOnScreen = () => Boolean(caseDossier) || sourceBusy || hasFraming(caseFraming()) || caseCompletion().length > 0;
+// What the fields agree with: the case as shown, then what this screen saved.
+// A save writes only what changed since, onto the newest case, so a change
+// another tab made to the other fields (adopted by any later write here) stays.
+let caseSeen = null;
+// As the fields show it, read back: a stored value they cannot hold (an empty
+// list item) is then not taken for a change.
+const seenOf = (framing, completion) => ({
+  framing: framingFromFields(fieldsFromFraming(framing)),
+  lines: completionFromLines(completion.map((criterion) => criterion.text).join("\n")).map((criterion) => criterion.text),
+});
+// The question and timeframe the analyst typed in since the case was shown;
+// one that differs from what was seen is not saved yet.
+const caseTyped = new Set();
+const typedUnsaved = (key) => Boolean(caseSeen) && caseTyped.has(key) && JSON.stringify(caseFraming()[key]) !== JSON.stringify(caseSeen.framing[key]);
+// Code, not the analyst, put these values in their fields: they are seen, so
+// a later save does not write them over a newer case.
+function seeCaseFields(...keys) {
+  if (!caseSeen) return;
+  const shown = caseFraming();
+  caseSeen = { ...caseSeen, framing: { ...caseSeen.framing, ...Object.fromEntries(keys.map((key) => [key, shown[key]])) } };
+}
 const caseHolds = (workspaceId) => Boolean(caseDossier?.analyses.some((link) => link.workspace_id === workspaceId));
 // A dossier's framing in the fields, or none: the fields empty.
 function showCase(dossier) {
   clearTimeout(caseTimer);
   caseShown += 1;
   caseDossier = dossier || null;
+  caseSeen = dossier ? seenOf(dossier.framing, dossier.completion) : null;
+  caseTyped.clear();
   forgetDone();
   const text = dossier ? { ...fieldsFromFraming(dossier.framing), done: dossier.completion.map((criterion) => criterion.text).join("\n") } : {};
   for (const [key, id] of Object.entries(CASE_FIELDS)) $(id).value = text[key] || "";
@@ -1628,25 +1742,41 @@ function flushCaseSave() {
 async function saveCase() {
   const shown = caseShown;
   const framing = caseFraming();
+  // Read once: a write made again on a newer case must not read a field another case has filled since.
+  const doneText = $("caseDone").value;
   try {
     if (!caseDossier) {
-      const completion = caseCompletion([]);
+      const completion = completionFromLines(doneText);
       // A topic alone is not kept here: the analysis being prepared holds it.
       if (!hasFraming(framing) && !completion.length) return;
       const created = await createDossier({ framing, completion });
       await DOSSIER_REPOSITORY.create(created);
       if (shown !== caseShown) return;
       caseDossier = created;
+      caseSeen = seenOf(created.framing, created.completion);
       keepTrip();
       refreshCaseCompletion();
-    } else if (
-      JSON.stringify(framing) !== JSON.stringify(caseDossier.framing)
-      || JSON.stringify(caseCompletion()) !== JSON.stringify(caseDossier.completion)
-    ) {
-      // Changed in another tab: the text on this screen is the newer.
-      const saved = await writeCase(caseDossier, (current) => updateDossier(current, { framing, completion: caseCompletion(current.completion) }));
+    } else {
+      const seen = caseSeen || seenOf(caseDossier.framing, caseDossier.completion);
+      const lines = completionFromLines(doneText, caseDossier.completion).map((criterion) => criterion.text);
+      const changed = Object.keys(framing).filter((key) => JSON.stringify(framing[key]) !== JSON.stringify(seen.framing[key]));
+      const linesChanged = JSON.stringify(lines) !== JSON.stringify(seen.lines);
+      if (!changed.length && !linesChanged) {
+        showCaseStatus(null);
+        return;
+      }
+      // Changed in another tab too: what this screen changed is the newer.
+      const mine = Object.fromEntries(changed.map((key) => [key, framing[key]]));
+      const saved = await writeCase(caseDossier, (current) => updateDossier(current, {
+        framing: { ...current.framing, ...mine },
+        completion: linesChanged ? completionFromLines(doneText, current.completion) : current.completion,
+      }));
       if (shown !== caseShown) return;
       caseDossier = saved;
+      // Onto the baseline as it is now: code may have shown other fields'
+      // values meanwhile (never one typed here, applyWorkspaceAnalysis keeps those).
+      const now = caseSeen || seen;
+      caseSeen = { framing: { ...now.framing, ...mine }, lines: linesChanged ? lines : now.lines };
       refreshCaseCompletion();
     }
     showCaseStatus(null);
@@ -1804,13 +1934,17 @@ async function saveSourceChange(control, change, after, focusTarget, touched = "
     if (shown !== caseShown) return;
     try {
       let next;
+      let created = false;
       if (caseDossier) next = await writeCase(caseDossier, change);
       else {
         next = await change(await createDossier({ framing, completion }));
         await DOSSIER_REPOSITORY.create(next);
+        created = true;
       }
       if (shown !== caseShown) return;
       caseDossier = next;
+      // A case made here from the fields agrees with what they showed then.
+      if (created) caseSeen = seenOf(next.framing, next.completion);
       sourceFailure = null;
       // An armed removal named what it saw; after any saved change it asks again.
       sourceRemovals.clear();
@@ -1991,6 +2125,7 @@ function refreshCaseCompletion() {
   if (!overview) return;
   overview.querySelector("[data-case-completion]")?.remove();
   overview.insertAdjacentHTML("beforeend", caseCompletionHtml());
+  refreshCaseSources();
 }
 // A criterion met, with the analyst's reason, or open again. Made on the newer
 // record if another tab wrote the case meanwhile, and only to the same
@@ -2256,6 +2391,10 @@ async function restoreTrip(untouched, record) {
     record.release?.();
     return;
   }
+  // What the page shows of the same case and has seen (the case's question,
+  // or the analysis title in place of none) is no edit when the draft brings
+  // the same text back.
+  const seenBefore = caseSeen && record.dossier && caseDossier?.dossier_id === record.dossier.dossier_id ? { framing: caseSeen.framing, shown: caseFraming() } : null;
   if (typeof record.topic === "string") {
     state.topic = record.topic;
     $("topicInput").value = record.topic;
@@ -2271,6 +2410,15 @@ async function restoreTrip(untouched, record) {
       if (typeof record.case_fields[key] === "string") $(id).value = record.case_fields[key];
     }
     $("caseFold").open = Object.values(CASE_FIELDS).some((id) => $(id).value.trim());
+  }
+  if (seenBefore) {
+    const now = caseFraming();
+    seeCaseFields(...["question", "timeframe"].filter((key) => [seenBefore.framing[key], seenBefore.shown[key]].every((value) => JSON.stringify(value) === JSON.stringify(now[key]))));
+  }
+  // One brought back that the case does not hold was typed, and is not saved yet.
+  if (caseSeen) {
+    const now = caseFraming();
+    for (const key of ["question", "timeframe"]) if (JSON.stringify(now[key]) !== JSON.stringify(caseSeen.framing[key])) caseTyped.add(key);
   }
   if (["simple", "expert", "research"].includes(record.mode)) {
     state.promptMode = record.mode;
@@ -7637,13 +7785,675 @@ function caseFolds(root) {
     return [`${kind}|${place}`, fold];
   });
 }
+// The same answer applied again (the stored version reopened) is a new object
+// with the same content: Your sources and its form stay as the reader left them.
+// An answer drawn before it was saved has no workspace yet.
+let caseFileWorkspace = null;
 function drawCaseFile(html) {
   const root = $("reviewContent");
   const left = caseFileAnswer === state.analysis ? new Map(caseFolds(root).map(([key, fold]) => [key, fold.open])) : new Map();
+  const same = caseFileAnswer === state.analysis
+    || Boolean(caseFileAnswer && state.analysis && [null, state.activeWorkspaceId].includes(caseFileWorkspace) && canonicalStringify(caseFileAnswer) === canonicalStringify(state.analysis));
+  const oldFold = root.querySelector("[data-case-sources]");
+  const sourcesOpen = same && Boolean(oldFold?.open);
+  // Focus in the evidence section returns to the same control, with its caret.
+  const kept = same ? caseFocusHeld($("case-evidence"), oldFold) : null;
   root.innerHTML = html;
   caseFileAnswer = state.analysis;
+  caseFileWorkspace = state.activeWorkspaceId;
   for (const [key, fold] of caseFolds(root)) if (left.has(key)) fold.open = left.get(key);
+  drawCaseSources(sourcesOpen, kept);
 }
+// Your sources beside the evidence (RESEARCH-1C S8, research-promotion.md):
+// for an analysis the case on screen holds, each evidence record related to
+// one of its sources says so under its title, and a fold after the evidence
+// records shows the case's sources as the topic step saves them. Relations are
+// derived each time, never stored. Neither prints. Without such a case the
+// case file is drawn as before, byte for byte.
+let caseSourcesShown = "";
+function caseSourcesView() {
+  const sources = caseDossier?.sources || [];
+  if (!state.analysis || !sources.length || !caseHolds(state.activeWorkspaceId)) return null;
+  const evidence = arr(state.analysis.evidence?.items).filter((item) => typeof item?.id === "string" && item.id);
+  return { sources, excerpts: caseDossier.excerpts || [], relations: relateEvidence({ evidence, sources }) };
+}
+// A working draft with changes says why no excerpt can be made evidence, so
+// a change of that state draws the fold again too.
+// A pointer's revision number is known once the analysis's history is read.
+// Another analysis on screen has its own pointers and pointers not saved.
+const caseSourcesKey = (view) => (view ? JSON.stringify([state.activeWorkspaceId, state.lang, view.sources, view.excerpts, draftUncommitted(), view.excerpts.flatMap((excerpt) => pointersHere(excerpt).map((pointer) => revisionSequence(pointer.revision_id)))]) : "");
+// Pointers to other analyses are not listed; they count only toward the limit.
+const pointersHere = (excerpt) => arr(excerpt.promotions).filter((pointer) => pointer.workspace_id === state.activeWorkspaceId);
+// A revision's number as the revision history shows it, or 0 when it is not in
+// the history of the analysis on screen (never a number made up).
+function revisionSequence(revisionId) {
+  const life = state.workspaceLife;
+  if (life?.workspaceId !== state.activeWorkspaceId) return 0;
+  return arr(life.history?.revisions).find((revision) => revision.revision_id === revisionId)?.sequence || 0;
+}
+function draftUncommitted() {
+  const life = state.workspaceLife;
+  return Boolean(life && life.workspaceId === state.activeWorkspaceId && life.uncommitted);
+}
+const caseFocusKey = (...parts) => escapeHtml(JSON.stringify(parts));
+function caseSourceLineHtml(evidenceId, source, by) {
+  const [before, after = ""] = t("caseSourceFrom").split("{title}");
+  return `<p data-case-source-line><button type="button" data-case-source="${escapeHtml(source.source_id)}" data-case-focus="${caseFocusKey("line", evidenceId)}">${escapeHtml(before)}<bdi dir="auto">${escapeHtml(source.title)}</bdi>${escapeHtml(after)}</button>${by === "title" ? ` · ${escapeHtml(t("caseSourceSameTitle"))}` : ""}</p>`;
+}
+function caseSourcesFoldHtml({ sources, excerpts, relations }) {
+  const said = (key, value) => `${escapeHtml(t(key))}${colonMark()} <bdi dir="auto">${escapeHtml(value)}</bdi>`;
+  const day = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium" });
+  const comma = labelText(", ", "، ", ", ");
+  // A title several linked sources share relates to none; it is said once, as
+  // the relation line of the first such source no evidence relates to, never
+  // beside a source's own "In this analysis" unless each such source has its
+  // own evidence by link; then under the first of them.
+  const shared = (source) => Boolean(normalizedUrl(source.url)) && relations.ambiguousTitles.includes(normalizedText(source.title));
+  const sharedHtml = `<p class="j-done-state">${escapeHtml(t("caseSourcesShared"))}</p>`;
+  const sharedHost = new Set();
+  for (const name of relations.ambiguousTitles) {
+    const sharing = sources.filter((source) => shared(source) && normalizedText(source.title) === name);
+    const host = sharing.find((source) => !(relations.bySource[source.source_id] || []).length) || sharing[0];
+    if (host) sharedHost.add(host.source_id);
+  }
+  const excerptHtml = (excerpt) => {
+    const check = excerpt.check;
+    const locator = excerpt.locator ? `<p class="j-done-state">${said("excerptLocator", excerpt.locator)}</p>` : "";
+    // Said as the topic step says it (1B), without its controls.
+    const decided = check.status === "unchecked"
+      ? `<p class="j-done-state">${escapeHtml(t("excerptUnchecked"))}</p>`
+      : `<p class="j-done-state"><strong>${escapeHtml(t(check.status === "matches" ? "excerptMatches" : "excerptDiffers"))}</strong> · ${escapeHtml(t("excerptClaim"))}, <time datetime="${escapeHtml(check.decided_at)}">${escapeHtml(day.format(new Date(check.decided_at)))}</time></p><p class="j-done-reason" dir="auto">${escapeHtml(check.reason)}</p>`;
+    const ex = escapeHtml(excerpt.excerpt_id);
+    return `<li class="j-done-item" data-case-excerpt="${ex}"><p class="j-done-text" dir="auto" id="${escapeHtml(promotionId(excerpt.excerpt_id, "text"))}">${escapeHtml(excerpt.text)}</p>${locator}${decided}${promotionPointersHtml(excerpt)}${promotionHtml(excerpt)}</li>`;
+  };
+  const rows = sources.map((source) => {
+    const id = source.source_id;
+    const title = /^https?:\/\//i.test(source.url)
+      ? `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer" dir="auto" data-case-focus="${caseFocusKey("title", id)}">${escapeHtml(source.title)}</a>`
+      : `<span dir="auto">${escapeHtml(source.title)}</span>`;
+    const when = [source.source_date && said("sourceDate", source.source_date), source.accessed_on && said("sourceOpened", source.accessed_on)].filter(Boolean);
+    const ids = relations.bySource[id] || [];
+    let related = "";
+    if (ids.length) {
+      const [before, after = ""] = t("caseSourcesIn").split("{ids}");
+      const links = ids.map((evidenceId) => `<button type="button" data-case-record="${escapeHtml(evidenceId)}" data-case-focus="${caseFocusKey("record", id, evidenceId)}">${escapeHtml(evidenceId)}</button>`).join(escapeHtml(comma));
+      related = `<p class="j-done-state">${escapeHtml(before)}${links}${escapeHtml(after)}</p>`;
+    } else if (!shared(source)) related = `<p class="j-done-state">${escapeHtml(t("caseSourcesNone"))}</p>`;
+    // Another source with that title and no evidence: the sentence said for
+    // the title stands for it ("this link or title" would not be true).
+    if (sharedHost.has(id)) related += sharedHtml;
+    const attached = excerpts.filter((excerpt) => excerpt.source_id === id);
+    return `<li class="j-done-item" data-case-source-row="${escapeHtml(id)}" data-case-focus="${caseFocusKey("row", id)}" tabindex="-1"><h4 class="j-done-text">${title}</h4>${when.length ? `<p class="j-done-state">${when.join(" · ")}</p>` : ""}${related}${attached.length ? `<ol class="j-done-list" role="list">${attached.map(excerptHtml).join("")}</ol>` : ""}</li>`;
+  });
+  return `<details class="j-disclosure" data-case-sources><summary data-case-focus="${caseFocusKey("summary")}"><span>${escapeHtml(t("sourcesFold"))}</span></summary>${promotionLostHtml(excerpts)}<ol class="j-done-list" role="list">${rows.join("")}</ol></details>`;
+}
+// Where focus is in the case file's evidence section, and its caret in a field.
+function caseFocusHeld(section, fold) {
+  const active = document.activeElement;
+  if (!section || !active || !section.contains(active)) return null;
+  let caret = null;
+  try {
+    if (typeof active.selectionStart === "number") caret = [active.selectionStart, active.selectionEnd, active.selectionDirection || "none"];
+  } catch {
+    caret = null;
+  }
+  return { key: active.dataset?.caseFocus || "", inFold: Boolean(fold && fold.contains(active)), caret };
+}
+// Drawn in place: the rest of the case file, its scroll and focus stay. Focus
+// on a line or in the fold returns to the same control once redrawn, a field
+// with its caret. `kept` is where focus was before the whole case file was
+// drawn again.
+function drawCaseSources(open, kept = null) {
+  const section = $("case-evidence");
+  if (!section) return;
+  const view = caseSourcesView();
+  const old = section.querySelector("[data-case-sources]");
+  const wasOpen = old ? old.open : open;
+  const held = kept || caseFocusHeld(section, old);
+  closeLostPromotion(view, held);
+  caseSourcesShown = caseSourcesKey(view);
+  const focused = held?.key || "";
+  const inFold = Boolean(held?.inFold);
+  for (const node of section.querySelectorAll("[data-case-source-line], [data-case-sources]")) node.remove();
+  if (!view) return;
+  const byId = new Map(view.sources.map((source) => [source.source_id, source]));
+  for (const [evidenceId, relation] of Object.entries(view.relations.byEvidence)) {
+    const record = [...section.querySelectorAll("[data-inspection-id]")].find((node) => node.dataset.inspectionId === evidenceId);
+    record?.querySelector(":scope > .j-rec-title")?.insertAdjacentHTML("afterend", caseSourceLineHtml(evidenceId, byId.get(relation.source_id), relation.by));
+  }
+  // Strategic: after the evidence records, before Assumptions. Biopolitical:
+  // after the evidence records, which end the section.
+  const records = state.analysis.analysis_lens === "biopolitical" ? null : section.querySelector(":scope > h3")?.nextElementSibling;
+  if (records) records.insertAdjacentHTML("afterend", caseSourcesFoldHtml(view));
+  else section.insertAdjacentHTML("beforeend", caseSourcesFoldHtml(view));
+  const fold = section.querySelector("[data-case-sources]");
+  fold.open = wasOpen;
+  if (!focused && !inFold) return;
+  const again = focused ? [...section.querySelectorAll("[data-case-focus]")].find((node) => node.dataset.caseFocus === focused) : null;
+  (again || (inFold ? fold.querySelector("summary") : null))?.focus({ preventScroll: true });
+  if (!again || !held.caret || typeof again.setSelectionRange !== "function") return;
+  try {
+    again.setSelectionRange(...held.caret);
+  } catch {
+    // A control that takes no caret keeps focus only.
+  }
+}
+// After a saved change to the case: nothing is drawn again unless what the
+// case file shows of it changed.
+function refreshCaseSources() {
+  if (!state.analysis || caseFileAnswer !== state.analysis || !$("case-evidence")) return;
+  if (caseSourcesKey(caseSourcesView()) === caseSourcesShown) return;
+  drawCaseSources(false);
+}
+// A record line opens the fold on its source's row; an id in the fold opens
+// its record. Each lands as the record links do: unfolded, centred, focused.
+function showCaseFileTarget(target) {
+  if (!target) return;
+  const fold = target.closest("details:not([open])");
+  if (fold) fold.open = true;
+  target.scrollIntoView({ behavior: "auto", block: "center" });
+  target.focus({ preventScroll: true });
+}
+$("reviewContent").addEventListener("click", (event) => {
+  const line = event.target.closest?.("[data-case-source]");
+  const record = event.target.closest?.("[data-case-record]");
+  if (line) showCaseFileTarget([...$("reviewContent").querySelectorAll("[data-case-source-row]")].find((row) => row.dataset.caseSourceRow === line.dataset.caseSource));
+  else if (record) showCaseFileTarget([...document.querySelectorAll("#case-evidence [data-inspection-id]")].find((node) => node.dataset.inspectionId === record.dataset.caseRecord));
+});
+// Make it evidence (RESEARCH-1C S11a, research-promotion.md): a matching
+// excerpt in the fold becomes a new evidence record, or fills the empty source
+// fields of a record related to its source. The change is prepared as a
+// revision restore is (a copy of the workspace, nothing saved) and goes through
+// the resolution dialog; Close drops it. After the commit the case keeps a
+// pointer to the evidence; one it could not save is said on the excerpt, with
+// Save again, while the page is open.
+let promotionForm = null;
+// { workspaceId, excerptId, error }: said only on that analysis's excerpt.
+let promotionRefusal = null;
+let promotionBusy = false;
+// Pointers not saved, by analysis and excerpt: another analysis linked to the
+// same case has its own evidence ids.
+const promotionUnsaved = new Map();
+const unsavedKey = (workspaceId, excerptId) => JSON.stringify([workspaceId, excerptId]);
+// Pointers being saved, by the same key.
+const promotionPending = new Set();
+const promotionRefused = (excerptId) => (promotionRefusal?.excerptId === excerptId && promotionRefusal.workspaceId === state.activeWorkspaceId ? promotionRefusal : null);
+const PROMOTION_WORDS = { EXCERPT_NOT_MATCHING: "promoteNotMatching", EXCERPT_GONE: "promoteExcerptGone", ANALYSIS_NOT_LINKED: "promoteNotLinked", DRAFT_NOT_CLEAN: "promoteDraft", POINTER_ID_INVALID: "promoteBadId", PROMOTION_LIST_FULL: "promoteListFull", SOURCE_NOT_RELATED: "promoteNotRelated" };
+// Any use of the form is a change the startup restore must not overwrite.
+let promotionTouches = 0;
+const promotionError = (code, more = {}) => Object.assign(new Error(code), { code }, more);
+const promotionId = (excerptId, name) => `promote-${excerptId}-${name}`;
+function promotionText(error) {
+  if (PROMOTION_WORDS[error?.code]) return fillWords(t(PROMOTION_WORDS[error.code]), { id: error.evidenceId || "" });
+  return error?.code === "NO_RESOLUTION_CHANGES" ? resolutionText("noChanges") : workspaceFailureMessage(error);
+}
+// Why a pointer was not saved; never the topic step's "your text is still here".
+function pointerFailureText(error) {
+  const key = { ...PROMOTION_WORDS, WRITE_CONFLICT: "caseChanged", DOSSIER_FORMAT_NEWER: "caseNewer" }[error?.code];
+  return key ? t(key) : workspaceFailureMessage(error);
+}
+// The values each lens's schema allows, named as the case file names them.
+const PROMOTION_CHOICES = {
+  basis: ["source_based", "observation", "inference", "estimate"],
+  confidence: ["high", "medium", "low"],
+  evidence_strength: ["1", "2", "3", "4", "5"],
+  epistemic_type: ["verified_fact", "quantitative_estimate", "institutional_claim", "scholarly_interpretation", "political_narrative", "legal_classification", "ethical_judgment", "plausible_inference", "speculation", "unsupported_allegation"],
+  source_tier: ["primary_legal_policy", "official_dataset", "systematic_review_meta_analysis", "individual_peer_reviewed_study", "historical_archive", "investigative_reporting", "reputable_organization_report", "expert_commentary", "first_person_testimony", "social_media_discourse"],
+  claim_source_fit: ["direct", "indirect", "context_only", "mismatched", "unknown"],
+  replication_status: ["replicated", "partly_replicated", "not_replicated", "not_applicable", "unknown"],
+  verification_status: ["unverified", "partially_verified", "verified"],
+};
+const PROMOTION_LABELS = {
+  claim: () => t("claim"),
+  basis: () => t("basis"),
+  confidence: () => t("confidence"),
+  evidence_strength: () => labelText("Evidence strength", "قوة الدليل", "Force de la preuve"),
+  source_type: () => labelText("Source type", "نوع المصدر", "Type de source"),
+  uncertainty: () => labelText("Uncertainty", "عدم اليقين", "Incertitude"),
+  counter_evidence: () => labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"),
+  epistemic_type: () => labelText("Epistemic type", "النوع المعرفي", "Type épistémique"),
+  source_tier: () => labelText("Source tier", "رتبة المصدر", "Niveau de source"),
+  claim_source_fit: () => labelText("Claim/source fit", "ملاءمة الادعاء للمصدر", "Adéquation énoncé-source"),
+  limitations: () => labelText("Limitations", "القيود", "Limites"),
+  replication_status: () => labelText("Replication status", "حالة التكرار", "État de réplication"),
+  verification_status: () => labelText("Verification status", "حالة التحقق", "État de vérification"),
+  verified_by: () => labelText("Verified by", "تحقق بواسطة", "Vérifié par"),
+};
+const PROMOTION_ASKED = {
+  strategic: ["claim", "basis", "confidence", "evidence_strength", "source_type", "uncertainty", "counter_evidence"],
+  biopolitical: ["claim", "epistemic_type", "source_tier", "claim_source_fit", "confidence", "uncertainty", "limitations", "counter_evidence", "replication_status", "verified_by"],
+};
+function promotionChoiceLabel(form, name, value) {
+  if (name === "evidence_strength") return `${value}/5`;
+  if (form.lens === "strategic") return name === "basis" ? basisInfo(value).label : confidenceInfo(value).label;
+  return BIO.displayToken(state.lang, name === "confidence" ? `confidence:${value}` : value);
+}
+const promotionTarget = (form, payload = form.payload) => (form.kind.startsWith("fill:") ? arr(payload.evidence?.items).find((item) => item?.id === form.kind.slice(5)) || null : null);
+// Why an excerpt cannot be made evidence here, or "" when it can. A case not
+// linked to the analysis on screen draws no fold at all (caseSourcesView), so
+// "not linked" is said only as a refusal at Review the change or Confirm.
+function promotionBlock(excerpt) {
+  if (draftUncommitted()) return "promoteDraft";
+  if (arr(excerpt.promotions).length >= DOSSIER_PROMOTION_LIMIT) return "promoteListFull";
+  if (!pointerIdOk(state.activeWorkspaceId)) return "promoteBadId";
+  return "";
+}
+// Biopolitical `verified` is offered only when the record the form makes, set
+// to verified, passes the lens's own checks. Judgements not written yet are
+// stood in for, so only the source, the fit and the choices made decide it.
+function promotionCanVerify(form) {
+  if (form.lens !== "biopolitical") return false;
+  const validate = (payload) => validateWorkspacePayload(form.workspace, payload);
+  try {
+    if (form.kind === "new") {
+      const asked = Object.fromEntries(["uncertainty", "limitations", "counter_evidence"].map((name) => [name, String(form.fields[name] || "").trim() ? form.fields[name] : "-"]));
+      const item = newEvidenceFrom("biopolitical", { payload: form.payload, source: form.source, excerpt: form.excerpt, fields: { ...form.fields, ...asked, verification_status: "unverified" } });
+      return canVerify("biopolitical", form.payload, item, { validate });
+    }
+    const item = promotionTarget(form);
+    if (!item || !["unverified", "partially_verified"].includes(item.verification_status)) return false;
+    // With no source field to fill, the record as it is may still be verified.
+    const filled = filledEvidence("biopolitical", { item, source: form.source, excerpt: form.excerpt });
+    return canVerify("biopolitical", form.payload, filled || item, { validate });
+  } catch {
+    return false;
+  }
+}
+function promotionFormHtml(form) {
+  const ex = form.excerptId;
+  const kinds = [...(form.newOk ? [["new", t("promoteNew")]] : []), ...form.fills.map((id) => [`fill:${id}`, fillWords(t("promoteFill"), { id })])];
+  const radios = kinds.map(([value, label], index) => `<label><input type="radio" id="${escapeHtml(promotionId(ex, `kind-${index}`))}" name="${escapeHtml(promotionId(ex, "kind"))}" value="${escapeHtml(value)}" data-promote-field="kind" data-case-focus="${caseFocusKey("promote", ex, "kind", value)}"${form.kind === value ? " checked" : ""}><span>${escapeHtml(label)}</span></label>`).join("");
+  const id = (name) => escapeHtml(promotionId(ex, name));
+  // A field refused at Review the change stays marked across redraws until it is changed.
+  const refused = (name) => form.refused === name;
+  const attrs = (name, required) => `class="j-input" id="${id(name)}" data-promote-field="${name}" data-case-focus="${caseFocusKey("promote", ex, name)}" aria-describedby="${id(name)}-error"${required ? " required" : ""}${refused(name) ? ' aria-invalid="true"' : ""}`;
+  const field = (name, control) => `<div class="j-field"><label for="${id(name)}">${escapeHtml(PROMOTION_LABELS[name]())}</label>${control}<p class="j-note" data-tone="crit" id="${id(name)}-error"${refused(name) ? `>${escapeHtml(t("sourceRequired"))}` : " hidden>"}</p></div>`;
+  const text = (name, { required = true, line = false } = {}) => field(name, line
+    ? `<input ${attrs(name, required)} type="text" dir="auto" value="${escapeHtml(form.fields[name] || "")}">`
+    : `<textarea ${attrs(name, required)} dir="auto" rows="2">${escapeHtml(form.fields[name] || "")}</textarea>`);
+  // A required choice starts on "Choose", never on a blank line.
+  const select = (name, values = PROMOTION_CHOICES[name], { required = true, empty = t("promoteChoose") } = {}) => field(name, `<select ${attrs(name, required)}>${empty === null ? "" : `<option value="">${escapeHtml(empty)}</option>`}${values.map((value) => `<option value="${escapeHtml(value)}"${form.fields[name] === value ? " selected" : ""}>${escapeHtml(promotionChoiceLabel(form, name, value))}</option>`).join("")}</select>`);
+  const grid = (html) => `<div class="j-flow-grid">${html}</div>`;
+  const verify = promotionCanVerify(form);
+  if (form.fields.verification_status === "verified" && !verify) form.fields.verification_status = "";
+  const verifiedBy = form.fields.verification_status === "verified" ? text("verified_by", { line: true }) : "";
+  let fields = "";
+  if (form.kind === "new" && form.lens === "strategic") {
+    fields = `${text("claim")}${grid(`${select("basis")}${select("confidence")}${select("evidence_strength")}${text("source_type", { line: true })}`)}${text("uncertainty")}${text("counter_evidence", { required: false })}`;
+  } else if (form.kind === "new") {
+    const statuses = PROMOTION_CHOICES.verification_status.filter((value) => value !== "verified" || verify);
+    fields = `${text("claim")}${grid(`${select("epistemic_type")}${select("source_tier")}${select("claim_source_fit")}${select("confidence")}`)}${text("uncertainty")}${text("limitations")}${text("counter_evidence")}${grid(`${select("replication_status", undefined, { empty: null })}${select("verification_status", statuses)}`)}${verifiedBy}`;
+  } else if (verify) {
+    // Fill keeps the record's verification unless the person sets it to
+    // verified. With no source field to fill, verified is the change, so it is
+    // asked as any required choice is.
+    const target = promotionTarget(form);
+    const only = filledEvidence("biopolitical", { item: target, source: form.source, excerpt: form.excerpt }) === null;
+    fields = `${select("verification_status", ["verified"], only ? {} : { required: false, empty: BIO.displayToken(state.lang, target.verification_status) })}${verifiedBy}`;
+  }
+  // The button that failed carries the reason, so focus back on it says why.
+  const said = promotionRefused(ex) ? ` aria-describedby="${id("refusal")}"` : "";
+  // The choice is named by the excerpt it is made from: "Kind" (in AR and FR
+  // the word for type) would sound like the Source type and Epistemic type fields.
+  const button = (action, key, variant) => `<button class="j-btn" type="button" data-variant="${variant}" id="${id(action)}" data-promote="${action}" data-case-focus="${caseFocusKey("promote", ex, action)}"${action === "review" ? said : ""}><span>${escapeHtml(t(key))}</span></button>`;
+  return `<div data-promote-form="${escapeHtml(ex)}" role="group" aria-label="${escapeHtml(t("promoteOpen"))}"><div class="j-flow-row" role="radiogroup" aria-labelledby="${id("text")}">${radios}</div>${fields}<div class="j-flow-row">${button("review", "promoteReview", "primary")}${button("cancel", "sourceCancel", "ghost")}</div></div>`;
+}
+// What an excerpt became in the analysis on screen, one line per pointer: its
+// id opens the record as "In this analysis" does, its revision numbered as the
+// revision history numbers it.
+function promotionPointersHtml(excerpt) {
+  const here = pointersHere(excerpt);
+  if (!here.length) return "";
+  const onScreen = new Set(arr(state.analysis.evidence?.items).map((item) => item?.id));
+  return here.map((pointer) => {
+    const n = revisionSequence(pointer.revision_id);
+    const [before, after = ""] = (n ? fillWords(t("promotePointer"), { n }) : t("promotePointerBare")).split("{id}");
+    const id = escapeHtml(pointer.evidence_id);
+    const there = onScreen.has(pointer.evidence_id);
+    const shown = there ? `<button type="button" data-case-record="${id}" data-case-focus="${caseFocusKey("pointer", excerpt.excerpt_id, pointer.evidence_id)}">${id}</button>` : `<bdi>${id}</bdi>`;
+    const notes = [pointer.changed_since && "promoteChangedSince", !there && "promoteNoLonger"].filter(Boolean).map((key) => ` · ${escapeHtml(t(key))}`).join("");
+    return `<p class="j-done-state" data-promote-pointer="${id}">${escapeHtml(before)}${shown}${escapeHtml(after)}${notes}</p>`;
+  }).join("");
+}
+// A pointer not saved: said with its reason and Save again, on its excerpt or,
+// when the excerpt is gone, at the top of the fold.
+function promotionUnsavedHtml(ex, unsaved) {
+  const id = (name) => escapeHtml(promotionId(ex, name));
+  const said = `${escapeHtml(fillWords(t("promoteNotSaved"), { id: unsaved.pointer.evidence_id }))} ${escapeHtml(pointerFailureText(unsaved.error))}`;
+  // An excerpt the case no longer holds can take no pointer: Save again could
+  // never succeed, so only the sentence stays, and it takes the focus.
+  if (unsaved.error?.code === "EXCERPT_GONE") return `<div data-promote-unsaved><p class="j-note" data-tone="warn" id="${id("unsaved")}" tabindex="-1" data-case-focus="${caseFocusKey("promote", ex, "unsaved")}">${said}</p></div>`;
+  return `<div data-promote-unsaved><p class="j-note" data-tone="warn" id="${id("unsaved")}">${said}</p><div class="j-flow-row"><button class="j-btn" type="button" id="${id("again")}" data-promote="again" data-excerpt="${escapeHtml(ex)}" data-case-focus="${caseFocusKey("promote", ex, "again")}" aria-describedby="${id("unsaved")}"><span>${escapeHtml(t("promoteSaveAgain"))}</span></button></div></div>`;
+}
+// A refusal is said under the form, or under the button, until the next try.
+// It takes focus when a redraw closed the form focus was in.
+function promotionRefusalHtml(ex, refused) {
+  return `<p class="j-note" data-tone="warn" id="${escapeHtml(promotionId(ex, "refusal"))}" data-promote-refusal tabindex="-1" data-case-focus="${caseFocusKey("promote", ex, "refusal")}">${escapeHtml(promotionText(refused.error))}</p>`;
+}
+// What is said about an excerpt the case no longer holds, under its text: a
+// pointer that could not be saved, or why the form opened on it closed.
+function promotionLostHtml(excerpts) {
+  const held = new Set(excerpts.map((excerpt) => excerpt.excerpt_id));
+  const here = (entry) => entry.workspaceId === state.activeWorkspaceId && entry.dossierId === caseDossier?.dossier_id && !held.has(entry.excerptId);
+  const said = [];
+  for (const entry of promotionUnsaved.values()) {
+    if (here({ ...entry, workspaceId: entry.pointer.workspace_id })) said.push([entry.excerptId, entry.basis.text, promotionUnsavedHtml(entry.excerptId, entry)]);
+  }
+  const refused = promotionRefusal;
+  if (refused?.text !== undefined && here(refused) && !said.some(([ex]) => ex === refused.excerptId)) said.push([refused.excerptId, refused.text, promotionRefusalHtml(refused.excerptId, refused)]);
+  if (!said.length) return "";
+  return `<ul class="j-done-list" role="list" data-promote-lost>${said.map(([ex, text, html]) => `<li class="j-done-item" data-case-excerpt="${escapeHtml(ex)}"><p class="j-done-text" dir="auto">${escapeHtml(text)}</p>${html}</li>`).join("")}</ul>`;
+}
+// A form whose excerpt is gone, no longer matches, or reads otherwise than when
+// it opened closes when the case file is drawn again, and says why; focus that
+// was in the form goes to that reason. A form of another case closes unsaid.
+function closeLostPromotion(view, held) {
+  const form = promotionForm;
+  if (!form || form.workspaceId !== state.activeWorkspaceId) return;
+  const said = (error) => {
+    promotionForm = null;
+    promotionRefusal = { workspaceId: form.workspaceId, excerptId: form.excerptId, dossierId: form.dossierId, text: form.basis.text, error };
+  };
+  if (!view || form.dossierId !== caseDossier?.dossier_id) {
+    promotionForm = null;
+    // The case's last source went with the excerpt: no fold to say it in now,
+    // so the reason waits for the fold to be drawn again.
+    if (form.dossierId === caseDossier?.dossier_id && !arr(caseDossier.excerpts).some((item) => item.excerpt_id === form.excerptId)) said(promotionError("EXCERPT_GONE"));
+    return;
+  }
+  const excerpt = view.excerpts.find((item) => item.excerpt_id === form.excerptId);
+  if (excerpt?.check.status === "matches" && excerpt.text === form.basis.text && excerpt.locator === form.basis.locator) {
+    // Its source as saved now (a link or title edited after the form opened),
+    // and Fill only for records it still relates to.
+    form.source = view.sources.find((source) => source.source_id === excerpt.source_id) || form.source;
+    const related = view.relations.bySource[excerpt.source_id] || [];
+    form.fills = form.fills.filter((evidenceId) => related.includes(evidenceId));
+    const chosen = form.kind.startsWith("fill:") ? form.kind.slice(5) : "";
+    if (!chosen || form.fills.includes(chosen)) return;
+    said(promotionError("SOURCE_NOT_RELATED", { evidenceId: chosen }));
+  } else said(promotionError(excerpt ? "EXCERPT_NOT_MATCHING" : "EXCERPT_GONE"));
+  let place = [];
+  try {
+    place = JSON.parse(held?.key || "[]");
+  } catch {
+    place = [];
+  }
+  if (place[0] === "promote" && place[1] === form.excerptId) held.key = JSON.stringify(["promote", form.excerptId, "refusal"]);
+}
+function promotionHtml(excerpt) {
+  const ex = excerpt.excerpt_id;
+  const id = (name) => escapeHtml(promotionId(ex, name));
+  const unsaved = promotionUnsaved.get(unsavedKey(state.activeWorkspaceId, ex));
+  if (unsaved) return promotionUnsavedHtml(ex, unsaved);
+  if (promotionPending.has(unsavedKey(state.activeWorkspaceId, ex))) return "";
+  const refused = promotionRefused(ex);
+  const refusal = refused ? promotionRefusalHtml(ex, refused) : "";
+  // Only a matching excerpt can be made evidence; one that no longer matches
+  // keeps what was said about it.
+  if (excerpt.check.status !== "matches") return refusal;
+  const block = promotionBlock(excerpt);
+  if (block) return `<p class="j-done-state" data-promote-block>${escapeHtml(t(block))}</p>`;
+  if (promotionForm?.excerptId === ex && promotionForm.workspaceId === state.activeWorkspaceId) return `${promotionFormHtml(promotionForm)}${refusal}`;
+  return `<div class="j-flow-row"><button class="j-btn" type="button" id="${id("open")}" data-promote="open" data-excerpt="${escapeHtml(ex)}" data-case-focus="${caseFocusKey("promote", ex, "open")}"${refused ? ` aria-describedby="${id("refusal")}"` : ""}><span>${escapeHtml(t("promoteOpen"))}</span></button></div>${refusal}`;
+}
+function promotionRedraw(focusId) {
+  drawCaseSources(false);
+  if (focusId) $(focusId)?.focus();
+}
+// The case read again from its store: the excerpt must still be there, match
+// its source, and read as when the form opened, in a case linked to the analysis.
+// A record to fill must still relate to that source in `payload`, the
+// analysis the change is made on.
+async function promotionMaterial(form, payload) {
+  const dossier = await DOSSIER_REPOSITORY.get(form.dossierId);
+  if (!dossier?.analyses.some((link) => link.workspace_id === form.workspaceId)) throw promotionError("ANALYSIS_NOT_LINKED");
+  const excerpt = arr(dossier.excerpts).find((item) => item.excerpt_id === form.excerptId);
+  const source = excerpt && arr(dossier.sources).find((item) => item.source_id === excerpt.source_id);
+  if (!source || excerpt.check?.status !== "matches" || excerpt.text !== form.basis.text || excerpt.locator !== form.basis.locator) throw promotionError("EXCERPT_NOT_MATCHING");
+  if (form.kind.startsWith("fill:")) {
+    const evidenceId = form.kind.slice(5);
+    const evidence = arr(payload.evidence?.items).filter((item) => typeof item?.id === "string" && item.id);
+    const related = relateEvidence({ evidence, sources: arr(dossier.sources) }).bySource[source.source_id] || [];
+    if (!related.includes(evidenceId)) throw promotionError("SOURCE_NOT_RELATED", { evidenceId });
+  }
+  return { excerpt, source };
+}
+async function openPromotion(control) {
+  const ex = control.dataset.excerpt;
+  const view = caseSourcesView();
+  const excerpt = view?.excerpts.find((item) => item.excerpt_id === ex);
+  const source = excerpt && view.sources.find((item) => item.source_id === excerpt.source_id);
+  if (!source || excerpt.check.status !== "matches") return;
+  const workspaceId = state.activeWorkspaceId;
+  const dossierId = caseDossier.dossier_id;
+  promotionBusy = true;
+  promotionRefusal = null;
+  let form = null;
+  try {
+    const workspace = await WORKSPACE_REPOSITORY.get(workspaceId);
+    if (!workspace) throw new Error("Workspace was not found on this device.");
+    if (workspace.working_draft.dirty) throw promotionError("DRAFT_NOT_CLEAN");
+    const lens = workspace.analysis_identity.lens_id === "biopolitical" ? "biopolitical" : "strategic";
+    const payload = workspace.working_draft.canonical_payload;
+    const items = arr(payload.evidence?.items);
+    const pointed = new Set(arr(excerpt.promotions).filter((pointer) => pointer.workspace_id === workspaceId).map((pointer) => pointer.evidence_id));
+    // Fill is offered for a related record this excerpt does not point to yet
+    // and only when it would change something: an empty source field, or, in
+    // Biopolitical, verified alone when that passes the lens's checks.
+    const verifiesAlone = (item) => {
+      if (lens !== "biopolitical" || !["unverified", "partially_verified"].includes(item.verification_status)) return false;
+      try {
+        return canVerify("biopolitical", payload, item, { validate: (value) => validateWorkspacePayload(workspace, value) });
+      } catch {
+        return false;
+      }
+    };
+    const fills = (view.relations.bySource[source.source_id] || []).filter((evidenceId) => {
+      const item = items.find((entry) => entry?.id === evidenceId);
+      return item && !pointed.has(evidenceId) && pointerIdOk(evidenceId) && (filledEvidence(lens, { item, source, excerpt }) !== null || verifiesAlone(item));
+    });
+    // A new record's id must be one the case can point to, before the form opens.
+    const newOk = pointerIdOk(nextEvidenceId(payload));
+    if (!newOk && !fills.length) throw promotionError("POINTER_ID_INVALID");
+    form = {
+      excerptId: ex, workspaceId, dossierId, lens, workspace, payload, source, excerpt, fills, newOk, kind: newOk ? "new" : `fill:${fills[0]}`,
+      basis: { text: excerpt.text, locator: excerpt.locator },
+      fields: { claim: excerpt.text, verified_by: readSettings().reviewerName || "", ...(lens === "biopolitical" ? { replication_status: "unknown" } : {}) },
+    };
+  } catch (error) {
+    promotionRefusal = { workspaceId, excerptId: ex, error };
+  }
+  promotionBusy = false;
+  if (state.activeWorkspaceId !== workspaceId) return;
+  if (form) promotionForm = form;
+  promotionRedraw(form ? promotionId(ex, "kind-0") : control.id);
+}
+async function reviewPromotion(control) {
+  const form = promotionForm;
+  const area = control.closest("[data-promote-form]");
+  if (!form || !area) return;
+  // An empty required field is refused at its field.
+  for (const field of area.querySelectorAll("[required]")) {
+    if (field.value.trim()) continue;
+    form.refused = field.dataset.promoteField;
+    return sourceFieldError(field, "sourceRequired");
+  }
+  promotionBusy = true;
+  control.disabled = true;
+  promotionRefusal = null;
+  try {
+    const workspace = await WORKSPACE_REPOSITORY.get(form.workspaceId);
+    if (!workspace) throw new Error("Workspace was not found on this device.");
+    const payload = workspace.working_draft.canonical_payload;
+    const { excerpt, source } = await promotionMaterial(form, payload);
+    if (workspace.working_draft.dirty) throw promotionError("DRAFT_NOT_CLEAN");
+    const fields = Object.fromEntries(PROMOTION_ASKED[form.lens].map((name) => [name, form.fields[name] ?? ""]));
+    let item;
+    let replaceId;
+    if (form.kind === "new") {
+      item = newEvidenceFrom(form.lens, { payload, source, excerpt, fields: form.lens === "biopolitical" ? { ...fields, verification_status: form.fields.verification_status } : fields });
+    } else {
+      replaceId = form.kind.slice(5);
+      const target = promotionTarget(form, payload);
+      const verify = form.lens === "biopolitical" && form.fields.verification_status === "verified" ? { verification_status: "verified", verified_by: form.fields.verified_by } : {};
+      item = target && filledEvidence(form.lens, { item: target, source, excerpt, fields: verify });
+      if (!item) throw promotionError("NO_RESOLUTION_CHANGES");
+    }
+    if (!pointerIdOk(item.id)) throw promotionError("POINTER_ID_INVALID");
+    if (arr(excerpt.promotions).length >= DOSSIER_PROMOTION_LIMIT && !excerpt.promotions.some((pointer) => pointer.workspace_id === form.workspaceId && pointer.evidence_id === item.id)) throw promotionError("PROMOTION_LIST_FULL");
+    const prepared = await preparePromotion(workspace, withEvidence(form.lens, payload, item, replaceId ? { replaceId } : {}), {
+      validate: (value) => validateWorkspacePayload(workspace, value),
+      deriveDiagnostics: (value) => resolutionDiagnosticsFor(workspace, value),
+    });
+    // What the record was made from; the pointer says if it changes after.
+    const basis = { text: excerpt.text, locator: excerpt.locator, source: { title: source.title, url: source.url, source_date: source.source_date } };
+    const pointer = { workspace_id: form.workspaceId, evidence_id: item.id, kind: replaceId ? "fill" : "new" };
+    const rationale = fillWords(t(excerpt.locator ? "ledgerFromSource" : "ledgerFromSourceNoLocator"), {
+      title: source.title,
+      locator: excerpt.locator,
+      date: checkedDay(excerpt.check.decided_at),
+      reason: excerpt.check.reason,
+    });
+    promotionBusy = false;
+    control.disabled = false;
+    await openResolutionTransaction(prepared.workspace, control, prepared.proposal, {
+      rationale,
+      // Confirm reads the case again with the same rule, against the analysis
+      // the commit is checked against (the store refuses any other).
+      beforeCommit: async () => {
+        try {
+          await promotionMaterial(form, payload);
+          return "";
+        } catch (error) {
+          return promotionText(error);
+        }
+      },
+      // The commit's revision id is commitResolution's own `rev_` and a
+      // random UUID, 40 characters on one line, so the case can always keep
+      // it; writePromotion still checks it as the case's reader does.
+      afterCommit: (saved) => {
+        if (promotionForm === form) promotionForm = null;
+        promotionRefusal = null;
+        writePromotion(form.excerptId, form.dossierId, { ...pointer, revision_id: saved.head_revision_id }, basis);
+      },
+    });
+  } catch (error) {
+    promotionBusy = false;
+    promotionRefusal = { workspaceId: form.workspaceId, excerptId: form.excerptId, error };
+    promotionRedraw(control.id);
+  }
+}
+// The pointer, written after the commit through the case's queue, on its
+// newest record. Not written, it stays in page memory with Save again.
+async function writePromotion(excerptId, dossierId, pointer, basis) {
+  let failure = null;
+  const key = unsavedKey(pointer.workspace_id, excerptId);
+  // Until this pointer is saved or said unsaved, the excerpt offers nothing:
+  // a second promotion meanwhile would take its place in page memory.
+  promotionPending.add(key);
+  caseWrites = caseWrites.then(async () => {
+    try {
+      if (!pointerIdOk(pointer.revision_id)) throw promotionError("POINTER_ID_INVALID");
+      const start = caseDossier?.dossier_id === dossierId ? caseDossier : await DOSSIER_REPOSITORY.get(dossierId);
+      if (!start) throw promotionError("ANALYSIS_NOT_LINKED");
+      const saved = await writeCase(start, (current) => addPromotion(current, excerptId, pointer, basis));
+      if (caseDossier?.dossier_id === saved.dossier_id) {
+        caseDossier = saved;
+        keepSourcesSeen(saved, excerptId);
+      }
+    } catch (error) {
+      failure = error;
+    }
+  });
+  await caseWrites;
+  promotionPending.delete(key);
+  if (failure) promotionUnsaved.set(key, { pointer, basis, dossierId, excerptId, error: failure });
+  else promotionUnsaved.delete(key);
+  // The fold opens again. Focus goes to the excerpt's new "Evidence E7" line,
+  // or Save again, unless the analyst has moved it meanwhile. As in 1B, focus
+  // still on the page, in the dialog, on the excerpt's own item, or on a
+  // container around it (WebKit does not focus a clicked button) has not moved.
+  const active = document.activeElement;
+  const fold = $("case-evidence")?.querySelector("[data-case-sources]");
+  const item = fold && [...fold.querySelectorAll("[data-case-excerpt]")].find((node) => node.dataset.caseExcerpt === excerptId);
+  const place = item || fold;
+  const stayed = !active || $("resolutionBackdrop").contains(active) || (place ? active.contains(place) || place.contains(active) : active === document.body);
+  if (fold) fold.open = true;
+  drawCaseSources(false);
+  if (!stayed) return;
+  const line = JSON.stringify(["pointer", excerptId, pointer.evidence_id]);
+  const target = failure
+    ? $(promotionId(excerptId, failure.code === "EXCERPT_GONE" ? "unsaved" : "again"))
+    : [...document.querySelectorAll("#case-evidence [data-case-focus]")].find((node) => node.dataset.caseFocus === line)
+      || [...document.querySelectorAll("#case-evidence [data-case-source-row]")].find((node) => node.contains($(promotionId(excerptId, "open"))));
+  target?.focus({ preventScroll: true });
+}
+// A pointer this tab saved is no change elsewhere: what Your sources holds open
+// on that excerpt (an edit, a check, an armed removal, the rows' shown items)
+// takes the saved excerpt, when it differs from it by its pointers only.
+function keepSourcesSeen(saved, excerptId) {
+  const fresh = saved.excerpts.find((item) => item.excerpt_id === excerptId);
+  if (!fresh) return;
+  const withoutPointers = ({ promotions, ...rest }) => canonicalStringify(rest);
+  const swap = (seen) => (seen?.excerpt_id === excerptId && withoutPointers(seen) === withoutPointers(fresh) ? fresh : seen);
+  if (excerptEditor?.seen) excerptEditor.seen = swap(excerptEditor.seen);
+  if (excerptDecision) excerptDecision.seen = swap(excerptDecision.seen);
+  const armed = sourceRemovals.get(excerptId);
+  if (armed) armed.seen = swap(armed.seen);
+  const armedSource = sourceRemovals.get(fresh.source_id);
+  if (armedSource?.excerpts) armedSource.excerpts = armedSource.excerpts.map(swap);
+  for (const row of $("sourcesBody").querySelectorAll("[data-excerpt-row]")) if (row.excerptSeen) row.excerptSeen = swap(row.excerptSeen);
+  for (const row of $("sourcesBody").querySelectorAll("[data-source-row]")) if (row.excerptsSeen) row.excerptsSeen = row.excerptsSeen.map(swap);
+}
+async function savePromotionAgain(control) {
+  const ex = control.dataset.excerpt;
+  const entry = promotionUnsaved.get(unsavedKey(state.activeWorkspaceId, ex));
+  if (!entry) return;
+  promotionBusy = true;
+  control.disabled = true;
+  await writePromotion(ex, entry.dossierId, entry.pointer, entry.basis);
+  promotionBusy = false;
+}
+$("reviewContent").addEventListener("click", (event) => {
+  const control = event.target.closest?.("[data-promote]");
+  if (!control || promotionBusy) return;
+  promotionTouches += 1;
+  const action = control.dataset.promote;
+  if (action === "open") openPromotion(control);
+  else if (action === "review") reviewPromotion(control);
+  else if (action === "again") savePromotionAgain(control);
+  else if (action === "cancel") {
+    const ex = promotionForm?.excerptId;
+    promotionForm = null;
+    promotionRefusal = null;
+    promotionRedraw(ex && promotionId(ex, "open"));
+  }
+});
+function promotionInput(event) {
+  const field = event.target.closest?.("[data-promote-field]");
+  if (!field || !promotionForm) return;
+  promotionTouches += 1;
+  const name = field.dataset.promoteField;
+  if (name === "kind") {
+    if (event.type !== "change" || !field.checked) return;
+    promotionForm.kind = field.value;
+    promotionForm.refused = "";
+    promotionRefusal = null;
+    promotionRedraw(field.id);
+    return;
+  }
+  promotionForm.fields[name] = field.value;
+  if (promotionForm.refused === name) promotionForm.refused = "";
+  if (field.hasAttribute("aria-invalid")) {
+    field.removeAttribute("aria-invalid");
+    $(`${field.id}-error`).hidden = true;
+  }
+  // A choice can change what verification may be: drawn again on a choice,
+  // never on a keystroke.
+  if (event.type === "change" && field.tagName === "SELECT" && promotionForm.lens === "biopolitical") promotionRedraw(field.id);
+}
+$("reviewContent").addEventListener("input", promotionInput);
+$("reviewContent").addEventListener("change", promotionInput);
 function wireCaseOutline(selector, datasetKey) {
   document.querySelectorAll(`#reviewNav ${selector}`).forEach((button) => {
     const key = button.dataset[datasetKey];
@@ -7728,9 +8538,10 @@ $("reviewContent").addEventListener("focusin", (event) => {
   }));
 });
 // The case file prints whole: its folds open for the print and close after.
+// Your sources do not print (case.css), so their fold stays as it is.
 let foldsOpenedToPrint = [];
 window.addEventListener("beforeprint", () => {
-  foldsOpenedToPrint = [...$("reviewContent").querySelectorAll("details:not([open])")];
+  foldsOpenedToPrint = [...$("reviewContent").querySelectorAll("details:not([open]):not([data-case-sources])")];
   for (const fold of foldsOpenedToPrint) fold.open = true;
 });
 window.addEventListener("afterprint", () => {
@@ -8864,7 +9675,11 @@ function renderResolutionProposal() {
   updateResolutionCommitState();
 }
 
-async function openResolutionTransaction(workspace = null, invoker = document.activeElement, preparedProposal = null) {
+// Only Make it evidence passes options: a rationale to start from, a check
+// made before the commit (a refusal it returns is said in the dialog, nothing
+// committed), and what follows a saved commit. Other callers pass none.
+let resolutionOptions = {};
+async function openResolutionTransaction(workspace = null, invoker = document.activeElement, preparedProposal = null, options = {}) {
   try {
     const loaded = workspace || await WORKSPACE_REPOSITORY.get(state.activeWorkspaceId);
     if (!loaded) throw new Error("Workspace was not found on this device.");
@@ -8874,13 +9689,14 @@ async function openResolutionTransaction(workspace = null, invoker = document.ac
       deriveDiagnostics: (payload) => resolutionDiagnosticsFor(loaded, payload),
     });
     resolutionDialogInvoker = invoker;
+    resolutionOptions = options;
     $("resolutionClose").setAttribute("aria-label", labelText(
       "Close resolution transaction", "إغلاق معاملة الاعتماد", "Fermer la transaction de résolution",
     ));
     const settings = readSettings();
     if (!settings.reviewerId) writeSettings({ reviewerId: globalThis.crypto.randomUUID() });
     $("resolutionReviewer").value = settings.reviewerName || "";
-    $("resolutionRationale").value = "";
+    $("resolutionRationale").value = options.rationale || "";
     $("resolutionConfirm").checked = false;
     $("resolutionStatus").textContent = "";
     $("resolutionBackdrop").classList.add("show");
@@ -8890,6 +9706,7 @@ async function openResolutionTransaction(workspace = null, invoker = document.ac
   } catch (error) {
     state.resolutionWorkspace = null;
     state.resolutionProposal = null;
+    resolutionOptions = {};
     setWorkspaceStatus(error?.code === "NO_RESOLUTION_CHANGES" ? "warn" : "bad", error?.code === "NO_RESOLUTION_CHANGES" ? resolutionText("noChanges") : workspaceFailureMessage(error));
   }
 }
@@ -8900,6 +9717,7 @@ function closeResolutionTransaction() {
   $("resolutionBackdrop").setAttribute("aria-hidden", "true");
   state.resolutionWorkspace = null;
   state.resolutionProposal = null;
+  resolutionOptions = {};
   if (resolutionDialogInvoker?.isConnected) resolutionDialogInvoker.focus();
   resolutionDialogInvoker = null;
 }
@@ -8910,7 +9728,17 @@ async function commitResolutionTransaction() {
   updateResolutionCommitState();
   $("resolutionStatus").dataset.tone = "idle";
   $("resolutionStatus").textContent = resolutionText("committing");
+  const { beforeCommit, afterCommit } = resolutionOptions;
   try {
+    const refusal = beforeCommit ? await beforeCommit() : "";
+    if (refusal) {
+      resolutionCommitPending = false;
+      $("resolutionStatus").dataset.tone = "crit";
+      $("resolutionStatus").textContent = refusal;
+      updateResolutionCommitState();
+      if (!$("resolutionDialog").contains(document.activeElement)) $("resolutionDialog").focus();
+      return;
+    }
     const settings = readSettings();
     const reviewerId = settings.reviewerId || globalThis.crypto.randomUUID();
     const reviewerName = $("resolutionReviewer").value.trim();
@@ -8931,6 +9759,7 @@ async function commitResolutionTransaction() {
     applyWorkspaceAnalysis(saved, { keepPendingReply: true });
     closeResolutionTransaction();
     setWorkspaceStatus("good", message);
+    if (afterCommit) afterCommit(saved);
   } catch (error) {
     resolutionCommitPending = false;
     noteWriteConflict(error, state.resolutionWorkspace);
@@ -9031,12 +9860,14 @@ async function renderReviewLedger() {
     return;
   }
   $("ledgerApply").disabled = ledgerEventPending;
-  $("ledgerSelectedTask").innerHTML = `${ledgerChip(selected.current.status, ledgerText(selected.current.status))}<strong>${escapeHtml(ledgerTaskLabels(selected.task).reason)}</strong><code dir="ltr">${escapeHtml(selected.task.targetId)}</code>`;
+  const sourceContext = ledgerSourceContext(selected.task);
+  $("ledgerSelectedTask").innerHTML = `${ledgerChip(selected.current.status, ledgerText(selected.current.status))}<strong>${escapeHtml(ledgerTaskLabels(selected.task).reason)}</strong><code dir="ltr">${escapeHtml(selected.task.targetId)}</code>${sourceContext ? ledgerSourceHtml(sourceContext) : ""}`;
   const previousAction = $("ledgerAction").value;
   const actions = ledgerActionsFor(selected.current.status);
   $("ledgerAction").innerHTML = actions.map((action) => `<option value="${action}">${escapeHtml(ledgerText(action))}</option>`).join("");
   if (actions.includes(previousAction)) $("ledgerAction").value = previousAction;
   toggleLedgerWaiver();
+  startLedgerRationale(selected.task);
   const history = state.ledgerWorkspace.review_ledger.events.filter((event) => event.task_key === selected.key).reverse();
   $("ledgerHistory").innerHTML = history.length ? history.map((event) => `<li><div><strong>${escapeHtml(ledgerText(event.type))}</strong><span>${escapeHtml(event.reviewer.display_name)}</span><time datetime="${escapeHtml(event.occurred_at)}">${escapeHtml(new Date(event.occurred_at).toLocaleString(state.lang))}</time></div>${event.rationale ? `<p>${escapeHtml(event.rationale)}</p>` : ""}${event.note ? `<p>${escapeHtml(event.note)}</p>` : ""}</li>`).join("") : "";
   $("ledgerHistoryEmpty").hidden = history.length > 0;
@@ -9061,6 +9892,61 @@ function ledgerTaskLabels(task) {
 
 function toggleLedgerWaiver() {
   $("ledgerWaiverFields").hidden = $("ledgerAction").value !== "task_waived";
+}
+
+// Review context (RESEARCH-1C S9, research-promotion.md): a provenance task on
+// evidence related to one of the case's sources names that source, and
+// Complete may start its rationale from the source's matching excerpt checked
+// last. On screen only: the review plan never reads the case, and nothing
+// reaches the ledger until the person appends the event.
+let ledgerStartText = "";
+const fillWords = (text, values) => text.replace(/\{(\w+)\}/g, (whole, key) => (Object.hasOwn(values, key) ? values[key] : whole));
+function ledgerSourceContext(task) {
+  if (task?.phase !== "verify_provenance" || !state.ledgerWorkspace) return null;
+  if (state.ledgerWorkspace.workspace_id !== state.activeWorkspaceId || !caseHolds(state.ledgerWorkspace.workspace_id)) return null;
+  const view = caseSourcesView();
+  const relation = view && Object.hasOwn(view.relations.byEvidence, task.targetId) ? view.relations.byEvidence[task.targetId] : null;
+  const source = relation && view.sources.find((item) => item.source_id === relation.source_id);
+  if (!source) return null;
+  const matching = view.excerpts.filter((excerpt) => excerpt.source_id === source.source_id && excerpt.check?.status === "matches");
+  const last = matching.reduce((best, excerpt) => (!best || Date.parse(excerpt.check.decided_at) > Date.parse(best.check.decided_at) ? excerpt : best), null);
+  const rationale = last ? fillWords(t(last.locator ? "ledgerFromSource" : "ledgerFromSourceNoLocator"), {
+    title: source.title,
+    locator: last.locator,
+    date: checkedDay(last.check.decided_at),
+    reason: last.check.reason,
+  }) : "";
+  return { source, matching: matching.length, rationale };
+}
+// The day of a check, for a rationale the person may save: without the
+// invisible direction marks Intl puts in an Arabic date (U+200E, U+200F,
+// U+061C), which would stay unseen in the saved ledger and its exports.
+function checkedDay(iso) {
+  const marks = new RegExp(`[${String.fromCharCode(0x200e, 0x200f, 0x61c)}]`, "g");
+  return new Intl.DateTimeFormat(state.lang, { dateStyle: "medium" }).format(new Date(iso)).replace(marks, "");
+}
+function ledgerSourceHtml(context) {
+  const [before, after = ""] = t("ledgerYourSource").split("{title}");
+  const count = context.matching ? ` · ${escapeHtml(fillWords(t("ledgerMatching"), { n: String(context.matching) }))}` : "";
+  return `<p data-ledger-source>${escapeHtml(before)}<bdi dir="auto">${escapeHtml(context.source.title)}</bdi>${escapeHtml(after)}${count}</p>`;
+}
+// Only an empty field, or one still holding the text started here, changes:
+// what the person typed is never replaced. Complete is "chosen" when it is the
+// selected action, including as an in-review task's first action: a select
+// cannot be chosen again on the option it shows. The text is only a start in
+// the field; nothing reaches the ledger until the person applies it, and a
+// start left as it was goes with the dialog.
+function startLedgerRationale(task) {
+  const field = $("ledgerRationale");
+  if (field.value && field.value !== ledgerStartText) return;
+  const start = $("ledgerAction").value === "task_completed" ? ledgerSourceContext(task)?.rationale || "" : "";
+  field.value = start;
+  ledgerStartText = start;
+}
+function changeLedgerAction() {
+  toggleLedgerWaiver();
+  const task = state.ledgerTasks.find((item) => item.id === state.ledgerSelectedTaskId);
+  if (task) startLedgerRationale(task);
 }
 
 async function openReviewLedger(tasks, invoker = document.activeElement) {
@@ -9095,6 +9981,9 @@ function closeReviewLedger() {
   state.ledgerWorkspace = null;
   state.ledgerTasks = [];
   state.ledgerSelectedTaskId = null;
+  // A rationale started from the case and left as it was goes with the dialog.
+  if (ledgerStartText && $("ledgerRationale").value === ledgerStartText) $("ledgerRationale").value = "";
+  ledgerStartText = "";
   if (ledgerDialogInvoker?.isConnected) ledgerDialogInvoker.focus();
   ledgerDialogInvoker = null;
 }
@@ -9159,8 +10048,7 @@ async function exportReviewLedger() {
   download(`${safeFileSlug(state.ledgerWorkspace.metadata.title)}-review-ledger.json`, `${JSON.stringify(manifest, null, 2)}\n`, "application/json");
 }
 
-async function persistImportedAnalysis(analysis) {
-  const previousId = state.activeWorkspaceId;
+async function persistImportedAnalysis(analysis, previousId = state.activeWorkspaceId) {
   // Until it is saved, no saved analysis is the one on screen.
   state.activeWorkspaceId = null;
   state.workspaceSaveState = "saving";
@@ -9216,9 +10104,13 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   if (isSupportedLanguage(analysis.language)) setAnalysisLanguage(analysis.language);
   // The case that holds this analysis gives its question; another case on
   // screen keeps its own; with none, the analysis gives it.
-  if (caseHolds(workspace.workspace_id)) {
-    state.topic = caseDossier.framing.question || analysis.subject?.title || workspace.metadata.title;
-    state.context = caseDossier.framing.timeframe;
+  const held = caseHolds(workspace.workspace_id);
+  // What the analyst typed there and is not saved yet stays (a save may be
+  // under way); the rest is the case's, shown, not written.
+  const typed = new Set(["question", "timeframe"].filter((key) => held && typedUnsaved(key)));
+  if (held) {
+    state.topic = typed.has("question") ? $("topicInput").value : caseDossier.framing.question || analysis.subject?.title || workspace.metadata.title;
+    state.context = typed.has("timeframe") ? $("timeframeInput").value : caseDossier.framing.timeframe;
   } else if (caseOnScreen()) {
     state.topic = $("topicInput").value;
     state.context = $("timeframeInput").value;
@@ -9228,6 +10120,9 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   }
   $("topicInput").value = state.topic;
   $("timeframeInput").value = state.context;
+  // The case's own question (or, with none, the analysis title) is shown,
+  // not written: the case keeps what the analyst wrote.
+  if (held) seeCaseFields(...["question", "timeframe"].filter((key) => !typed.has(key)));
   // An edit saved to the analysis leaves a reply pasted but not imported yet.
   const keepReply = keepPendingReply && hasPendingReply();
   savedReply = JSON.stringify(analysis, null, 2);
@@ -9355,7 +10250,7 @@ function caseListText(key) {
     exists: ["This case is already on this device. Nothing was overwritten.", "هذه القضية موجودة على هذا الجهاز. لم تتم الكتابة فوق أي بيانات.", "Ce dossier est déjà sur cet appareil. Rien n’a été écrasé."],
     notCase: ["This file is not an exported case.", "هذا الملف ليس قضية مصدّرة.", "Ce fichier n’est pas un dossier exporté."],
     changed: ["This case file was changed or damaged, so it was not restored.", "تغيّر ملف القضية هذا أو تلف، فلم يُستعد.", "Ce fichier de dossier a été modifié ou endommagé ; il n’a pas été restauré."],
-    tooLarge: ["A case file must not exceed 24 MiB.", "يجب ألا يتجاوز ملف القضية 24 ميغابايت.", "Un fichier de dossier ne doit pas dépasser 24 Mio."],
+    tooLarge: ["A case file must not exceed 28 MiB.", "يجب ألا يتجاوز ملف القضية 28 ميغابايت.", "Un fichier de dossier ne doit pas dépasser 28 Mio."],
     gone: ["This case is no longer on this device; it may have been removed in another tab.", "لم تعد هذه القضية على هذا الجهاز؛ ربما أُزيلت في علامة تبويب أخرى.", "Ce dossier n’est plus sur cet appareil ; il a peut-être été supprimé dans un autre onglet."],
   }[key];
   return labelText(...copy);
@@ -9446,6 +10341,8 @@ async function openCase(id) {
         showCase(dossier);
         $("topicInput").value = state.topic = dossier.framing.question;
         $("timeframeInput").value = state.context = dossier.framing.timeframe;
+        // As the fields hold them (a line break does not fit in one).
+        seeCaseFields("question", "timeframe");
         // A reply pasted, or awaited, for the case before is not this case's answer.
         if (hasPendingReply()) {
           $("jsonInput").value = "";
@@ -9508,7 +10405,7 @@ async function removeCase(button) {
 // Restored as written, never over a case already here; it opens only when asked.
 async function restoreCaseFile(file) {
   try {
-    if (file.size > DOSSIER_FILE_LIMIT) throw new DossierError("DOSSIER_FILE_TOO_LARGE", "Case files must not exceed 24 MiB.");
+    if (file.size > DOSSIER_FILE_LIMIT) throw new DossierError("DOSSIER_FILE_TOO_LARGE", "Case files must not exceed 28 MiB.");
     await DOSSIER_REPOSITORY.create(await readDossierFile(await file.text()));
     setCaseListStatus("good", caseListText("restored"));
   } catch (error) {
@@ -9624,6 +10521,8 @@ async function refreshWorkspaceLife() {
   APPLICATION_SHELL.render();
   renderLifeBanners();
   renderWorkLife();
+  // Make it evidence says when the working draft has changes to commit first.
+  refreshCaseSources();
 }
 
 const currentLife = () => (state.workspaceLife?.workspaceId === state.activeWorkspaceId ? state.workspaceLife : null);
@@ -9827,6 +10726,7 @@ function restorableInputs() {
     caseDossier?.dossier_id,
     caseDossier?.revision,
     sourceTouches,
+    promotionTouches,
     state.activeWorkspaceId,
     state.analysisLens,
     state.analysisLangFollowsUi ? "follows interface" : state.analysisLang,
@@ -10163,6 +11063,10 @@ $("importBtn").onclick = async () => {
   $("topicStatus").textContent = t("analysisImported");
   toast(t("analysisImported"), "", { announce: false });
   if (needsReviewGraph(a)) await loadBiopoliticalGraph().catch(() => {});
+  // Drawn before it is saved, the answer is no saved analysis yet: its case
+  // file shows nothing of the one on screen before (pointers, a form open there).
+  const previousId = state.activeWorkspaceId;
+  state.activeWorkspaceId = null;
   renderAll();
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
@@ -10171,7 +11075,7 @@ $("importBtn").onclick = async () => {
     .getElementById("reviewPanel")
     .scrollIntoView({ behavior: "auto", block: "start" });
   arriveAtReview();
-  const saved = await persistImportedAnalysis(a);
+  const saved = await persistImportedAnalysis(a, previousId);
   if (!saved) return;
   await linkCase(saved, importedFor);
   // A case opened meanwhile keeps the analysis being prepared for it.
@@ -10400,7 +11304,7 @@ $("editorField").addEventListener("keydown", (event) => {
 $("editorField").addEventListener("input", scheduleEditorRecovery);
 $("editorBackdrop").addEventListener("click", (event) => { if (event.target === $("editorBackdrop")) closeCanonicalEditor(); });
 $("ledgerClose").onclick = closeReviewLedger;
-$("ledgerAction").onchange = toggleLedgerWaiver;
+$("ledgerAction").onchange = changeLedgerAction;
 $("ledgerApply").onclick = applyReviewLedgerEvent;
 $("ledgerExport").onclick = exportReviewLedger;
 $("ledgerReviewer").onchange = () => writeSettings({ reviewerName: $("ledgerReviewer").value.trim() });
@@ -10466,11 +11370,13 @@ $("modalCopy").onclick = async () => {
 // Kept for a reload as typed, like a pasted reply.
 $("topicInput").addEventListener("input", () => {
   state.topic = $("topicInput").value;
+  caseTyped.add("question");
   keepTrip();
   scheduleCaseSave();
 });
 $("timeframeInput").addEventListener("input", () => {
   state.context = $("timeframeInput").value;
+  caseTyped.add("timeframe");
   keepTrip();
   scheduleCaseSave();
 });

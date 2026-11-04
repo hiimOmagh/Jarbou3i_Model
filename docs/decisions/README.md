@@ -10,6 +10,7 @@ superseded, but its history is not rewritten.
 | [ADR-0003](0003-self-hosted-typeface.md) | Proposed | One self-hosted typeface, Readex Pro, for Arabic and Latin |
 | [ADR-0004](0004-research-dossier-store.md) | Proposed | The research dossier lives in its own database, beside the workspaces |
 | [ADR-0005](0005-sources-in-the-dossier-record.md) | Proposed | Sources and excerpts live in the dossier record, format 2 |
+| [ADR-0006](0006-promotion-through-resolution.md) | Proposed | An excerpt becomes evidence only through a committed resolution |
 
 `Proposed` means the decision is part of an unmerged implementation package.
 After the package is accepted, the status becomes `Accepted` in a dedicated

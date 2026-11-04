@@ -168,7 +168,7 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
 - **Export** downloads the sealed record as `<question>-case.json`, never
   inside a workspace bundle.
 - **Restore a case from a file** reads the file back only if it verifies
-  (`readDossierFile`; at most `DOSSIER_FILE_LIMIT`, 24 MiB since `RESEARCH-1B`). A case already on the device is never
+  (`readDossierFile`; at most `DOSSIER_FILE_LIMIT`, 28 MiB since `RESEARCH-1C`). A case already on the device is never
   overwritten. A restored case opens only when asked.
 - **Remove** takes a second click and removes the case, never its answers.
   A damaged case is listed as unreadable and can only be removed.
@@ -201,7 +201,11 @@ criterion's line appears once. `created_at` and `updated_at` are times, and
 is refused as `DOSSIER_FULL`, never as a field too long.
 
 A write that loses to another tab (`WRITE_CONFLICT`) is made again, once, on
-the newer record: the framing on screen replaces the stored one, a decision
+the newer record: the framing fields changed on this screen since it was
+shown or last saved replace their stored values, and the others keep the
+stored ones; a value the app puts in a field (the case's question after a
+commit, or the analysis title when the case has none) is not a change (since `RESEARCH-1C`; before, the whole framing on screen
+replaced the stored one, so a later save undid another tab's change), a decision
 applies to the same criterion (id and line) or is refused, and a link is
 added. An answer is linked to the case that was on screen when its import
 began, even if another case has been opened since.

@@ -105,6 +105,9 @@ test.describe("What the analysis covers", () => {
     await openStep(page, "topic");
     await page.locator("#caseDone").fill("Each exit route is sourced\nTwo rival accounts are tested\nA third check");
     await expect.poll(async () => (await readDossiers(page))[0].completion.map((criterion) => criterion.status)).toEqual(["met", "open", "open"]);
+    // Only what this screen changed is saved: the limits the other tab wrote,
+    // which this screen never showed, are kept.
+    expect((await readDossiers(page))[0].framing.limits).toEqual(["Changed elsewhere"]);
 
     await page.reload();
     await page.locator("#reviewNavShortcut").click();
@@ -215,6 +218,8 @@ test.describe("What the analysis covers", () => {
     const answerRow = page.locator(`#workspaceList [data-workspace-row="${link.workspace_id}"]`);
     await expect(answerRow).toHaveAttribute("aria-current", "true");
     await expect(page.locator("#caseScopeOut")).toHaveValue("Vaccine efficacy");
+    // The case's question, not the sample's title left in the field.
+    await expect(page.locator("#topicInput")).toHaveValue(question);
 
     await row.getByRole("button", { name: "Remove" }).click();
     await row.getByRole("button", { name: /^Click again/ }).click();
@@ -223,6 +228,35 @@ test.describe("What the analysis covers", () => {
     await expect.poll(async () => (await readDossiers(page)).length).toBe(0);
     await expect(answerRow).toBeVisible();
     await expect(page.locator("#caseScopeOut")).toHaveValue("");
+  });
+
+  test("a case holding what its fields cannot show is opened, and a save writes only what the analyst changed", async ({ page }) => {
+    const changeElsewhere = (framing) => page.evaluate(async (changed) => {
+      const { createDossierRepository, createIndexedDbDossierBackend, updateDossier } = await import("./src/core/research-dossier.js");
+      const repository = createDossierRepository({ backend: createIndexedDbDossierBackend() });
+      const [dossier] = await repository.list();
+      await repository.save(await updateDossier(dossier, { framing: { ...dossier.framing, ...changed } }), { expectedRevision: dossier.revision });
+      repository.close();
+    }, framing);
+    await frameCase(page);
+    // A stored case may hold an empty item or a timeframe on two lines (a
+    // restored file can); the fields show an empty line, and one line.
+    await changeElsewhere({ scope_in: ["", "Exit routes"], timeframe: "2020\n2021" });
+    // Opened from Cases, once the sample has taken the screen.
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#caseScopeOut")).toHaveValue("");
+    await page.locator("#workspaceSaveState").click();
+    await page.locator("#caseList [data-case-row]").getByRole("button", { name: "Open" }).click();
+    await expect(page.locator("#caseListStatus")).toContainText("Case opened");
+    await page.locator("#workspaceClose").click();
+    await openStep(page, "topic");
+    await expect(page.getByLabel("In scope", { exact: true })).toHaveValue("\nExit routes");
+    await expect(page.locator("#timeframeInput")).toHaveValue("20202021");
+    // Another tab changes them; this screen changes another field only.
+    await changeElsewhere({ scope_in: ["Exit routes", "Appeals"], timeframe: "2022" });
+    await page.getByLabel("Out of scope", { exact: true }).fill("Vaccine efficacy and safety");
+    await expect.poll(async () => (await readDossiers(page))[0].framing.scope_out).toEqual(["Vaccine efficacy and safety"]);
+    expect((await readDossiers(page))[0].framing).toMatchObject({ scope_in: ["Exit routes", "Appeals"], timeframe: "2022" });
   });
 
   test("Reset app data removes every dossier and empties the fields", async ({ page }) => {

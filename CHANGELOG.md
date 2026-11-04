@@ -95,6 +95,37 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### From your sources to the evidence (RESEARCH-1C)
+
+- When the analysis on screen belongs to your case, its case file shows your
+  sources beside the evidence (AR/EN/FR, both lenses): an evidence record
+  that comes from one of your sources says so under its title, by its link
+  or, with no link, by its source title; and a **Your sources** fold after
+  the evidence records lists each source, the records from it, and its
+  excerpts with your checks. Neither is printed. Without a case, the case
+  file, reports and exports are exactly as before.
+- **Make it evidence** on an excerpt that matches its source: a new evidence
+  record from the source and the excerpt, or a related record's empty link,
+  date or place filled from them. You give every judgement the lens asks
+  for; in the Biopolitical lens, verified is offered only when its checks
+  pass, and a related record may be set to verified even when it has
+  nothing left to fill. The change opens in the resolution dialog as one revision, with a
+  rationale you can start from, and nothing is saved until you confirm.
+  The case is read again before the dialog opens and before the commit.
+- The excerpt then shows the record and its revision, and says "Changed
+  since" when the excerpt or its source is edited later. A link the case
+  could not save is said, with **Save again**. Up to 10 per excerpt.
+- In the review ledger, a provenance task on a record from your source names
+  it, and Complete starts the rationale from your check. The review plan
+  itself is the same with and without a case.
+- Long record ids wrap on narrow screens instead of widening the page.
+- What the analysis covers saves only the fields you changed on this screen;
+  a value the app put in a field, such as the case's question after a commit,
+  is not your change, so a case with no question no longer takes the analysis
+  title shown in its place. Before, any later save here (one made when you left the step, too) wrote
+  every field back, undoing what another tab had changed in the others once
+  this tab had saved anything to the case after it.
+
 ### Your sources, kept with the case (RESEARCH-1B)
 
 - The topic step has a second fold, **Your sources** (AR/EN/FR): each source
@@ -114,7 +145,7 @@
   never sent. Step 3 says how many of your sources are sent.
 - The cases list says how many sources a case has. A case saved by a newer
   version of the app is listed as such and kept. A case file may be up to
-  24 MiB, room for the largest case the record allows.
+  28 MiB, room for the largest case the record allows.
 - Pasted text can no longer close the Biopolitical prompt's material tags.
 - A change made in another tab is made again once on the newer case, and is
   refused, with what to do, when the item you were changing has changed

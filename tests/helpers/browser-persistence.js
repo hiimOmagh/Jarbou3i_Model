@@ -384,3 +384,30 @@ export function beginLongPersistenceWorkflow(testInfo, workflowName) {
     ).toBeLessThanOrEqual(durationBudgetMs);
   };
 }
+
+// Hold the startup restore on the next load right after it takes its snapshot
+// of what the user can change, before it reads anything from storage. Storage
+// stays usable, so the user can open, type and save meanwhile; release lets the
+// restore decide as it would on a slow device.
+export async function holdStartupRestore(page) {
+  await page.route("**/src/app.js", async (route) => {
+    const response = await route.fetch();
+    const source = await response.text();
+    const call = "\nrestoreAfterLoad();";
+    const read = "const trip = await tripWrites.then(findTrip)";
+    if (source.split(call).length !== 2 || source.split(read).length !== 2) throw new Error("Cannot hold the startup restore");
+    const body = source
+      .replace(call, "\nrestoreAfterLoad().finally(() => { window.__startupRestoreDone = true; });")
+      .replace(read, `await new Promise((resolve) => { window.__releaseStartupRestore = resolve; });\n  ${read}`);
+    await route.fulfill({ response, body });
+  });
+  return {
+    async waitUntilHeld() {
+      await expect.poll(() => page.evaluate(() => typeof window.__releaseStartupRestore)).toBe("function");
+    },
+    async release() {
+      await page.evaluate(() => window.__releaseStartupRestore());
+      await expect.poll(() => page.evaluate(() => Boolean(window.__startupRestoreDone))).toBe(true);
+    },
+  };
+}

@@ -93,7 +93,55 @@
   }
   .j-case-link > small { display: none; }
 }
+/* Your sources beside the evidence (RESEARCH-1C S8): a record's line under its
+   title, and a fold after the evidence records ruled as the diagnostics fold.
+   Its source and evidence links are buttons that read as links. */
+.j-case-doc [data-case-source-line] { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; overflow-wrap: anywhere; }
+.j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn) {
+  display: inline; margin: 0; padding: 0; border: 0; background: none;
+  color: var(--j-signal); font: inherit; font-weight: 600; text-align: start; text-decoration: underline; text-underline-offset: 2px;
+  overflow-wrap: anywhere; cursor: pointer;
+}
+.j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn):hover { text-decoration-thickness: 2px; }
+.j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn):focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-case-doc [data-case-source-row]:focus { outline: none; }
+.j-case-doc [data-case-source-row]:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-case-doc [data-case-sources] { margin-top: var(--j-s-4); border: 0; border-block: 1px solid var(--j-line); border-radius: 0; background: none; }
+.j-case-doc [data-case-sources] > summary { padding: var(--j-s-2) 0; color: var(--j-fg); font-size: var(--j-t-14); }
+.j-case-doc [data-case-sources] > .j-done-list { padding-block-end: var(--j-s-3); }
+.j-case-doc [data-case-sources] h4 { margin: 0; font-size: var(--j-t-16); line-height: 1.4; }
+.j-case-doc [data-case-sources] h4 > a { color: var(--j-signal); text-underline-offset: .2em; overflow-wrap: anywhere; }
+/* The heading after the fold keeps the space it has after the records, on
+   screen and in print (a hidden fold is still its previous sibling). */
+.j-case-doc [data-case-sources] + h3 { margin-top: var(--j-s-5); }
+/* As the topic step's rows (flow.css): a column never grows past the fold, a
+   long unbroken locator or date wraps, and line breaks show as written. */
+.j-case-doc [data-case-sources] :is(.j-done-list, .j-done-item) { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.j-case-doc [data-case-sources] :is(.j-done-state, .j-note) { overflow-wrap: anywhere; }
+.j-case-doc [data-case-sources] :is(p.j-done-text, .j-done-reason) { white-space: pre-wrap; }
+/* Make it evidence (RESEARCH-1C S11a): the fold's one control is a kernel
+   button; its form is a column of fields, as the topic step's forms are. */
+.j-case-doc [data-promote-form] { display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-case-doc [data-case-sources] .j-flow-row > .j-btn { min-width: 0; }
+.j-case-doc [data-case-sources] .j-flow-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+/* A choice is a radio and its words; one naming a long record id wraps
+   inside the fold (S11b). The page's inputs are full width: a radio is not. */
+.j-case-doc [data-promote-form] label:has(> input[type="radio"]) { display: flex; align-items: center; gap: var(--j-s-2); min-width: 0; min-height: var(--j-control); }
+.j-case-doc [data-promote-form] label > span { min-width: 0; overflow-wrap: anywhere; }
+.j-case-doc [data-promote-form] input[type="radio"] { flex: 0 0 auto; width: 20px; height: 20px; margin: 0; padding: 0; accent-color: var(--j-ink); }
+.j-case-doc :is([data-promote-refusal], [data-promote-unsaved] > .j-note):focus { outline: none; }
+.j-case-doc :is([data-promote-refusal], [data-promote-unsaved] > .j-note):focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+/* The case file is outside .j-root: its fold's radios and selects take the
+   app's theme as the kernel gives it to .j-root, not the device's. */
+.j-case-doc [data-case-sources] { color-scheme: dark; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .j-case-doc [data-case-sources] { color-scheme: light; } }
+:root[data-theme="light"] .j-case-doc [data-case-sources] { color-scheme: light; }
+@media (forced-colors: active) {
+  .j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn) { color: LinkText; }
+  .j-case-doc [data-case-sources] { border-color: CanvasText; }
+}
 @media print {
   .j-case { display: block; }
   .j-case-outline, .j-case-return { display: none !important; }
+  .j-case-doc :is([data-case-source-line], [data-case-sources]) { display: none !important; }
 }

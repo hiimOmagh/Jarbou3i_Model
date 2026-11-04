@@ -2,7 +2,9 @@
 // free text code unit needs the maximum six JSON bytes. UUIDs and ISO times retain
 // their real shapes. Fifty distinct one-character hosts allow the shortest
 // accepted link (http:// + host); trailing C0 controls remain in the stored
-// link while normalizedUrl sees fifty distinct valid URLs.
+// link while normalizedUrl sees fifty distinct valid URLs. Each excerpt holds
+// ten pointers with ids at DOSSIER_POINTER_ID_LIMIT, distinct by evidence id,
+// with the longer kind ("fill") and the longer flag (false).
 export function maximalDossierBody() {
   const fill = (length) => "\u0000".repeat(length);
   const distinct = (length, index) => fill(length - 8) + index.toString(2).padStart(8, "0").replaceAll("0", "\u0000").replaceAll("1", "\u0001");
@@ -30,6 +32,10 @@ export function maximalDossierBody() {
     excerpts: Array.from({ length: 200 }, (_, index) => ({
       excerpt_id: id("excerpt", index), source_id: id("source", Math.floor(index / 50)),
       text: fill(2000), locator: fill(500), check: { status: "matches", reason: fill(1000), decided_at: instant }, added_at: instant,
+      promotions: Array.from({ length: 10 }, (_, pointer) => ({
+        workspace_id: fill(200), revision_id: fill(200), evidence_id: distinct(200, pointer),
+        promoted_at: instant, kind: "fill", changed_since: false,
+      })),
     })),
   };
 }
