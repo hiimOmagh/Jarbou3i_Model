@@ -78,7 +78,9 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
 
 ## Falsified if
 
-- any evidence item, claim or gap text is stored in a dossier;
+- any evidence item, claim or gap of an imported analysis is copied into a
+  dossier (the analyst's own sources and excerpts, `RESEARCH-1B`, are not
+  evidence until `RESEARCH-1C` promotes them);
 - a dossier write changes a workspace record or stales a recovery record;
 - the workspace database version changes;
 - the analyst's framing is still replaced after import.
@@ -166,7 +168,7 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
 - **Export** downloads the sealed record as `<question>-case.json`, never
   inside a workspace bundle.
 - **Restore a case from a file** reads the file back only if it verifies
-  (`readDossierFile`; at most 8 MiB). A case already on the device is never
+  (`readDossierFile`; at most `DOSSIER_FILE_LIMIT`, 24 MiB since `RESEARCH-1B`). A case already on the device is never
   overwritten. A restored case opens only when asked.
 - **Remove** takes a second click and removes the case, never its answers.
   A damaged case is listed as unreadable and can only be removed.

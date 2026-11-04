@@ -4,7 +4,7 @@ import { createWorkspace, createWorkspaceBundle } from "../src/core/workspace-co
 import { appendReviewEvent } from "../src/core/review-ledger.js";
 import { writeEditorDraft } from "../src/core/canonical-editor.js";
 import { commitResolution, createResolutionProposal } from "../src/core/resolution-transaction.js";
-import { createDossier, linkAnalysis, updateDossier } from "../src/core/research-dossier.js";
+import { addSource, addExcerpt, checkExcerpt, createDossier, linkAnalysis, updateDossier } from "../src/core/research-dossier.js";
 
 const fail = (message) => {
   console.error(`Schema check failed: ${message}`);
@@ -212,15 +212,61 @@ try {
   const linked = await linkAnalysis(await updateDossier(dossier, { framing: { question: "Edited" } }, { clock }), {
     workspace_id: "workspace_schema", revision_id: "revision_schema", payload_checksum: "a".repeat(64),
   }, { clock });
-  for (const record of [dossier, linked]) {
+  const sourced = await addSource(linked, { title: "A source", url: "https://example.com/", accessed_on: "2024-02-29" }, { clock });
+  const excerpted = await addExcerpt(sourced, sourced.sources[0].source_id, { text: "Several\nlines", locator: "page 2" }, { clock });
+  const checked = await checkExcerpt(excerpted, excerpted.excerpts[0], { status: "matches", reason: "Checked page 2" }, { clock });
+  const differs = await checkExcerpt(checked, checked.excerpts[0], { status: "differs", reason: "Different" }, { clock });
+  // These fields must survive one-line browser inputs after restore. Use
+  // runtime characters so no raw Unicode separators occur in JS source.
+  for (const codePoint of [0x2028, 0x2029]) {
+    const separator = String.fromCharCode(codePoint);
+    for (const key of ["title", "url", "source_date", "accessed_on"]) {
+      const value = key === "url" ? `https://example.org/a${separator}b`
+        : key === "accessed_on" ? `2024-${separator}02-29` : `before${separator}after`;
+      if (validateDossier({ ...sourced, sources: [{ ...sourced.sources[0], [key]: value }] })) fail(`research dossier schema accepted U+${codePoint.toString(16)} in ${key}`);
+    }
+    if (validateDossier({ ...excerpted, excerpts: [{ ...excerpted.excerpts[0], locator: `p${separator}2` }] })) fail("research dossier schema accepted a Unicode separator in locator");
+    const multiline = { ...checked, excerpts: [{ ...checked.excerpts[0], text: `first${separator}second`, check: { ...checked.excerpts[0].check, reason: `read${separator}original` } }] };
+    if (!validateDossier(multiline)) fail(`research dossier schema refused multiline text/reason: ${JSON.stringify(validateDossier.errors)}`);
+  }
+  const uppercaseUuid = "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDEF";
+  for (const prefix of ["source", "excerpt"]) {
+    const id = `${prefix.toUpperCase()}_${uppercaseUuid}`;
+    const malformed = prefix === "source"
+      ? { ...excerpted, sources: [{ ...sourced.sources[0], source_id: id }], excerpts: [{ ...excerpted.excerpts[0], source_id: id }] }
+      : { ...excerpted, excerpts: [{ ...excerpted.excerpts[0], excerpt_id: id }] };
+    if (validateDossier(malformed)) fail(`research dossier schema accepted uppercase ${prefix} prefix`);
+  }
+  // Check the reference independently of the source's own id.
+  if (validateDossier({ ...excerpted, excerpts: [{ ...excerpted.excerpts[0], source_id: `SOURCE_${uppercaseUuid}` }] })) fail("research dossier schema accepted an uppercase reference prefix");
+  const upperSource = await addSource(dossier, { title: "Upper UUID" }, { clock, idFactory: (prefix) => `${prefix}_${uppercaseUuid}` });
+  const upperExcerpt = await addExcerpt(upperSource, upperSource.sources[0].source_id, { text: "Upper UUID" }, { clock, idFactory: (prefix) => `${prefix}_${uppercaseUuid}` });
+  if (!validateDossier(upperExcerpt)) fail(`research dossier schema refused uppercase-hex UUIDs: ${JSON.stringify(validateDossier.errors)}`);
+  const { maximalDossierBody } = await import("./fixtures/research-dossier-maximal.mjs");
+  const maximal = { ...maximalDossierBody(), checksum: checked.checksum };
+  for (const record of [maximal, dossier, linked, sourced, excerpted, checked, differs, readJson("tests/fixtures/research-dossier-origin-main.json")]) {
     if (!validateDossier(record)) fail(`research dossier failed published schema: ${JSON.stringify(validateDossier.errors)}`);
   }
   if (validateDossier({ ...linked, analyses: [{ ...linked.analyses[0], claim: "copied evidence" }] })) {
     fail("research dossier schema accepted evidence copied into an analysis link");
   }
-  if (validateDossier({ ...linked, framing: { ...linked.framing, scope_in: ["Two\nlines"] } })) {
-    fail("research dossier schema accepted an item its field cannot hold on one line");
-  }
+  for (const record of [
+    readJson("tests/fixtures/research-dossier-origin-main-legacy.json"),
+    { ...linked, revision: 2 ** 53 },
+    ...["scope_in", "scope_out", "limits"].map((key) => ({ ...linked, framing: { ...linked.framing, [key]: ["two\nlines"] } })),
+    ...[
+      { term: "two\nlines", working_definition: "" },
+      { term: "term: tail", working_definition: "" },
+      { term: ":term", working_definition: "definition" },
+      { term: "term", working_definition: "two\rlines" },
+    ].map((term) => ({ ...linked, framing: { ...linked.framing, contested_terms: [term] } })),
+    { ...linked, completion: [{ ...dossier.completion[0], text: "two\nlines" }] },
+    { ...linked, sources: [] }, { ...sourced, format_version: 1 }, { ...sourced, sources: [] },
+    { ...sourced, excerpts: undefined }, { ...sourced, sources: [{ ...sourced.sources[0], title: "Two\nlines" }] },
+    { ...sourced, sources: [{ ...sourced.sources[0], source_id: "source_bad" }] },
+    { ...excerpted, excerpts: [{ ...excerpted.excerpts[0], locator: "Two\nlines" }] },
+    { ...checked, excerpts: [{ ...checked.excerpts[0], check: { status: "matches", reason: "", decided_at: clock() } }] },
+  ]) if (validateDossier(record)) fail("research dossier schema accepted an invalid format or material shape");
 } catch (error) {
   fail(`research dossier schema could not compile or validate: ${error.message}`);
 }

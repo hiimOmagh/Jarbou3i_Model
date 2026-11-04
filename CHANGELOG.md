@@ -95,6 +95,31 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### Your sources, kept with the case (RESEARCH-1B)
+
+- The topic step has a second fold, **Your sources** (AR/EN/FR): each source
+  with its title, link, its own date and the date you opened it, and the
+  excerpts you took from it, quoted or in your words, each with where it is
+  in the source. Sources and excerpts are saved by their buttons, to the
+  case, and a case without sources is written exactly as before.
+- **Matches the source** or **Does not match** records your check of an
+  excerpt against its source, with how you checked or what differs, as your
+  claim and its date. The app never checks an excerpt. Changing an
+  excerpt's text or place reopens its check.
+- With **Sources supplied in context** (step 3), the sources you send go
+  into the prompt with their excerpts, inside the material the AI is told
+  never to obey, each excerpt line marked as yours; the prompt asks the AI
+  to cite them by their titles and never to present an excerpt as the
+  source's own words. An excerpt that does not match, and your checks, are
+  never sent. Step 3 says how many of your sources are sent.
+- The cases list says how many sources a case has. A case saved by a newer
+  version of the app is listed as such and kept. A case file may be up to
+  24 MiB, room for the largest case the record allows.
+- Pasted text can no longer close the Biopolitical prompt's material tags.
+- A change made in another tab is made again once on the newer case, and is
+  refused, with what to do, when the item you were changing has changed
+  there. A form being saved is locked until its save ends.
+
 ### Keep your cases, and take them with you (RESEARCH-1A, slice 4)
 
 - The Local workspaces dialog lists **Cases**: each case's question, its

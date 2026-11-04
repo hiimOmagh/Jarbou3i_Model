@@ -4,6 +4,7 @@
    database, so the workspace database, its version and its records never
    change because of it. */
 
+import { normalizedText, normalizedUrl } from "./evidence-intelligence.js";
 import { canonicalStringify, sha256 } from "./workspace-contract.js";
 import {
   WorkspaceStorageError,
@@ -13,14 +14,21 @@ import {
 } from "./workspace-storage.js";
 
 export const DOSSIER_FORMAT = "jarbou3i-research-dossier";
-export const DOSSIER_FORMAT_VERSION = 1;
+export const DOSSIER_FORMAT_VERSION = 2;
 export const DOSSIER_DATABASE_NAME = "jarbou3i-model-dossiers";
 export const DOSSIER_DATABASE_VERSION = 1;
 export const DOSSIER_STORE_NAME = "dossiers";
 export const DOSSIER_TEXT_LIMIT = 4000;
 export const DOSSIER_LIST_LIMIT = 50;
-// Above the largest record the limits allow, in any script.
-export const DOSSIER_FILE_LIMIT = 8 * 1024 * 1024;
+// The maximal contract export is 20,469,050 bytes, including pretty printing
+// and six-byte escapes (tests/fixtures/research-dossier-maximal.mjs).
+export const DOSSIER_FILE_LIMIT = 24 * 1024 * 1024;
+export const DOSSIER_SOURCE_LIMIT = 50;
+export const DOSSIER_EXCERPT_LIMIT = 200;
+export const DOSSIER_EXCERPTS_PER_SOURCE_LIMIT = 50;
+export const DOSSIER_SOURCE_TEXT_LIMIT = 500;
+export const DOSSIER_EXCERPT_TEXT_LIMIT = 2000;
+export const DOSSIER_CHECK_REASON_LIMIT = 1000;
 
 export class DossierError extends Error {
   constructor(code, message) {
@@ -75,9 +83,10 @@ function framingOf(value = {}) {
       if (!isRecord(entry)) invalid(`${field} must be an object.`);
       const term = line(entry.term, `${field}.term`);
       if (!term) invalid(`${field}.term is empty.`);
-      // Its field ends the term at the first colon.
-      if (/[:：]/.test(term)) invalid(`${field}.term must not hold a colon.`);
-      return { term, working_definition: line(entry.working_definition, `${field}.working_definition`) };
+      const working_definition = line(entry.working_definition, `${field}.working_definition`);
+      // The released parser keeps a colon-led line whole, with no definition.
+      if (/[:：]/.test(term) && !(/^[:：]/.test(term) && !working_definition)) invalid(`${field}.term must not hold a colon.`);
+      return { term, working_definition };
     }),
     limits: list(value.limits, "framing.limits", line),
   };
@@ -129,7 +138,7 @@ export const hasFraming = (framing) =>
 // and keeps the time it was decided until the reason changes; reopened, it
 // loses both. The time comes from the record before, never from the caller.
 function completionOf(value, clock, previous = []) {
-  return unique(list(value, "completion", (entry, field) => {
+  const result = unique(list(value, "completion", (entry, field) => {
     if (!isRecord(entry)) invalid(`${field} must be an object.`);
     const criterion_id = text(entry.criterion_id, `${field}.criterion_id`);
     const criterionText = line(entry.text, `${field}.text`);
@@ -141,9 +150,11 @@ function completionOf(value, clock, previous = []) {
     if (!rationale) invalid(`${field} is met without a rationale.`);
     const before = previous.find((criterion) => criterion.criterion_id === criterion_id);
     const decided_at = before?.status === "met" && before.rationale === rationale ? before.decided_at : clock();
+    if (typeof decided_at !== "string" || decided_at.length > DOSSIER_TEXT_LIMIT) invalid(`${field}.decided_at is too long.`);
     if (typeof decided_at !== "string" || !decided_at) invalid(`${field} is met without a decision time.`);
     return { criterion_id, text: criterionText, status, rationale, decided_at };
   }), "criterion_id", "completion");
+  return unique(result, "text", "completion");
 }
 
 function analysisOf(entry, field) {
@@ -156,46 +167,207 @@ function analysisOf(entry, field) {
   return reference;
 }
 
+// New material uses real UUIDs and ISO instants; injected generators follow
+// the same contract as the defaults. Historical 1A fields remain readable.
+const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+function materialId(value, prefix) {
+  // The prefix is exact; the UUID may use either case, as the schema allows.
+  if (typeof value !== "string" || !new RegExp("^" + prefix + "_" + uuid.replaceAll("a-f", "a-fA-F") + "$").test(value)) invalid(prefix + " id must contain a UUID.");
+  return value;
+}
+function instant(value, field) {
+  if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value) || Number.isNaN(Date.parse(value)) || new Date(value).toISOString() !== value) {
+    invalid(field + " must be an ISO timestamp.");
+  }
+  return value;
+}
+function writeTime(clock) {
+  const now = text(clock(), "store time");
+  if (!now || Number.isNaN(Date.parse(now))) invalid("The store needs a real time.");
+  return now;
+}
+function materialText(value, field, limit, oneLine = true, required = false) {
+  if (typeof value !== "string") invalid(field + " must be text.");
+  const result = value.trim();
+  if (result.length > limit || (oneLine && /[\r\n\u2028\u2029]/.test(result)) || (required && !result)) invalid(field + " is empty, too long or holds multiple lines.");
+  return result;
+}
+function sourceOf(entry) {
+  if (!isRecord(entry)) invalid("A source must be an object.");
+  const title = materialText(entry.title, "source.title", DOSSIER_SOURCE_TEXT_LIMIT, true, true);
+  const url = materialText(entry.url, "source.url", DOSSIER_SOURCE_TEXT_LIMIT);
+  if (url && (!/^https?:\/\//i.test(url) || !normalizedUrl(url))) invalid("A source link must use http(s).");
+  const accessed_on = materialText(entry.accessed_on, "source.accessed_on", 10);
+  if (accessed_on && (!/^\d{4}-\d\d-\d\d$/.test(accessed_on) || Number.isNaN(Date.parse(accessed_on)) || new Date(accessed_on).toISOString().slice(0, 10) !== accessed_on)) invalid("Opened on must be a real YYYY-MM-DD date.");
+  if (typeof entry.send !== "boolean") invalid("source.send must be boolean.");
+  return {
+    source_id: materialId(entry.source_id, "source"), title, url,
+    source_date: materialText(entry.source_date, "source.source_date", DOSSIER_SOURCE_TEXT_LIMIT),
+    accessed_on, send: entry.send, added_at: instant(entry.added_at, "source.added_at"),
+  };
+}
+const unchecked = () => ({ status: "unchecked", reason: "", decided_at: null });
+function checkOf(value) {
+  if (!isRecord(value) || !["unchecked", "matches", "differs"].includes(value.status)) invalid("An excerpt needs a check status.");
+  const reason = materialText(value.reason, "check.reason", DOSSIER_CHECK_REASON_LIMIT, false, value.status !== "unchecked");
+  if (value.status === "unchecked") {
+    if (reason !== "" || value.decided_at !== null) invalid("An unchecked excerpt has no reason or decision time.");
+    return unchecked();
+  }
+  return { status: value.status, reason, decided_at: instant(value.decided_at, "check.decided_at") };
+}
+function excerptOf(entry) {
+  if (!isRecord(entry)) invalid("An excerpt must be an object.");
+  return {
+    excerpt_id: materialId(entry.excerpt_id, "excerpt"), source_id: materialId(entry.source_id, "source"),
+    text: materialText(entry.text, "excerpt.text", DOSSIER_EXCERPT_TEXT_LIMIT, false, true),
+    locator: materialText(entry.locator, "excerpt.locator", DOSSIER_SOURCE_TEXT_LIMIT),
+    check: checkOf(entry.check), added_at: instant(entry.added_at, "excerpt.added_at"),
+  };
+}
+function sourceUniqueness(sources, code = "DOSSIER_SHAPE_INVALID") {
+  const keys = sources.map((entry) => entry.url ? "url:" + normalizedUrl(entry.url) : "title:" + normalizedText(entry.title));
+  if (new Set(keys).size !== keys.length) fail(code, "A source with this link or unlinked title already exists.");
+}
+function materialOf(value) {
+  if (!Array.isArray(value.sources) || !value.sources.length || value.sources.length > DOSSIER_SOURCE_LIMIT || !Array.isArray(value.excerpts) || value.excerpts.length > DOSSIER_EXCERPT_LIMIT) invalid("Invalid sources or excerpts list.");
+  const sources = unique(value.sources.map(sourceOf), "source_id", "sources");
+  sourceUniqueness(sources);
+  const excerpts = unique(value.excerpts.map(excerptOf), "excerpt_id", "excerpts");
+  const counts = new Map(sources.map((source) => [source.source_id, 0]));
+  for (const excerpt of excerpts) {
+    if (!counts.has(excerpt.source_id)) invalid("An excerpt names a missing source.");
+    const count = counts.get(excerpt.source_id) + 1;
+    if (count > DOSSIER_EXCERPTS_PER_SOURCE_LIMIT) invalid("Too many excerpts for one source.");
+    counts.set(excerpt.source_id, count);
+  }
+  return { sources, excerpts };
+}
+
+// Callers capture the item they showed and close over it in change(current).
+// Only the given record is read; replay against a newer record cannot replace
+// another analyst's edits, check decisions or newly added excerpts.
+const same = (a, b) => canonicalStringify(a) === canonicalStringify(b);
+function seenItem(items, seen, key) {
+  const found = items.find((item) => item[key] === seen?.[key]);
+  if (!found || !same(found, seen)) fail("CHANGED_ELSEWHERE", "This item changed elsewhere. Open it again.");
+  return found;
+}
+async function changeMaterial(dossier, operation, { clock = defaultClock, idFactory = defaultId, cryptoImpl = globalThis.crypto } = {}) {
+  const current = await verifyDossier(dossier, { cryptoImpl });
+  const now = instant(clock(), "store time");
+  const material = operation({ sources: current.sources || [], excerpts: current.excerpts || [] }, now, idFactory);
+  return seal({ ...current, ...material, revision: current.revision + 1, updated_at: now }, cryptoImpl);
+}
+export function addSource(dossier, fields, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }, now, idFactory) => {
+    if (sources.length >= DOSSIER_SOURCE_LIMIT) fail("SOURCE_LIST_FULL", "A case holds at most 50 sources.");
+    const source = sourceOf({ url: "", source_date: "", accessed_on: "", send: true, ...fields, source_id: idFactory("source"), added_at: now });
+    const next = [...sources, source];
+    sourceUniqueness(next, "SOURCE_EXISTS");
+    return { sources: next, excerpts };
+  }, options);
+}
+export function editSource(dossier, seen, fields, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }) => {
+    const before = seenItem(sources, seen, "source_id");
+    const source = sourceOf({ ...before, ...fields, source_id: before.source_id, added_at: before.added_at });
+    const next = sources.map((item) => item === before ? source : item);
+    sourceUniqueness(next, "SOURCE_EXISTS");
+    return { sources: next, excerpts };
+  }, options);
+}
+export function removeSource(dossier, seen, seenExcerpts, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }) => {
+    const before = seenItem(sources, seen, "source_id");
+    const attached = excerpts.filter((item) => item.source_id === before.source_id);
+    if (!Array.isArray(seenExcerpts) || !same(attached, seenExcerpts)) fail("CHANGED_ELSEWHERE", "This source's excerpts changed elsewhere.");
+    return { sources: sources.filter((item) => item !== before), excerpts: excerpts.filter((item) => item.source_id !== before.source_id) };
+  }, options);
+}
+export function addExcerpt(dossier, sourceId, fields, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }, now, idFactory) => {
+    if (!sources.some((item) => item.source_id === sourceId)) fail("SOURCE_GONE", "The excerpt's source was removed.");
+    if (excerpts.length >= DOSSIER_EXCERPT_LIMIT || excerpts.filter((item) => item.source_id === sourceId).length >= DOSSIER_EXCERPTS_PER_SOURCE_LIMIT) fail("EXCERPT_LIST_FULL", "The excerpt list is full.");
+    const excerpt = excerptOf({ locator: "", ...fields, excerpt_id: idFactory("excerpt"), source_id: sourceId, check: unchecked(), added_at: now });
+    return { sources, excerpts: [...excerpts, excerpt] };
+  }, options);
+}
+export function editExcerpt(dossier, seen, fields, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }) => {
+    const before = seenItem(excerpts, seen, "excerpt_id");
+    const next = excerptOf({ ...before, text: fields.text ?? before.text, locator: fields.locator ?? before.locator });
+    if (next.text !== before.text || next.locator !== before.locator) next.check = unchecked();
+    return { sources, excerpts: excerpts.map((item) => item === before ? next : item) };
+  }, options);
+}
+export function removeExcerpt(dossier, seen, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }) => {
+    const before = seenItem(excerpts, seen, "excerpt_id");
+    return { sources, excerpts: excerpts.filter((item) => item !== before) };
+  }, options);
+}
+export function checkExcerpt(dossier, seen, decision, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }, now) => {
+    const before = seenItem(excerpts, seen, "excerpt_id");
+    if (!["matches", "differs"].includes(decision?.status)) invalid("Choose matches or differs.");
+    const reason = materialText(decision.reason, "check.reason", DOSSIER_CHECK_REASON_LIMIT, false, true);
+    const decided_at = before.check.status === decision.status && before.check.reason === reason ? before.check.decided_at : now;
+    const check = checkOf({ status: decision.status, reason, decided_at });
+    return { sources, excerpts: excerpts.map((item) => item === before ? { ...before, check } : item) };
+  }, options);
+}
+export function reopenExcerpt(dossier, seen, options) {
+  return changeMaterial(dossier, ({ sources, excerpts }) => {
+    const before = seenItem(excerpts, seen, "excerpt_id");
+    return { sources, excerpts: excerpts.map((item) => item === before ? { ...before, check: unchecked() } : item) };
+  }, options);
+}
+
 // Every write is read back through the same shape a reader checks, so no
 // write can leave a record its reader would refuse.
 async function seal(body, cryptoImpl) {
-  const shaped = shapeOf(body);
+  const { sources = [], excerpts = [], ...rest } = body;
+  const shaped = shapeOf({ ...rest, format_version: sources.length ? 2 : 1, ...(sources.length ? { sources, excerpts } : {}) });
   return { ...shaped, checksum: { algorithm: "SHA-256", value: await sha256(canonicalStringify(shaped), cryptoImpl) } };
 }
 
-// The record as stored: every field read again, so nothing outside the
-// contract is kept.
+// Reading keeps the field rules, with the released colon-led term exception.
 function shapeOf(value) {
   if (!isRecord(value)) invalid("A dossier must be an object.");
-  if (value.format !== DOSSIER_FORMAT || value.format_version !== DOSSIER_FORMAT_VERSION) {
+  if (value.format === DOSSIER_FORMAT && Number.isInteger(value.format_version) && value.format_version > DOSSIER_FORMAT_VERSION) {
+    fail("DOSSIER_FORMAT_NEWER", "This dossier was made by a newer version of the app.");
+  }
+  if (value.format !== DOSSIER_FORMAT || ![1, 2].includes(value.format_version)) {
     fail("DOSSIER_FORMAT_UNSUPPORTED", "This dossier format is not supported.");
   }
   const dossier_id = text(value.dossier_id, "dossier_id");
   if (!dossier_id) invalid("dossier_id is empty.");
-  if (!Number.isSafeInteger(value.revision) || value.revision < 1) invalid("revision must be a whole number from 1.");
+  if (!Number.isSafeInteger(value.revision) || value.revision < 1) invalid("revision must be a safe whole number from 1.");
   const created_at = text(value.created_at, "created_at");
   const updated_at = text(value.updated_at, "updated_at");
-  if ([created_at, updated_at].some((time) => Number.isNaN(Date.parse(time)))) invalid("A dossier needs its creation and update times.");
+  if (!created_at || !updated_at || Number.isNaN(Date.parse(created_at)) || Number.isNaN(Date.parse(updated_at))) invalid("A dossier needs its creation and update times.");
   const completion = list(value.completion, "completion", (entry, field) => {
     const [criterion] = completionOf([entry], () => invalid(`${field} is met without a decision time.`), [entry]);
     return criterion;
   });
   return {
     format: DOSSIER_FORMAT,
-    format_version: DOSSIER_FORMAT_VERSION,
+    format_version: value.format_version,
     dossier_id,
     revision: value.revision,
     created_at,
     updated_at,
     framing: framingOf(value.framing),
-    // Each criterion once, by its id and by its line.
     completion: unique(unique(completion, "criterion_id", "completion"), "text", "completion"),
     analyses: unique(list(value.analyses, "analyses", analysisOf), "revision_id", "analyses"),
+    ...(value.format_version === 2 ? materialOf(value) : {}),
   };
 }
 
 export async function verifyDossier(value, { cryptoImpl = globalThis.crypto } = {}) {
-  const sealed = await seal(value, cryptoImpl);
+  const shaped = shapeOf(value);
+  const sealed = { ...shaped, checksum: { algorithm: "SHA-256", value: await sha256(canonicalStringify(shaped), cryptoImpl) } };
   if (!isRecord(value.checksum) || value.checksum.algorithm !== "SHA-256") invalid("A dossier needs a SHA-256 checksum.");
   if (sealed.checksum.value !== value.checksum.value) {
     fail("DOSSIER_CHECKSUM_MISMATCH", "The dossier does not match its checksum.");
@@ -221,7 +393,7 @@ export async function createDossier({
   idFactory = defaultId,
   cryptoImpl = globalThis.crypto,
 } = {}) {
-  const now = clock();
+  const now = writeTime(clock);
   return seal({
     format: DOSSIER_FORMAT,
     format_version: DOSSIER_FORMAT_VERSION,
@@ -238,7 +410,7 @@ export async function createDossier({
 // A write never changes the record it was given: it returns the next one.
 export async function updateDossier(dossier, changes = {}, { clock = defaultClock, cryptoImpl = globalThis.crypto } = {}) {
   const current = await verifyDossier(dossier, { cryptoImpl });
-  const now = clock();
+  const now = writeTime(clock);
   return seal({
     ...current,
     revision: current.revision + 1,
@@ -251,7 +423,7 @@ export async function updateDossier(dossier, changes = {}, { clock = defaultCloc
 // An analysis is linked by reference, once per revision.
 export async function linkAnalysis(dossier, reference, { clock = defaultClock, cryptoImpl = globalThis.crypto } = {}) {
   const current = await verifyDossier(dossier, { cryptoImpl });
-  const now = clock();
+  const now = writeTime(clock);
   const link = analysisOf({ ...reference, linked_at: now }, "analysis");
   if (current.analyses.some((entry) => entry.revision_id === link.revision_id)) return dossier;
   if (current.analyses.length >= DOSSIER_LIST_LIMIT) fail("DOSSIER_FULL", `A dossier links at most ${DOSSIER_LIST_LIMIT} analyses.`);
@@ -368,6 +540,10 @@ export function createDossierRepository({ backend, cryptoImpl = globalThis.crypt
         try {
           return { ...(await verifyDossier(value, { cryptoImpl })), integrity_status: "verified" };
         } catch (error) {
+          if (error?.code === "DOSSIER_FORMAT_NEWER") return {
+            dossier_id: String(value?.dossier_id || ""), integrity_status: "newer",
+            error_code: error.code, format_version: value.format_version,
+          };
           return { dossier_id: String(value?.dossier_id || ""), integrity_status: "corrupt", error_code: String(error?.code || "DOSSIER_INTEGRITY_FAILED") };
         }
       }));

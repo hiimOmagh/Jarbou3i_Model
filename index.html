@@ -232,6 +232,14 @@
             </div>
             <div id="caseStatus" role="status" aria-live="polite"></div>
           </details>
+          <details class="j-disclosure j-case-fold" id="sourcesFold">
+            <summary data-i18n="sourcesFold">مصادرك</summary>
+            <div class="j-case-fields">
+              <p class="j-flow-note" data-i18n="sourcesWhen">تُرسل إلى الذكاء الاصطناعي حين يكون الوصول إلى المصادر (الخطوة 3) مصادر مقدمة في السياق.</p>
+              <div id="sourcesBody"></div>
+              <div id="sourcesStatus" role="status" aria-live="polite"></div>
+            </div>
+          </details>
         </div>
         <div class="j-flow-panel" data-flow-panel="lens" hidden>
           <div class="j-flow-choices" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
@@ -264,6 +272,7 @@
             <label for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
             <textarea id="sourcesInput" class="j-input" rows="4" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها." aria-describedby="sourcesHelp"></textarea>
             <p class="j-help" id="sourcesHelp" data-i18n="sourcesHelp">الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب الموجِّه من المساعد قراءتها والاستشهاد بكل ملف باسمه.</p>
+            <p class="j-flow-note" id="sourcesSentCount" hidden></p>
           </div>
         </div>
         <div class="j-flow-panel" data-flow-panel="prompt" hidden>

@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://jarbou3i.example/schema/research-dossier-v1.schema.json",
-  "title": "Jarbou3i Research Dossier v1",
-  "description": "The analyst's case framing and completion contract (ADR-0004). Analyses are referenced by id and checksum; evidence is never copied here.",
+  "$id": "https://jarbou3i.example/schema/research-dossier.schema.json",
+  "title": "Jarbou3i Research Dossier formats 1 and 2",
+  "description": "Framing, completion and analysis references (format 1), plus analyst sources and excerpts (format 2, ADR-0005). Released framing remains readable. The reader also refuses what this schema cannot state: duplicate source or excerpt ids, two sources with the same normalized link (or, without links, the same normalized title), an excerpt naming a source the record does not hold, more than 50 excerpts for one source, and a record that does not match its checksum.",
   "type": "object",
   "additionalProperties": false,
   "required": ["format", "format_version", "dossier_id", "revision", "created_at", "updated_at", "framing", "completion", "analyses", "checksum"],
   "properties": {
     "format": { "const": "jarbou3i-research-dossier" },
-    "format_version": { "const": 1 },
+    "format_version": { "enum": [1, 2] },
     "dossier_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
-    "revision": { "type": "integer", "minimum": 1 },
-    "created_at": { "type": "string", "minLength": 1 },
-    "updated_at": { "type": "string", "minLength": 1 },
+    "revision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "created_at": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "updated_at": { "type": "string", "minLength": 1, "maxLength": 4000 },
     "framing": {
       "type": "object",
       "additionalProperties": false,
@@ -30,9 +30,12 @@
             "additionalProperties": false,
             "required": ["term", "working_definition"],
             "properties": {
-              "term": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^[^\\r\\n:：]+$" },
+              "term": { "type": "string", "minLength": 1, "maxLength": 4000 },
               "working_definition": { "$ref": "#/$defs/line" }
-            }
+            },
+            "if": { "properties": { "term": { "type": "string", "pattern": "^[:：][^\\r\\n]*$" } } },
+            "then": { "properties": { "working_definition": { "const": "" } } },
+            "else": { "properties": { "term": { "type": "string", "pattern": "^[^\\r\\n:：]+$" } } }
           }
         },
         "limits": { "$ref": "#/$defs/texts" }
@@ -50,7 +53,7 @@
           "text": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^[^\\r\\n]+$" },
           "status": { "enum": ["open", "met"] },
           "rationale": { "$ref": "#/$defs/text" },
-          "decided_at": { "type": ["string", "null"] }
+          "decided_at": { "type": ["string", "null"], "maxLength": 4000 }
         },
         "if": { "properties": { "status": { "const": "met" } } },
         "then": { "properties": { "rationale": { "type": "string", "minLength": 1 }, "decided_at": { "type": "string", "minLength": 1 } } },
@@ -68,7 +71,7 @@
           "workspace_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
           "revision_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
           "payload_checksum": { "type": "string", "minLength": 1, "maxLength": 4000 },
-          "linked_at": { "type": "string", "minLength": 1 }
+          "linked_at": { "type": "string", "minLength": 1, "maxLength": 4000 }
         }
       }
     },
@@ -80,11 +83,100 @@
         "algorithm": { "const": "SHA-256" },
         "value": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
       }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "excerpts": {
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/excerpt" }
     }
   },
   "$defs": {
     "text": { "type": "string", "maxLength": 4000 },
     "line": { "type": "string", "maxLength": 4000, "pattern": "^[^\\r\\n]*$" },
-    "texts": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/line" } }
-  }
+    "texts": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/line" } },
+    "sourceId": { "type": "string", "pattern": "^source_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" },
+    "excerptId": { "type": "string", "pattern": "^excerpt_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" },
+    "instant": { "type": "string", "minLength": 24, "maxLength": 24, "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
+    "sourceLine": { "type": "string", "maxLength": 500, "pattern": "^[^\\r\\n\\u2028\\u2029]*$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "title", "url", "source_date", "accessed_on", "send", "added_at"],
+      "properties": {
+        "source_id": { "$ref": "#/$defs/sourceId" },
+        "title": { "type": "string", "maxLength": 500, "pattern": "^[^\\r\\n\\u2028\\u2029]*$", "minLength": 1 },
+        "url": { "type": "string", "maxLength": 500, "pattern": "^(?:[hH][tT][tT][pP][sS]?://[^\\r\\n\\u2028\\u2029]+)?$" },
+        "source_date": { "$ref": "#/$defs/sourceLine" },
+        "accessed_on": { "type": "string", "maxLength": 10, "pattern": "^(?:[0-9]{4}-[0-9]{2}-[0-9]{2})?$" },
+        "send": { "type": "boolean" },
+        "added_at": { "$ref": "#/$defs/instant" }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "decided_at"],
+      "properties": {
+        "status": { "enum": ["unchecked", "matches", "differs"] },
+        "reason": { "type": "string", "minLength": 0, "maxLength": 1000 },
+        "decided_at": {
+          "anyOf": [{"$ref": "#/$defs/instant"}, {"type": "null"}]
+        }
+      },
+      "if": {
+        "properties": {
+          "status": { "const": "unchecked" }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason": { "const": "" },
+          "decided_at": { "type": "null" }
+        }
+      },
+      "else": {
+        "properties": {
+          "reason": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "decided_at": { "$ref": "#/$defs/instant" }
+        }
+      }
+    },
+    "excerpt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["excerpt_id", "source_id", "text", "locator", "check", "added_at"],
+      "properties": {
+        "excerpt_id": { "$ref": "#/$defs/excerptId" },
+        "source_id": { "$ref": "#/$defs/sourceId" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "locator": { "$ref": "#/$defs/sourceLine" },
+        "check": { "$ref": "#/$defs/check" },
+        "added_at": { "$ref": "#/$defs/instant" }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "format_version": { "const": 1 }
+      },
+      "not": {
+        "anyOf": [{"properties": {"sources": {}}, "required": ["sources"]}, {"properties": {"excerpts": {}}, "required": ["excerpts"]}]
+      }
+    },
+    {
+      "properties": {
+        "format_version": { "const": 2 },
+        "sources": {},
+        "excerpts": {}
+      },
+      "required": ["sources", "excerpts"]
+    }
+  ]
 }

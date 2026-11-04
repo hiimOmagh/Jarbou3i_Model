@@ -46,7 +46,8 @@ async function workspaceDatabaseOperation(page, operation) {
           timeoutMs,
         );
         const openRequest = indexedDB.open(databaseName);
-        const emptyDatabaseResult = ["count-workspaces", "count-recovery-snapshots"].includes(operationName)
+        const emptyDatabaseResult = operationName === "workspace-recovery-records" ? { workspaces: [], recovery: [] }
+          : ["count-workspaces", "count-recovery-snapshots"].includes(operationName)
           ? 0
           : ["first-workspace", "intake-draft"].includes(operationName)
             ? null
@@ -75,7 +76,7 @@ async function workspaceDatabaseOperation(page, operation) {
           }
 
           const clearAll = operationName === "clear-all";
-          const stores = ["intake-draft", "count-recovery-snapshots"].includes(operationName)
+          const stores = ["intake-draft", "count-recovery-snapshots", "workspace-recovery-records"].includes(operationName)
             || (clearAll && database.objectStoreNames.contains(recoveryStore))
             ? [workspaceStore, recoveryStore]
             : [workspaceStore];
@@ -136,6 +137,18 @@ async function workspaceDatabaseOperation(page, operation) {
             };
             request.onerror = () =>
               fail(`IndexedDB ${operationName} request failed`, request.error);
+          } else if (operationName === "workspace-recovery-records") {
+            result = { workspaces: [], recovery: [] };
+            const request = store.getAll();
+            request.onsuccess = () => { result.workspaces = request.result; };
+            request.onerror = () => fail(`IndexedDB ${operationName} request failed`, request.error);
+            const recoveryRequest = transaction.objectStore(recoveryStore).getAll();
+            // Intake drafts share this store, but are the tab's navigation
+            // state, not revision-anchored editor recovery records.
+            recoveryRequest.onsuccess = () => {
+              result.recovery = recoveryRequest.result.filter((record) => !String(record.workspace_id).startsWith("intake-draft"));
+            };
+            recoveryRequest.onerror = () => fail(`IndexedDB ${operationName} request failed`, recoveryRequest.error);
           } else if (operationName === "first-workspace") {
             const request = store.getAll();
             request.onsuccess = () => { result = request.result[0] ?? null; };
@@ -185,6 +198,94 @@ export function damageFirstWorkspace(page) {
 
 export function readFirstWorkspace(page) {
   return workspaceDatabaseOperation(page, "first-workspace");
+}
+
+// Complete saved records, including revisions, checksums and pending proposals.
+export function readWorkspaceRecoveryRecords(page) {
+  return workspaceDatabaseOperation(page, "workspace-recovery-records");
+}
+
+export async function seedEditorRecovery(page) {
+  const workspace = await readFirstWorkspace(page);
+  if (!workspace) throw new Error("Seed a saved workspace before editor recovery");
+  return page.evaluate(async (saved) => {
+    const { createRecoveryJournal, createIndexedDbRecoveryBackend } = await import("./src/core/recovery-journal.js");
+    const journal = createRecoveryJournal({ backend: createIndexedDbRecoveryBackend() });
+    const payload = structuredClone(saved.working_draft.canonical_payload);
+    payload.subject.title = "An interrupted editor's draft";
+    try {
+      return await journal.capture({ workspace: saved, payload, activePath: "/subject", rawValue: JSON.stringify(payload.subject), owner: "interrupted-test-tab" });
+    } finally { journal.close(); }
+  }, workspace);
+}
+
+// Hold workspace-storage open callbacks on the next load. Dossier storage
+// stays usable, so a source can be saved before the startup restore resumes.
+export async function holdStartupStorage(page) {
+  // Observe completion of the real startup promise, without changing its body
+  // or scheduling. This prevents an early negative assertion from passing
+  // before restoreAfterLoad has actually checked whether it may restore.
+  await page.route("**/src/app.js", async (route) => {
+    const response = await route.fetch();
+    const source = await response.text();
+    const call = "\nrestoreAfterLoad();";
+    if (source.split(call).length !== 2) throw new Error("Cannot observe startup restore completion");
+    await route.fulfill({ response, body: source.replace(call, "\nrestoreAfterLoad().finally(() => { window.__startupRestoreDone = true; });") });
+  });
+  await page.addInitScript((databaseName) => {
+    const open = IDBFactory.prototype.open;
+    const callbacks = [];
+    window.__storageHeld = 0;
+    let released = false;
+    window.__releaseStartupStorage = () => {
+      released = true;
+      for (const callback of callbacks.splice(0)) callback();
+    };
+    IDBFactory.prototype.open = function (...args) {
+      const request = open.apply(this, args);
+      if (args[0] !== databaseName) return request;
+      const listen = request.addEventListener.bind(request);
+      const held = (handler) => function (event) {
+        const deliver = () => typeof handler === "function" ? handler.call(request, event) : handler.handleEvent(event);
+        if (released) deliver();
+        else { callbacks.push(deliver); window.__storageHeld += 1; }
+      };
+      Object.defineProperty(request, "onsuccess", { set: (handler) => listen("success", held(handler)) });
+      request.addEventListener = (type, handler, options) => listen(type, type === "success" ? held(handler) : handler, options);
+      return request;
+    };
+  }, DATABASE_NAME);
+  return {
+    async waitUntilHeld() {
+      await expect.poll(() => page.evaluate(() => window.__storageHeld)).toBeGreaterThan(0);
+      expect(await page.evaluate(() => Boolean(window.__startupRestoreDone))).toBe(false);
+    },
+    async release() {
+      await page.evaluate(() => window.__releaseStartupStorage());
+      await expect.poll(() => page.evaluate(() => Boolean(window.__startupRestoreDone))).toBe(true);
+    },
+  };
+}
+
+// Pause one real checksum operation; no wall-clock timing window.
+export async function holdNextSourceSave(page) {
+  await page.evaluate(() => {
+    const original = crypto.subtle.digest.bind(crypto.subtle);
+    let first = true;
+    window.__sourceSaveHeld = false;
+    crypto.subtle.digest = async (...args) => {
+      if (first) {
+        first = false;
+        window.__sourceSaveHeld = true;
+        await new Promise((resolve) => { window.__releaseSourceSave = resolve; });
+      }
+      return original(...args);
+    };
+  });
+  return {
+    async waitUntilHeld() { await expect.poll(() => page.evaluate(() => window.__sourceSaveHeld)).toBe(true); },
+    async release() { await page.evaluate(() => window.__releaseSourceSave()); },
+  };
 }
 
 // Each IndexedDB database of the page's origin, by name, with its version.
