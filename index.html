@@ -224,6 +224,11 @@
                 <label for="caseLimits" data-i18n="caseLimits">حدود هذا البحث</label>
                 <textarea id="caseLimits" class="j-input" rows="2" aria-describedby="caseHelp"></textarea>
               </div>
+              <div class="j-field">
+                <label for="caseDone" data-i18n="caseDone">يكتمل التحليل حين</label>
+                <textarea id="caseDone" class="j-input" rows="2" aria-describedby="caseDoneHelp"></textarea>
+                <p class="j-help" id="caseDoneHelp" data-i18n="caseDoneHelp">معيار واحد في كل سطر. تعلّم كلًّا منها متحقّقًا، مع سببك، في ملف القضية.</p>
+              </div>
             </div>
             <div id="caseStatus" role="status" aria-live="polite"></div>
           </details>
@@ -377,6 +382,15 @@
         <button class="j-btn" data-variant="danger" id="workspaceResetCurrent" type="button" disabled>حذف الحالية</button>
         <button class="j-btn" data-variant="danger" id="workspaceResetAll" type="button">إعادة ضبط الكل</button>
       </div>
+    </div>
+    <div class="j-root j-ws">
+      <h4 class="j-ws-title" id="caseListTitle">القضايا</h4>
+      <div class="j-ws-acts">
+        <button class="j-btn" id="caseRestore" type="button">استعادة قضية من ملف</button>
+        <input class="j-sr-only" id="caseRestoreFile" type="file" accept="application/json,.json" aria-labelledby="caseRestore" />
+      </div>
+      <p class="j-note" data-tone="idle" id="caseListStatus" role="status" aria-live="polite"></p>
+      <div class="j-ws-list" id="caseList"></div>
     </div>
   </section>
 </div>

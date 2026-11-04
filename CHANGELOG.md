@@ -95,6 +95,36 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### Keep your cases, and take them with you (RESEARCH-1A, slice 4)
+
+- The Local workspaces dialog lists **Cases**: each case's question, its
+  linked answers (and how many are not on this device), "Met: n of m" and
+  its last change.
+- **Open** brings a case back: its newest answer on this device, or, before
+  any answer, its question and framing in the topic step.
+- **Export** saves a case as its own file. **Restore a case from a file**
+  brings it back, only if the file is unchanged, and never over a case
+  already here.
+- **Remove** takes a second click, and the case's answers stay in
+  Workspaces.
+- A case changed in another tab keeps your decisions and links: they are
+  made again on the newer case. A reason being written stays with its own
+  criterion, and an answer is linked to the case it was imported for.
+
+### Say when the analysis is done, and mark it yourself (RESEARCH-1A, slice 3)
+
+- **What the analysis covers** has a fifth field, **The analysis is done
+  when**, with one criterion per line. The criteria go into the prompt with
+  the rest.
+- The overview of an answer imported for the case ends with those criteria
+  and a count ("Met: 1 of 3").
+- **Mark as met** asks why. An empty reason is refused at its field. A met
+  criterion reads "Met · your claim" with the date and your reason, and
+  **Reopen** makes it open again.
+- The app never marks one met, and a criterion changes no score or gate.
+- Editing the list keeps each unchanged line's decision. A changed line is a
+  new criterion, open.
+
 ### Say what the analysis covers before asking the AI (RESEARCH-1A, slice 2)
 
 - The topic step has a fold, **What the analysis covers**, in Arabic,

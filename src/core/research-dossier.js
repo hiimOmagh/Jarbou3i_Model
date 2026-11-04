@@ -19,6 +19,8 @@ export const DOSSIER_DATABASE_VERSION = 1;
 export const DOSSIER_STORE_NAME = "dossiers";
 export const DOSSIER_TEXT_LIMIT = 4000;
 export const DOSSIER_LIST_LIMIT = 50;
+// Above the largest record the limits allow, in any script.
+export const DOSSIER_FILE_LIMIT = 8 * 1024 * 1024;
 
 export class DossierError extends Error {
   constructor(code, message) {
@@ -45,6 +47,12 @@ function text(value, field) {
   if (trimmed.length > DOSSIER_TEXT_LIMIT) invalid(`${field} is longer than ${DOSSIER_TEXT_LIMIT} characters.`);
   return trimmed;
 }
+// An item a field holds on one line of its own.
+function line(value, field) {
+  const result = text(value, field);
+  if (/[\r\n]/.test(result)) invalid(`${field} must be one line.`);
+  return result;
+}
 function list(value, field, item) {
   if (value === undefined) return [];
   if (!Array.isArray(value)) invalid(`${field} must be a list.`);
@@ -61,15 +69,17 @@ function framingOf(value = {}) {
   return {
     question: text(value.question, "framing.question"),
     timeframe: text(value.timeframe, "framing.timeframe"),
-    scope_in: list(value.scope_in, "framing.scope_in", text),
-    scope_out: list(value.scope_out, "framing.scope_out", text),
+    scope_in: list(value.scope_in, "framing.scope_in", line),
+    scope_out: list(value.scope_out, "framing.scope_out", line),
     contested_terms: list(value.contested_terms, "framing.contested_terms", (entry, field) => {
       if (!isRecord(entry)) invalid(`${field} must be an object.`);
-      const term = text(entry.term, `${field}.term`);
+      const term = line(entry.term, `${field}.term`);
       if (!term) invalid(`${field}.term is empty.`);
-      return { term, working_definition: text(entry.working_definition, `${field}.working_definition`) };
+      // Its field ends the term at the first colon.
+      if (/[:：]/.test(term)) invalid(`${field}.term must not hold a colon.`);
+      return { term, working_definition: line(entry.working_definition, `${field}.working_definition`) };
     }),
-    limits: list(value.limits, "framing.limits", text),
+    limits: list(value.limits, "framing.limits", line),
   };
 }
 
@@ -101,6 +111,16 @@ export function fieldsFromFraming(framing) {
     limits: framing.limits.join("\n"),
   };
 }
+// The completion contract as its field holds it: one criterion per line, a
+// repeated line once. A line kept keeps its criterion, so its status and
+// reason stay; a new or changed line is a new criterion, open.
+export function completionFromLines(text, previous = []) {
+  let last = previous.reduce((max, { criterion_id }) => Math.max(max, Number(/^C(\d+)$/.exec(criterion_id)?.[1] || 0)), 0);
+  return [...new Set(fieldLines(text))].map((line) => {
+    const kept = previous.find((criterion) => criterion.text === line);
+    return kept ? { ...kept } : { criterion_id: `C${(last += 1)}`, text: line, status: "open" };
+  });
+}
 // More than a topic and a timeframe: what makes a dossier worth keeping.
 export const hasFraming = (framing) =>
   ["scope_in", "scope_out", "contested_terms", "limits"].some((key) => framing[key].length > 0);
@@ -112,7 +132,7 @@ function completionOf(value, clock, previous = []) {
   return unique(list(value, "completion", (entry, field) => {
     if (!isRecord(entry)) invalid(`${field} must be an object.`);
     const criterion_id = text(entry.criterion_id, `${field}.criterion_id`);
-    const criterionText = text(entry.text, `${field}.text`);
+    const criterionText = line(entry.text, `${field}.text`);
     if (!criterion_id || !criterionText) invalid(`${field} needs an id and a text.`);
     const status = entry.status ?? "open";
     if (status !== "open" && status !== "met") invalid(`${field}.status must be open or met.`);
@@ -152,10 +172,10 @@ function shapeOf(value) {
   }
   const dossier_id = text(value.dossier_id, "dossier_id");
   if (!dossier_id) invalid("dossier_id is empty.");
-  if (!Number.isInteger(value.revision) || value.revision < 1) invalid("revision must be a whole number from 1.");
+  if (!Number.isSafeInteger(value.revision) || value.revision < 1) invalid("revision must be a whole number from 1.");
   const created_at = text(value.created_at, "created_at");
   const updated_at = text(value.updated_at, "updated_at");
-  if (!created_at || !updated_at) invalid("A dossier needs its creation and update times.");
+  if ([created_at, updated_at].some((time) => Number.isNaN(Date.parse(time)))) invalid("A dossier needs its creation and update times.");
   const completion = list(value.completion, "completion", (entry, field) => {
     const [criterion] = completionOf([entry], () => invalid(`${field} is met without a decision time.`), [entry]);
     return criterion;
@@ -168,7 +188,8 @@ function shapeOf(value) {
     created_at,
     updated_at,
     framing: framingOf(value.framing),
-    completion: unique(completion, "criterion_id", "completion"),
+    // Each criterion once, by its id and by its line.
+    completion: unique(unique(completion, "criterion_id", "completion"), "text", "completion"),
     analyses: unique(list(value.analyses, "analyses", analysisOf), "revision_id", "analyses"),
   };
 }
@@ -180,6 +201,17 @@ export async function verifyDossier(value, { cryptoImpl = globalThis.crypto } = 
     fail("DOSSIER_CHECKSUM_MISMATCH", "The dossier does not match its checksum.");
   }
   return sealed;
+}
+
+// A case file is the sealed record as written, read back only if it verifies.
+export async function readDossierFile(text, options) {
+  let value;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    fail("DOSSIER_FILE_INVALID", "This file is not JSON.");
+  }
+  return verifyDossier(value, options);
 }
 
 export async function createDossier({
@@ -222,6 +254,7 @@ export async function linkAnalysis(dossier, reference, { clock = defaultClock, c
   const now = clock();
   const link = analysisOf({ ...reference, linked_at: now }, "analysis");
   if (current.analyses.some((entry) => entry.revision_id === link.revision_id)) return dossier;
+  if (current.analyses.length >= DOSSIER_LIST_LIMIT) fail("DOSSIER_FULL", `A dossier links at most ${DOSSIER_LIST_LIMIT} analyses.`);
   return seal({ ...current, revision: current.revision + 1, updated_at: now, analyses: [...current.analyses, link] }, cryptoImpl);
 }
 

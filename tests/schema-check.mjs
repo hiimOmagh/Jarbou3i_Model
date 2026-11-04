@@ -218,6 +218,9 @@ try {
   if (validateDossier({ ...linked, analyses: [{ ...linked.analyses[0], claim: "copied evidence" }] })) {
     fail("research dossier schema accepted evidence copied into an analysis link");
   }
+  if (validateDossier({ ...linked, framing: { ...linked.framing, scope_in: ["Two\nlines"] } })) {
+    fail("research dossier schema accepted an item its field cannot hold on one line");
+  }
 } catch (error) {
   fail(`research dossier schema could not compile or validate: ${error.message}`);
 }

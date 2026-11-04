@@ -30,8 +30,8 @@
             "additionalProperties": false,
             "required": ["term", "working_definition"],
             "properties": {
-              "term": { "type": "string", "minLength": 1, "maxLength": 4000 },
-              "working_definition": { "$ref": "#/$defs/text" }
+              "term": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^[^\\r\\n:：]+$" },
+              "working_definition": { "$ref": "#/$defs/line" }
             }
           }
         },
@@ -47,7 +47,7 @@
         "required": ["criterion_id", "text", "status", "rationale", "decided_at"],
         "properties": {
           "criterion_id": { "type": "string", "minLength": 1, "maxLength": 4000 },
-          "text": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "text": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^[^\\r\\n]+$" },
           "status": { "enum": ["open", "met"] },
           "rationale": { "$ref": "#/$defs/text" },
           "decided_at": { "type": ["string", "null"] }
@@ -84,6 +84,7 @@
   },
   "$defs": {
     "text": { "type": "string", "maxLength": 4000 },
-    "texts": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/text" } }
+    "line": { "type": "string", "maxLength": 4000, "pattern": "^[^\\r\\n]*$" },
+    "texts": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/line" } }
   }
 }

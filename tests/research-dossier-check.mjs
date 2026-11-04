@@ -5,11 +5,13 @@ import {
   createDossier,
   createDossierRepository,
   createIndexedDbDossierBackend,
+  completionFromLines,
   createMemoryDossierBackend,
   fieldsFromFraming,
   framingFromFields,
   hasFraming,
   linkAnalysis,
+  readDossierFile,
   updateDossier,
   verifyDossier,
 } from "../src/core/research-dossier.js";
@@ -75,6 +77,19 @@ const back = fieldsFromFraming(framed);
 assert(back.terms === "Proportionality: least restrictive means\nTriage\nالتناسب: أقل الوسائل تقييدًا" && back.scope_in === "Digital passes\nExit routes", "framing did not read back as field text");
 assert(JSON.stringify(framingFromFields(back)) === JSON.stringify(framed), "field text did not round-trip");
 
+// The completion contract's field: one criterion per line, a repeated line
+// once. A line kept keeps its criterion, status and reason; a new or changed
+// line is a new criterion, open, under an id no criterion before has used.
+const contract = completionFromLines("Each route is sourced\nTwo rival accounts\n\nEach route is sourced", []);
+assert(JSON.stringify(contract) === JSON.stringify([
+  { criterion_id: "C1", text: "Each route is sourced", status: "open" },
+  { criterion_id: "C2", text: "Two rival accounts", status: "open" },
+]), "criteria were not read one per line, once each");
+const decidedContract = [contract[0], { ...contract[1], status: "met", rationale: "Both in the evidence.", decided_at: "2026-10-31T09:00:00.000Z" }];
+const edited = completionFromLines("Two rival accounts\nA third criterion", decidedContract);
+assert(edited[0].criterion_id === "C2" && edited[0].status === "met" && edited[0].rationale === "Both in the evidence.", "a kept line lost its decision");
+assert(edited[1].criterion_id === "C3" && edited[1].status === "open", "a new line did not get a new id, open");
+
 // Tampering, an unknown format and broken shapes are refused.
 const tampered = structuredClone(dossier);
 tampered.framing.question = "Another question";
@@ -86,6 +101,17 @@ await expectCode(() => createDossier({ framing: { limits: Array(51).fill("limit"
 await expectCode(() => createDossier({
   completion: [{ criterion_id: "C1", text: "One" }, { criterion_id: "C1", text: "Two" }], clock, idFactory,
 }), "DOSSIER_SHAPE_INVALID");
+// Only what the topic step's fields can hold again: one line per item, a term
+// without the colon that ends it, each criterion once, real times, a revision
+// that can still rise.
+await expectCode(() => createDossier({ framing: { scope_in: ["Two\nlines"] }, clock, idFactory }), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => createDossier({ framing: { contested_terms: [{ term: "Term: with a colon" }] }, clock, idFactory }), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => createDossier({ completion: [{ criterion_id: "C1", text: "Two\nlines" }], clock, idFactory }), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => createDossier({
+  completion: [{ criterion_id: "C1", text: "Same" }, { criterion_id: "C2", text: "Same" }], clock, idFactory,
+}), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => verifyDossier({ ...structuredClone(dossier), updated_at: "yesterday" }), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => verifyDossier({ ...structuredClone(dossier), revision: 2 ** 53 }), "DOSSIER_SHAPE_INVALID");
 
 // "Met" is the analyst's claim: it needs a rationale, and gets a time.
 await expectCode(() => updateDossier(dossier, {
@@ -117,7 +143,7 @@ for (let index = 1; index < 50; index += 1) {
   full = await linkAnalysis(full, { ...reference, revision_id: `revision_${index}` }, { clock: () => "2026-10-30T11:00:00.000Z" });
 }
 assert(full.analyses.length === 50, "fifty analyses could not be linked");
-await expectCode(() => linkAnalysis(full, { ...reference, revision_id: "revision_51" }, { clock }), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => linkAnalysis(full, { ...reference, revision_id: "revision_51" }, { clock }), "DOSSIER_FULL");
 
 // The repository verifies, refuses a stale write and lists damage, never deletes it.
 const repository = createDossierRepository({ backend: createMemoryDossierBackend() });
@@ -134,6 +160,16 @@ assert(!listed.framing, "a damaged dossier leaked unverified framing");
 assert((await damagedRepository.list()).length === 1, "listing a damaged dossier removed it");
 await repository.clear();
 assert((await repository.list()).length === 0, "clearing left dossiers behind");
+
+// A case file is the sealed record as written, read back only if it verifies.
+const fileDossier = await createDossier({ framing: { question: "Who decides?" }, completion: completionFromLines("Each claim is sourced") });
+const fromFile = await readDossierFile(`${JSON.stringify({ ...fileDossier, integrity_status: "verified" }, null, 2)}
+`);
+assert(JSON.stringify(fromFile) === JSON.stringify(fileDossier), "a case file did not read back as the record it holds");
+await expectCode(() => readDossierFile("{ not json"), "DOSSIER_FILE_INVALID");
+await expectCode(() => readDossierFile("null"), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => readDossierFile(JSON.stringify({ format: "jarbou3i-workspace-bundle" })), "DOSSIER_FORMAT_UNSUPPORTED");
+await expectCode(() => readDossierFile(JSON.stringify({ ...fileDossier, framing: { ...fileDossier.framing, question: "Changed" } })), "DOSSIER_CHECKSUM_MISMATCH");
 
 const unavailable = createIndexedDbDossierBackend({ indexedDB: { open() { throw new DOMException("blocked", "SecurityError"); } } });
 await expectCode(() => unavailable.list(), "STORAGE_UNAVAILABLE");

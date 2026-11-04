@@ -123,3 +123,21 @@
   .j-brief-bar { forced-color-adjust: none; border: 1px solid CanvasText; background: Canvas; }
   .j-brief-bar::before { background: Highlight; }
 }
+
+/* The analyst's completion contract, after the overview: a heavy rule opens
+   it, hairlines part its criteria. A met one is the analyst's claim, so its
+   reason reads as a quote. */
+.j-done { display: grid; gap: var(--j-s-3); margin-block-start: var(--j-s-6); padding-block-start: var(--j-s-4); border-block-start: 2px solid var(--j-fg); }
+.j-done-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--j-s-1) var(--j-s-4); }
+.j-done-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-18)/1.3 var(--j-font-display); }
+.j-done-head p { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-14); }
+.j-done-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.j-done-item { display: grid; gap: var(--j-s-2); padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-done-item > .j-btn { justify-self: start; }
+.j-done-text { margin: 0; max-width: 72ch; color: var(--j-fg); font-weight: 600; overflow-wrap: anywhere; }
+.j-done-state { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-14); }
+.j-done-state strong { color: var(--j-fg); }
+.j-done-reason { margin: 0; max-width: 72ch; padding-inline-start: var(--j-s-3); border-inline-start: 2px solid var(--j-line); overflow-wrap: anywhere; }
+.j-done-form { display: grid; gap: var(--j-s-3); max-width: 72ch; }
+.j-done-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
+.j-done [hidden] { display: none; }

@@ -39,6 +39,9 @@ import {
   createRecoveryJournal,
 } from "./core/recovery-journal.js";
 import {
+  DOSSIER_FILE_LIMIT,
+  DossierError,
+  completionFromLines,
   createDossier,
   createDossierRepository,
   createIndexedDbDossierBackend,
@@ -46,6 +49,7 @@ import {
   framingFromFields,
   hasFraming,
   linkAnalysis,
+  readDossierFile,
   updateDossier,
 } from "./core/research-dossier.js";
 import {
@@ -133,8 +137,12 @@ const I18N = {
     caseScopeOut: "خارج النطاق",
     caseTerms: "مصطلحات موضع خلاف",
     caseLimits: "حدود هذا البحث",
+    caseDone: "يكتمل التحليل حين",
+    caseDoneHelp: "معيار واحد في كل سطر. تعلّم كلًّا منها متحقّقًا، مع سببك، في ملف القضية.",
     caseNotSaved: "لم يُحفظ على هذا الجهاز، ونصّك ما زال هنا.",
     caseTooLong: "اجعل كل قائمة في 50 سطرًا على الأكثر، وكل سطر في أقل من 4000 حرف.",
+    caseFull: "تربط هذه القضية 50 إجابة بالفعل. ابدأ قضية جديدة للإجابة التالية.",
+    caseChanged: "تغيّرت هذه القضية في علامة تبويب أخرى. أعد فتحها لترى أحدث نسخة.",
     copyPrompt: "انسخ الموجِّه",
     previewPrompt: "معاينة الموجِّه",
     editTopic: "تعديل الموضوع",
@@ -468,8 +476,12 @@ const I18N = {
     caseScopeOut: "Out of scope",
     caseTerms: "Terms in dispute",
     caseLimits: "Limits of this research",
+    caseDone: "The analysis is done when",
+    caseDoneHelp: "One criterion per line. You mark each one met, with your reason, in the case file.",
     caseNotSaved: "Not saved on this device. Your text is still here.",
     caseTooLong: "Keep each list to 50 lines, and each line under 4,000 characters.",
+    caseFull: "This case already links 50 answers. Start a new case for the next one.",
+    caseChanged: "This case changed in another tab. Reopen it to see the latest version.",
     copyPrompt: "Copy prompt",
     previewPrompt: "Preview prompt",
     editTopic: "Edit topic",
@@ -814,8 +826,12 @@ const I18N = {
     caseScopeOut: "Hors périmètre",
     caseTerms: "Termes contestés",
     caseLimits: "Limites de cette recherche",
+    caseDone: "L’analyse est terminée quand",
+    caseDoneHelp: "Un critère par ligne. Vous marquez chacun comme rempli, avec votre raison, dans le dossier.",
     caseNotSaved: "Non enregistré sur cet appareil. Votre texte est toujours là.",
     caseTooLong: "Gardez chaque liste sous 50 lignes, et chaque ligne sous 4 000 caractères.",
+    caseFull: "Ce dossier lie déjà 50 réponses. Commencez un nouveau dossier pour la suivante.",
+    caseChanged: "Ce dossier a été modifié dans un autre onglet. Rouvrez-le pour en voir la dernière version.",
     copyPrompt: "Copier le prompt",
     previewPrompt: "Aperçu du prompt",
     editTopic: "Modifier le sujet",
@@ -1400,25 +1416,60 @@ const RECOVERY_JOURNAL = createRecoveryJournal({
 // dossier its fields were saved to; an answer imported for it is linked to it,
 // and while it is on screen nothing but the analyst rewrites its question.
 const DOSSIER_REPOSITORY = createDossierRepository({ backend: createIndexedDbDossierBackend() });
-const CASE_FIELDS = { scope_in: "caseScopeIn", scope_out: "caseScopeOut", terms: "caseTerms", limits: "caseLimits" };
+const CASE_FIELDS = { scope_in: "caseScopeIn", scope_out: "caseScopeOut", terms: "caseTerms", limits: "caseLimits", done: "caseDone" };
 let caseDossier = null;
 // Raised when another case is shown, so a write still running for the one
 // before does not take its place.
 let caseShown = 0;
 let caseTimer = 0;
 let caseWrites = Promise.resolve();
-const caseFieldText = () => Object.fromEntries(Object.entries(CASE_FIELDS).map(([key, id]) => [key, $(id).value]));
+// The reason form open and the reasons being written in the completion
+// contract, for the case on screen only. A criterion is known by its id and
+// its line: an id freed by a removed line is given again to the next new one.
+let doneOpen = null;
+const doneDrafts = new Map();
+let doneFailure = null;
+const doneKey = (criterion) => JSON.stringify([criterion.criterion_id, criterion.text]);
+function forgetDone() {
+  doneOpen = null;
+  doneDrafts.clear();
+  doneFailure = null;
+}
+// What a case that was not saved says, in its own words.
+function caseErrorText(error) {
+  const key = { DOSSIER_SHAPE_INVALID: "caseTooLong", DOSSIER_FULL: "caseFull", WRITE_CONFLICT: "caseChanged", DOSSIER_CRITERION_GONE: "caseChanged" }[error?.code];
+  return `${t("caseNotSaved")} ${key ? t(key) : workspaceFailureMessage(error)}`;
+}
+// A write that lost to another tab is made again, once, on the newer record.
+async function writeCase(dossier, change) {
+  const write = async (current) => {
+    const next = await change(current);
+    return next === current ? current : DOSSIER_REPOSITORY.save(next, { expectedRevision: current.revision });
+  };
+  try {
+    return await write(dossier);
+  } catch (error) {
+    if (error?.code !== "WRITE_CONFLICT") throw error;
+    const current = await DOSSIER_REPOSITORY.get(dossier.dossier_id);
+    if (!current) throw error;
+    return write(current);
+  }
+}
+const caseFieldText =() => Object.fromEntries(Object.entries(CASE_FIELDS).map(([key, id]) => [key, $(id).value]));
 const caseFraming = () => framingFromFields({ question: $("topicInput").value, timeframe: $("timeframeInput").value, ...caseFieldText() });
-const caseOnScreen = () => Boolean(caseDossier) || hasFraming(caseFraming());
+// The completion contract as its field holds it, keeping each kept line's decision.
+const caseCompletion = (previous = caseDossier?.completion || []) => completionFromLines($("caseDone").value, previous);
+const caseOnScreen = () => Boolean(caseDossier) || hasFraming(caseFraming()) || caseCompletion().length > 0;
 const caseHolds = (workspaceId) => Boolean(caseDossier?.analyses.some((link) => link.workspace_id === workspaceId));
 // A dossier's framing in the fields, or none: the fields empty.
 function showCase(dossier) {
   clearTimeout(caseTimer);
   caseShown += 1;
   caseDossier = dossier || null;
-  const text = dossier ? fieldsFromFraming(dossier.framing) : {};
+  forgetDone();
+  const text = dossier ? { ...fieldsFromFraming(dossier.framing), done: dossier.completion.map((criterion) => criterion.text).join("\n") } : {};
   for (const [key, id] of Object.entries(CASE_FIELDS)) $(id).value = text[key] || "";
-  $("caseFold").open = Boolean(dossier && hasFraming(dossier.framing));
+  $("caseFold").open = Boolean(dossier && (hasFraming(dossier.framing) || dossier.completion.length));
   showCaseStatus(null);
 }
 function showCaseStatus(error) {
@@ -1430,7 +1481,7 @@ function showCaseStatus(error) {
   const note = document.createElement("p");
   note.className = "j-note";
   note.dataset.tone = "warn";
-  note.textContent = `${t("caseNotSaved")} ${error?.code === "DOSSIER_SHAPE_INVALID" ? t("caseTooLong") : workspaceFailureMessage(error)}`;
+  note.textContent = caseErrorText(error);
   status.replaceChildren(note);
 }
 // Saved half a second after the last keystroke; each write waits for the one before.
@@ -1448,48 +1499,48 @@ async function saveCase() {
   const framing = caseFraming();
   try {
     if (!caseDossier) {
+      const completion = caseCompletion([]);
       // A topic alone is not kept here: the analysis being prepared holds it.
-      if (!hasFraming(framing)) return;
-      const created = await createDossier({ framing });
+      if (!hasFraming(framing) && !completion.length) return;
+      const created = await createDossier({ framing, completion });
       await DOSSIER_REPOSITORY.create(created);
       if (shown !== caseShown) return;
       caseDossier = created;
       keepTrip();
-    } else if (JSON.stringify(framing) !== JSON.stringify(caseDossier.framing)) {
-      let current = caseDossier;
-      let saved;
-      try {
-        saved = await DOSSIER_REPOSITORY.save(await updateDossier(current, { framing }), { expectedRevision: current.revision });
-      } catch (error) {
-        if (error?.code !== "WRITE_CONFLICT") throw error;
-        // Changed in another tab: the text on this screen is the newer.
-        current = await DOSSIER_REPOSITORY.get(current.dossier_id);
-        if (!current) throw error;
-        saved = await DOSSIER_REPOSITORY.save(await updateDossier(current, { framing }), { expectedRevision: current.revision });
-      }
+      refreshCaseCompletion();
+    } else if (
+      JSON.stringify(framing) !== JSON.stringify(caseDossier.framing)
+      || JSON.stringify(caseCompletion()) !== JSON.stringify(caseDossier.completion)
+    ) {
+      // Changed in another tab: the text on this screen is the newer.
+      const saved = await writeCase(caseDossier, (current) => updateDossier(current, { framing, completion: caseCompletion(current.completion) }));
       if (shown !== caseShown) return;
       caseDossier = saved;
+      refreshCaseCompletion();
     }
     showCaseStatus(null);
   } catch (error) {
     if (shown === caseShown) showCaseStatus(error);
   }
 }
-// An answer imported for the case on screen is linked to its dossier by
-// reference: the workspace, its revision and checksum, never its content.
-async function linkCase(workspace) {
+// An answer imported for a case is linked to its dossier by reference: the
+// workspace, its revision and checksum, never its content. It goes to the case
+// that was on screen when the import began (`shown`), even if another case
+// has been shown since.
+async function linkCase(workspace, { shown = caseShown, dossierId = caseDossier?.dossier_id } = {}) {
   await flushCaseSave();
   caseWrites = caseWrites.then(async () => {
-    const shown = caseShown;
     const head = workspace.revisions.find((revision) => revision.revision_id === workspace.head_revision_id);
-    if (!caseDossier || !head) return;
+    const onScreen = shown === caseShown;
+    const dossier = onScreen ? caseDossier : dossierId ? await DOSSIER_REPOSITORY.get(dossierId).catch(() => null) : null;
+    if (!dossier || !head) return;
     try {
-      const next = await linkAnalysis(caseDossier, { workspace_id: workspace.workspace_id, revision_id: head.revision_id, payload_checksum: head.payload_checksum });
-      if (next === caseDossier) return;
-      const saved = await DOSSIER_REPOSITORY.save(next, { expectedRevision: caseDossier.revision });
-      if (shown === caseShown) caseDossier = saved;
+      const saved = await writeCase(dossier, (current) => linkAnalysis(current, { workspace_id: workspace.workspace_id, revision_id: head.revision_id, payload_checksum: head.payload_checksum }));
+      if (!onScreen || shown !== caseShown) return;
+      caseDossier = saved;
+      refreshCaseCompletion();
     } catch (error) {
-      if (shown === caseShown) showCaseStatus(error);
+      if (onScreen && shown === caseShown) showCaseStatus(error);
     }
   });
   return caseWrites;
@@ -1504,10 +1555,103 @@ async function caseFor(workspaceId) {
 function casePromptText(lang) {
   const text = fieldsFromFraming(caseFraming());
   const words = I18N[lang] || I18N.en;
-  return [["caseScopeIn", text.scope_in], ["caseScopeOut", text.scope_out], ["caseTerms", text.terms], ["caseLimits", text.limits]]
+  const done = caseCompletion().map((criterion) => criterion.text).join("\n");
+  return [["caseScopeIn", text.scope_in], ["caseScopeOut", text.scope_out], ["caseTerms", text.terms], ["caseLimits", text.limits], ["caseDone", done]]
     .filter(([, lines]) => lines)
     .map(([key, lines]) => `${words[key]}:\n${lines.split("\n").map((line) => `- ${line}`).join("\n")}`)
     .join("\n");
+}
+// The completion contract at the end of the overview, for an analysis the
+// case on screen holds: each criterion open, or met by the analyst's own claim
+// with its reason. The app never marks one met.
+function caseCompletionHtml() {
+  if (!caseHolds(state.activeWorkspaceId) || !caseDossier.completion.length) return "";
+  const criteria = caseDossier.completion;
+  const met = criteria.filter((criterion) => criterion.status === "met").length;
+  const day = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium" });
+  const when = (value) => (Number.isNaN(Date.parse(value)) ? value : day.format(new Date(value)));
+  const mark = escapeHtml(labelText("Mark as met", "علّمه متحقّقًا", "Marquer comme rempli"));
+  const items = criteria.map((criterion, index) => {
+    const id = escapeHtml(criterion.criterion_id);
+    const key = escapeHtml(doneKey(criterion));
+    const text = `<p class="j-done-text" id="done-${index}" dir="auto">${escapeHtml(criterion.text)}</p>`;
+    if (criterion.status === "met") {
+      return `<li class="j-done-item" data-status="met">${text}<p class="j-done-state"><strong>${escapeHtml(labelText("Met", "متحقّق", "Rempli"))}</strong> · ${escapeHtml(labelText("your claim", "ادعاؤك", "votre affirmation"))}${labelText(",", "،", ",")} <time datetime="${escapeHtml(criterion.decided_at)}">${escapeHtml(when(criterion.decided_at))}</time></p><p class="j-done-reason" dir="auto">${escapeHtml(criterion.rationale)}</p><button class="j-btn" data-variant="ghost" type="button" data-done-reopen="${id}" aria-describedby="done-${index}">${escapeHtml(labelText("Reopen", "أعِد فتحه", "Rouvrir"))}</button></li>`;
+    }
+    const open = doneOpen === doneKey(criterion);
+    return `<li class="j-done-item" data-status="open">${text}<p class="j-done-state">${escapeHtml(labelText("Open", "مفتوح", "Ouvert"))}</p><button class="j-btn" type="button" data-done-mark="${id}" data-done-key="${key}" aria-expanded="${open}" aria-controls="doneForm-${index}" aria-describedby="done-${index}"${open ? " hidden" : ""}>${mark}</button><div class="j-done-form" id="doneForm-${index}" data-done-form="${id}" data-done-key="${key}" role="group" aria-labelledby="done-${index}"${open ? "" : " hidden"}><div class="j-field"><label for="doneReason-${index}">${escapeHtml(labelText("Why it is met", "لماذا تحقّق", "Pourquoi il est rempli"))}</label><textarea class="j-input" id="doneReason-${index}" rows="2" dir="auto" aria-describedby="doneHelp-${index}">${escapeHtml(doneDrafts.get(doneKey(criterion)) || "")}</textarea><p class="j-help" id="doneHelp-${index}">${escapeHtml(labelText("Your own claim, kept with the case. The app does not check it.", "ادعاؤك أنت، يُحفظ مع القضية. لا تتحقّق منه الأداة.", "Votre propre affirmation, conservée avec le dossier. L’outil ne la vérifie pas."))}</p><p class="j-note" data-tone="crit" id="doneError-${index}" hidden>${escapeHtml(labelText("Write why it is met.", "اكتب لماذا تحقّق.", "Écrivez pourquoi il est rempli."))}</p></div><div class="j-done-acts"><button class="j-btn" data-variant="primary" type="button" data-done-submit>${mark}</button><button class="j-btn" data-variant="ghost" type="button" data-done-cancel>${escapeHtml(labelText("Cancel", "إلغاء", "Annuler"))}</button></div></div></li>`;
+  });
+  // A decision not saved is said here until the next one is, not in a toast that goes.
+  return `<section class="j-done" data-case-completion aria-labelledby="caseDoneTitle"><header class="j-done-head"><h4 id="caseDoneTitle">${escapeHtml(t("caseDone"))}</h4><p>${escapeHtml(labelText("Met", "تحقّق", "Remplis"))}${colonMark()} <bdi>${met}</bdi> ${escapeHtml(labelText("of", "من", "sur"))} <bdi>${criteria.length}</bdi></p></header><p class="j-note" data-tone="warn" role="alert" data-done-error${doneFailure ? "" : " hidden"}>${escapeHtml(doneFailure || "")}</p><ol class="j-done-list" role="list">${items.join("")}</ol></section>`;
+}
+// Drawn again in place, so the rest of the case file, its scroll and focus stay.
+function refreshCaseCompletion() {
+  const overview = $("case-overview");
+  if (!overview) return;
+  overview.querySelector("[data-case-completion]")?.remove();
+  overview.insertAdjacentHTML("beforeend", caseCompletionHtml());
+}
+// A criterion met, with the analyst's reason, or open again. Made on the newer
+// record if another tab wrote the case meanwhile, and only to the same
+// criterion. Focus moves to the control that undoes it, unless the analyst has
+// gone on to another one meanwhile.
+async function decideCriterion(id, status, rationale, control) {
+  const criterion = caseDossier?.completion.find((entry) => entry.criterion_id === id);
+  if (!criterion) return;
+  const key = doneKey(criterion);
+  control.disabled = true;
+  const shown = caseShown;
+  let failure = null;
+  let saved = false;
+  caseWrites = caseWrites.then(async () => {
+    if (!caseDossier || shown !== caseShown) return;
+    try {
+      const next = await writeCase(caseDossier, (current) => {
+        if (!current.completion.some((entry) => doneKey(entry) === key)) throw new DossierError("DOSSIER_CRITERION_GONE", "The criterion changed.");
+        return updateDossier(current, { completion: current.completion.map((entry) => (doneKey(entry) === key ? { ...entry, status, rationale } : entry)) });
+      });
+      if (shown !== caseShown) return;
+      caseDossier = next;
+      saved = true;
+    } catch (error) {
+      failure = error;
+    }
+  });
+  await caseWrites;
+  const block = $("case-overview")?.querySelector("[data-case-completion]");
+  if (!saved) {
+    control.disabled = false;
+    if (!failure) return;
+    doneFailure = caseErrorText(failure);
+    const note = block?.querySelector("[data-done-error]");
+    if (note) {
+      note.textContent = doneFailure;
+      note.hidden = false;
+    }
+    if (control.isConnected) control.focus();
+    return;
+  }
+  doneFailure = null;
+  if (status === "met") {
+    if (doneOpen === key) doneOpen = null;
+    doneDrafts.delete(key);
+  }
+  // Still on this criterion: WebKit does not focus a clicked button, and
+  // leaves focus in the reason field or on a container around it.
+  const active = document.activeElement;
+  const item = control.closest(".j-done-item");
+  const stayed = !active || !item || active.contains(item) || item.contains(active);
+  const elsewhere = !stayed && block?.contains(active) ? active : null;
+  refreshCaseCompletion();
+  if (stayed) {
+    $("case-overview")?.querySelector(`[data-done-${status === "met" ? "reopen" : "mark"}="${CSS.escape(id)}"]`)?.focus();
+  } else if (elsewhere?.id) {
+    // Drawn again under the analyst's focus: it comes back to the same place.
+    const again = $(elsewhere.id);
+    again?.focus();
+    if (again && "selectionStart" in elsewhere) again.setSelectionRange(elsewhere.selectionStart, elsewhere.selectionEnd);
+  }
+  toast(status === "met" ? labelText("Marked as met.", "عُلّم متحقّقًا.", "Marqué comme rempli.") : labelText("Reopened.", "أُعيد فتحه.", "Rouvert."));
 }
 // The analysis being prepared (topic, prompt, pasted answer), kept until it is
 // imported so a reload, or a phone closing the tab while the user is in the AI
@@ -1723,6 +1867,7 @@ async function restoreTrip(untouched, record) {
   if (record.case_fields && typeof record.case_fields === "object") {
     caseShown += 1;
     caseDossier = record.dossier || null;
+    forgetDone();
     for (const [key, id] of Object.entries(CASE_FIELDS)) {
       if (typeof record.case_fields[key] === "string") $(id).value = record.case_fields[key];
     }
@@ -7232,7 +7377,7 @@ function renderBiopoliticalReview() {
   $("reviewPanel").classList.remove("hide");
   renderBiopoliticalReviewNav();
   const sections = {
-    overview: renderBiopoliticalOverview,
+    overview: () => renderBiopoliticalOverview() + caseCompletionHtml(),
     pillars: renderBiopoliticalPillars,
     connections: renderBiopoliticalConnections,
     evidence: renderBiopoliticalEvidence,
@@ -7387,7 +7532,7 @@ function renderReview() {
   $("reviewPanel").classList.remove("hide");
   renderReviewNav();
   const sections = {
-    overview: renderOverview,
+    overview: () => renderOverview() + caseCompletionHtml(),
     pillars: renderPillars,
     contradictions: renderContradictions,
     scenarios: renderScenarios,
@@ -8676,12 +8821,12 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   refreshWorkspaceLife();
 }
 
-async function openStoredWorkspace(id, { announce = true, canApply = () => true } = {}) {
+async function openStoredWorkspace(id, { announce = true, canApply = () => true, dossier: given = null } = {}) {
   try {
     const workspace = await WORKSPACE_REPOSITORY.get(id);
     if (!workspace) throw new Error("Workspace was not found on this device.");
     await flushCaseSave();
-    const dossier = await caseFor(workspace.workspace_id);
+    const dossier = given || (await caseFor(workspace.workspace_id));
     if (!canApply()) return null;
     showCase(dossier);
     applyWorkspaceAnalysis(workspace);
@@ -8752,10 +8897,191 @@ async function renderWorkspaceList() {
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceSaveState")); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
     $("workspaceResetCurrent").disabled = !state.activeWorkspaceId;
+    await renderCaseList(new Set(entries.filter((entry) => entry.integrity_status === "verified").map((entry) => entry.workspace_id)));
   } catch (error) {
     target.innerHTML = "";
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
+    await renderCaseList(null);
   }
+}
+
+// The cases kept on this device (RESEARCH-1A, slice 4), each with the answers
+// linked to it, here or not. A case is opened, exported as its sealed record,
+// or removed; removing one never removes its answers.
+function caseListText(key) {
+  const copy = {
+    title: ["Cases", "القضايا", "Dossiers"],
+    restore: ["Restore a case from a file", "استعادة قضية من ملف", "Restaurer un dossier depuis un fichier"],
+    empty: ["No case yet. Fill in “What the analysis covers” to keep one.", "لا توجد قضية بعد. املأ «ما الذي يشمله التحليل» لحفظ واحدة.", "Aucun dossier pour l’instant. Remplissez « Ce que couvre l’analyse » pour en conserver un."],
+    untitled: ["Case without a question", "قضية بلا سؤال", "Dossier sans question"],
+    damaged: ["Unreadable case", "قضية غير قابلة للقراءة", "Dossier illisible"],
+    noAnswer: ["No answer imported yet", "لم تُستورد أي إجابة بعد", "Aucune réponse importée"],
+    linked: ["Answers linked", "الإجابات المرتبطة", "Réponses liées"],
+    away: ["Not on this device", "ليست على هذا الجهاز", "Absentes de cet appareil"],
+    export: ["Export", "تصدير", "Exporter"],
+    removeConfirm: ["Click again to remove the case. Its answers stay.", "انقر مجددًا لإزالة القضية. تبقى إجاباتها.", "Cliquez à nouveau pour supprimer le dossier. Ses réponses restent."],
+    removed: ["Case removed. Its answers stay in Workspaces.", "أُزيلت القضية. تبقى إجاباتها في مساحات العمل.", "Dossier supprimé. Ses réponses restent dans les espaces de travail."],
+    opened: ["Case opened. Its question and framing are in the Topic step.", "فُتحت القضية. سؤالها وإطارها في خطوة «الموضوع».", "Dossier ouvert. Sa question et son cadrage sont à l’étape « Sujet »."],
+    openedAnswer: ["Case opened with its newest answer on this device.", "فُتحت القضية مع أحدث إجاباتها على هذا الجهاز.", "Dossier ouvert avec sa réponse la plus récente sur cet appareil."],
+    exported: ["Case exported.", "صُدّرت القضية.", "Dossier exporté."],
+    restored: ["Case restored. Open it from the list.", "استُعيدت القضية. افتحها من القائمة.", "Dossier restauré. Ouvrez-le depuis la liste."],
+    exists: ["This case is already on this device. Nothing was overwritten.", "هذه القضية موجودة على هذا الجهاز. لم تتم الكتابة فوق أي بيانات.", "Ce dossier est déjà sur cet appareil. Rien n’a été écrasé."],
+    notCase: ["This file is not an exported case.", "هذا الملف ليس قضية مصدّرة.", "Ce fichier n’est pas un dossier exporté."],
+    changed: ["This case file was changed or damaged, so it was not restored.", "تغيّر ملف القضية هذا أو تلف، فلم يُستعد.", "Ce fichier de dossier a été modifié ou endommagé ; il n’a pas été restauré."],
+    tooLarge: ["A case file must not exceed 8 MiB.", "يجب ألا يتجاوز ملف القضية 8 ميغابايت.", "Un fichier de dossier ne doit pas dépasser 8 Mio."],
+    gone: ["This case is no longer on this device; it may have been removed in another tab.", "لم تعد هذه القضية على هذا الجهاز؛ ربما أُزيلت في علامة تبويب أخرى.", "Ce dossier n’est plus sur cet appareil ; il a peut-être été supprimé dans un autre onglet."],
+  }[key];
+  return labelText(...copy);
+}
+function caseFileMessage(error) {
+  const key = {
+    DOSSIER_EXISTS: "exists",
+    DOSSIER_CHECKSUM_MISMATCH: "changed",
+    DOSSIER_FILE_TOO_LARGE: "tooLarge",
+    DOSSIER_FILE_INVALID: "notCase",
+    DOSSIER_FORMAT_UNSUPPORTED: "notCase",
+    DOSSIER_SHAPE_INVALID: "notCase",
+  }[error?.code];
+  return key ? caseListText(key) : workspaceFailureMessage(error);
+}
+// Said under the Cases heading, next to the control that was used.
+function setCaseListStatus(kind, message) {
+  const target = $("caseListStatus");
+  target.dataset.tone = { good: "ok", warn: "warn", bad: "crit" }[kind] || "idle";
+  target.textContent = message;
+}
+// `onDevice` holds the answers saved here; null when they could not be read,
+// so none is said to be away.
+async function renderCaseList(onDevice) {
+  let dossiers;
+  try {
+    dossiers = await DOSSIER_REPOSITORY.list();
+  } catch (error) {
+    $("caseList").replaceChildren();
+    setCaseListStatus("bad", workspaceFailureMessage(error));
+    return;
+  }
+  const date = new Intl.DateTimeFormat(state.lang, { dateStyle: "medium", timeStyle: "short" });
+  const count = (label, value) => `<span>${escapeHtml(label)}${colonMark()} <bdi>${value}</bdi></span>`;
+  $("caseList").innerHTML = dossiers.length
+    ? dossiers.map((entry, index) => {
+        const id = escapeHtml(entry.dossier_id);
+        const remove = `<button class="j-btn" data-variant="danger" type="button" data-case-remove="${id}" aria-describedby="caseName-${index}">${escapeHtml(workspaceText("removeDamaged"))}</button>`;
+        // A damaged case cannot be opened, only removed.
+        if (entry.integrity_status !== "verified") {
+          return `<article class="j-ws-row" data-state="damaged" data-case-row="${id}"><div><p class="j-ws-name" id="caseName-${index}">${escapeHtml(caseListText("damaged"))}</p><div class="j-ws-meta"><strong title="${escapeHtml(entry.error_code)}">${escapeHtml(workspaceText("damaged"))}</strong></div></div><div class="j-ws-row-acts">${remove}</div></article>`;
+        }
+        const current = entry.dossier_id === caseDossier?.dossier_id;
+        const answers = new Set(entry.analyses.map((link) => link.workspace_id));
+        const away = onDevice ? [...answers].filter((workspaceId) => !onDevice.has(workspaceId)).length : 0;
+        const met = entry.completion.filter((criterion) => criterion.status === "met").length;
+        const meta = [
+          answers.size ? count(caseListText("linked"), answers.size) : `<span>${escapeHtml(caseListText("noAnswer"))}</span>`,
+          away ? count(caseListText("away"), away) : "",
+          entry.completion.length ? `<span>${escapeHtml(labelText("Criteria met", "المعايير المتحقّقة", "Critères remplis"))}${colonMark()} <bdi>${met}</bdi> ${escapeHtml(labelText("of", "من", "sur"))} <bdi>${entry.completion.length}</bdi></span>` : "",
+          `<span>${escapeHtml(date.format(new Date(entry.updated_at)))}</span>`,
+          current ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : "",
+        ].join("");
+        const open = current ? "" : `<button class="j-btn" data-variant="primary" type="button" data-case-open="${id}" aria-describedby="caseName-${index}">${escapeHtml(workspaceText("open"))}</button>`;
+        return `<article class="j-ws-row"${current ? ' aria-current="true"' : ""} data-case-row="${id}"><div><p class="j-ws-name" id="caseName-${index}" dir="auto">${escapeHtml(entry.framing.question || caseListText("untitled"))}</p><div class="j-ws-meta">${meta}</div></div><div class="j-ws-row-acts">${remove}<button class="j-btn" type="button" data-case-export="${id}" aria-describedby="caseName-${index}">${escapeHtml(caseListText("export"))}</button>${open}</div></article>`;
+      }).join("")
+    : `<p class="j-ws-empty">${escapeHtml(caseListText("empty"))}</p>`;
+}
+// A case opens its newest answer on this device; without one, its framing
+// opens in the topic step, ready for the next answer.
+async function openCase(id) {
+  if (!confirmReplacingReply(`case:${id}`)) {
+    setCaseListStatus("warn", replaceReplyText());
+    return;
+  }
+  try {
+    const dossier = await DOSSIER_REPOSITORY.get(id);
+    if (!dossier) {
+      setCaseListStatus("warn", caseListText("gone"));
+    } else {
+      const onDevice = new Set((await WORKSPACE_REPOSITORY.list()).filter((entry) => entry.integrity_status === "verified").map((entry) => entry.workspace_id));
+      const held = dossier.analyses.findLast((link) => onDevice.has(link.workspace_id));
+      if (held) {
+        if (await openStoredWorkspace(held.workspace_id, { dossier, announce: false })) {
+          discardTrip();
+          setCaseListStatus("good", caseListText("openedAnswer"));
+        } else {
+          setCaseListStatus("bad", workspaceText("failed"));
+        }
+      } else {
+        await flushCaseSave();
+        showCase(dossier);
+        $("topicInput").value = state.topic = dossier.framing.question;
+        $("timeframeInput").value = state.context = dossier.framing.timeframe;
+        // A reply pasted, or awaited, for the case before is not this case's answer.
+        if (hasPendingReply()) {
+          $("jsonInput").value = "";
+          validateJsonInput();
+        }
+        replyFor = null;
+        completionBase = null;
+        syncReplyBox(false);
+        state.stage = "topic";
+        state.shellSection = "workflow";
+        GUIDED_FLOW.go("topic");
+        renderAll();
+        keepTrip();
+        setCaseListStatus("good", caseListText("opened"));
+      }
+    }
+  } catch (error) {
+    setCaseListStatus("bad", workspaceFailureMessage(error));
+  }
+  await renderWorkspaceList();
+  keepDialogFocus($("workspaceDialog"));
+}
+async function exportCase(id) {
+  try {
+    const dossier = await DOSSIER_REPOSITORY.get(id);
+    if (!dossier) {
+      setCaseListStatus("warn", caseListText("gone"));
+      return;
+    }
+    download(`${safeFileSlug(dossier.framing.question, "research-case")}-case.json`, `${JSON.stringify(dossier, null, 2)}\n`, "application/json");
+    setCaseListStatus("good", caseListText("exported"));
+  } catch (error) {
+    setCaseListStatus("bad", workspaceFailureMessage(error));
+  }
+}
+// A second click removes it. The case on screen is emptied first, so no save
+// still waiting writes it back.
+async function removeCase(button) {
+  if (button.dataset.armed !== "true") {
+    button.dataset.armed = "true";
+    button.textContent = caseListText("removeConfirm");
+    return;
+  }
+  const id = button.dataset.caseRemove;
+  try {
+    if (caseDossier?.dossier_id === id) {
+      showCase(null);
+      refreshCaseCompletion();
+      keepTrip();
+    }
+    await caseWrites;
+    await DOSSIER_REPOSITORY.delete(id);
+    setCaseListStatus("good", caseListText("removed"));
+  } catch (error) {
+    setCaseListStatus("bad", workspaceFailureMessage(error));
+  }
+  await renderWorkspaceList();
+  keepDialogFocus($("workspaceDialog"));
+}
+// Restored as written, never over a case already here; it opens only when asked.
+async function restoreCaseFile(file) {
+  try {
+    if (file.size > DOSSIER_FILE_LIMIT) throw new DossierError("DOSSIER_FILE_TOO_LARGE", "Case files must not exceed 8 MiB.");
+    await DOSSIER_REPOSITORY.create(await readDossierFile(await file.text()));
+    setCaseListStatus("good", caseListText("restored"));
+  } catch (error) {
+    setCaseListStatus(error?.code === "DOSSIER_EXISTS" ? "warn" : "bad", caseFileMessage(error));
+  }
+  await renderWorkspaceList();
 }
 
 async function openWorkspaceDialog(invoker = document.activeElement) {
@@ -8771,6 +9097,9 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   $("workspaceProtectStorage").textContent = workspaceText("protect");
   $("workspaceResetAll").textContent = workspaceText("resetAll");
   $("workspaceResetCurrent").textContent = workspaceText("resetCurrent");
+  $("caseListTitle").textContent = caseListText("title");
+  $("caseRestore").textContent = caseListText("restore");
+  setCaseListStatus("idle", "");
   // A save that failed stays shown until another one succeeds.
   if (state.workspaceSaveState !== "error") setWorkspaceStatus("good", workspaceText("ready"));
   await refreshWorkspaceLife();
@@ -9368,6 +9697,8 @@ $("importBtn").onclick = async () => {
   if (state.analysis && state.analysis.analysis_lens !== a.analysis_lens) {
     setAsideResult(savedReply || "");
   }
+  // The case the answer is imported for, whatever is shown by the time it is saved.
+  const importedFor = { shown: caseShown, dossierId: caseDossier?.dossier_id };
   state.analysis = a;
   if (["strategic", "biopolitical"].includes(a.analysis_lens)) {
     state.analysisLens = a.analysis_lens;
@@ -9406,8 +9737,9 @@ $("importBtn").onclick = async () => {
   arriveAtReview();
   const saved = await persistImportedAnalysis(a);
   if (!saved) return;
-  await linkCase(saved);
-  discardTrip();
+  await linkCase(saved, importedFor);
+  // A case opened meanwhile keeps the analysis being prepared for it.
+  if (importedFor.shown === caseShown) discardTrip();
 };
 $("repairPromptBtn").onclick = async (event) => {
   const invoker = event.currentTarget;
@@ -9600,6 +9932,18 @@ $("workspaceImportFile").onchange = async (event) => {
   if (file) await importWorkspaceFile(file);
   event.target.value = "";
 };
+$("caseRestore").onclick = () => $("caseRestoreFile").click();
+$("caseRestoreFile").onchange = async (event) => {
+  const [file] = event.target.files || [];
+  if (file) await restoreCaseFile(file);
+  event.target.value = "";
+};
+$("caseList").addEventListener("click", (event) => {
+  const button = event.target.closest("button");
+  if (button?.dataset.caseOpen) openCase(button.dataset.caseOpen);
+  else if (button?.dataset.caseExport) exportCase(button.dataset.caseExport);
+  else if (button?.dataset.caseRemove) removeCase(button);
+});
 $("editorClose").onclick = closeCanonicalEditor;
 $("editorUndo").onclick = () => { if (applyEditorField()) { state.editorSession?.undo(); renderCanonicalEditor(); scheduleEditorRecovery(); keepDialogFocus($("editorDialog")); } };
 $("editorRedo").onclick = () => { if (applyEditorField()) { state.editorSession?.redo(); renderCanonicalEditor(); scheduleEditorRecovery(); keepDialogFocus($("editorDialog")); } };
@@ -9700,6 +10044,63 @@ for (const id of Object.values(CASE_FIELDS)) {
     scheduleCaseSave();
   });
 }
+// The completion contract in the case file: a reason is written in place,
+// under the criterion it is for.
+$("reviewContent").addEventListener("click", (event) => {
+  const mark = event.target.closest("[data-done-mark]");
+  if (mark) {
+    doneOpen = mark.dataset.doneKey;
+    const form = $(mark.getAttribute("aria-controls"));
+    mark.setAttribute("aria-expanded", "true");
+    mark.hidden = true;
+    form.hidden = false;
+    form.querySelector("textarea").focus();
+    return;
+  }
+  const cancel = event.target.closest("[data-done-cancel]");
+  if (cancel) {
+    const form = cancel.closest("[data-done-form]");
+    const toggle = form.previousElementSibling;
+    doneOpen = null;
+    form.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.hidden = false;
+    toggle.focus();
+    return;
+  }
+  const reopen = event.target.closest("[data-done-reopen]");
+  if (reopen) {
+    decideCriterion(reopen.dataset.doneReopen, "open", "", reopen);
+    return;
+  }
+  const submit = event.target.closest("[data-done-submit]");
+  if (!submit) return;
+  const form = submit.closest("[data-done-form]");
+  const reason = form.querySelector("textarea");
+  const error = form.querySelector(".j-note");
+  const help = reason.getAttribute("aria-describedby").split(" ")[0];
+  // An empty reason is refused at its field.
+  if (!reason.value.trim()) {
+    error.hidden = false;
+    reason.setAttribute("aria-invalid", "true");
+    reason.setAttribute("aria-describedby", `${help} ${error.id}`);
+    reason.focus();
+    return;
+  }
+  decideCriterion(form.dataset.doneForm, "met", reason.value, submit);
+});
+$("reviewContent").addEventListener("input", (event) => {
+  const form = event.target.closest("[data-done-form]");
+  if (!form) return;
+  doneDrafts.set(form.dataset.doneKey, event.target.value);
+  // A reason written clears the error said about it.
+  if (event.target.value.trim() && event.target.hasAttribute("aria-invalid")) {
+    const error = form.querySelector(".j-note");
+    error.hidden = true;
+    event.target.removeAttribute("aria-invalid");
+    event.target.setAttribute("aria-describedby", event.target.getAttribute("aria-describedby").replace(` ${error.id}`, ""));
+  }
+});
 $("sourcesInput").addEventListener("input", () => keepTrip());
 PLATFORM.performance.measure(
   "boot.initialize",
