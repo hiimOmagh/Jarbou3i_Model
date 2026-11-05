@@ -145,3 +145,36 @@
   .j-case-outline, .j-case-return { display: none !important; }
   .j-case-doc :is([data-case-source-line], [data-case-sources]) { display: none !important; }
 }
+
+/* Read text from a file (RESEARCH-1D): a column below the sources, on the same
+   kernel controls. The preview is a read-only box that scrolls by keyboard; a
+   long name or message wraps inside the fold instead of widening it. */
+.j-case-fold #sourcesFile { display: grid; gap: var(--j-s-3); min-width: 0; margin-block-start: var(--j-s-4); padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-case-fold #sourcesFile > [role="group"] { display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-case-fold #sourcesFile h3 { margin: 0; font-size: var(--j-t-18); overflow-wrap: anywhere; }
+.j-case-fold #sourcesFile :is(.j-field, .j-help, .j-note, .j-flow-note, .j-flow-row) { min-width: 0; overflow-wrap: anywhere; }
+.j-case-fold #sourcesFile :is(input.j-input, select.j-input, textarea.j-input) { width: 100%; max-width: 100%; box-sizing: border-box; }
+.j-case-fold #sourcesFile .j-flow-row > .j-btn { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.j-case-fold #sourcesFile #srcFilePreview { min-height: 12rem; max-height: 60vh; overflow: auto; resize: vertical; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.j-case-fold #sourcesFile [hidden] { display: none; }
+
+/* Choose what goes in this prompt (RESEARCH-1D D3): shown under the prompt
+   buttons only when supplied material is over a cap. Rules, not boxes: a source
+   is a heading and its passages are a list; a long title or passage wraps. */
+.j-prompt-review { display: grid; gap: var(--j-s-3); min-width: 0; margin-block-start: var(--j-s-4); padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-prompt-review[hidden] { display: none; }
+.j-prompt-review h3 { margin: 0; font-size: var(--j-t-18); overflow-wrap: anywhere; }
+.j-prompt-review h3:focus { outline: none; }
+.j-prompt-review h3:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-prompt-review h4 { margin: 0; font-size: var(--j-t-16); overflow-wrap: anywhere; }
+.j-prompt-review :is(.j-note, .j-flow-note, .j-flow-row) { min-width: 0; overflow-wrap: anywhere; }
+.j-prompt-review :is(.j-review-sources, .j-review-blocks, .j-review-source > ul) { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-prompt-review .j-review-blocks:empty { display: none; }
+.j-prompt-review .j-review-source { display: grid; gap: var(--j-s-2); min-width: 0; padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-prompt-review .j-review-source > ul { gap: 0; }
+.j-prompt-review .j-review-pass { min-width: 0; border-block-start: 1px solid var(--j-line); }
+.j-prompt-review .j-review-pass:first-child { border-block-start: 0; }
+.j-prompt-review .j-review-pass label { display: flex; align-items: flex-start; gap: var(--j-s-2); min-width: 0; min-height: var(--j-control); padding-block: var(--j-s-2); }
+.j-prompt-review .j-review-pass label > span { min-width: 0; overflow-wrap: anywhere; }
+.j-prompt-review .j-review-pass input[type="checkbox"] { flex: 0 0 auto; width: 20px; height: 20px; margin: 2px 0 0; padding: 0; accent-color: var(--j-ink); }
+.j-prompt-review .j-flow-row > .j-btn { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }

@@ -37,7 +37,10 @@ every answer.
   raw text between tags (`<UNTRUSTED_CONTEXT_MATERIAL>` and its AR and FR
   tags, `src/biopolitics.js` near line 1895), and nothing stops the text from
   holding the closing tag.
-- The app does not read attached files. The "supplied sources" rule asks the
+- The app reads no file on its own: reading a text file's passages is a
+  separate step the analyst takes ([research-attachments.md](research-attachments.md),
+  `RESEARCH-1D`), and the original file is never attached to the AI chat. The
+  "supplied sources" rule asks the
   AI to open every link it can ("a link you cannot open is not a source") and
   to cite a file by its name as `source_title`, with `source_url` empty and
   the page in `source_note` (Strategic, `src/app.js` near 3537) or
@@ -99,7 +102,8 @@ amendment is made in research-dossier.md when this page is accepted.
 
 **Non-goals:**
 
-- fetching or checking a link, crawling, reading attached files;
+- fetching or checking a link, crawling; reading a file is
+  [research-attachments.md](research-attachments.md), not this page;
 - the AI deciding, reading or receiving a check: no check and no reason is
   ever in a prompt;
 - a source's type or tier (canonical fields, chosen when an excerpt is

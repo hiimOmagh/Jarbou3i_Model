@@ -40,7 +40,7 @@ import {
   createRecoveryJournal,
 } from "./core/recovery-journal.js";
 import {
-  addSource, editSource, removeSource, addExcerpt, editExcerpt, removeExcerpt, checkExcerpt, reopenExcerpt,
+  addSource, addSourceWithExcerpt, addExcerptToSeen, editSource, removeSource, addExcerpt, editExcerpt, removeExcerpt, checkExcerpt, reopenExcerpt,
   addPromotion,
   DOSSIER_FILE_LIMIT,
   DOSSIER_PROMOTION_LIMIT,
@@ -57,6 +57,7 @@ import {
   updateDossier,
 } from "./core/research-dossier.js";
 import { relateEvidence } from "./core/source-relations.js";
+import { leftOutWords, planSourcePrompt } from "./core/source-prompt-budget.js";
 import { canVerify, filledEvidence, newEvidenceFrom, nextEvidenceId, pointerIdOk, preparePromotion, withEvidence } from "./core/promotion.js";
 import { normalizedText, normalizedUrl } from "./core/evidence-intelligence.js";
 import {
@@ -181,6 +182,53 @@ const I18N = {
     caseNewer: "أُنشئ بإصدار أحدث من هذا التطبيق",
     caseSources: "المصادر",
     sourceSaved: "حُفظ على هذا الجهاز.",
+    fileTitle: "اقرأ نصًا من ملف",
+    fileChoose: "اختر ملفًا",
+    fileHelp: "نص أو Markdown أو CSV أو JSON أو HTML، حتى 2 ميغابايت. يُقرأ على هذا الجهاز وتختار أنت المقتطفات التي تحفظها وتُرسلها. لا يُحتفظ بالملف الأصلي ولا يُرفق بمحادثة الذكاء الاصطناعي.",
+    fileReading: "جارٍ القراءة على هذا الجهاز…",
+    fileReadDone: "قُرئت {n} حرفًا من {name}. حدّد مقتطفًا في النص ثم اخترْه.",
+    fileText: "نص {name}",
+    fileNotKept: "لا يُحتفظ بالملف الأصلي. ما لا تحفظه من المقتطفات يضيع عند إغلاق الملف أو تبديل القضية.",
+    filePlain: "نص عادي مقروء من الملف؛ قد يختلف التنسيق والجداول والأعمدة عن الأصل.",
+    filePick: "اختر مقتطفًا",
+    filePickHelp: "حدّد أولًا في النص أعلاه ما لا يزيد على 2000 حرف.",
+    filePassage: "المقتطف (يمكنك تعديله)",
+    fileAddTo: "أضِف إلى",
+    fileNewSource: "مصدر جديد",
+    fileTitleHelp: "مقترح من اسم الملف. غيّره إلى العنوان الحقيقي للمصدر.",
+    fileSave: "احفظ المقتطف",
+    fileClose: "أغلق الملف",
+    fileNoSelection: "حدّد مقتطفًا في النص أولًا.",
+    filePassageLong: "هذا المقتطف {n} حرفًا، والحد الأقصى 2000. حدّد مقتطفًا أقصر، أو احفظه على أجزاء.",
+    fileTitleExists: "يوجد هنا مصدر بهذا العنوان. اخترْه تحت «أضِف إلى»، أو غيّر العنوان.",
+    fileTitleLong: "اجعل العنوان 500 حرف أو أقل.",
+    fileSourceGone: "أُزيل المصدر الذي كان الملف له، فأُغلق الملف.",
+    fileCancelled: "توقفت القراءة.",
+    fileNoUnsupported: "هذا النوع من الملفات غير مدعوم. استخدم ملفًا نصيًا أو الصق مقتطفًا.",
+    fileNoUnsafeHtml: "تعذّرت قراءة هذا الـ HTML بأمان. استخدم نسخة نصية أو الصق مقتطفًا.",
+    reviewHead: "اختر ما يدخل في هذا الموجِّه",
+    reviewIntro: "مصادرك أطول مما يتسع له موجِّه واحد هنا. ألغِ تحديد مقتطفات كاملة لاستبعادها من هذا الموجِّه فقط. لا يُقتطع شيء ولا يُرتَّب، ولا تتغير قضيتك.",
+    reviewSourceUse: "يستخدم هذا المصدر {n} من {cap} حرفًا",
+    reviewTotalUse: "تستخدم المواد المقدمة {n} من {cap} حرفًا",
+    reviewFewer: "اختر مقتطفات أقل قبل النسخ",
+    reviewWithin: "ضمن الحدود. انسخ الموجِّه أو عاينه.",
+    reviewPassageSize: "{n} حرفًا",
+    reviewNoneSent: "لن يُرسل أي نص من هذا المصدر إلى الذكاء الاصطناعي.",
+    reviewBlockFree: "يستخدم صندوق «المصادر المقدمة» وحده {n} من {cap} حرفًا. اختصره؛ لا يُقتطع منه شيء نيابةً عنك.",
+    reviewBlockSource: "تفاصيل هذا المصدر (العنوان والرابط والتواريخ) تستخدم {n} من {cap} حرفًا قبل أي مقتطف. عدّلها أو أوقف إرسال المصدر.",
+    reviewBlockTotal: "حتى مع استبعاد كل المقتطفات تستخدم المواد المقدمة {n} من {cap} حرفًا. عدّل صندوق «المصادر المقدمة» أو أوقف إرسال بعض المصادر.",
+    reviewStale: "تغيّرت القضية أو الإعدادات، فمُسح اختيارك لهذا الموجِّه. اختر من جديد.",
+    reviewOtherTab: "تغيّرت القضية في تبويب آخر، فأُعيد ضبط اختيارك لهذا الموجِّه. راجع القضية كما هي الآن ثم انسخ من جديد.",
+    reviewReset: "أعِد تضمين كل المقتطفات",
+    reviewClose: "أغلق هذا الاختيار",
+    fileNoTooLarge: "هذا الملف كبير جدًا. استخدم ملفًا أصغر أو الصق مقتطفًا.",
+    fileNoEmpty: "لم يُعثر على نص قابل للقراءة",
+    fileNoUndecodable: "هذا الملف ليس نصًا بترميز UTF-8 أو UTF-16. احفظه بترميز UTF-8 ثم اختره مجددًا.",
+    fileNoBinary: "يبدو هذا ملفًا ثنائيًا لا نصًّا. استخدم ملفًا نصيًا أو الصق مقتطفًا.",
+    fileNoTooLong: "يحتوي هذا الملف على أكثر من مليون حرف من النص. استخدم ملفًا أقصر أو الصق مقتطفًا.",
+    fileNoReadFailed: "تعذّرت قراءة هذا الملف. تأكد أنه ما زال موجودًا ثم اختره مجددًا.",
+    fileNoTimedOut: "استغرقت القراءة وقتًا طويلًا فتوقفت. استخدم ملفًا أصغر أو الصق مقتطفًا.",
+    fileSourceChanged: "تغيّر هذا المصدر في مكان آخر (عنوانه أو رابطه)، فلم يُضف المقتطف إليه. افتح القضية مجددًا ثم احفظ المقتطف.",
     excerptUnchecked: "لم يُتحقَّق منه بعد",
     caseSourceFrom: "من مصدرك: «{title}»",
     caseSourceSameTitle: "العنوان نفسه",
@@ -590,6 +638,53 @@ const I18N = {
     caseNewer: "Made by a newer version of this app",
     caseSources: "Sources",
     sourceSaved: "Saved on this device.",
+    fileTitle: "Read text from a file",
+    fileChoose: "Choose a file",
+    fileHelp: "Text, Markdown, CSV, JSON or HTML, up to 2 MB. It is read on this device; you choose the passages to save and send. The original file is not kept or attached to the AI chat.",
+    fileReading: "Reading on this device…",
+    fileReadDone: "Read {n} characters from {name}. Select a passage in the text, then choose it.",
+    fileText: "Text of {name}",
+    fileNotKept: "Original file not kept. Passages you do not save are lost when you close the file or switch cases.",
+    filePlain: "Plain text read from the file; layout, tables and columns may differ from the original.",
+    filePick: "Choose a passage",
+    filePickHelp: "First select at most 2,000 characters in the text above.",
+    filePassage: "Passage (you can edit it)",
+    fileAddTo: "Add to",
+    fileNewSource: "A new source",
+    fileTitleHelp: "Suggested from the file name. Change it to the source's real title.",
+    fileSave: "Save passage",
+    fileClose: "Close file",
+    fileNoSelection: "Select a passage in the text first.",
+    filePassageLong: "That passage is {n} characters; the most is 2,000. Select a shorter one, or save it in parts.",
+    fileTitleExists: "A source with this title is already here. Choose it under Add to, or change the title.",
+    fileTitleLong: "Shorten the title to 500 characters or fewer.",
+    fileSourceGone: "The source this file was for was removed, so the file was closed.",
+    fileCancelled: "Reading stopped.",
+    fileNoUnsupported: "This file type is not supported. Use a text file or paste a passage.",
+    fileNoUnsafeHtml: "This HTML cannot be read safely. Use a text version or paste a passage.",
+    reviewHead: "Choose what goes in this prompt",
+    reviewIntro: "Your sources are longer than one prompt can carry here. Untick whole passages to leave them out of this prompt only. Nothing is cut or ranked, and your case does not change.",
+    reviewSourceUse: "This source uses {n} of {cap} characters",
+    reviewTotalUse: "Supplied material uses {n} of {cap} characters",
+    reviewFewer: "Choose fewer passages before copying",
+    reviewWithin: "Within the limits. Copy or preview the prompt.",
+    reviewPassageSize: "{n} characters",
+    reviewNoneSent: "No text from this source goes to the AI.",
+    reviewBlockFree: "The Supplied sources box alone uses {n} of {cap} characters. Shorten it; nothing is cut for you.",
+    reviewBlockSource: "The details of this source (title, link, dates) use {n} of {cap} characters before any passage. Edit them, or switch the source off.",
+    reviewBlockTotal: "Even with every passage left out, supplied material uses {n} of {cap} characters. Edit the Supplied sources box or switch sources off.",
+    reviewStale: "The case or the settings changed, so your choice for this prompt was cleared. Choose again.",
+    reviewOtherTab: "The case was changed in another tab, so your choice for this prompt was reset. Check the case as it is now, then copy again.",
+    reviewReset: "Include every passage again",
+    reviewClose: "Close this choice",
+    fileNoTooLarge: "This file is too large. Use a smaller file or paste a passage.",
+    fileNoEmpty: "No readable text found",
+    fileNoUndecodable: "This file is not text in UTF-8 or UTF-16. Save it as UTF-8 and choose it again.",
+    fileNoBinary: "This looks like a binary file, not text. Use a text file or paste a passage.",
+    fileNoTooLong: "This file holds more than a million characters of text. Use a shorter file or paste a passage.",
+    fileNoReadFailed: "This file could not be read. Check that it is still there and choose it again.",
+    fileNoTimedOut: "Reading took too long and was stopped. Use a smaller file or paste a passage.",
+    fileSourceChanged: "This source was changed elsewhere (its title or link), so the passage was not added to it. Open the case again, then save the passage.",
     excerptUnchecked: "Not checked yet",
     caseSourceFrom: "From your source: {title}",
     caseSourceSameTitle: "same title",
@@ -1010,6 +1105,53 @@ const I18N = {
     caseNewer: "Créé avec une version plus récente de cette application",
     caseSources: "Sources",
     sourceSaved: "Enregistré sur cet appareil.",
+    fileTitle: "Lire le texte d’un fichier",
+    fileChoose: "Choisir un fichier",
+    fileHelp: "Texte, Markdown, CSV, JSON ou HTML, jusqu’à 2 Mo. Le fichier est lu sur cet appareil ; vous choisissez les passages à enregistrer et à envoyer. Le fichier original n’est ni conservé ni joint à la conversation avec l’IA.",
+    fileReading: "Lecture sur cet appareil…",
+    fileReadDone: "{n} caractères lus dans {name}. Sélectionnez un passage dans le texte, puis choisissez-le.",
+    fileText: "Texte de {name}",
+    fileNotKept: "Fichier original non conservé. Les passages non enregistrés sont perdus à la fermeture du fichier ou au changement de dossier.",
+    filePlain: "Texte brut lu dans le fichier ; la mise en page, les tableaux et les colonnes peuvent différer de l’original.",
+    filePick: "Choisir un passage",
+    filePickHelp: "Sélectionnez d’abord au plus 2 000 caractères dans le texte ci-dessus.",
+    filePassage: "Passage (modifiable)",
+    fileAddTo: "Ajouter à",
+    fileNewSource: "Une nouvelle source",
+    fileTitleHelp: "Proposé d’après le nom du fichier. Remplacez-le par le vrai titre de la source.",
+    fileSave: "Enregistrer le passage",
+    fileClose: "Fermer le fichier",
+    fileNoSelection: "Sélectionnez d’abord un passage dans le texte.",
+    filePassageLong: "Ce passage fait {n} caractères ; le maximum est 2 000. Sélectionnez-en un plus court, ou enregistrez-le en plusieurs parties.",
+    fileTitleExists: "Une source avec ce titre est déjà présente. Choisissez-la sous « Ajouter à », ou changez le titre.",
+    fileTitleLong: "Raccourcissez le titre à 500 caractères au plus.",
+    fileSourceGone: "La source de ce fichier a été supprimée ; le fichier a été fermé.",
+    fileCancelled: "Lecture arrêtée.",
+    fileNoUnsupported: "Ce type de fichier n’est pas pris en charge. Utilisez un fichier texte ou collez un passage.",
+    fileNoUnsafeHtml: "Ce HTML ne peut pas être lu en toute sécurité. Utilisez une version texte ou collez un passage.",
+    reviewHead: "Choisissez ce qui entre dans ce prompt",
+    reviewIntro: "Vos sources sont plus longues que ce qu’un prompt peut porter ici. Décochez des passages entiers pour les exclure de ce prompt seulement. Rien n’est coupé ni classé, et votre dossier ne change pas.",
+    reviewSourceUse: "Cette source utilise {n} caractères sur {cap}",
+    reviewTotalUse: "Le matériel fourni utilise {n} caractères sur {cap}",
+    reviewFewer: "Choisissez moins de passages avant de copier",
+    reviewWithin: "Dans les limites. Copiez ou affichez le prompt.",
+    reviewPassageSize: "{n} caractères",
+    reviewNoneSent: "Aucun texte de cette source ne va à l’IA.",
+    reviewBlockFree: "La zone « Sources fournies » seule utilise {n} caractères sur {cap}. Raccourcissez-la ; rien n’en est coupé à votre place.",
+    reviewBlockSource: "Les informations de cette source (titre, lien, dates) utilisent {n} caractères sur {cap} avant tout passage. Modifiez-les ou désactivez la source.",
+    reviewBlockTotal: "Même sans aucun passage, le matériel fourni utilise {n} caractères sur {cap}. Modifiez la zone « Sources fournies » ou désactivez des sources.",
+    reviewStale: "Le dossier ou les réglages ont changé ; votre choix pour ce prompt a été effacé. Choisissez à nouveau.",
+    reviewOtherTab: "Le dossier a été modifié dans un autre onglet ; votre choix pour ce prompt a été réinitialisé. Vérifiez le dossier tel qu’il est maintenant, puis copiez à nouveau.",
+    reviewReset: "Inclure à nouveau tous les passages",
+    reviewClose: "Fermer ce choix",
+    fileNoTooLarge: "Ce fichier est trop volumineux. Utilisez un fichier plus petit ou collez un passage.",
+    fileNoEmpty: "Aucun texte lisible trouvé",
+    fileNoUndecodable: "Ce fichier n’est pas du texte en UTF-8 ou UTF-16. Enregistrez-le en UTF-8 et choisissez-le à nouveau.",
+    fileNoBinary: "Ce fichier semble binaire, pas du texte. Utilisez un fichier texte ou collez un passage.",
+    fileNoTooLong: "Ce fichier contient plus d’un million de caractères de texte. Utilisez un fichier plus court ou collez un passage.",
+    fileNoReadFailed: "Ce fichier n’a pas pu être lu. Vérifiez qu’il est toujours là et choisissez-le à nouveau.",
+    fileNoTimedOut: "La lecture a pris trop de temps et a été arrêtée. Utilisez un fichier plus petit ou collez un passage.",
+    fileSourceChanged: "Cette source a été modifiée ailleurs (son titre ou son lien) ; le passage n’y a donc pas été ajouté. Ouvrez à nouveau le dossier, puis enregistrez le passage.",
     excerptUnchecked: "Pas encore vérifié",
     caseSourceFrom: "De votre source : « {title} »",
     caseSourceSameTitle: "même titre",
@@ -1636,6 +1778,12 @@ const RECOVERY_JOURNAL = createRecoveryJournal({
 const DOSSIER_REPOSITORY = createDossierRepository({ backend: createIndexedDbDossierBackend() });
 const CASE_FIELDS = { scope_in: "caseScopeIn", scope_out: "caseScopeOut", terms: "caseTerms", limits: "caseLimits", done: "caseDone" };
 let caseDossier = null;
+// Every change to the case on screen also asks whether a choice for the prompt
+// (D3) was made for the case as it was.
+function setCaseDossier(next) {
+  caseDossier = next;
+  syncPromptReview();
+}
 // Raised when another case is shown, so a write still running for the one
 // before does not take its place.
 let caseShown = 0;
@@ -1705,7 +1853,7 @@ const caseHolds = (workspaceId) => Boolean(caseDossier?.analyses.some((link) => 
 function showCase(dossier) {
   clearTimeout(caseTimer);
   caseShown += 1;
-  caseDossier = dossier || null;
+  setCaseDossier(dossier || null);
   caseSeen = dossier ? seenOf(dossier.framing, dossier.completion) : null;
   caseTyped.clear();
   forgetDone();
@@ -1752,7 +1900,7 @@ async function saveCase() {
       const created = await createDossier({ framing, completion });
       await DOSSIER_REPOSITORY.create(created);
       if (shown !== caseShown) return;
-      caseDossier = created;
+      setCaseDossier(created);
       caseSeen = seenOf(created.framing, created.completion);
       keepTrip();
       refreshCaseCompletion();
@@ -1772,7 +1920,7 @@ async function saveCase() {
         completion: linesChanged ? completionFromLines(doneText, current.completion) : current.completion,
       }));
       if (shown !== caseShown) return;
-      caseDossier = saved;
+      setCaseDossier(saved);
       // Onto the baseline as it is now: code may have shown other fields'
       // values meanwhile (never one typed here, applyWorkspaceAnalysis keeps those).
       const now = caseSeen || seen;
@@ -1786,7 +1934,7 @@ async function saveCase() {
 }
 // Your sources (RESEARCH-1B S6). Drafts belong to the case on screen and
 // keep the exact item the analyst saw, including while a queued save waits.
-const SOURCE_ERRORS = { SOURCE_LIST_FULL: "sourceListFull", EXCERPT_LIST_FULL: "excerptListFull", SOURCE_EXISTS: "sourceExists", SOURCE_GONE: "sourceGone", CHANGED_ELSEWHERE: "sourceChanged", DOSSIER_FORMAT_NEWER: "caseNewer" };
+const SOURCE_ERRORS = { SOURCE_LIST_FULL: "sourceListFull", EXCERPT_LIST_FULL: "excerptListFull", SOURCE_EXISTS: "sourceExists", SOURCE_IDENTITY_CHANGED: "fileSourceChanged", SOURCE_GONE: "sourceGone", CHANGED_ELSEWHERE: "sourceChanged", DOSSIER_FORMAT_NEWER: "caseNewer" };
 const emptySource = () => ({ title: "", url: "", source_date: "", accessed_on: "", send: true });
 let sourceDraft = emptySource();
 let sourceEditor = null;
@@ -1799,7 +1947,14 @@ let sourceBusyForm = "";
 // Any use of the fold is a change the startup restore must not overwrite.
 let sourceTouches = 0;
 const sourceRemovals = new Map();
+// Read text from a file (RESEARCH-1D): its temporary reader, below.
+let fileRead = null;
+let fileReads = 0;
+let fileTools = null;
+let fileToolsLoading = null;
+let fileDrawnLang = "";
 function forgetSources() {
+  closeFileReader();
   sourceDraft = emptySource();
   sourceEditor = excerptEditor = excerptDecision = sourceFailure = null;
   sourceRemovals.clear();
@@ -1869,6 +2024,7 @@ function renderSources() {
   for (const row of $("sourcesBody").querySelectorAll("[data-excerpt-row]")) row.excerptSeen = excerpts.find((excerpt) => excerpt.excerpt_id === row.dataset.excerptRow);
   showSourcesStatus(sourceFailure ? sourceErrorText(sourceFailure) : "", "warn");
   if (sourceBusy) lockSources();
+  syncFileReader();
 }
 // Said as the framing's status is: the region stays, its note changes.
 function showSourcesStatus(message, tone) {
@@ -1942,7 +2098,7 @@ async function saveSourceChange(control, change, after, focusTarget, touched = "
         created = true;
       }
       if (shown !== caseShown) return;
-      caseDossier = next;
+      setCaseDossier(next);
       // A case made here from the fields agrees with what they showed then.
       if (created) caseSeen = seenOf(next.framing, next.completion);
       sourceFailure = null;
@@ -1991,6 +2147,242 @@ function sourceInput(event) {
   const form = field.closest("[data-source-form], [data-excerpt-form], [data-excerpt-decision]");
   const draft = form.hasAttribute("data-excerpt-decision") ? excerptDecision : form.hasAttribute("data-excerpt-form") ? excerptEditor.fields : form.dataset.sourceForm === "edit" ? sourceEditor.fields : sourceDraft;
   draft[name] = value;
+  if (field.hasAttribute("aria-invalid")) {
+    field.removeAttribute("aria-invalid");
+    $(`${field.id}-error`).hidden = true;
+  }
+}
+// Read text from a file (RESEARCH-1D). The file's bytes and text stay in this
+// tab's memory while the analyst chooses passages; only an ordinary source and
+// excerpt are ever saved. The reader belongs to the case on screen: a result for
+// another case, or one that comes after Cancel, is dropped, never shown or saved.
+const FILE_REFUSALS = { unsupported: "fileNoUnsupported", "too-large": "fileNoTooLarge", empty: "fileNoEmpty", undecodable: "fileNoUndecodable", binary: "fileNoBinary", "too-long": "fileNoTooLong", "read-failed": "fileNoReadFailed", "timed-out": "fileNoTimedOut", "unsafe-html": "fileNoUnsafeHtml" };
+// Loaded on first use: choosing a file is the only thing that needs them.
+function loadFileTools() {
+  if (fileTools) return Promise.resolve(fileTools);
+  fileToolsLoading ||= Promise.all([import("./features/source-file-reader.js"), import("./core/source-file-text.js")]).then(([reader, text]) => (fileTools = { reader: reader.createSourceFileReader(), text }), (error) => { fileToolsLoading = null; throw error; });
+  return fileToolsLoading;
+}
+function setFileStatus(message, tone = "ok") {
+  const status = $("sourcesFileStatus");
+  if (!message) {
+    status.replaceChildren();
+    return;
+  }
+  const note = document.createElement("p");
+  note.className = "j-note";
+  note.dataset.tone = tone;
+  note.textContent = message;
+  status.replaceChildren(note);
+}
+// The name a person is shown: as it is suggested for a title, never a path or a hidden mark.
+const fileShownName = (name) => String(name ?? "").split(/[\\/]/).pop().replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ").replace(/\s+/g, " ").trim();
+function fileField(id, name, key, value, { multiline = false, limit = 0, hint = "" } = {}) {
+  const described = `${hint ? `${id}-hint ` : ""}${id}-error`;
+  const attrs = `class="j-input" id="${id}" data-file-field="${name}" dir="auto"${limit ? ` maxlength="${limit}"` : ""} aria-describedby="${described}"`;
+  return `<div class="j-field"${name === "title" ? ' id="srcFileTitleField"' : ""}><label for="${id}">${escapeHtml(t(key))}</label>${multiline ? `<textarea ${attrs} rows="4">${escapeHtml(value)}</textarea>` : `<input ${attrs} type="text" value="${escapeHtml(value)}">`}${hint ? `<p class="j-help" id="${id}-hint">${escapeHtml(t(hint))}</p>` : ""}<p class="j-note" data-tone="crit" id="${id}-error" hidden></p></div>`;
+}
+function drawFileReader() {
+  const host = $("sourcesFile");
+  fileDrawnLang = state.lang;
+  const head = `<h3 id="srcFileHead">${escapeHtml(t("fileTitle"))}</h3>`;
+  const read = fileRead;
+  let body;
+  if (!read) {
+    body = `<div class="j-field"><label for="srcFileInput">${escapeHtml(t("fileChoose"))}</label><input class="j-input" type="file" id="srcFileInput" accept=".txt,.md,.csv,.json,.html,.htm,text/plain,text/markdown,text/csv,application/json,text/html" aria-describedby="srcFileHelp"><p class="j-help" id="srcFileHelp">${escapeHtml(t("fileHelp"))}</p></div>`;
+  } else if (read.phase === "reading") {
+    body = `<p class="j-flow-note">${escapeHtml(t("fileReading"))} <bdi dir="auto">${escapeHtml(read.name)}</bdi></p><div class="j-flow-row">${fileButton("cancel", "sourceCancel", "srcFileCancel")}</div>`;
+  } else {
+    const [before, after = ""] = t("fileText").split("{name}");
+    const label = `${escapeHtml(before)}<bdi dir="auto">${escapeHtml(read.name)}</bdi>${escapeHtml(after)}`;
+    body = `<p class="j-flow-note">${escapeHtml(t("fileNotKept"))}</p>`
+      + `<div class="j-field"><label for="srcFilePreview">${label}</label><textarea class="j-input" id="srcFilePreview" aria-readonly="true" inputmode="none" autocomplete="off" spellcheck="false" rows="10" dir="auto" aria-describedby="srcFilePlain srcFilePreview-error"></textarea><p class="j-help" id="srcFilePlain">${escapeHtml(t("filePlain"))}</p><p class="j-note" data-tone="crit" id="srcFilePreview-error" hidden></p></div>`
+      + `<p class="j-flow-note" id="srcFilePickHelp">${escapeHtml(t("filePickHelp"))}</p><div class="j-flow-row">${fileButton("pick", "filePick", "srcFilePick", "")}</div>`
+      + `<div class="j-field"><label for="srcFileTarget">${escapeHtml(t("fileAddTo"))}</label><select class="j-input" id="srcFileTarget" data-file-field="target" dir="auto"></select></div>`
+      + fileField("srcFileTitle", "title", "sourceTitle", read.fields.title, { hint: "fileTitleHelp" })
+      + fileField("srcFilePassage", "passage", "filePassage", read.fields.passage, { multiline: true, limit: 2000 })
+      + fileField("srcFileLocator", "locator", "excerptLocator", read.fields.locator, { limit: 500 })
+      + `<div class="j-flow-row">${fileButton("save", "fileSave", "srcFileSave", "")}${fileButton("close", "fileClose", "srcFileClose")}</div>`;
+  }
+  host.innerHTML = `<div role="group" aria-labelledby="srcFileHead">${head}${body}</div>`;
+  if (read?.phase === "ready") {
+    $("srcFilePreview").value = read.text;
+    fillFileTargets();
+    syncFileForm();
+  }
+}
+function fileButton(action, key, id, variant = "ghost") {
+  return `<button class="j-btn" type="button" ${variant ? `data-variant="${variant}"` : ""} id="${id}" data-file-action="${action}" data-palette-skip>${escapeHtml(t(key))}</button>`;
+}
+// The destination list follows the case's sources; a title is asked only for a new one.
+function fillFileTargets() {
+  const select = $("srcFileTarget");
+  if (!select || !fileRead) return;
+  const sources = caseDossier?.sources || [];
+  const key = JSON.stringify(sources.map((source) => [source.source_id, source.title]));
+  if (select.dataset.key !== key) {
+    select.innerHTML = `<option value="">${escapeHtml(t("fileNewSource"))}</option>${sources.map((source) => `<option value="${escapeHtml(source.source_id)}">${escapeHtml(source.title)}</option>`).join("")}`;
+    select.dataset.key = key;
+  }
+  select.value = fileRead.targetId;
+}
+// The form shows what the reader holds; its controls are locked while a save is pending.
+function syncFileForm() {
+  const read = fileRead;
+  if (!read || read.phase !== "ready" || !$("srcFilePassage")) return;
+  $("srcFileTarget").value = read.targetId;
+  $("srcFileTitleField").hidden = Boolean(read.targetId);
+  for (const [id, name] of [["srcFileTitle", "title"], ["srcFilePassage", "passage"], ["srcFileLocator", "locator"]]) if ($(id).value !== read.fields[name]) $(id).value = read.fields[name];
+  for (const control of $("sourcesFile").querySelectorAll("button, input, select, textarea")) if (control.id !== "srcFilePreview") control.disabled = read.saving;
+}
+function closeFileReader({ message = "", tone = "ok", focus = false } = {}) {
+  fileTools?.reader.cancel();
+  fileRead = null;
+  drawFileReader();
+  setFileStatus(message, tone);
+  if (focus) $("srcFileInput")?.focus();
+}
+// Called whenever the sources are drawn: a new language redraws the reader; a
+// removed destination closes it; otherwise only the destination list is brought up to date.
+function syncFileReader() {
+  if (fileDrawnLang !== state.lang) drawFileReader();
+  if (fileRead?.targetId && !caseDossier?.sources?.some((source) => source.source_id === fileRead.targetId)) closeFileReader({ message: t("fileSourceGone"), tone: "warn" });
+  else if (fileRead?.phase === "ready") {
+    fillFileTargets();
+    syncFileForm();
+  }
+}
+async function startFileRead(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  sourceTouches += 1;
+  const token = ++fileReads;
+  const shown = caseShown;
+  const name = fileShownName(file.name);
+  fileRead = { phase: "reading", token, name, text: "", targetId: "", fields: { title: "", passage: "", locator: "" }, saving: false };
+  drawFileReader();
+  setFileStatus(t("fileReading"));
+  $("srcFileCancel").focus();
+  const current = () => fileRead?.token === token && caseShown === shown;
+  let result;
+  try {
+    const tools = await loadFileTools();
+    if (!current()) return;
+    result = await tools.reader.read(file, token);
+  } catch {
+    result = { ok: false, code: "read-failed" };
+  }
+  // Cancelled, replaced, or the case on screen is another: nothing of it appears.
+  if (!current() || result.code === "cancelled") return;
+  if (!result.ok) {
+    fileRead = null;
+    drawFileReader();
+    setFileStatus(t(FILE_REFUSALS[result.code] || "fileNoReadFailed"), "warn");
+    $("srcFileInput").focus();
+    return;
+  }
+  fileRead = { ...fileRead, phase: "ready", text: result.text, fields: { title: fileTools.text.suggestedTitle(file.name), passage: "", locator: "" } };
+  drawFileReader();
+  setFileStatus(sourceWords("fileReadDone", { n: result.text.length, name }));
+  $("srcFilePreview").focus();
+}
+function fileFieldError(id, key, values) {
+  const field = $(id);
+  const note = $(`${id}-error`);
+  field.setAttribute("aria-invalid", "true");
+  note.textContent = sourceWords(key, values);
+  note.hidden = false;
+  field.focus();
+  return false;
+}
+function pickFilePassage() {
+  const read = fileRead;
+  const preview = $("srcFilePreview");
+  $("srcFilePreview-error").hidden = true;
+  preview.removeAttribute("aria-invalid");
+  const picked = fileTools.text.selectPassage(read.text, preview.selectionStart, preview.selectionEnd);
+  if (!picked.ok) return fileFieldError("srcFilePreview", picked.code === "no-selection" ? "fileNoSelection" : "filePassageLong", { n: picked.length });
+  read.fields.passage = picked.text;
+  const passage = $("srcFilePassage");
+  passage.value = picked.text;
+  passage.removeAttribute("aria-invalid");
+  $("srcFilePassage-error").hidden = true;
+  passage.focus();
+  return true;
+}
+function validFilePassage(read) {
+  const fields = read.fields;
+  const passage = fields.passage.trim();
+  const oneLine = /[\r\n\p{Zl}\p{Zp}]/u;
+  if (!read.targetId) {
+    const title = fields.title.trim();
+    if (!title) return fileFieldError("srcFileTitle", "sourceRequired");
+    if (title.length > 500) return fileFieldError("srcFileTitle", "fileTitleLong");
+    if (oneLine.test(title)) return fileFieldError("srcFileTitle", "sourceInvalidField");
+    if ((caseDossier?.sources || []).some((source) => !source.url && normalizedText(source.title) === normalizedText(title))) return fileFieldError("srcFileTitle", "fileTitleExists");
+  }
+  if (!passage) return fileFieldError("srcFilePassage", "sourceRequired");
+  if (passage.length > 2000) return fileFieldError("srcFilePassage", "filePassageLong", { n: passage.length });
+  if (fields.locator.length > 500 || oneLine.test(fields.locator)) return fileFieldError("srcFileLocator", "sourceInvalidField");
+  return true;
+}
+// A new source and its first passage are one change and one save; a passage for a
+// source that is there is one excerpt. Failure leaves the passage in the form.
+async function saveFilePassage(control) {
+  const read = fileRead;
+  if (!read || read.phase !== "ready" || read.saving || sourceBusy || !validFilePassage(read)) return;
+  const passage = read.fields.passage.trim();
+  const locator = read.fields.locator.trim();
+  const title = read.fields.title.trim();
+  const targetId = read.targetId;
+  // The source as shown now: a replay on a newer record refuses it if it was renamed or relinked.
+  const seen = targetId ? caseDossier?.sources?.find((source) => source.source_id === targetId) : null;
+  let saved = false;
+  read.saving = true;
+  syncFileForm();
+  await saveSourceChange(control, (current) => targetId ? addExcerptToSeen(current, seen, { text: passage, locator }) : addSourceWithExcerpt(current, { title, send: false }, { text: passage, locator }), (next) => {
+    saved = true;
+    if (fileRead !== read) return;
+    // The passage is kept; the next one goes to the same source.
+    read.targetId = targetId || next.sources.at(-1).source_id;
+    read.fields.passage = "";
+    read.fields.locator = "";
+  }, () => $("srcFilePreview"));
+  if (fileRead !== read) return;
+  read.saving = false;
+  syncFileForm();
+  if (!saved) $("srcFileSave")?.focus();
+}
+function fileClick(event) {
+  const control = event.target.closest("[data-file-action]");
+  if (!control || !fileRead) return;
+  sourceTouches += 1;
+  const action = control.dataset.fileAction;
+  if (action === "cancel") closeFileReader({ message: t("fileCancelled"), focus: true });
+  else if (action === "close") closeFileReader({ focus: true });
+  else if (action === "pick") pickFilePassage();
+  else if (action === "save") saveFilePassage(control);
+}
+function fileInput(event) {
+  if (event.target.id === "srcFileInput") return;
+  if (event.target.id === "srcFilePreview") {
+    const { selectionStart, selectionEnd } = event.target;
+    if (fileRead && event.target.value !== fileRead.text) {
+      event.target.value = fileRead.text;
+      event.target.setSelectionRange(selectionStart, selectionEnd);
+    }
+    return;
+  }
+  const field = event.target.closest("[data-file-field]");
+  if (!field || !fileRead) return;
+  sourceTouches += 1;
+  const name = field.dataset.fileField;
+  if (name === "target") {
+    fileRead.targetId = field.value;
+    syncFileForm();
+    return;
+  }
+  fileRead.fields[name] = field.value;
   if (field.hasAttribute("aria-invalid")) {
     field.removeAttribute("aria-invalid");
     $(`${field.id}-error`).hidden = true;
@@ -2072,7 +2464,7 @@ async function linkCase(workspace, { shown = caseShown, dossierId = caseDossier?
     try {
       const saved = await writeCase(dossier, (current) => linkAnalysis(current, { workspace_id: workspace.workspace_id, revision_id: head.revision_id, payload_checksum: head.payload_checksum }));
       if (!onScreen || shown !== caseShown) return;
-      caseDossier = saved;
+      setCaseDossier(saved);
       refreshCaseCompletion();
     } catch (error) {
       if (onScreen && shown === caseShown) showCaseStatus(error);
@@ -2147,7 +2539,7 @@ async function decideCriterion(id, status, rationale, control) {
         return updateDossier(current, { completion: current.completion.map((entry) => (doneKey(entry) === key ? { ...entry, status, rationale } : entry)) });
       });
       if (shown !== caseShown) return;
-      caseDossier = next;
+      setCaseDossier(next);
       saved = true;
     } catch (error) {
       failure = error;
@@ -2722,7 +3114,12 @@ function refreshDynamicMessages() {
   const status = $("topicStatus");
   if (!status) return;
   // The first guidance is not a warning: plain, as the page first shows it.
-  if (state.stage === "topic") {
+  if (state.stage !== "topic") promptChoiceCleared = "";
+  if (state.stage === "topic" && promptChoiceCleared) {
+    // A choice for this prompt was cleared: said until the next Copy or Preview.
+    status.dataset.tone = "warn";
+    status.textContent = t(promptChoiceCleared === "tab" ? "reviewOtherTab" : "reviewStale");
+  } else if (state.stage === "topic") {
     status.dataset.tone = "idle";
     status.textContent = t("topicStatusStart");
   } else if (state.stage === "import") {
@@ -4168,28 +4565,182 @@ ${AI_INTERCHANGE.buildChecklist(lang)}`;
 function sentPromptSources() {
   return state.evidenceAccess === "provided" ? (caseDossier?.sources || []).filter((source) => source.send === true) : [];
 }
-function caseSourcesPromptText(lang) {
-  const sources = sentPromptSources();
-  if (!sources.length) return "";
-  const labels = {
-    en: ["Your sources", "Date of the source", "Opened on", "Excerpt"],
-    ar: ["مصادرك", "تاريخ المصدر", "تاريخ الاطلاع", "مقتطف"],
-    fr: ["Vos sources", "Date de la source", "Consultée le", "Extrait"],
-  }[lang] || ["Your sources", "Date of the source", "Opened on", "Excerpt"];
-  return `${labels[0]}:\n` + sources.map((source) => {
-    // Keep references tied to the case's source order, including unsent entries.
-    const ref = `[S${caseDossier.sources.indexOf(source) + 1}]`;
-    const lines = [`${ref} ${source.title}`];
-    if (source.url) lines.push(source.url);
-    if (source.source_date) lines.push(`${labels[1]}: ${source.source_date}`);
-    if (source.accessed_on) lines.push(`${labels[2]}: ${source.accessed_on}`);
-    for (const excerpt of caseDossier.excerpts || []) {
-      if (excerpt.source_id !== source.source_id || excerpt.check?.status === "differs") continue;
-      lines.push(`${labels[3]}${excerpt.locator ? ` (${excerpt.locator})` : ""}:`);
-      lines.push(...excerpt.text.split(/\r\n|[\n\r\u2028\u2029]/).map((line) => `> ${line}`));
+/* RESEARCH-1D D3: supplied material is capped (8,000 characters a source, 32,000
+   in all, counted as the prompt carries it: src/core/source-prompt-budget.js).
+   Preview and Copy both ask promptSourcePlan() and share its result. Over a
+   cap, neither makes a prompt: the in-page review lets the analyst leave whole
+   passages out of this prompt only. That choice lives here, in memory, as ids
+   with the content it was made for; it is never stored, and any change to the
+   case, the box, the lens, the access or a language clears it. */
+let promptSelection = null; // { key, excluded: Set of excerpt ids }
+let promptReviewInvoker = null;
+let promptChoiceCleared = "";
+const promptLens = () => (state.analysisLens === "biopolitical" ? "biopolitical" : "strategic");
+function promptBudgetInputs(lang) {
+  const provided = $("evidenceAccess").value === "provided";
+  return {
+    lens: promptLens(),
+    lang,
+    enabled: provided,
+    sources: caseDossier?.sources || [],
+    excerpts: caseDossier?.excerpts || [],
+    freeText: provided ? $("sourcesInput").value.trim() : "",
+    // Any edit of the box clears a choice, a trailing space included.
+    rawFreeText: provided ? $("sourcesInput").value : "",
+    precededByContext: Boolean($("timeframeInput").value.trim() || casePromptText(lang)),
+  };
+}
+function promptSelectionKey(input) {
+  const { sources, excerpts, enabled } = input;
+  return JSON.stringify([
+    input.lens, input.lang, state.lang, enabled, input.rawFreeText, input.precededByContext,
+    caseDossier?.dossier_id || "", caseDossier?.revision ?? 0,
+    enabled ? sources.map((source) => [source.source_id, source.title, source.url, source.source_date, source.accessed_on, source.send]) : [],
+    enabled ? excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt.source_id, excerpt.text, excerpt.locator, excerpt.check?.status === "differs"]) : [],
+  ]);
+}
+function dropPromptSelection({ stale = false } = {}) {
+  promptSelection = null;
+  const review = $("promptReview");
+  if (review.hidden) return;
+  review.hidden = true;
+  review.replaceChildren();
+  if (stale) {
+    promptChoiceCleared = "changed";
+    $("topicStatus").dataset.tone = "warn";
+    $("topicStatus").textContent = t("reviewStale");
+  }
+}
+// The plan for the prompt as it stands. A choice made for something else is dropped here.
+function promptSourcePlan(lang) {
+  const input = promptBudgetInputs(lang);
+  const key = promptSelectionKey(input);
+  if (promptSelection && promptSelection.key !== key) dropPromptSelection({ stale: true });
+  return { key, plan: planSourcePrompt({ ...input, excluded: promptSelection?.excluded || new Set() }) };
+}
+/* A choice is honoured only on the case it was made on. When it is used (Copy,
+   Preview, a checkbox) the saved case is read again, as a write does on a
+   conflict (no polling): if another tab saved it since, the choice is dropped,
+   the case on screen becomes the saved one, the review (or the gate) is made
+   again from it, and nothing is copied in that click. */
+async function promptChoiceHolds(invoker) {
+  if (!promptSelection || !caseDossier || promptSelection.revision === null) return true;
+  const fresh = await DOSSIER_REPOSITORY.get(caseDossier.dossier_id).catch(() => null);
+  if (!promptSelection || !fresh || fresh.dossier_id !== caseDossier.dossier_id || fresh.revision === promptSelection.revision) return true;
+  promptSelection = null;
+  if (fresh.revision !== caseDossier.revision) {
+    setCaseDossier(fresh);
+    renderSources();
+  }
+  const { plan, key } = promptSourcePlan($("analysisLang").value);
+  if (plan.ok) {
+    $("promptReview").hidden = true;
+    $("promptReview").replaceChildren();
+  } else {
+    openPromptReview(plan, key, invoker);
+  }
+  promptChoiceCleared = "tab";
+  $("topicStatus").dataset.tone = "warn";
+  $("topicStatus").textContent = t("reviewOtherTab");
+  return false;
+}
+function syncPromptReview() {
+  if (!promptSelection) return;
+  promptSourcePlan($("analysisLang").value);
+}
+const reviewNumber = (n) => new Intl.NumberFormat(state.lang).format(n);
+const reviewWords = (key, values) => fillWords(t(key), values);
+const reviewUse = (key, n, cap) => reviewWords(key, { n: reviewNumber(n), cap: reviewNumber(cap) });
+function reviewSnippet(passage) {
+  const flat = passage.text.replace(/\s+/g, " ").trim();
+  const letters = Array.from(flat);
+  return `${passage.locator ? `(${passage.locator}) ` : ""}${letters.length > 110 ? `${letters.slice(0, 110).join("")}…` : flat}`;
+}
+function openPromptReview(plan, key, invoker) {
+  promptReviewInvoker = invoker || promptReviewInvoker;
+  if (!promptSelection) promptSelection = { key, revision: caseDossier ? caseDossier.revision : null, excluded: new Set() };
+  const review = $("promptReview");
+  const entries = plan.entries.filter((entry) => entry.passages.length);
+  const passageHtml = (passage) => `<li class="j-review-pass"><label><input type="checkbox" data-review-pass="${escapeHtml(passage.excerpt_id)}"> <span dir="auto">${escapeHtml(reviewSnippet(passage))}</span> <span>· ${escapeHtml(reviewWords("reviewPassageSize", { n: reviewNumber(passage.size) }))}</span></label></li>`;
+  const entryHtml = (entry) => `<li class="j-review-source" data-review-source="${escapeHtml(entry.source_id)}"><h4 dir="auto"><bdi>${escapeHtml(`${entry.ref} ${entry.title}`)}</bdi></h4><p class="j-flow-note" data-review-use></p><p class="j-flow-note" data-review-left hidden></p><ul role="list">${entry.passages.map(passageHtml).join("")}</ul></li>`;
+  review.innerHTML = `<h3 id="promptReviewHead" tabindex="-1">${escapeHtml(t("reviewHead"))}</h3><p class="j-flow-note">${escapeHtml(t("reviewIntro"))}</p><p class="j-note" id="promptReviewTotal" data-tone="warn" role="status" aria-live="polite"></p><ul class="j-review-blocks" role="list" id="promptReviewBlocks"></ul>${entries.length ? `<ul class="j-review-sources" role="list">${entries.map(entryHtml).join("")}</ul>` : ""}<div class="j-flow-row"><button class="j-btn" type="button" data-review-reset>${escapeHtml(t("reviewReset"))}</button><button class="j-btn" data-variant="ghost" type="button" data-review-close>${escapeHtml(t("reviewClose"))}</button></div>`;
+  review.hidden = false;
+  refreshPromptReview(plan);
+  $("topicStatus").dataset.tone = "warn";
+  $("topicStatus").textContent = t("reviewFewer");
+  $("promptReviewHead").focus();
+}
+function refreshPromptReview(plan) {
+  const review = $("promptReview");
+  if (review.hidden) return;
+  const total = $("promptReviewTotal");
+  total.dataset.tone = plan.blocked.length ? "crit" : plan.ok ? "ok" : "warn";
+  total.dataset.size = String(plan.total);
+  total.textContent = `${reviewUse("reviewTotalUse", plan.total, plan.totalLimit)} · ${plan.ok ? t("reviewWithin") : t("reviewFewer")}`;
+  const blocks = plan.blocked.map((block) => {
+    if (block.kind === "free-text") return reviewUse("reviewBlockFree", block.size, plan.totalLimit);
+    if (block.kind === "source-metadata") {
+      const entry = plan.entries.find((item) => item.source_id === block.source_id);
+      return `${entry ? `${entry.ref} ${entry.title}: ` : ""}${reviewUse("reviewBlockSource", block.size, plan.sourceLimit)}`;
     }
-    return lines.join("\n");
-  }).join("\n\n");
+    return reviewUse("reviewBlockTotal", block.size, plan.totalLimit);
+  });
+  $("promptReviewBlocks").replaceChildren(...blocks.map((text) => {
+    const item = document.createElement("li");
+    item.className = "j-note";
+    item.dataset.tone = "crit";
+    item.dir = "auto";
+    item.textContent = text;
+    return item;
+  }));
+  for (const entry of plan.entries) {
+    const row = review.querySelector(`[data-review-source="${CSS.escape(entry.source_id)}"]`);
+    if (!row) continue;
+    const use = row.querySelector("[data-review-use]");
+    use.textContent = reviewUse("reviewSourceUse", entry.size, plan.sourceLimit);
+    use.dataset.size = String(entry.size);
+    const left = row.querySelector("[data-review-left]");
+    left.hidden = !entry.omitted;
+    left.textContent = entry.omitted ? `${leftOutWords(state.lang, entry.omitted, reviewNumber)}${entry.selectedCount ? "" : ` · ${t("reviewNoneSent")}`}` : "";
+    for (const passage of entry.passages) {
+      const box = row.querySelector(`[data-review-pass="${CSS.escape(passage.excerpt_id)}"]`);
+      if (box) box.checked = passage.selected;
+    }
+  }
+}
+function promptLeftOutText(lang) {
+  const { plan } = promptSourcePlan(lang);
+  return plan.leftOut ? ` · ${leftOutWords(state.lang, plan.leftOut, reviewNumber)}` : "";
+}
+// Both buttons ask this before they make a prompt. False: the review is open.
+function promptWithinBudget(invoker) {
+  promptChoiceCleared = "";
+  const { plan, key } = promptSourcePlan($("analysisLang").value);
+  if (plan.ok) return true;
+  openPromptReview(plan, key, invoker);
+  return false;
+}
+async function reviewChange(event) {
+  const box = event.target.closest?.("[data-review-pass]");
+  if (!box || !promptSelection) return;
+  const id = box.dataset.reviewPass;
+  const checked = box.checked;
+  if (!(await promptChoiceHolds(promptReviewInvoker))) return;
+  if (!promptSelection) return;
+  if (checked) promptSelection.excluded.delete(id); else promptSelection.excluded.add(id);
+  refreshPromptReview(promptSourcePlan($("analysisLang").value).plan);
+}
+async function reviewClick(event) {
+  if (event.target.closest("[data-review-reset]")) {
+    if (!(await promptChoiceHolds(promptReviewInvoker))) return;
+    promptSelection?.excluded.clear();
+    refreshPromptReview(promptSourcePlan($("analysisLang").value).plan);
+  } else if (event.target.closest("[data-review-close]")) {
+    const back = promptReviewInvoker?.isConnected ? promptReviewInvoker : $("previewPromptBtn");
+    $("promptReview").hidden = true;
+    $("promptReview").replaceChildren();
+    back.focus();
+  }
 }
 function buildPrompt() {
   const lang = $("analysisLang").value;
@@ -4200,13 +4751,12 @@ function buildPrompt() {
   state.context = $("timeframeInput").value.trim();
   // Supplied sources travel with the context, which both prompts already
   // isolate as untrusted material.
-  const sources = state.evidenceAccess === "provided" ? $("sourcesInput").value.trim() : "";
-  const sourcesHeading = { ar: "المصادر المقدمة", fr: "Sources fournies" }[lang] || "Supplied sources";
+  const { plan } = promptSourcePlan(lang);
   return activeLensAdapter().buildPrompt({
     lang,
     mode: state.promptMode,
     topic: state.topic,
-    context: [state.context, casePromptText(lang), caseSourcesPromptText(lang), sources && `${sourcesHeading}:\n${sources}`].filter(Boolean).join("\n\n"),
+    context: [state.context, casePromptText(lang), plan.sectionText, plan.freeText].filter(Boolean).join("\n\n"),
     evidenceAccess: state.evidenceAccess,
     hasCaseSources: sentPromptSources().length > 0,
   });
@@ -8358,7 +8908,7 @@ async function writePromotion(excerptId, dossierId, pointer, basis) {
       if (!start) throw promotionError("ANALYSIS_NOT_LINKED");
       const saved = await writeCase(start, (current) => addPromotion(current, excerptId, pointer, basis));
       if (caseDossier?.dossier_id === saved.dossier_id) {
-        caseDossier = saved;
+        setCaseDossier(saved);
         keepSourcesSeen(saved, excerptId);
       }
     } catch (error) {
@@ -10764,6 +11314,7 @@ async function restoreAfterLoad() {
 
 function renderAll() {
   PLATFORM_RENDERER.renderAll();
+  syncPromptReview();
 }
 // A Bio review needs its graph: loaded before the review is shown, the page
 // lands on the whole review, not on its loading note. A failure shows there.
@@ -10949,6 +11500,10 @@ $("copyPromptBtn").onclick = async (event) => {
     toast(sourcesNeededText());
     return;
   }
+  // A choice made on an older save of the case is reset first; that click copies nothing.
+  if (promptSelection && !(await promptChoiceHolds(invoker))) return;
+  // Over a cap: the review opens; nothing is copied and the flow does not advance.
+  if (!promptWithinBudget(invoker)) return;
   const p = buildPrompt();
   state.lastPrompt = p;
   const ok = await copyText(p);
@@ -10956,11 +11511,12 @@ $("copyPromptBtn").onclick = async (event) => {
   keepTrip();
   $("editTopicBtn").classList.remove("hide");
   $("topicStatus").dataset.tone = ok ? "ok" : "warn";
-  $("topicStatus").textContent = `${ok ? t("promptCopied") : t("copyFailed")} ${promptBudgetText(p)}`;
+  $("topicStatus").textContent = `${ok ? t("promptCopied") : t("copyFailed")} ${promptBudgetText(p)}${promptLeftOutText($("analysisLang").value)}`;
   if (!ok) showModal(t("promptPreview"), p, invoker);
   renderAll();
 };
-$("previewPromptBtn").onclick = (event) => {
+$("previewPromptBtn").onclick = async (event) => {
+  const invoker = event.currentTarget;
   state.topic = $("topicInput").value.trim();
   state.context = $("timeframeInput").value.trim();
   if (!state.topic) {
@@ -10972,10 +11528,12 @@ $("previewPromptBtn").onclick = (event) => {
     toast(sourcesNeededText());
     return;
   }
+  if (promptSelection && !(await promptChoiceHolds(invoker))) return;
+  if (!promptWithinBudget(invoker)) return;
   state.lastPrompt = buildPrompt();
   $("topicStatus").dataset.tone = "warn";
-  $("topicStatus").textContent = promptBudgetText(state.lastPrompt);
-  showModal(t("promptPreview"), state.lastPrompt, event.currentTarget);
+  $("topicStatus").textContent = `${promptBudgetText(state.lastPrompt)}${promptLeftOutText($("analysisLang").value)}`;
+  showModal(t("promptPreview"), state.lastPrompt, invoker);
 };
 $("editTopicBtn").onclick = () => {
   state.stage = "topic";
@@ -11445,8 +12003,22 @@ $("reviewContent").addEventListener("input", (event) => {
 });
 $("sourcesFold").addEventListener("input", sourceInput);
 $("sourcesFold").addEventListener("click", sourceClick);
+$("sourcesFile").addEventListener("click", fileClick);
+// The text is the person's to read and select, not to change. It is not marked
+// readonly because keys do not move the caret in a readonly textarea in Chromium
+// or WebKit, which would leave keyboard-only selection out: every edit is
+// cancelled instead, and a change that gets through is undone.
+for (const type of ["beforeinput", "cut", "drop"]) $("sourcesFile").addEventListener(type, (event) => { if (event.target.id === "srcFilePreview") event.preventDefault(); });
+$("sourcesFile").addEventListener("input", fileInput);
+$("sourcesFile").addEventListener("change", (event) => {
+  if (event.target.id === "srcFileInput") startFileRead(event.target);
+  else fileInput(event);
+});
 $("evidenceAccess").addEventListener("change", renderSources);
-$("sourcesInput").addEventListener("input", () => keepTrip());
+$("sourcesInput").addEventListener("input", () => { keepTrip(); syncPromptReview(); });
+for (const id of ["analysisLang", "evidenceAccess", "timeframeInput"]) $(id).addEventListener(id === "timeframeInput" ? "input" : "change", syncPromptReview);
+$("promptReview").addEventListener("change", reviewChange);
+$("promptReview").addEventListener("click", reviewClick);
 PLATFORM.performance.measure(
   "boot.initialize",
   () => {

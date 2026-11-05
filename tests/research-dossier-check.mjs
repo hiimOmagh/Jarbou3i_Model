@@ -355,6 +355,70 @@ await expectCode(() => addExcerpt(fullSourceExcerpts, source.source_id, { text: 
 const twoHundred = Array.from({ length: 200 }, (_, index) => ({ ...excerpt, excerpt_id: uuidAt("excerpt", index), source_id: fiftySources[Math.floor(index / 50)].source_id }));
 const fullCaseExcerpts = await resign({ ...withExcerpt, sources: fiftySources, excerpts: twoHundred });
 await expectCode(() => addExcerpt(fullCaseExcerpts, fiftySources[4].source_id, { text: "201" }, materialOptions), "EXCERPT_LIST_FULL");
+
+// RESEARCH-1D D2: a file's first passage is a source and its excerpt in one
+// change: one revision step (so one save), both written or neither.
+const { addSourceWithExcerpt } = sourceContract;
+const composed = await addSourceWithExcerpt(dossier, { title: "notes.txt", send: false }, { text: "A passage.", locator: "line 3", check: { status: "matches", reason: "forged", decided_at: "forged" } }, materialOptions);
+equal(composed.revision, dossier.revision + 1);
+equal(composed.format_version, 2);
+equal(composed.sources.length, 1);
+equal(composed.sources[0].send, false);
+equal(composed.excerpts.length, 1);
+equal(composed.excerpts[0].source_id, composed.sources[0].source_id);
+equal(composed.excerpts[0].check, { status: "unchecked", reason: "", decided_at: null });
+equal(composed.excerpts[0].locator, "line 3");
+equal((await verifyDossier(composed)).checksum.value, composed.checksum.value);
+const composedStore = createDossierRepository({ backend: createMemoryDossierBackend() });
+await composedStore.create(dossier);
+await composedStore.save(composed, { expectedRevision: dossier.revision });
+equal((await composedStore.get(dossier.dossier_id)).excerpts[0].text, "A passage.");
+// Replayed on a record that is full or already holds the title: refused, nothing half written.
+await expectCode(() => addSourceWithExcerpt(composed, { title: " NOTES.TXT " }, { text: "again" }, materialOptions), "SOURCE_EXISTS");
+await expectCode(() => addSourceWithExcerpt(fullSources, { title: "51" }, { text: "x" }, materialOptions), "SOURCE_LIST_FULL");
+const fullExcerptsRoomForSource = await resign({ ...withExcerpt, sources: fiftySources.slice(0, 49), excerpts: twoHundred });
+await expectCode(() => addSourceWithExcerpt(fullExcerptsRoomForSource, { title: "Room for a source" }, { text: "x" }, materialOptions), "EXCERPT_LIST_FULL");
+await expectCode(() => addSourceWithExcerpt(dossier, { title: "ok" }, { text: "x".repeat(2001) }, materialOptions), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => addSourceWithExcerpt(dossier, { title: "ok" }, { text: "   " }, materialOptions), "DOSSIER_SHAPE_INVALID");
+await expectCode(() => addSourceWithExcerpt(dossier, { title: "" }, { text: "x" }, materialOptions), "DOSSIER_SHAPE_INVALID");
+equal(dossier.sources, undefined);
+
+// A passage for a source as it was shown: made again on a newer record, it is
+// refused when the source was renamed or relinked meanwhile, or is gone.
+const { addExcerptToSeen } = sourceContract;
+const shownSource = composed.sources[0];
+const forShown = await addExcerptToSeen(composed, shownSource, { text: "Another passage.", locator: "line 4" }, materialOptions);
+equal(forShown.revision, composed.revision + 1);
+equal(forShown.excerpts.map((item) => item.text), ["A passage.", "Another passage."]);
+equal(forShown.excerpts[1].check, { status: "unchecked", reason: "", decided_at: null });
+const renamed = await editSource(composed, shownSource, { title: "notes (renamed).txt" }, materialOptions);
+await expectCode(() => addExcerptToSeen(renamed, shownSource, { text: "stale" }, materialOptions), "SOURCE_IDENTITY_CHANGED");
+const relinked = await editSource(composed, shownSource, { url: "https://example.org/notes" }, materialOptions);
+await expectCode(() => addExcerptToSeen(relinked, shownSource, { text: "stale" }, materialOptions), "SOURCE_IDENTITY_CHANGED");
+// Another field (send, date) is not the source's identity: the passage still goes to it.
+const resent = await editSource(composed, shownSource, { send: true, source_date: "2026" }, materialOptions);
+equal((await addExcerptToSeen(resent, shownSource, { text: "kept going" }, materialOptions)).excerpts.length, 2);
+// A source deleted and made again with the same id, title and link is another incarnation (added_at).
+const recreated = await resign({ ...composed, sources: [{ ...shownSource, added_at: new Date(Date.parse(shownSource.added_at) + 5000).toISOString() }] });
+equal([recreated.sources[0].source_id, recreated.sources[0].title, recreated.sources[0].url], [shownSource.source_id, shownSource.title, shownSource.url]);
+await expectCode(() => addExcerptToSeen(recreated, shownSource, { text: "stale" }, materialOptions), "SOURCE_IDENTITY_CHANGED");
+equal((await addExcerptToSeen(composed, composed.sources[0], { text: "same incarnation" }, materialOptions)).excerpts.length, 2);
+const withoutSource = await removeSource(composed, shownSource, composed.excerpts, materialOptions);
+await expectCode(() => addExcerptToSeen(withoutSource, shownSource, { text: "gone" }, materialOptions), "SOURCE_GONE");
+await expectCode(() => addExcerptToSeen(composed, { source_id: "source_missing", title: "x", url: "" }, { text: "x" }, materialOptions), "SOURCE_GONE");
+await expectCode(() => addExcerptToSeen(composed, shownSource, { text: "x".repeat(2001) }, materialOptions), "DOSSIER_SHAPE_INVALID");
+// …and through the repository's one-replay rule the record it replays on is the newer one.
+{
+  const replayStore = createDossierRepository({ backend: createMemoryDossierBackend() });
+  await replayStore.create(dossier);
+  await replayStore.save(composed, { expectedRevision: dossier.revision });
+  const behind = await replayStore.get(dossier.dossier_id);
+  await replayStore.save(await editSource(behind, shownSource, { title: "Renamed elsewhere" }, materialOptions), { expectedRevision: behind.revision });
+  await expectCode(() => replayStore.save(forShown, { expectedRevision: behind.revision }), "WRITE_CONFLICT");
+  const newer = await replayStore.get(dossier.dossier_id);
+  await expectCode(() => addExcerptToSeen(newer, shownSource, { text: "replayed" }, materialOptions), "SOURCE_IDENTITY_CHANGED");
+  equal((await replayStore.get(dossier.dossier_id)).excerpts.length, 1);
+}
 for (const malformed of [
   { sources: [...fiftySources, fiftySources[0]] }, { excerpts: [...twoHundred, twoHundred[0]], sources: fiftySources },
   { excerpts: [...fiftyExcerpts, { ...excerpt, excerpt_id: uuidAt("excerpt", 999) }] },

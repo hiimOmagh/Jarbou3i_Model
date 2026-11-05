@@ -133,6 +133,7 @@ const FREE_CLASSES = [
   "j-life-banners", "j-life-banner", "j-life-acts", "j-life", "j-life-grid", "j-life-card", "j-life-help", "j-life-revs",
   "j-editor", "j-editor-note", "j-editor-bar", "j-editor-grid", "j-editor-nav", "j-editor-group", "j-case-fold", "j-case-fields", "j-done", "j-done-head", "j-done-list", "j-done-item", "j-done-text", "j-done-state", "j-done-reason", "j-done-form", "j-done-acts", "j-editor-sec", "j-editor-main",
   "j-editor-json", "j-editor-errors",
+  "j-prompt-review", "j-review-blocks", "j-review-sources", "j-review-source", "j-review-pass",
   "j-commit", "j-commit-facts", "j-commit-approve", "j-commit-confirm",
   "j-diff", "j-diff-item", "j-diff-path", "j-diff-vals", "j-diff-val",
   "j-rev-grid", "j-rev-list", "j-rev-compare",

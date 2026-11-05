@@ -95,6 +95,57 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### Read text from a file (RESEARCH-1D, text files)
+
+- **Your sources can read a text file.** In the topic step's *Your sources*
+  fold, **Read text from a file** takes a `.txt`, `.md`, `.csv`, `.json`,
+  `.html` or `.htm` file of up to 2 MB, reads it on the device (UTF-8, or
+  UTF-16 with a byte-order mark; a file that is neither is refused, never
+  repaired), and shows it as plain text. HTML is reduced to its visible text
+  by a small tokenizer: nothing is mounted, loaded or run.
+- **Only the passages you choose are kept.** Select up to 2,000 characters,
+  choose them, edit them, add a locator, and save them to a new source or one
+  you have. They are ordinary unchecked excerpts: the original file and the
+  rest of its text are not stored, exported or attached to the AI chat, and
+  the file has to be chosen again to take more.
+- **A source made from a file starts with *Send to the AI* off**, until you
+  have read what was taken. The source and its first passage are one save.
+- **HTML hides what a browser hides** (scripts and their escape states,
+  styles, frames, `noscript`, `svg`, comments including `<!-->`) and decodes
+  the whole HTML 4 named-reference set (so `caf&eacute;` reads as café), in
+  linear time with the text read in slices so Cancel is heard. **A page with a
+  `template`, `xmp` or `plaintext` tag is refused whole** ("This HTML cannot be
+  read safely. Use a text version or paste a passage."), with no text shown:
+  the reader is plain text, not a faithful rendering, and does not copy a
+  browser's tree building. A passage for a source renamed, relinked, or deleted
+  and made again in another page is not saved, and says so.
+- **Words in Arabic, English and French** for every refusal (not supported,
+  too large, no readable text, not UTF-8/UTF-16, binary, too long, could not
+  be read, took too long, HTML that cannot be read safely).
+- No stored format, schema, database version or limit changed. PDF files are
+  the next slice.
+
+### Supplied material has a size, and you choose what goes (RESEARCH-1D, prompt caps)
+
+- **Supplied material is capped at 8,000 characters for each source and 32,000
+  for all of it** (the *Supplied sources* box included), counted as the prompt
+  carries it: a Strategic prompt writes each quote, backslash and line break
+  longer, a Biopolitical one breaks each `</`. Within the caps and with nothing
+  left out, the prompt is exactly what it was.
+- **Over a cap, Preview and Copy open a review instead of the prompt.** Copy
+  copies nothing and does not move on. Each passage has a checkbox (whole
+  passages only; nothing is cut, ranked or chosen for you), each source says
+  "This source uses {n} of 8,000 characters", and the total "Supplied material
+  uses {n} of 32,000 characters", in Arabic, English and French.
+- **What is left out is said**: "{n} passages left out of this prompt" in the
+  review, a matching note inside that source's part of the prompt (counted in
+  the budget), and "No text from this source goes to the AI." when none is
+  left. Source details or the box that are over a cap on their own are named:
+  edit them or switch the source off; the box is never cut for you.
+- **The choice is for this prompt only**: kept in memory, cleared by any change
+  to the case, a source, a passage, a switch, the box, the lens, the access or
+  a language, and by a reload. It is never saved in the case.
+
 ### From your sources to the evidence (RESEARCH-1C)
 
 - When the analysis on screen belongs to your case, its case file shows your

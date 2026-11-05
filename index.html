@@ -76,6 +76,7 @@
 <link rel="modulepreload" href="src/core/recovery-journal.js" />
 <link rel="modulepreload" href="src/core/research-dossier.js" />
 <link rel="modulepreload" href="src/core/promotion.js" />
+<link rel="modulepreload" href="src/core/source-prompt-budget.js" />
 <link rel="modulepreload" href="src/core/revision-history.js" />
 <link rel="modulepreload" href="src/strategic-integrity.js" />
 <link rel="modulepreload" href="src/core/storage-health.js" />
@@ -239,6 +240,8 @@
             <div class="j-case-fields">
               <p class="j-flow-note" data-i18n="sourcesWhen">تُرسل إلى الذكاء الاصطناعي حين يكون الوصول إلى المصادر (الخطوة 3) مصادر مقدمة في السياق.</p>
               <div id="sourcesBody"></div>
+              <div id="sourcesFile"></div>
+              <div id="sourcesFileStatus" role="status" aria-live="polite"></div>
               <div id="sourcesStatus" role="status" aria-live="polite"></div>
             </div>
           </details>
@@ -289,6 +292,7 @@
             <button class="j-btn hide" data-variant="ghost" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
           </div>
           <p class="j-note" data-tone="idle" id="topicStatus" role="status" aria-live="polite">أدخل موضوعًا واضحًا ثم انسخ الموجِّه إلى مساعدك المفضل.</p>
+          <section class="j-prompt-review" id="promptReview" aria-labelledby="promptReviewHead" hidden></section>
         </div>
         <div class="j-flow-panel" id="pasteCard" data-flow-panel="answer" hidden>
           <div class="j-field">

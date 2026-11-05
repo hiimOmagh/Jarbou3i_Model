@@ -293,13 +293,40 @@ async function changeMaterial(dossier, operation, { clock = defaultClock, idFact
   const material = operation({ sources: current.sources || [], excerpts: current.excerpts || [] }, now, idFactory);
   return seal({ ...current, ...material, revision: current.revision + 1, updated_at: now }, cryptoImpl);
 }
+function appendSource({ sources, excerpts }, fields, now, idFactory) {
+  if (sources.length >= DOSSIER_SOURCE_LIMIT) fail("SOURCE_LIST_FULL", "A case holds at most 50 sources.");
+  const source = sourceOf({ url: "", source_date: "", accessed_on: "", send: true, ...fields, source_id: idFactory("source"), added_at: now });
+  const next = [...sources, source];
+  sourceUniqueness(next, "SOURCE_EXISTS");
+  return { sources: next, excerpts };
+}
+function appendExcerpt({ sources, excerpts }, sourceId, fields, now, idFactory) {
+  if (!sources.some((item) => item.source_id === sourceId)) fail("SOURCE_GONE", "The excerpt's source was removed.");
+  if (excerpts.length >= DOSSIER_EXCERPT_LIMIT || excerpts.filter((item) => item.source_id === sourceId).length >= DOSSIER_EXCERPTS_PER_SOURCE_LIMIT) fail("EXCERPT_LIST_FULL", "The excerpt list is full.");
+  const excerpt = excerptOf({ locator: "", ...fields, excerpt_id: idFactory("excerpt"), source_id: sourceId, check: unchecked(), added_at: now });
+  return { sources, excerpts: [...excerpts, excerpt] };
+}
 export function addSource(dossier, fields, options) {
-  return changeMaterial(dossier, ({ sources, excerpts }, now, idFactory) => {
-    if (sources.length >= DOSSIER_SOURCE_LIMIT) fail("SOURCE_LIST_FULL", "A case holds at most 50 sources.");
-    const source = sourceOf({ url: "", source_date: "", accessed_on: "", send: true, ...fields, source_id: idFactory("source"), added_at: now });
-    const next = [...sources, source];
-    sourceUniqueness(next, "SOURCE_EXISTS");
-    return { sources: next, excerpts };
+  return changeMaterial(dossier, (material, now, idFactory) => appendSource(material, fields, now, idFactory), options);
+}
+// An excerpt for a source as the analyst saw it (its id, title, link and the
+// instant it was added). Made again on a newer record, it refuses a source that
+// was renamed, relinked or deleted and recreated meanwhile: the passage was
+// chosen for the source as shown, not for another. The send switch and the
+// other dates are not part of that identity.
+export function addExcerptToSeen(dossier, seen, fields, options) {
+  return changeMaterial(dossier, (material, now, idFactory) => {
+    const found = material.sources.find((item) => item.source_id === seen?.source_id);
+    if (found && (found.title !== seen.title || found.url !== seen.url || found.added_at !== seen.added_at)) fail("SOURCE_IDENTITY_CHANGED", "The source's title, link or incarnation changed elsewhere.");
+    return appendExcerpt(material, seen?.source_id, fields, now, idFactory);
+  }, options);
+}
+// A source with its first excerpt in one change: one revision, one seal, one
+// save. Either both are written or neither (a file's first passage, RESEARCH-1D).
+export function addSourceWithExcerpt(dossier, sourceFields, excerptFields, options) {
+  return changeMaterial(dossier, (material, now, idFactory) => {
+    const withSource = appendSource(material, sourceFields, now, idFactory);
+    return appendExcerpt(withSource, withSource.sources.at(-1).source_id, excerptFields, now, idFactory);
   }, options);
 }
 export function editSource(dossier, seen, fields, options) {
@@ -320,12 +347,7 @@ export function removeSource(dossier, seen, seenExcerpts, options) {
   }, options);
 }
 export function addExcerpt(dossier, sourceId, fields, options) {
-  return changeMaterial(dossier, ({ sources, excerpts }, now, idFactory) => {
-    if (!sources.some((item) => item.source_id === sourceId)) fail("SOURCE_GONE", "The excerpt's source was removed.");
-    if (excerpts.length >= DOSSIER_EXCERPT_LIMIT || excerpts.filter((item) => item.source_id === sourceId).length >= DOSSIER_EXCERPTS_PER_SOURCE_LIMIT) fail("EXCERPT_LIST_FULL", "The excerpt list is full.");
-    const excerpt = excerptOf({ locator: "", ...fields, excerpt_id: idFactory("excerpt"), source_id: sourceId, check: unchecked(), added_at: now });
-    return { sources, excerpts: [...excerpts, excerpt] };
-  }, options);
+  return changeMaterial(dossier, (material, now, idFactory) => appendExcerpt(material, sourceId, fields, now, idFactory), options);
 }
 export function editExcerpt(dossier, seen, fields, options) {
   return changeMaterial(dossier, ({ sources, excerpts }) => {
