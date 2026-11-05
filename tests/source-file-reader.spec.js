@@ -373,6 +373,7 @@ test.describe("Read text from a file", () => {
     await page.locator("#sourceAdd-title").fill("Council minutes.txt");
     await page.getByRole("button", { name: "Add source", exact: true }).click();
     await expect(rows(page)).toHaveCount(1);
+    await expect.poll(async () => (await readCases(page))[0]?.sources.length).toBe(1);
     const [record] = await readCases(page);
     await choose(page, file("notes.txt", NOTES));
     await page.locator("#srcFileTarget").selectOption({ label: "Council minutes.txt" });
@@ -399,6 +400,8 @@ test.describe("Read text from a file", () => {
     await start(page);
     await page.locator("#sourceAdd-title").fill("Council minutes.txt");
     await page.getByRole("button", { name: "Add source", exact: true }).click();
+    // The source is stored after the click returns: wait for it before reading the stored case.
+    await expect.poll(async () => (await readCases(page))[0]?.sources.length).toBe(1);
     const [record] = await readCases(page);
     await choose(page, file("notes.txt", NOTES));
     await page.locator("#srcFileTarget").selectOption({ label: "Council minutes.txt" });

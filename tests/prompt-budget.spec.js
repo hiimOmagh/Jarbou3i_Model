@@ -317,8 +317,9 @@ test.describe('supplied material over a cap', () => {
     await expect(page.locator('#promptReviewHead')).toHaveText('اختر ما يدخل في هذا الموجِّه');
     await expect(page.locator('#topicStatus')).toHaveText('اختر مقتطفات أقل قبل النسخ');
     expect(await page.evaluate(() => getComputedStyle(document.querySelector('#promptReview')).direction)).toBe('rtl');
-    const arabic = new Intl.NumberFormat('ar').format(await sizeOf(total(page)));
-    await expect(total(page)).toContainText(`تستخدم المواد المقدمة ${arabic} من ${new Intl.NumberFormat('ar').format(32000)} حرفًا`);
+    // The page formats with the browser's own Intl (WebKit writes Arabic-Indic digits, Node does not).
+    const [arabic, cap] = await page.evaluate((n) => [n[0], n[1]].map((v) => new Intl.NumberFormat('ar').format(v)), [await sizeOf(total(page)), 32000]);
+    await expect(total(page)).toContainText(`تستخدم المواد المقدمة ${arabic} من ${cap} حرفًا`);
     await boxes(page).first().uncheck();
     await expect(page.locator('#promptReview [data-review-left]').filter({ visible: true })).toHaveText('استُبعد مقتطف واحد من هذا الموجِّه');
     await page.setViewportSize({ width: 320, height: 700 });
