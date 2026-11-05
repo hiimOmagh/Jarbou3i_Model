@@ -303,7 +303,7 @@ test.describe('supplied material over a cap', () => {
     expect(await sizeOf(total(page))).toBeGreaterThan(32000);
     for (const use of await page.locator('#promptReview [data-review-use]').all()) expect(await sizeOf(use)).toBeLessThanOrEqual(8000);
     for (let n = 0; n < 6; n += 1) await boxes(page).nth(n * 3 + 2).uncheck();
-    expect(await sizeOf(total(page))).toBeLessThanOrEqual(32000);
+    await expect.poll(() => sizeOf(total(page))).toBeLessThanOrEqual(32000);
     await page.locator('#copyPromptBtn').click();
     await expect.poll(() => copied(page)).toEqual(expect.any(String));
     expect(await copied(page)).toContain('R1P1');
@@ -347,6 +347,8 @@ test.describe('what the review counts is what the prompt carries', () => {
       await page.locator('#copyPromptBtn').click();
       await expect(review(page)).toBeVisible();
       await boxes(page).first().uncheck();
+      // The choice is applied after the saved case is read again, so the sizes follow the click.
+      await expect.poll(() => sizeOf(sourceUse(page, 'Big report'))).toBeLessThanOrEqual(8000);
       const shown = { source: await sizeOf(sourceUse(page, 'Big report')), small: await sizeOf(sourceUse(page, 'Small note')), total: await sizeOf(total(page)) };
       expect(shown.source).toBeLessThanOrEqual(8000);
       await page.locator('#copyPromptBtn').click();
