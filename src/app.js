@@ -2508,6 +2508,27 @@ function casePromptText(lang) {
 // The completion contract at the end of the overview, for an analysis the
 // case on screen holds: each criterion open, or met by the analyst's own claim
 // with its reason. The app never marks one met.
+function otherLensHtml() {
+  const toBio = state.analysisLens !== "biopolitical";
+  const note = labelText(
+    "See this topic through the other lens too. Your topic, framing and sources carry over, and this result is kept.",
+    "انظر إلى هذا الموضوع بالعدسة الأخرى أيضًا. يبقى موضوعك وإطاره ومصادرك كما هي، وتُحفظ هذه النتيجة.",
+    "Regardez aussi ce sujet avec l’autre lentille. Votre sujet, son cadrage et vos sources sont repris, et ce résultat est conservé.",
+  );
+  const label = toBio
+    ? labelText("Run the Biopolitical lens on this topic", "شغّل عدسة السياسة الحيوية على هذا الموضوع", "Lancer la lentille Biopolitique sur ce sujet")
+    : labelText("Run the Strategic lens on this topic", "شغّل العدسة الاستراتيجية على هذا الموضوع", "Lancer la lentille Stratégique sur ce sujet");
+  return `<section class="j-both" data-other-lens-block><p>${escapeHtml(note)}</p><button class="j-btn" data-variant="ghost" type="button" data-other-lens>${escapeHtml(label)}</button></section>`;
+}
+function runOtherLens() {
+  setAnalysisLens(state.analysisLens === "biopolitical" ? "strategic" : "biopolitical");
+  // The other lens's own result may come back; otherwise its prompt is next.
+  if (!state.analysis) GUIDED_FLOW.go("prompt", { focus: true });
+  renderAll();
+}
+document.addEventListener("click", (event) => {
+  if (event.target.closest?.("[data-other-lens]")) runOtherLens();
+});
 function caseCompletionHtml() {
   if (!caseHolds(state.activeWorkspaceId) || !caseDossier.completion.length) return "";
   const criteria = caseDossier.completion;
@@ -9196,7 +9217,7 @@ function renderBiopoliticalReview() {
   $("reviewPanel").classList.remove("hide");
   renderBiopoliticalReviewNav();
   const sections = {
-    overview: () => renderBiopoliticalOverview() + caseCompletionHtml(),
+    overview: () => renderBiopoliticalOverview() + caseCompletionHtml() + otherLensHtml(),
     pillars: renderBiopoliticalPillars,
     connections: renderBiopoliticalConnections,
     evidence: renderBiopoliticalEvidence,
@@ -9351,7 +9372,7 @@ function renderReview() {
   $("reviewPanel").classList.remove("hide");
   renderReviewNav();
   const sections = {
-    overview: () => renderOverview() + caseCompletionHtml(),
+    overview: () => renderOverview() + caseCompletionHtml() + otherLensHtml(),
     pillars: renderPillars,
     contradictions: renderContradictions,
     scenarios: renderScenarios,
