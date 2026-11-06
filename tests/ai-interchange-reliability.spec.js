@@ -1615,7 +1615,7 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "settings");
     await page.locator("#evidenceAccess").selectOption("provided");
     // Files attached in the assistant's chat count too: the field says so.
-    await expect(page.locator("#sourcesInput")).toHaveAccessibleDescription(/names of files you will attach/);
+    await expect(page.locator("#sourcesInput")).toHaveAccessibleDescription(/attach it to your AI chat yourself/);
     await page.locator("#sourcesInput").fill(source);
     for (const lens of ["strategic", "biopolitical"]) {
       await openStep(page, "lens");
