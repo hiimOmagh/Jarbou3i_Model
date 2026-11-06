@@ -13,6 +13,7 @@ import "./json-parser.js";
 import "./contract-repair.js";
 import { createPlatformRuntime } from "./core/platform-runtime.js";
 import { normalizeShellDensity } from "./core/shell-preferences.js";
+import { normalizeTextStyle, shortText } from "./core/short-text.js";
 import { createApplicationShell } from "./features/application-shell.js";
 import { createCommandPalette } from "./features/command-palette.js";
 import { createGuidedFlow } from "./features/guided-flow.js";
@@ -91,6 +92,7 @@ const I18N = {
     modeSimpleHelp: "أقصر إجابة: عناصر قليلة في كل قسم، وجملة واحدة لكل عنصر. للمساعدات التي تقطع الإجابات الطويلة.",
     modeExpertHelp: "إجابة أطول: تضيف الأدلة والافتراضات وكيف تقود الأسباب إلى النتائج. للمساعدات التي تكتب إجابات طويلة.",
     modeResearchHelp: "أطول إجابة: تضيف أدلة من مصادر موثّقة، وأدلة مضادة، وما يبقى غير مؤكد. الأفضل حين يستطيع المساعد تصفّح الويب أو حين تقدّم المصادر بنفسك.",
+    modeChoose: "غير متأكد؟ ابدأ بالمركّز. انتقل إلى الخبير أو البحثي فقط إذا جاءت الإجابة ناقصة.",
     evidenceAccess: "الوصول إلى المصادر",
     evidenceAccessNone: "دون وصول — مسودة مفاهيمية",
     evidenceAccessProvided: "مصادر مقدمة في السياق",
@@ -108,6 +110,10 @@ const I18N = {
     densityComfortable: "مريح",
     densityCompact: "مضغوط",
     densityName: "الكثافة",
+    textStyleName: "نمط النص",
+    textStyleTitle: "اختصار النص: يعرض شروحًا أقصر",
+    textStyleStandard: "كامل",
+    textStyleShort: "مختصر",
     themeName: "الوضع",
     displayMenu: "القائمة",
     workspaceNavigation: "التنقل في مساحة العمل",
@@ -231,7 +237,7 @@ const I18N = {
     fileSourceChanged: "تغيّر هذا المصدر في مكان آخر (عنوانه أو رابطه)، فلم يُضف المقتطف إليه. افتح القضية مجددًا ثم احفظ المقتطف.",
     excerptUnchecked: "لم يُتحقَّق منه بعد",
     caseSourceFrom: "من مصدرك: «{title}»",
-    caseSourceSameTitle: "العنوان نفسه",
+    caseSourceSameTitle: "مطابقة بالعنوان",
     caseSourcesIn: "في هذا التحليل: {ids}",
     caseSourcesNone: "لا دليل هنا بهذا الرابط أو العنوان",
     caseSourcesShared: "يحمل عدد من مصادرك هذا العنوان؛ لا يرتبط به أيّ منها.",
@@ -280,8 +286,8 @@ const I18N = {
     flowStepAnswer: "الإجابة",
     flowStepOf: "الخطوة {n} من {total}",
     flowTitles: ["ما الذي تريد فهمه؟","أي عدسة تناسب سؤالك؟","كيف يجب أن يعمل الذكاء الاصطناعي؟","انسخ الموجِّه إلى مساعدك الذكي","الصق إجابة الذكاء الاصطناعي"],
-    flowHints: ["جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.","لست متأكدًا؟ ابدأ بالعدسة الاستراتيجية، ويمكنك تشغيل الأخرى لاحقًا.","هذه الخيارات تشكّل الموجِّه. الإعدادات الافتراضية تناسب معظم الأسئلة.","يعمل مع ChatGPT وClaude وGemini أو أي مساعد يكتب JSON.","الصق كل ما كتبه الذكاء الاصطناعي؛ سأجد التحليل فيه."],
-    flowSay: ["سأحوّل موضوعك إلى موجِّه دقيق لمساعدك الذكي.","العدسة الاستراتيجية تتتبع المصالح حتى النتائج، وعدسة السياسة الحيوية تتتبع كيف يُحكم الناس.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","أتحقق من الإجابة قبل استيراد أي شيء. وإن كانت مقطوعة، أعطيك موجِّهًا لمتابعتها."],
+    flowHints: ["جملة واحدة واضحة تكفي. أضف المكان والفترة إن كانا مهمين.","العدسة طريقة للنظر إلى الموضوع. لست متأكدًا؟ ابدأ بالعدسة الاستراتيجية، ويمكنك تجربة الأخرى لاحقًا.","هذه الخيارات تشكّل الموجِّه. الإعدادات الافتراضية تناسب معظم الأسئلة.","يعمل مع ChatGPT وClaude وGemini أو أي مساعد يكتب JSON.","الصق كل ما كتبه الذكاء الاصطناعي؛ سأجد التحليل فيه."],
+    flowSay: ["سأحوّل موضوعك إلى موجِّه دقيق لمساعدك الذكي.","العدسة الاستراتيجية تسأل: من يريد ماذا، وماذا نتج عن ذلك. وعدسة السياسة الحيوية تسأل: كيف تدير المؤسسات حياة الناس وصحتهم وسجلاتهم.","عمق أكبر يعني إجابة أطول. إن كانت لديك مصادر فالصقها: فهي تجعل النتيجة قابلة للتحقق.","سأنتظر هنا. عد عندما ينتهي الذكاء الاصطناعي من الكتابة.","أتحقق من الإجابة قبل استيراد أي شيء. وإن كانت مقطوعة، أعطيك موجِّهًا لمتابعتها."],
     flowSay_ok: "تبدو مكتملة. جاهز متى شئت.",
     flowSay_warn: "أستطيع قراءتها مع بعض الملاحظات. راجعها أدناه قبل الاستيراد.",
     flowSay_trunc: "انقطعت الإجابة. يحدث هذا مع الإجابات الطويلة.",
@@ -324,8 +330,8 @@ const I18N = {
     flowHowTo1: "افتح مساعدك الذكي في تبويب آخر.",
     flowHowTo2: "الصق الموجِّه وأرسله.",
     flowHowTo3: "انتظر الإجابة كاملة ثم عد إلى هنا.",
-    lensStrategicDesc: "يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.",
-    lensBiopoliticalDesc: "يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.",
+    lensStrategicDesc: "تنظر في من يريد ماذا، وكيف يسعى إليه، وكيف يبرّر ذلك، وماذا حدث.",
+    lensBiopoliticalDesc: "تنظر في كيفية إدارة أجساد الناس والمؤسسات والبيانات الشخصية، وكيف يُصنَّف الناس، ومن يدفع الثمن.",
     topicStatusStart: "أدخل موضوعًا واضحًا ثم انسخ الموجِّه إلى مساعدك المفضل.",
     topicNeeded: "أدخل موضوع التحليل أولًا.",
     promptCopied:
@@ -393,12 +399,12 @@ const I18N = {
       exports: "التصدير",
     },
     navHints: {
-      overview: "مؤشرات تنفيذية وصحة النموذج",
-      pillars: "تفحّص الطبقات السببية الست",
-      contradictions: "الخطاب مقابل الأفعال",
-      scenarios: "مسارات مستقبلية قابلة للاختبار",
-      evidence: "الأدلة والافتراضات والاختبارات",
-      inspection: "المعرّفات والمصادر وسجل التدقيق",
+      overview: "أهم النقاط، ومدى موثوقية التحليل",
+      pillars: "الأجزاء الستة التي تصنع النتيجة",
+      contradictions: "حيث لا يطابق الكلامُ الفعل",
+      scenarios: "ما قد يحدث لاحقًا، وما الذي يثبت خطأه",
+      evidence: "ما يُزعَم، وما يُفترَض، وكيف يمكن التحقق منه",
+      inspection: "من أين يأتي كل عنصر، وما الذي تغيّر",
       exports: "تقرير قابل للمشاركة",
     },
     warnings: {
@@ -476,9 +482,9 @@ const I18N = {
     analysisLens: "عدسة التحليل",
     lensStrategic: "استراتيجي",
     lensBiopolitical: "السياسة الحيوية",
-    lensStrategicHint: "مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.",
+    lensStrategicHint: "الأهداف، اللاعبون الرئيسيون، الأساليب، الرواية المعلنة، النتائج، وكيف تتكيّف الأمور.",
     lensBiopoliticalHint:
-      "إشكلة، سكان/ذوات، تقنيات حكم، معايير، آثار جسدية/اجتماعية، مقاومة.",
+      "كيف يُعرَّف المشكل، ومن المستهدَف، والأساليب المستخدمة، والقواعد الموضوعة، والآثار على الناس، والمقاومة.",
     engineTitleBiopolitical: "خريطة محرك السياسة الحيوية",
     engineSubtitleBiopolitical:
       "مسار الحكم في النموذج: من تحويل الحياة إلى مشكلة عامة، إلى تصنيف السكان، والتطبيع، والآثار الجسدية، والمقاومة.",
@@ -547,6 +553,7 @@ const I18N = {
     modeSimpleHelp: "Shortest answer: a few items per part, one sentence each. For assistants that cut long answers off.",
     modeExpertHelp: "Longer answer: adds evidence, assumptions and how causes lead to effects. For assistants that write long answers.",
     modeResearchHelp: "Longest answer: adds sourced evidence, counter-evidence and what stays uncertain. Best when the assistant can browse the web or you supply sources.",
+    modeChoose: "Not sure? Start with Focused. Switch to Expert or Research only if the answer comes back too thin.",
     evidenceAccess: "Source access",
     evidenceAccessNone: "No access — conceptual draft",
     evidenceAccessProvided: "Sources supplied in context",
@@ -564,6 +571,10 @@ const I18N = {
     densityComfortable: "Comfortable",
     densityCompact: "Compact",
     densityName: "Density",
+    textStyleName: "Text",
+    textStyleTitle: "Short text: shows shorter help",
+    textStyleStandard: "Full",
+    textStyleShort: "Short",
     themeName: "Theme",
     displayMenu: "Menu",
     workspaceNavigation: "Workspace navigation",
@@ -687,7 +698,7 @@ const I18N = {
     fileSourceChanged: "This source was changed elsewhere (its title or link), so the passage was not added to it. Open the case again, then save the passage.",
     excerptUnchecked: "Not checked yet",
     caseSourceFrom: "From your source: {title}",
-    caseSourceSameTitle: "same title",
+    caseSourceSameTitle: "matched by title",
     caseSourcesIn: "In this analysis: {ids}",
     caseSourcesNone: "No evidence here has this link or title",
     caseSourcesShared: "Several of your sources have this title; none is related.",
@@ -736,8 +747,8 @@ const I18N = {
     flowStepAnswer: "Answer",
     flowStepOf: "Step {n} of {total}",
     flowTitles: ["What do you want to understand?","Which lens fits your question?","How should the AI work?","Copy the prompt into your AI assistant","Paste the AI's answer"],
-    flowHints: ["One clear sentence is enough. Add a place and period if they matter.","Not sure? Start with Strategic. You can run the other lens later.","These choices shape the prompt. The defaults suit most questions.","Works with ChatGPT, Claude, Gemini or any assistant that can write JSON.","Paste everything the AI wrote; I'll find the analysis in it."],
-    flowSay: ["I'll turn your topic into a precise prompt for your AI assistant.","Strategic follows interests to outcomes. Biopolitical follows how people are governed.","More depth means a longer answer. If you have sources, paste them: they make the result checkable.","I'll wait here. Come back when the AI has finished writing.","I check the answer before anything is imported. If it was cut off, I'll give you a prompt to continue."],
+    flowHints: ["One clear sentence is enough. Add a place and period if they matter.","A lens is a way of looking at a topic. Not sure? Start with Strategic. You can try the other one later.","These choices shape the prompt. The defaults suit most questions.","Works with ChatGPT, Claude, Gemini or any assistant that can write JSON.","Paste everything the AI wrote; I'll find the analysis in it."],
+    flowSay: ["I'll turn your topic into a precise prompt for your AI assistant.","Strategic asks who wants what, and what came of it. Biopolitical asks how institutions manage people’s lives, health and records.","More depth means a longer answer. If you have sources, paste them: they make the result checkable.","I'll wait here. Come back when the AI has finished writing.","I check the answer before anything is imported. If it was cut off, I'll give you a prompt to continue."],
     flowSay_ok: "That looks complete. Ready when you are.",
     flowSay_warn: "I can read it, with a few notes. Check them below before you import.",
     flowSay_trunc: "It got cut off. That happens with long answers.",
@@ -780,8 +791,8 @@ const I18N = {
     flowHowTo1: "Open your AI assistant in another tab.",
     flowHowTo2: "Paste the prompt and send it.",
     flowHowTo3: "Wait for the full answer, then come back here.",
-    lensStrategicDesc: "Follows interests to results: who wants what, which tools they use, how it is justified, and what happened.",
-    lensBiopoliticalDesc: "Traces how bodies, institutions, data and classifications become governed, and who bears the costs.",
+    lensStrategicDesc: "Looks at who wants what, how they try to get it, how they justify it, and what happened.",
+    lensBiopoliticalDesc: "Looks at how people’s bodies, institutions and personal information are managed, how people are grouped, and who pays the price.",
     topicStatusStart:
       "Enter a clear topic, then copy the prompt into your preferred assistant.",
     topicNeeded: "Enter an analysis topic first.",
@@ -851,12 +862,12 @@ const I18N = {
       exports: "Export",
     },
     navHints: {
-      overview: "Executive signals and model health",
-      pillars: "Inspect the six causal layers",
-      contradictions: "Rhetoric versus actions",
-      scenarios: "Future paths and falsifiers",
-      evidence: "Claims, assumptions, and tests",
-      inspection: "Identifiers, provenance, and audit trail",
+      overview: "The main points, and how reliable the analysis is",
+      pillars: "The six parts that drive the outcome",
+      contradictions: "Where words and actions don’t match",
+      scenarios: "What could happen next, and what would prove it wrong",
+      evidence: "What is claimed, what is assumed, and how to check it",
+      inspection: "Where each item comes from, and what changed",
       exports: "Download the final report",
     },
     warnings: {
@@ -940,9 +951,9 @@ const I18N = {
     lensStrategic: "Strategic",
     lensBiopolitical: "Biopolitical",
     lensStrategicHint:
-      "Interests, actors, tools, narrative, results, feedback.",
+      "Goals, key players, methods, the story told, results, and how things adjust.",
     lensBiopoliticalHint:
-      "Problematization, populations, governance techniques, norms, embodied outcomes, resistance.",
+      "How the problem is defined, who is targeted, the methods used, the rules set, the effects on people, and pushback.",
     engineTitleBiopolitical: "Biopolitical Engine Map",
     engineSubtitleBiopolitical:
       "The governance path of the model: from problematized life processes to population classification, normalization, embodied outcomes, and resistance.",
@@ -1014,6 +1025,7 @@ const I18N = {
     modeSimpleHelp: "Réponse la plus courte : quelques éléments par partie, une phrase chacun. Pour les assistants qui coupent les longues réponses.",
     modeExpertHelp: "Réponse plus longue : ajoute des preuves, des hypothèses et comment les causes mènent aux effets. Pour les assistants qui écrivent de longues réponses.",
     modeResearchHelp: "Réponse la plus longue : ajoute des preuves sourcées, des contre-preuves et ce qui reste incertain. Idéal si l’assistant peut consulter le web ou si vous fournissez des sources.",
+    modeChoose: "Vous hésitez ? Commencez par Ciblé. Passez à Expert ou Recherche seulement si la réponse est trop mince.",
     evidenceAccess: "Accès aux sources",
     evidenceAccessNone: "Aucun accès — brouillon conceptuel",
     evidenceAccessProvided: "Sources fournies dans le contexte",
@@ -1031,6 +1043,10 @@ const I18N = {
     densityComfortable: "Confortable",
     densityCompact: "Compacte",
     densityName: "Densité",
+    textStyleName: "Texte",
+    textStyleTitle: "Texte court : affiche des aides plus courtes",
+    textStyleStandard: "Complet",
+    textStyleShort: "Court",
     themeName: "Thème",
     displayMenu: "Menu",
     workspaceNavigation: "Navigation de l’espace de travail",
@@ -1154,7 +1170,7 @@ const I18N = {
     fileSourceChanged: "Cette source a été modifiée ailleurs (son titre ou son lien) ; le passage n’y a donc pas été ajouté. Ouvrez à nouveau le dossier, puis enregistrez le passage.",
     excerptUnchecked: "Pas encore vérifié",
     caseSourceFrom: "De votre source : « {title} »",
-    caseSourceSameTitle: "même titre",
+    caseSourceSameTitle: "rapproché par le titre",
     caseSourcesIn: "Dans cette analyse : {ids}",
     caseSourcesNone: "Aucune preuve ici n’a ce lien ou ce titre",
     caseSourcesShared: "Plusieurs de vos sources portent ce titre ; aucune n’est reliée.",
@@ -1203,8 +1219,8 @@ const I18N = {
     flowStepAnswer: "Réponse",
     flowStepOf: "Étape {n} sur {total}",
     flowTitles: ["Que voulez-vous comprendre ?","Quelle lentille convient à votre question ?","Comment l’IA doit-elle travailler ?","Copiez le prompt dans votre assistant IA","Collez la réponse de l’IA"],
-    flowHints: ["Une phrase claire suffit. Ajoutez un lieu et une période s’ils comptent.","Vous hésitez ? Commencez par Stratégique. Vous pourrez lancer l’autre ensuite.","Ces choix façonnent le prompt. Les valeurs par défaut conviennent à la plupart des questions.","Fonctionne avec ChatGPT, Claude, Gemini ou tout assistant capable d’écrire du JSON.","Collez tout ce que l’IA a écrit ; j’y trouverai l’analyse."],
-    flowSay: ["Je ferai de votre sujet un prompt précis pour votre assistant IA.","Stratégique suit les intérêts jusqu’aux résultats. Biopolitique suit la façon dont on gouverne les personnes.","Plus de profondeur, c’est une réponse plus longue. Si vous avez des sources, collez-les : elles rendent le résultat vérifiable.","J’attends ici. Revenez quand l’IA a fini d’écrire.","Je vérifie la réponse avant tout import. Si elle est coupée, je vous donne un prompt pour la poursuivre."],
+    flowHints: ["Une phrase claire suffit. Ajoutez un lieu et une période s’ils comptent.","Une lentille est une façon d’examiner un sujet. Vous hésitez ? Commencez par Stratégique. Vous pourrez essayer l’autre ensuite.","Ces choix façonnent le prompt. Les valeurs par défaut conviennent à la plupart des questions.","Fonctionne avec ChatGPT, Claude, Gemini ou tout assistant capable d’écrire du JSON.","Collez tout ce que l’IA a écrit ; j’y trouverai l’analyse."],
+    flowSay: ["Je ferai de votre sujet un prompt précis pour votre assistant IA.","Stratégique demande qui veut quoi, et ce qui en est sorti. Biopolitique demande comment les institutions gèrent la vie, la santé et les données des personnes.","Plus de profondeur, c’est une réponse plus longue. Si vous avez des sources, collez-les : elles rendent le résultat vérifiable.","J’attends ici. Revenez quand l’IA a fini d’écrire.","Je vérifie la réponse avant tout import. Si elle est coupée, je vous donne un prompt pour la poursuivre."],
     flowSay_ok: "Elle semble complète. Prêt quand vous l’êtes.",
     flowSay_warn: "Je peux la lire, avec quelques remarques. Vérifiez-les ci-dessous avant d’importer.",
     flowSay_trunc: "Elle a été coupée. Cela arrive avec les longues réponses.",
@@ -1247,8 +1263,8 @@ const I18N = {
     flowHowTo1: "Ouvrez votre assistant IA dans un autre onglet.",
     flowHowTo2: "Collez le prompt et envoyez-le.",
     flowHowTo3: "Attendez la réponse complète, puis revenez ici.",
-    lensStrategicDesc: "Suit les intérêts jusqu’aux résultats : qui veut quoi, avec quels outils, comment c’est justifié et ce qui s’est passé.",
-    lensBiopoliticalDesc: "Retrace comment corps, institutions, données et classifications deviennent gouvernés, et qui en supporte le coût.",
+    lensStrategicDesc: "Examine qui veut quoi, comment il cherche à l’obtenir, comment il le justifie et ce qui s’est passé.",
+    lensBiopoliticalDesc: "Examine comment sont gérés le corps des personnes, les institutions et les données personnelles, comment les personnes sont classées et qui en paie le prix.",
     topicStatusStart:
       "Saisissez un sujet clair, puis copiez le prompt dans votre assistant préféré.",
     topicNeeded: "Saisissez d’abord un sujet d’analyse.",
@@ -1323,12 +1339,12 @@ const I18N = {
       exports: "Export",
     },
     navHints: {
-      overview: "Signaux exécutifs et santé du modèle",
-      pillars: "Inspecter les six couches causales",
-      contradictions: "Rhétorique versus actions",
-      scenarios: "Trajectoires futures et falsificateurs",
-      evidence: "Énoncés, hypothèses et tests",
-      inspection: "Identifiants, provenance et piste d’audit",
+      overview: "L’essentiel, et la fiabilité de l’analyse",
+      pillars: "Les six éléments qui produisent le résultat",
+      contradictions: "Quand les paroles ne correspondent pas aux actes",
+      scenarios: "Ce qui pourrait arriver, et ce qui prouverait le contraire",
+      evidence: "Ce qui est affirmé, ce qui est supposé et comment le vérifier",
+      inspection: "D’où vient chaque élément, et ce qui a changé",
       exports: "Télécharger le rapport final",
     },
     warnings: {
@@ -1419,9 +1435,9 @@ const I18N = {
     lensStrategic: "Stratégique",
     lensBiopolitical: "Biopolitique",
     lensStrategicHint:
-      "Intérêts, acteurs, outils, narratif, résultats, rétroaction.",
+      "Objectifs, acteurs clés, méthodes, le récit présenté, résultats, et la façon dont les choses s’ajustent.",
     lensBiopoliticalHint:
-      "Problématisation, populations, techniques de gouvernement, normes, effets incarnés, résistance.",
+      "Comment le problème est défini, qui est visé, les méthodes employées, les règles posées, les effets sur les personnes et les résistances.",
     engineTitleBiopolitical: "Carte du moteur biopolitique",
     engineSubtitleBiopolitical:
       "Le chemin de gouvernement du modèle : de la problématisation des processus vitaux à la classification des populations, la normalisation, les effets incarnés et la résistance.",
@@ -1650,6 +1666,7 @@ const PLATFORM = createPlatformRuntime({
         ? settings.analysisLens
         : "strategic",
       density: normalizeShellDensity(settings.density),
+      textStyle: normalizeTextStyle(settings.textStyle),
       shellSection: "workflow",
       analysis: null,
       jsonValid: false,
@@ -2878,6 +2895,10 @@ function tFor(lang, key, lens = state.analysisLens) {
   return LOCALIZATION.translate(lang, key, { lens });
 }
 function t(k) {
+  if (state.textStyle === "short") {
+    const short = shortText(state.lang, k);
+    if (short !== undefined) return short;
+  }
   return tFor(state.lang, k);
 }
 function activeWarnings() {
@@ -2932,8 +2953,18 @@ function setAnalysisLanguage(lang) {
     analysisLangFollowsUi: state.analysisLangFollowsUi,
   });
 }
+function syncTextStyle() {
+  const button = $("textStyleBtn");
+  if (!button) return;
+  const short = state.textStyle === "short";
+  const label = t(short ? "textStyleShort" : "textStyleStandard");
+  button.setAttribute("aria-pressed", String(short));
+  button.title = `${t("textStyleTitle")}: ${label}`;
+  if ($("textStyleLabel")) $("textStyleLabel").textContent = label;
+}
 function applyI18n() {
   syncLanguageShell();
+  syncTextStyle();
   document.title = `${t("appTitle")} — Jarbou3i Model`;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.dataset.i18n);
@@ -11467,6 +11498,12 @@ Text:
 ${bad}`;
 }
 $("langAr").onclick = () => setLang("ar");
+$("textStyleBtn")?.addEventListener("click", () => {
+  state.textStyle = state.textStyle === "short" ? "standard" : "short";
+  writeSettings({ textStyle: state.textStyle });
+  renderAll();
+  refreshDynamicMessages();
+});
 $("langEn").onclick = () => setLang("en");
 $("langFr").onclick = () => setLang("fr");
 document

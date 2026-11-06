@@ -153,7 +153,7 @@ sources })` in `src/core/source-relations.js`, returns
 ## Screens
 
 - **Evidence record.** A related record gets one line under its title, not
-  among its facts: "From your source: <title>", with " · same title" when
+  among its facts: "From your source: <title>", with " · matched by title" when
   related by title. It opens the fold and moves focus to the source's row,
   as the record links do. Nothing else changes.
 - **Your sources fold** in the Evidence section, both lenses, after the
@@ -296,7 +296,7 @@ dialog's Close is its own. "Case" is القضية / dossier, as in 1A.
 | In this analysis: {ids} | في هذا التحليل: {ids} | Dans cette analyse : {ids} |
 | No evidence here has this link or title | لا دليل هنا بهذا الرابط أو العنوان | Aucune preuve ici n’a ce lien ou ce titre |
 | From your source: {title} | من مصدرك: «{title}» | De votre source : « {title} » |
-| · same title | · العنوان نفسه | · même titre |
+| · matched by title | · مطابقة بالعنوان | · rapproché par le titre |
 | Several of your sources have this title; none is related. | يحمل عدد من مصادرك هذا العنوان؛ لا يرتبط به أيّ منها. | Plusieurs de vos sources portent ce titre ; aucune n’est reliée. |
 | Your source: {title} · matching excerpts: {n} | مصدرك: «{title}» · المقتطفات المطابقة: {n} | Votre source : « {title} » · extraits conformes : {n} |
 | From your source “{title}”, at {locator}, checked {date}: {reason} | من مصدرك «{title}»، في {locator}، تُحقّق منه في {date}: {reason} | De votre source « {title} », à {locator}, vérifié le {date} : {reason} |

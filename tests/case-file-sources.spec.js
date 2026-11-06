@@ -118,7 +118,7 @@ const printedHtml = (page) => page.evaluate(() => {
 test.describe("Your sources in the case file", () => {
   test("Strategic: the related record says its source under its title and the fold lists every source", async ({ page }) => {
     await linkedCase(page);
-    await expect(line(page, "E1")).toHaveText(`From your source: ${STRATEGIC_TITLE} · same title`);
+    await expect(line(page, "E1")).toHaveText(`From your source: ${STRATEGIC_TITLE} · matched by title`);
     expect(await line(page, "E1").evaluate((node) => node.previousElementSibling.matches(".j-rec-title"))).toBe(true);
     await expect(record(page, "E1").locator(".j-rec-facts [data-case-source-line]")).toHaveCount(0);
     await expect(page.locator("#case-evidence [data-case-source-line]")).toHaveCount(1);
@@ -192,7 +192,7 @@ test.describe("Your sources in the case file", () => {
     const sample = JSON.parse(await fixture("bio-en"));
     const evidence = sample.evidence.items[0];
     await linkedCase(page, { answer: "bio-en", title: evidence.source_title });
-    await expect(line(page, evidence.id)).toHaveText(`From your source: ${evidence.source_title} · same title`);
+    await expect(line(page, evidence.id)).toHaveText(`From your source: ${evidence.source_title} · matched by title`);
     expect(await line(page, evidence.id).evaluate((node) => node.previousElementSibling.matches(".j-rec-title"))).toBe(true);
     await expect(record(page, evidence.id).locator(":is(.j-rec-facts, .j-rec-more) [data-case-source-line]")).toHaveCount(0);
     expect(await fold(page).evaluate((node) => node === node.parentElement.lastElementChild && node.previousElementSibling.dataset.records)).toBe("bio");
@@ -308,8 +308,8 @@ test.describe("Your sources in the case file", () => {
   });
 
   for (const [lang, copy] of Object.entries({
-    ar: { dir: "rtl", line: `من مصدرك: «${STRATEGIC_TITLE}» · العنوان نفسه`, summary: "مصادرك", related: "في هذا التحليل: E1", none: "لا دليل هنا بهذا الرابط أو العنوان", unchecked: "لم يُتحقَّق منه بعد", matches: "يطابق المصدر" },
-    fr: { dir: "ltr", line: `De votre source : « ${STRATEGIC_TITLE} » · même titre`, summary: "Vos sources", related: "Dans cette analyse : E1", none: "Aucune preuve ici n’a ce lien ou ce titre", unchecked: "Pas encore vérifié", matches: "Conforme à la source" },
+    ar: { dir: "rtl", line: `من مصدرك: «${STRATEGIC_TITLE}» · مطابقة بالعنوان`, summary: "مصادرك", related: "في هذا التحليل: E1", none: "لا دليل هنا بهذا الرابط أو العنوان", unchecked: "لم يُتحقَّق منه بعد", matches: "يطابق المصدر" },
+    fr: { dir: "ltr", line: `De votre source : « ${STRATEGIC_TITLE} » · rapproché par le titre`, summary: "Vos sources", related: "Dans cette analyse : E1", none: "Aucune preuve ici n’a ce lien ou ce titre", unchecked: "Pas encore vérifié", matches: "Conforme à la source" },
   })) {
     test(`${lang}: the line and the fold in its words, kept open across a language change`, async ({ page }) => {
       await linkedCase(page);

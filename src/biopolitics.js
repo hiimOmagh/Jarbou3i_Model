@@ -129,7 +129,7 @@
       topicPlaceholder:
         "Example: How does welfare conditionality govern dependency, work, dignity, and access?",
       lensBiopoliticalHint:
-        "Human functions, actors, infrastructures, meaning, capture tests, distribution, evidence, agency, and alternatives.",
+        "People’s needs and activities, who is involved, the systems behind it, how it is explained, who gains or loses, the evidence, people’s ability to choose and act, and alternatives.",
       engineTitle: "Biopolitical analytical protocol",
       engineSubtitle:
         "Nine connected pillars move from a testable question to a calibrated judgment without presuming domination.",
@@ -176,11 +176,11 @@
         exports: "Export",
       },
       navHints: {
-        overview: "Finding, readiness, and blockers",
-        pillars: "Nine analytical pillars",
-        evidence: "Sources and rival explanations",
-        conclusion: "Calibrated conclusion and audit",
-        inspection: "Identifiers, provenance, and audit trail",
+        overview: "The finding, whether it is ready, and what blocks it",
+        pillars: "The nine parts of the analysis",
+        evidence: "Sources, and other possible explanations",
+        conclusion: "The conclusion, how confident we can be in it, and a review of the analysis",
+        inspection: "Where each item comes from, and what changed",
         exports: "Standalone report",
       },
       pillars: {
@@ -240,7 +240,7 @@
       topicPlaceholder:
         "مثال: كيف تحكم مشروطية الإعانات التبعية والعمل والكرامة والوصول؟",
       lensBiopoliticalHint:
-        "وظائف الإنسان، الفاعلون، البنى التحتية، المعنى، اختبار الاستحواذ، التوزيع، الأدلة، الفاعلية والبدائل.",
+        "احتياجات الناس وأنشطتهم، والأطراف المعنية، والأنظمة المرتبطة بذلك، وكيف يُفسَّر ذلك، ومن يربح ومن يخسر، والأدلة، وقدرة الناس على الاختيار والتصرف، والبدائل.",
       engineTitle: "بروتوكول تحليل السياسة الحيوية",
       engineSubtitle:
         "تنتقل تسع ركائز مترابطة من سؤال قابل للاختبار إلى حكم مُعاير دون افتراض الهيمنة مسبقًا.",
@@ -287,11 +287,11 @@
         exports: "التصدير",
       },
       navHints: {
-        overview: "النتيجة والجاهزية والعوائق",
-        pillars: "الركائز التحليلية التسع",
-        evidence: "المصادر والتفسيرات المنافسة",
-        conclusion: "الخلاصة المُعايرة والتدقيق",
-        inspection: "المعرّفات والمصادر وسجل التدقيق",
+        overview: "النتيجة، وهل هي جاهزة، وما الذي يعيقها",
+        pillars: "الأجزاء التسعة للتحليل",
+        evidence: "المصادر، والتفسيرات الأخرى الممكنة",
+        conclusion: "الخلاصة، ومدى الثقة بها، ومراجعة التحليل",
+        inspection: "من أين يأتي كل عنصر، وما الذي تغيّر",
         exports: "تقرير مستقل",
       },
       pillars: {
@@ -351,7 +351,7 @@
       topicPlaceholder:
         "Exemple : comment la conditionnalité sociale gouverne-t-elle dépendance, travail, dignité et accès ?",
       lensBiopoliticalHint:
-        "Fonctions humaines, acteurs, infrastructures, sens, test de capture, distribution, preuves, agentivité et alternatives.",
+        "Les besoins et les activités des personnes, les parties concernées, les systèmes en jeu, comment cela est expliqué, qui gagne ou perd, les preuves, la capacité des personnes à choisir et à agir, et les alternatives.",
       engineTitle: "Protocole analytique biopolitique",
       engineSubtitle:
         "Neuf piliers reliés conduisent d’une question testable à un jugement calibré sans présumer la domination.",
@@ -399,11 +399,11 @@
         exports: "Export",
       },
       navHints: {
-        overview: "Conclusion, préparation et blocages",
-        pillars: "Neuf piliers analytiques",
-        evidence: "Sources et explications rivales",
-        conclusion: "Conclusion calibrée et audit",
-        inspection: "Identifiants, provenance et piste d’audit",
+        overview: "La conclusion, si elle est prête, et ce qui la bloque",
+        pillars: "Les neuf parties de l’analyse",
+        evidence: "Les sources, et d’autres explications possibles",
+        conclusion: "La conclusion, son degré de certitude et la vérification de l’analyse",
+        inspection: "D’où vient chaque élément, et ce qui a changé",
         exports: "Rapport autonome",
       },
       pillars: {

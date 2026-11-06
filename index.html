@@ -52,6 +52,7 @@
 <link rel="modulepreload" href="src/core/platform-state.js" />
 <link rel="modulepreload" href="src/core/render-regions.js" />
 <link rel="modulepreload" href="src/core/shell-preferences.js" />
+<link rel="modulepreload" href="src/core/short-text.js" />
 <link rel="modulepreload" href="src/features/application-shell.js" />
 <link rel="modulepreload" href="src/core/shell-navigation.js" />
 <link rel="modulepreload" href="src/features/command-palette.js" />
@@ -112,6 +113,9 @@
         </button>
         <button class="j-btn" id="densityBtn" type="button" aria-pressed="false" title="تبديل كثافة العرض">
           <svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="j-shell-tool-name" data-i18n="densityName">الكثافة</span><span id="densityLabel">مريح</span>
+        </button>
+        <button class="j-btn" id="textStyleBtn" type="button" aria-pressed="false" title="اختصار النص">
+          <svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"/></svg><span class="j-shell-tool-name" data-i18n="textStyleName">نمط النص</span><span id="textStyleLabel">كامل</span>
         </button>
         <button class="j-btn" data-size="icon" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg><span class="j-shell-tool-name" data-i18n="themeName">الوضع</span></button>
       </div>
@@ -248,10 +252,10 @@
         </div>
         <div class="j-flow-panel" data-flow-panel="lens" hidden>
           <div class="j-flow-choices" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
-            <button class="j-flow-choice active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0"><b data-i18n="lensStrategic">استراتيجي</b><span data-i18n="lensStrategicDesc">يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.</span></button>
-            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">السياسة الحيوية</b><span data-i18n="lensBiopoliticalDesc">يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.</span></button>
+            <button class="j-flow-choice active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0"><b data-i18n="lensStrategic">استراتيجي</b><span data-i18n="lensStrategicDesc">تنظر في من يريد ماذا، وكيف يسعى إليه، وكيف يبرّر ذلك، وماذا حدث.</span></button>
+            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">السياسة الحيوية</b><span data-i18n="lensBiopoliticalDesc">تنظر في كيفية إدارة أجساد الناس والمؤسسات والبيانات الشخصية، وكيف يُصنَّف الناس، ومن يدفع الثمن.</span></button>
           </div>
-          <p class="j-flow-note" id="analysisLensHint">مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.</p>
+          <p class="j-flow-note" id="analysisLensHint">الأهداف، اللاعبون الرئيسيون، الأساليب، الرواية المعلنة، النتائج، وكيف تتكيّف الأمور.</p>
         </div>
         <div class="j-flow-panel" data-flow-panel="settings" hidden>
           <div class="j-flow-grid">
@@ -263,6 +267,7 @@
                 <dt data-i18n="modeExpert">خبير</dt><dd data-i18n="modeExpertHelp">إجابة أطول: تضيف الأدلة والافتراضات وكيف تقود الأسباب إلى النتائج. للمساعدات التي تكتب إجابات طويلة.</dd>
                 <dt data-i18n="modeResearch">بحثي</dt><dd data-i18n="modeResearchHelp">أطول إجابة: تضيف أدلة من مصادر موثّقة، وأدلة مضادة، وما يبقى غير مؤكد. الأفضل حين يستطيع المساعد تصفّح الويب أو حين تقدّم المصادر بنفسك.</dd>
               </dl>
+              <p class="j-flow-note" data-i18n="modeChoose">غير متأكد؟ ابدأ بالمركّز. انتقل إلى الخبير أو البحثي فقط إذا جاءت الإجابة ناقصة.</p>
             </div>
             <div class="j-field">
               <label for="evidenceAccess" data-i18n="evidenceAccess">الوصول إلى المصادر</label>
