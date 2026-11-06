@@ -4486,8 +4486,9 @@ function buildStrategicPrompt({
   const ar = lang === "ar";
   const fr = lang === "fr";
   const untrustedMaterial = JSON.stringify({ topic: String(topic || ""), context: String(context || "") });
+  const angleRule = AI_INTERCHANGE.buildAngleRule(lang, mode);
   const modeText =
-    mode === "research"
+    (mode === "research"
       ? evidenceAccess === "none"
         ? ar
           ? "بحثي: أضف أدلة مضادة، عدم يقين، وروابط سببية مرقمة؛ واتبع في الأدلة قاعدة الوصول إلى المصادر."
@@ -4515,7 +4516,8 @@ function buildStrategicPrompt({
           ? `مركّز: ركّز على الطبقات الست، التناقضات، والسيناريوهات، ${evidenceAccess === "none" ? "واتبع في الأدلة قاعدة الوصول إلى المصادر" : "وأضف دليلًا أو دليلين"}. اجعل الإجابة موجزة لتناسب المساعدات ذات حدود الإخراج الصغيرة: عنصران أو ثلاثة في كل قسم، وجملة قصيرة واحدة لكل قيمة نصية، وقوائم قصيرة داخل كل عنصر.`
           : fr
             ? `Ciblé : priorise les six couches, les contradictions et les scénarios, ${evidenceAccess === "none" ? "et pour les preuves, suis la règle d’accès aux sources" : "et ajoute une ou deux preuves"}. Garde la réponse compacte pour les assistants à faible limite de sortie : deux ou trois éléments par section, une phrase courte par valeur textuelle et des listes courtes dans chaque élément.`
-            : `Focused: prioritize the six layers, contradictions, and scenarios, ${evidenceAccess === "none" ? "and for evidence, follow the source-access rule" : "and add one or two evidence items"}. Keep the answer compact for assistants with small output limits: two or three items per section, one short sentence per text value, and short lists inside each item.`;
+            : `Focused: prioritize the six layers, contradictions, and scenarios, ${evidenceAccess === "none" ? "and for evidence, follow the source-access rule" : "and add one or two evidence items"}. Keep the answer compact for assistants with small output limits: two or three items per section, one short sentence per text value, and short lists inside each item.`) +
+    (angleRule ? ` ${angleRule}` : "");
   const evidenceRule = ar
     ? evidenceAccess === "none"
       ? "الوصول إلى المصادر: غير متاح. لا ترفض المهمة لهذا السبب ولا تختلق مصدرًا. انسخ عنصر الدليل النائب من المخطط حرفيًا، بما في ذلك عنوانه \"UNSOURCED MODEL SYNTHESIS — PLACEHOLDER\"، بوصفه عنصر الأدلة الوحيد، ولا تقدّمه أبدًا بوصفه دليلًا. هذا هو النص الوحيد من المخطط الذي يُنسخ كما هو."

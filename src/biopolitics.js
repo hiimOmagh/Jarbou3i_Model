@@ -1754,6 +1754,10 @@
     hasCaseSources = false,
   }) {
     const interchange = root.Jarbou3iAiInterchange;
+    const angleRule = (l, m) => {
+      const rule = interchange?.buildAngleRule?.(l, m);
+      return rule ? ` ${rule}` : "";
+    };
     // The depth as the interface names it, not its code.
     const modeName =
       {
@@ -1817,7 +1821,7 @@ ${evidenceRule}
 15. اكتب بلغة واضحة وملموسة: سمِّ الفاعل أو المؤسسة أو القانون أو المكان أو التاريخ أو الرقم المحدد، لا فئته («الجهات التنظيمية»، «أصحاب المصلحة»)؛ وقل من يفعل ماذا وبمن، بجمل قصيرة؛ دون قوائم من الأسماء المجردة، ودون جملة تصلح لأي موضوع. لا تختلق اسمًا أو تاريخًا أو رقمًا لتبدو دقيقًا: إن كان مجهولًا فقل ذلك.
 16. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
 
-العمق: ${modeName}. ${depth}
+العمق: ${modeName}. ${depth}${angleRule(lang, mode)}
 
 أعد فقط عقد التبادل المضغوط التالي. ستضيف الأداة البيانات الوصفية محليًا ثم تحوّله إلى العقد النظامي؛ املأ كل مجموعة ذات مفاتيح يعرضها:
 ${schema}${interchangeGuide}`;
@@ -1869,7 +1873,7 @@ ${evidenceRule}
 15. Écrivez simplement et concrètement : nommez l’acteur, l’institution, la loi, le lieu, la date ou le chiffre précis, pas sa catégorie (« les régulateurs », « les parties prenantes ») ; dites qui fait quoi à qui, en phrases courtes ; pas de liste de noms abstraits ni de phrase qui conviendrait à n’importe quel sujet. N’inventez jamais un nom, une date ou un chiffre pour paraître précis : s’il est inconnu, dites-le.
 16. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
 
-Profondeur : ${modeName}. ${depth}
+Profondeur : ${modeName}. ${depth}${angleRule(lang, mode)}
 
 Retournez uniquement le contrat d’échange compact suivant. L’outil ajoutera localement les métadonnées, puis le compilera vers le contrat canonique ; remplissez chaque ensemble à clés qu’il présente :
 ${schema}${interchangeGuide}`;
@@ -1920,7 +1924,7 @@ ${evidenceRule}
 15. Write plainly and concretely: name the specific actor, institution, law, place, date or figure, not its category ("regulators", "stakeholders"); say who does what to whom, in short sentences; no list of abstract nouns and no sentence that would fit any topic. Never invent a name, date or figure to sound specific: where one is unknown, say so.
 16. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
 
-Depth: ${modeName}. ${depth}
+Depth: ${modeName}. ${depth}${angleRule(lang, mode)}
 
 Return only the compact interchange contract below. The workbench adds the metadata locally, then compiles it into the canonical contract; fill every keyed set it shows:
 ${schema}${interchangeGuide}`;
