@@ -56,10 +56,11 @@
 
 /* How the conclusion is built: its steps, each a record that ends on its link. */
 .j-brief-steps {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--j-s-5);
+  display: flex; flex-wrap: wrap; gap: var(--j-s-5);
   margin: 0; padding: 0; list-style: none;
 }
-.j-brief-steps > li { display: grid; min-width: 0; }
+/* Wrapping steps share the last row, so a lone fifth step fills it instead of leaving a gap. */
+.j-brief-steps > li { display: grid; flex: 1 1 min(100%, 15rem); min-width: 0; }
 .j-brief-steps .j-rec { grid-template-rows: auto auto 1fr auto; align-content: stretch; }
 .j-brief-desc { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; }
 .j-brief-items { display: grid; gap: var(--j-s-3); align-content: start; margin: 0; padding: 0; list-style: none; }

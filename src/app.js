@@ -5876,6 +5876,20 @@ function sourceAnchor(url, label = url) {
     ? `<a class="sourceUrl ltr" href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label || safe)} <span aria-hidden="true">↗</span></a>`
     : "";
 }
+// A readable label for a long link: host and decoded path, cut at 48 characters. The href stays whole.
+function shortUrlLabel(url) {
+  const safe = safeHttpUrl(url);
+  if (!safe) return "";
+  try {
+    const u = new URL(safe);
+    let path = u.pathname + u.search;
+    try { path = decodeURIComponent(path); } catch { /* keep the encoded path */ }
+    const label = u.host + (path === "/" ? "" : path);
+    return label.length > 48 ? `${label.slice(0, 47)}…` : label;
+  } catch {
+    return safe;
+  }
+}
 function arr(v) {
   return Array.isArray(v) ? v.filter(Boolean) : [];
 }
@@ -7217,14 +7231,16 @@ function renderEvidence() {
     as = normalizeArray(state.analysis.assumptions.items);
   const empty = `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`;
   const evidenceRecord = (e) => {
+    // Each part is isolated: a Latin title inside Arabic text keeps its own word order and quotes.
     const source = [e.source_title, sourceTypeLabel(e.source_type), sourceDateText(e.source_date)]
       .filter(Boolean)
+      .map((part) => `<bdi>${escapeHtml(part)}</bdi>`)
       .join(" · ");
     const counter = e.counter_evidence || e.counterEvidence || "";
     const strength = Number(e.evidence_strength);
     const facts = [
       strength > 0 ? recordFact(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"), scoreMeter(strength)) : "",
-      recordFact(t("sourceNote"), `${escapeHtml(source || e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}`),
+      recordFact(t("sourceNote"), `${source || escapeHtml(e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url, shortUrlLabel(e.source_url))}` : ""}`),
       counter ? recordFact(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"), escapeHtml(counter)) : "",
     ].join("");
     return `<li><article class="j-rec"${recordAnchor(e)}><header class="j-rec-head">${recordIdCode(e)}${kernelChip(e.basis ? basisInfo(e.basis).label : "")}${confidenceChip(evidenceConfidenceLevel(e))}</header><p class="j-rec-title">${escapeHtml(e.claim || e.name || "—")}</p><dl class="j-rec-facts">${facts}</dl></article></li>`;
