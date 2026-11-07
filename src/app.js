@@ -2518,7 +2518,7 @@ function otherLensHtml() {
   const label = toBio
     ? labelText("Run the Biopolitical lens on this topic", "شغّل عدسة السياسة الحيوية على هذا الموضوع", "Lancer la lentille Biopolitique sur ce sujet")
     : labelText("Run the Strategic lens on this topic", "شغّل العدسة الاستراتيجية على هذا الموضوع", "Lancer la lentille Stratégique sur ce sujet");
-  return `<section class="j-both" data-other-lens-block><p>${escapeHtml(note)}</p><button class="j-btn" data-variant="ghost" type="button" data-other-lens>${escapeHtml(label)}</button></section>`;
+  return `<section class="j-both" data-other-lens-block><p>${escapeHtml(note)}</p><button class="j-btn" type="button" data-other-lens>${escapeHtml(label)}</button></section>`;
 }
 function runOtherLens() {
   setAnalysisLens(state.analysisLens === "biopolitical" ? "strategic" : "biopolitical");

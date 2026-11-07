@@ -130,6 +130,10 @@
    reason reads as a quote. */
 .j-both { display: grid; gap: var(--j-s-2); justify-items: start; margin-block-start: var(--j-s-6); }
 .j-both p { margin: 0; color: var(--j-fg-muted); max-width: 60ch; }
+/* A real outlined button with an arrow, like "Inspect details"; the arrow is drawn, not text. */
+.j-both .j-btn { gap: var(--j-s-3); }
+.j-both .j-btn::after { content: "→"; }
+.j-both:dir(rtl) .j-btn::after { content: "←"; }
 .j-done { display: grid; gap: var(--j-s-3); margin-block-start: var(--j-s-6); padding-block-start: var(--j-s-4); border-block-start: 2px solid var(--j-fg); }
 .j-done-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--j-s-1) var(--j-s-4); }
 .j-done-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-18)/1.3 var(--j-font-display); }

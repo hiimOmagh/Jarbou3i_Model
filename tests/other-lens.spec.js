@@ -9,6 +9,13 @@ test.describe("Run the other lens", () => {
     const action = page.locator("[data-other-lens]");
     await expect(action).toBeVisible({ timeout: 15000 });
     await expect(action).toHaveText("Run the Biopolitical lens on this topic");
+    // It reads as a button: an outline and an arrow, not bare text.
+    const look = await action.evaluate((el) => ({
+      border: parseFloat(getComputedStyle(el).borderTopWidth),
+      arrow: getComputedStyle(el, "::after").content,
+    }));
+    expect(look.border).toBeGreaterThan(0);
+    expect(look.arrow).toContain("→");
     await action.click();
     await expect(page.locator('#analysisLens [data-lens="biopolitical"]')).toHaveAttribute("aria-checked", "true");
     await expect(page.locator('[data-flow-panel="prompt"]')).toBeVisible();
