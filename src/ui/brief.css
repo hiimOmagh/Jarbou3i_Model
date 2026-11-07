@@ -60,25 +60,37 @@
   margin: 0; padding: 0; list-style: none;
 }
 /* Wrapping steps share the last row, so a lone fifth step fills it instead of leaving a gap. */
-.j-brief-steps > li { display: grid; flex: 1 1 min(100%, 15rem); min-width: 0; }
+.j-brief-steps > li { display: grid; flex: 1 1 min(100%, 15rem); min-width: 0; container-type: inline-size; }
+/* A step that gets a whole row: its records sit in columns (short lines), its
+   count stays beside its name, and its button is a pill, not a bar. */
+@container (min-width: 32rem) {
+  .j-brief-items { grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); column-gap: var(--j-s-5); }
+  .j-rec-head > .j-rec-title { flex: 0 1 auto; }
+  .j-brief-open { width: fit-content; min-width: 14rem; gap: var(--j-s-4); }
+}
 .j-brief-steps .j-rec { grid-template-rows: auto auto 1fr auto; align-content: stretch; }
 .j-brief-desc { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; }
 .j-brief-items { display: grid; gap: var(--j-s-3); align-content: start; margin: 0; padding: 0; list-style: none; }
 .j-brief-items > li { display: grid; gap: var(--j-s-1); min-width: 0; padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
-.j-brief-items strong { color: var(--j-fg); font-size: var(--j-t-14); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.j-brief-items strong { color: var(--j-fg); font-size: var(--j-t-14); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; text-wrap: balance; }
 /* Three lines at most; the step's link opens the whole record. */
 .j-brief-items p {
   display: -webkit-box; margin: 0; overflow: hidden; color: var(--j-fg); font-size: var(--j-t-13); line-height: 1.55;
   overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3;
 }
 .j-brief-tags { display: flex; flex-wrap: wrap; gap: var(--j-s-1); margin-block-start: var(--j-s-1); }
+/* The confidence tags carry the signal: readable size and full-strength text. */
+.j-brief-tags .j-chip { min-height: 26px; padding: 0 10px; font-size: var(--j-t-13); }
+.j-brief-tags .j-chip:not([data-tone]) { color: var(--j-fg); }
 .j-brief-open { justify-content: space-between; width: 100%; font-size: var(--j-t-14); }
 .j-brief-open:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 
 /* The diagnostics, folded after the brief under one row between rules: their
    name over how many items block publishing. */
-.j-diag-fold { margin-top: var(--j-s-2); border: 0; border-block: 1px solid var(--j-line); border-radius: 0; background: none; }
-.j-diag-fold > summary { padding: var(--j-s-2) 0; color: var(--j-fg); font-size: var(--j-t-14); }
+.j-diag-fold { margin-top: var(--j-s-2); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-2); background: none; }
+.j-diag-fold > summary { padding: var(--j-s-2) var(--j-s-4); color: var(--j-fg); font-size: var(--j-t-14); }
+.j-diag-fold > summary:hover { background: var(--j-raise); }
+.j-diag-fold > .j-diag { padding-inline: var(--j-s-4); }
 .j-diag-fold > summary small { display: block; color: var(--j-fg-muted); font-size: var(--j-t-13); font-weight: 400; }
 .j-diag-fold > .j-diag { padding-block: var(--j-s-2) var(--j-s-4); }
 /* A note above the brief, such as a migrated import. */
