@@ -1149,6 +1149,17 @@
     ].join("\n");
   }
 
+  // Expert and Research ask for the social and conceptual ground a topic
+  // stands on. It goes into fields that already exist: no new schema.
+  function buildAngleRule(lang = "en", mode = "") {
+    if (mode !== "expert" && mode !== "research") return "";
+    if (lang === "ar")
+      return "ابحث أيضًا عمّا يعدّه الموضوع بديهيًا: وجهة نظر من تُعامَل كأنها الطبيعي، وأي فئات أو أصوات غائبة، وأي قيم أو تعريفات لـ«العدل» أو «المشروعية» أو «الخير» يقوم عليها الاستدلال، وبماذا سيعترض ناقد من موقع اجتماعي أو تقليد فكري آخر. ضع ذلك في الحقول الموجودة للافتراضات والتناقضات والخلاصة لا في حقول جديدة؛ سمِّ الفئة أو المفهوم تحديدًا، وصنّفه استنتاجًا إن لم يذكره مصدر.";
+    if (lang === "fr")
+      return "Cherche aussi ce que le sujet tient pour acquis : le point de vue traité comme normal, les groupes ou voix absents, les valeurs ou définitions du « juste », du « légitime » ou du « bien » dont dépend l’argument, et ce qu’objecterait un critique placé ailleurs dans la société ou dans une autre tradition. Place-le dans les champs existants pour les hypothèses, les contradictions et le jugement, pas dans de nouveaux champs ; nomme précisément le groupe ou le concept, et marque-le comme inférence si aucune source ne l’affirme.";
+    return "Also look for what the topic takes for granted: whose view is treated as normal, which groups or voices are missing, which values or definitions of “fair”, “legitimate” or “good” the argument depends on, and what a critic from another social position or tradition would object. Put this in the existing fields for assumptions, contradictions and the judgment, not in new ones; name the group or concept concretely, and mark it as inference when no source states it.";
+  }
+
   // The last thing the AI reads: the rules an importable answer depends on.
   function buildChecklist(lang = "en") {
     if (lang === "ar") {
@@ -1516,6 +1527,7 @@ MATIERE_ANALYTIQUE_NON_FIABLE_JSON :`,
     buildTemplate,
     buildFieldGuide,
     buildChecklist,
+    buildAngleRule,
     buildCompletionPrompt,
     completionTargets,
     gapRecord,

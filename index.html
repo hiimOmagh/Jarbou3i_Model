@@ -52,6 +52,7 @@
 <link rel="modulepreload" href="src/core/platform-state.js" />
 <link rel="modulepreload" href="src/core/render-regions.js" />
 <link rel="modulepreload" href="src/core/shell-preferences.js" />
+<link rel="modulepreload" href="src/core/short-text.js" />
 <link rel="modulepreload" href="src/features/application-shell.js" />
 <link rel="modulepreload" href="src/core/shell-navigation.js" />
 <link rel="modulepreload" href="src/features/command-palette.js" />
@@ -63,6 +64,7 @@
 <link rel="modulepreload" href="src/core/results-inspection.js" />
 <link rel="modulepreload" href="src/core/relationship-intelligence.js" />
 <link rel="modulepreload" href="src/core/evidence-intelligence.js" />
+<link rel="modulepreload" href="src/core/source-relations.js" />
 <link rel="modulepreload" href="src/core/evidence-traceability.js" />
 <link rel="modulepreload" href="src/core/evidence-review-plan.js" />
 <link rel="modulepreload" href="src/lenses/strategic/adapter.js" />
@@ -74,6 +76,8 @@
 <link rel="modulepreload" href="src/core/canonical-editor.js" />
 <link rel="modulepreload" href="src/core/recovery-journal.js" />
 <link rel="modulepreload" href="src/core/research-dossier.js" />
+<link rel="modulepreload" href="src/core/promotion.js" />
+<link rel="modulepreload" href="src/core/source-prompt-budget.js" />
 <link rel="modulepreload" href="src/core/revision-history.js" />
 <link rel="modulepreload" href="src/strategic-integrity.js" />
 <link rel="modulepreload" href="src/core/storage-health.js" />
@@ -109,6 +113,9 @@
         </button>
         <button class="j-btn" id="densityBtn" type="button" aria-pressed="false" title="تبديل كثافة العرض">
           <svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span class="j-shell-tool-name" data-i18n="densityName">الكثافة</span><span id="densityLabel">مريح</span>
+        </button>
+        <button class="j-btn" id="textStyleBtn" type="button" aria-pressed="false" title="اختصار النص">
+          <svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h13"/></svg><span class="j-shell-tool-name" data-i18n="textStyleName">نمط النص</span><span id="textStyleLabel">كامل</span>
         </button>
         <button class="j-btn" data-size="icon" id="themeBtn" type="button" title="تبديل الوضع" aria-label="تبديل الوضع" aria-pressed="false" data-i18n-title="themeTitle"><svg class="j-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg><span class="j-shell-tool-name" data-i18n="themeName">الوضع</span></button>
       </div>
@@ -154,7 +161,7 @@
       <button class="j-ride-skip" id="rideSkip" type="button" data-i18n="rideSkip">تخطَّ</button>
       <div class="j-ride-head">
         <h2 id="rideTitle" tabindex="-1" data-i18n="rideTitle">من سؤال إلى تحليل يمكنك التحقق منه</h2>
-        <p data-i18n="rideLead">ثلاث محطات، مع مساعد الذكاء الاصطناعي الذي تستخدمه أصلًا. لا يغادر هذه الصفحة إلا ما تلصقه فيه.</p>
+        <p data-i18n="rideLead">تتبّع من يريد ماذا، وكيف تُحكم حياة الناس. ثلاث محطات، مع مساعد الذكاء الاصطناعي الذي تستخدمه أصلًا. لا يغادر هذه الصفحة إلا ما تلصقه فيه.</p>
         <div class="j-ride-doors">
           <button class="j-btn" data-variant="primary" id="rideStart" type="button" data-i18n="rideStart">ابدأ بموضوعي</button>
           <button class="j-btn" id="rideExample" type="button" data-i18n="rideExample">جرّب المثال أولًا</button>
@@ -224,16 +231,31 @@
                 <label for="caseLimits" data-i18n="caseLimits">حدود هذا البحث</label>
                 <textarea id="caseLimits" class="j-input" rows="2" aria-describedby="caseHelp"></textarea>
               </div>
+              <div class="j-field">
+                <label for="caseDone" data-i18n="caseDone">يكتمل التحليل حين</label>
+                <textarea id="caseDone" class="j-input" rows="2" aria-describedby="caseDoneHelp"></textarea>
+                <p class="j-help" id="caseDoneHelp" data-i18n="caseDoneHelp">معيار واحد في كل سطر. تعلّم كلًّا منها متحقّقًا، مع سببك، في ملف القضية.</p>
+              </div>
             </div>
             <div id="caseStatus" role="status" aria-live="polite"></div>
+          </details>
+          <details class="j-disclosure j-case-fold" id="sourcesFold">
+            <summary data-i18n="sourcesFold">مصادرك</summary>
+            <div class="j-case-fields">
+              <p class="j-flow-note" data-i18n="sourcesWhen">تُرسل إلى الذكاء الاصطناعي حين يكون الوصول إلى المصادر (الخطوة 3) مصادر مقدمة في السياق.</p>
+              <div id="sourcesBody"></div>
+              <div id="sourcesFile"></div>
+              <div id="sourcesFileStatus" role="status" aria-live="polite"></div>
+              <div id="sourcesStatus" role="status" aria-live="polite"></div>
+            </div>
           </details>
         </div>
         <div class="j-flow-panel" data-flow-panel="lens" hidden>
           <div class="j-flow-choices" id="analysisLens" role="radiogroup" aria-label="عدسة التحليل">
-            <button class="j-flow-choice active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0"><b data-i18n="lensStrategic">استراتيجي</b><span data-i18n="lensStrategicDesc">يتتبع المصالح حتى النتائج: من يريد ماذا، وبأي أدوات، وكيف يبرّر ذلك، وماذا حدث.</span></button>
-            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">السياسة الحيوية</b><span data-i18n="lensBiopoliticalDesc">يتتبع كيف تصبح الأجساد والمؤسسات والبيانات والتصنيفات موضوعًا للحكم، ومن يتحمل الكلفة.</span></button>
+            <button class="j-flow-choice active" type="button" data-lens="strategic" role="radio" aria-checked="true" tabindex="0"><b data-i18n="lensStrategic">استراتيجي</b><span data-i18n="lensStrategicDesc">تنظر في من يريد ماذا، وكيف يسعى إليه، وكيف يبرّر ذلك، وماذا حدث.</span></button>
+            <button class="j-flow-choice" type="button" data-lens="biopolitical" role="radio" aria-checked="false" tabindex="-1"><b data-i18n="lensBiopolitical">السياسة الحيوية</b><span data-i18n="lensBiopoliticalDesc">تنظر في كيفية إدارة أجساد الناس والمؤسسات والبيانات الشخصية، وكيف يُصنَّف الناس، ومن يدفع الثمن.</span></button>
           </div>
-          <p class="j-flow-note" id="analysisLensHint">مصالح، فاعلون، أدوات، سردية، نتائج، تغذية راجعة.</p>
+          <p class="j-flow-note" id="analysisLensHint">الأهداف، اللاعبون الرئيسيون، الأساليب، الرواية المعلنة، النتائج، وكيف تتكيّف الأمور.</p>
         </div>
         <div class="j-flow-panel" data-flow-panel="settings" hidden>
           <div class="j-flow-grid">
@@ -245,6 +267,7 @@
                 <dt data-i18n="modeExpert">خبير</dt><dd data-i18n="modeExpertHelp">إجابة أطول: تضيف الأدلة والافتراضات وكيف تقود الأسباب إلى النتائج. للمساعدات التي تكتب إجابات طويلة.</dd>
                 <dt data-i18n="modeResearch">بحثي</dt><dd data-i18n="modeResearchHelp">أطول إجابة: تضيف أدلة من مصادر موثّقة، وأدلة مضادة، وما يبقى غير مؤكد. الأفضل حين يستطيع المساعد تصفّح الويب أو حين تقدّم المصادر بنفسك.</dd>
               </dl>
+              <p class="j-flow-note" data-i18n="modeChoose">غير متأكد؟ ابدأ بالمركّز. انتقل إلى الخبير أو البحثي فقط إذا جاءت الإجابة ناقصة.</p>
             </div>
             <div class="j-field">
               <label for="evidenceAccess" data-i18n="evidenceAccess">الوصول إلى المصادر</label>
@@ -258,7 +281,8 @@
           <div class="j-field" id="sourcesField" hidden>
             <label for="sourcesInput" data-i18n="sourcesLabel">المصادر المقدمة</label>
             <textarea id="sourcesInput" class="j-input" rows="4" data-i18n-placeholder="sourcesPlaceholder" placeholder="الصق المصادر التي يجب أن يعتمد عليها الذكاء الاصطناعي: العناوين والروابط والمقتطفات وأسماء الملفات التي ترفقها." aria-describedby="sourcesHelp"></textarea>
-            <p class="j-help" id="sourcesHelp" data-i18n="sourcesHelp">الصق نصوصًا أو روابط، واذكر أسماء الملفات التي سترفقها في محادثة مساعد الذكاء الاصطناعي. يطلب الموجِّه من المساعد قراءتها والاستشهاد بكل ملف باسمه.</p>
+            <p class="j-help" id="sourcesHelp" data-i18n="sourcesHelp">الصق نصوصًا أو روابط. أما ملف PDF أو أي ملف آخر فأرفقه أنت في محادثة مساعد الذكاء الاصطناعي، واذكر اسمه هنا مع الصفحة إن لزم. يطلب الموجِّه من المساعد قراءة كل ملف مرفق والاستشهاد به باسمه. هذا التطبيق لا يقرأ ملفات PDF.</p>
+            <p class="j-flow-note" id="sourcesSentCount" hidden></p>
           </div>
         </div>
         <div class="j-flow-panel" data-flow-panel="prompt" hidden>
@@ -273,6 +297,7 @@
             <button class="j-btn hide" data-variant="ghost" id="editTopicBtn" type="button" data-i18n="editTopic">تعديل الموضوع</button>
           </div>
           <p class="j-note" data-tone="idle" id="topicStatus" role="status" aria-live="polite">أدخل موضوعًا واضحًا ثم انسخ الموجِّه إلى مساعدك المفضل.</p>
+          <section class="j-prompt-review" id="promptReview" aria-labelledby="promptReviewHead" hidden></section>
         </div>
         <div class="j-flow-panel" id="pasteCard" data-flow-panel="answer" hidden>
           <div class="j-field">
@@ -377,6 +402,15 @@
         <button class="j-btn" data-variant="danger" id="workspaceResetCurrent" type="button" disabled>حذف الحالية</button>
         <button class="j-btn" data-variant="danger" id="workspaceResetAll" type="button">إعادة ضبط الكل</button>
       </div>
+    </div>
+    <div class="j-root j-ws">
+      <h4 class="j-ws-title" id="caseListTitle">القضايا</h4>
+      <div class="j-ws-acts">
+        <button class="j-btn" id="caseRestore" type="button">استعادة قضية من ملف</button>
+        <input class="j-sr-only" id="caseRestoreFile" type="file" accept="application/json,.json" aria-labelledby="caseRestore" />
+      </div>
+      <p class="j-note" data-tone="idle" id="caseListStatus" role="status" aria-live="polite"></p>
+      <div class="j-ws-list" id="caseList"></div>
     </div>
   </section>
 </div>

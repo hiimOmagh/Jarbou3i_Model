@@ -298,3 +298,22 @@
   /* A checked choice is painted in system colours; its description follows them. */
   .j-flow-choice span { color: inherit; }
 }
+
+/* Sources follow the framing fold and completion rows, on kernel controls. */
+.j-case-fold #sourcesBody, .j-case-fold #sourcesBody [data-source-form], .j-case-fold #sourcesBody [data-excerpt-form],
+.j-case-fold #sourcesBody [data-excerpt-decision] { display: grid; gap: var(--j-s-3); min-width: 0; }
+/* A row's column never grows past the fold; a long removal label wraps inside
+   its button (WebKit sizes a flex button by its unbroken text otherwise). */
+.j-case-fold #sourcesBody .j-done-item { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.j-case-fold #sourcesBody .j-flow-row > .j-btn { min-width: 0; }
+.j-case-fold #sourcesBody .j-btn > span { min-width: 0; overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody h3 { margin: 0; font-size: var(--j-t-18); overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody .j-flow-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.j-case-fold #sourcesBody label:has(> input[type="checkbox"]) { display: flex; align-items: center; gap: var(--j-s-2); min-height: var(--j-control); overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody input[type="checkbox"] { flex: 0 0 auto; width: 20px; height: 20px; accent-color: var(--j-ink); }
+.j-case-fold #sourcesBody .j-btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody .j-done-text, .j-case-fold #sourcesBody .j-done-reason { white-space: pre-wrap; }
+.j-case-fold#sourcesFold [hidden] { display: none; }
+
+.j-case-fold #sourcesBody .j-done-list { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.j-case-fold #sourcesBody .j-done-state { overflow-wrap: anywhere; }

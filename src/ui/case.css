@@ -93,7 +93,88 @@
   }
   .j-case-link > small { display: none; }
 }
+/* Your sources beside the evidence (RESEARCH-1C S8): a record's line under its
+   title, and a fold after the evidence records ruled as the diagnostics fold.
+   Its source and evidence links are buttons that read as links. */
+.j-case-doc [data-case-source-line] { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; overflow-wrap: anywhere; }
+.j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn) {
+  display: inline; margin: 0; padding: 0; border: 0; background: none;
+  color: var(--j-signal); font: inherit; font-weight: 600; text-align: start; text-decoration: underline; text-underline-offset: 2px;
+  overflow-wrap: anywhere; cursor: pointer;
+}
+.j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn):hover { text-decoration-thickness: 2px; }
+.j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn):focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-case-doc [data-case-source-row]:focus { outline: none; }
+.j-case-doc [data-case-source-row]:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-case-doc [data-case-sources] { margin-top: var(--j-s-4); border: 0; border-block: 1px solid var(--j-line); border-radius: 0; background: none; }
+.j-case-doc [data-case-sources] > summary { padding: var(--j-s-2) 0; color: var(--j-fg); font-size: var(--j-t-14); }
+.j-case-doc [data-case-sources] > .j-done-list { padding-block-end: var(--j-s-3); }
+.j-case-doc [data-case-sources] h4 { margin: 0; font-size: var(--j-t-16); line-height: 1.4; }
+.j-case-doc [data-case-sources] h4 > a { color: var(--j-signal); text-underline-offset: .2em; overflow-wrap: anywhere; }
+/* The heading after the fold keeps the space it has after the records, on
+   screen and in print (a hidden fold is still its previous sibling). */
+.j-case-doc [data-case-sources] + h3 { margin-top: var(--j-s-5); }
+/* As the topic step's rows (flow.css): a column never grows past the fold, a
+   long unbroken locator or date wraps, and line breaks show as written. */
+.j-case-doc [data-case-sources] :is(.j-done-list, .j-done-item) { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.j-case-doc [data-case-sources] :is(.j-done-state, .j-note) { overflow-wrap: anywhere; }
+.j-case-doc [data-case-sources] :is(p.j-done-text, .j-done-reason) { white-space: pre-wrap; }
+/* Make it evidence (RESEARCH-1C S11a): the fold's one control is a kernel
+   button; its form is a column of fields, as the topic step's forms are. */
+.j-case-doc [data-promote-form] { display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-case-doc [data-case-sources] .j-flow-row > .j-btn { min-width: 0; }
+.j-case-doc [data-case-sources] .j-flow-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+/* A choice is a radio and its words; one naming a long record id wraps
+   inside the fold (S11b). The page's inputs are full width: a radio is not. */
+.j-case-doc [data-promote-form] label:has(> input[type="radio"]) { display: flex; align-items: center; gap: var(--j-s-2); min-width: 0; min-height: var(--j-control); }
+.j-case-doc [data-promote-form] label > span { min-width: 0; overflow-wrap: anywhere; }
+.j-case-doc [data-promote-form] input[type="radio"] { flex: 0 0 auto; width: 20px; height: 20px; margin: 0; padding: 0; accent-color: var(--j-ink); }
+.j-case-doc :is([data-promote-refusal], [data-promote-unsaved] > .j-note):focus { outline: none; }
+.j-case-doc :is([data-promote-refusal], [data-promote-unsaved] > .j-note):focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+/* The case file is outside .j-root: its fold's radios and selects take the
+   app's theme as the kernel gives it to .j-root, not the device's. */
+.j-case-doc [data-case-sources] { color-scheme: dark; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .j-case-doc [data-case-sources] { color-scheme: light; } }
+:root[data-theme="light"] .j-case-doc [data-case-sources] { color-scheme: light; }
+@media (forced-colors: active) {
+  .j-case-doc :is([data-case-source-line], [data-case-sources]) button:not(.j-btn) { color: LinkText; }
+  .j-case-doc [data-case-sources] { border-color: CanvasText; }
+}
 @media print {
   .j-case { display: block; }
   .j-case-outline, .j-case-return { display: none !important; }
+  .j-case-doc :is([data-case-source-line], [data-case-sources]) { display: none !important; }
 }
+
+/* Read text from a file (RESEARCH-1D): a column below the sources, on the same
+   kernel controls. The preview is a read-only box that scrolls by keyboard; a
+   long name or message wraps inside the fold instead of widening it. */
+.j-case-fold #sourcesFile { display: grid; gap: var(--j-s-3); min-width: 0; margin-block-start: var(--j-s-4); padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-case-fold #sourcesFile > [role="group"] { display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-case-fold #sourcesFile h3 { margin: 0; font-size: var(--j-t-18); overflow-wrap: anywhere; }
+.j-case-fold #sourcesFile :is(.j-field, .j-help, .j-note, .j-flow-note, .j-flow-row) { min-width: 0; overflow-wrap: anywhere; }
+.j-case-fold #sourcesFile :is(input.j-input, select.j-input, textarea.j-input) { width: 100%; max-width: 100%; box-sizing: border-box; }
+.j-case-fold #sourcesFile .j-flow-row > .j-btn { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.j-case-fold #sourcesFile #srcFilePreview { min-height: 12rem; max-height: 60vh; overflow: auto; resize: vertical; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.j-case-fold #sourcesFile [hidden] { display: none; }
+
+/* Choose what goes in this prompt (RESEARCH-1D D3): shown under the prompt
+   buttons only when supplied material is over a cap. Rules, not boxes: a source
+   is a heading and its passages are a list; a long title or passage wraps. */
+.j-prompt-review { display: grid; gap: var(--j-s-3); min-width: 0; margin-block-start: var(--j-s-4); padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-prompt-review[hidden] { display: none; }
+.j-prompt-review h3 { margin: 0; font-size: var(--j-t-18); overflow-wrap: anywhere; }
+.j-prompt-review h3:focus { outline: none; }
+.j-prompt-review h3:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+.j-prompt-review h4 { margin: 0; font-size: var(--j-t-16); overflow-wrap: anywhere; }
+.j-prompt-review :is(.j-note, .j-flow-note, .j-flow-row) { min-width: 0; overflow-wrap: anywhere; }
+.j-prompt-review :is(.j-review-sources, .j-review-blocks, .j-review-source > ul) { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--j-s-3); min-width: 0; }
+.j-prompt-review .j-review-blocks:empty { display: none; }
+.j-prompt-review .j-review-source { display: grid; gap: var(--j-s-2); min-width: 0; padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-prompt-review .j-review-source > ul { gap: 0; }
+.j-prompt-review .j-review-pass { min-width: 0; border-block-start: 1px solid var(--j-line); }
+.j-prompt-review .j-review-pass:first-child { border-block-start: 0; }
+.j-prompt-review .j-review-pass label { display: flex; align-items: flex-start; gap: var(--j-s-2); min-width: 0; min-height: var(--j-control); padding-block: var(--j-s-2); }
+.j-prompt-review .j-review-pass label > span { min-width: 0; overflow-wrap: anywhere; }
+.j-prompt-review .j-review-pass input[type="checkbox"] { flex: 0 0 auto; width: 20px; height: 20px; margin: 2px 0 0; padding: 0; accent-color: var(--j-ink); }
+.j-prompt-review .j-flow-row > .j-btn { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }

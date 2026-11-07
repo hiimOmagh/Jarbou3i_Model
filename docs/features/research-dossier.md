@@ -78,7 +78,9 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
 
 ## Falsified if
 
-- any evidence item, claim or gap text is stored in a dossier;
+- any evidence item, claim or gap of an imported analysis is copied into a
+  dossier (the analyst's own sources and excerpts, `RESEARCH-1B`, are not
+  evidence until `RESEARCH-1C` promotes them);
 - a dossier write changes a workspace record or stales a recovery record;
 - the workspace database version changes;
 - the analyst's framing is still replaced after import.
@@ -104,9 +106,12 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
 2. **S2, framing in the guided flow (built).** "What the analysis covers" in
    the topic step; the import links the analysis and keeps the analyst's
    question; "Reset app data" clears dossiers. `tests/case-framing.spec.js`.
-3. **S3, completion contract.** Criteria in the case file overview and the
-   work panel; met or open, set by a person with a rationale.
-4. **S4, export and restore** of a dossier as its own file.
+3. **S3, completion contract (built).** Criteria written in the topic step's
+   fold and marked in the case file overview, met or open, by a person with
+   a rationale. The work panel does not show them yet.
+4. **S4, cases on this device (built).** The Local workspaces dialog lists
+   every dossier; each opens, exports as its own file, or is removed. A file
+   restores a dossier. `tests/case-framing.spec.js`.
 
 ## In the guided flow (S2)
 
@@ -131,9 +136,42 @@ Extending the intake draft was rejected: per tab, expiring, deleted on import.
 - **Elsewhere.** The sample, another analysis or a restored bundle that no
   dossier holds empties the fields. The dossier stays on the device,
   unchanged.
-- **Known limit until a later slice lists dossiers:** a case left before any
-  answer was imported for it cannot be brought back on screen. "Reset app
-  data" removes it.
+- **A case left before any answer** is opened again from **Cases** in the
+  Local workspaces dialog (S4). "Reset app data" removes it.
+
+## Completion contract (S3)
+
+- **Written before asking.** A fifth field in the fold, **The analysis is done
+  when**, holds one criterion per line, and goes into the prompt with the
+  rest. A line kept keeps its criterion, its status and its reason. A new or
+  changed line is a new criterion, open (`completionFromLines`).
+- **Marked in the case file.** At the end of the overview, in both lenses, for
+  an analysis the case on screen holds: "Met: n of m", then each criterion.
+  "Mark as met" opens a reason field under it. An empty reason is refused at
+  the field. A met criterion reads "Met · your claim, date" with its reason,
+  and **Reopen** makes it open again. Focus moves to the control that undoes
+  the change.
+- **Never automatic.** The app never marks a criterion met. A criterion
+  changes no score, gate, evidence status or review decision.
+
+## Cases on this device (S4)
+
+- **Listed** under **Cases** in the Local workspaces dialog, newest first: the
+  question, the answers linked ("Answers linked: 2"), how many of them are
+  not on this device, "Met: n of m" when it has criteria, and the last
+  change. A link to an answer not on the device is shown as such, never
+  removed.
+- **Open.** A case opens its newest answer on this device, with the case on
+  screen. Without one, its question, timeframe and fields open in the topic
+  step, ready for the next answer. A reply pasted but not imported is
+  replaced only on a second click, as elsewhere.
+- **Export** downloads the sealed record as `<question>-case.json`, never
+  inside a workspace bundle.
+- **Restore a case from a file** reads the file back only if it verifies
+  (`readDossierFile`; at most `DOSSIER_FILE_LIMIT`, 28 MiB since `RESEARCH-1C`). A case already on the device is never
+  overwritten. A restored case opens only when asked.
+- **Remove** takes a second click and removes the case, never its answers.
+  A damaged case is listed as unreadable and can only be removed.
 
 ## Record (format version 1)
 
@@ -154,3 +192,20 @@ checksum           { algorithm "SHA-256", value } over the rest
 Text fields hold at most 4,000 characters, and each list at most 50 items.
 A met criterion keeps its `decided_at` until its rationale changes; the store
 sets the time, never the caller.
+
+A record holds only what the topic step's fields can hold again, so a
+restored case never changes on its first edit: each list item, term,
+working definition and criterion is one line, a term has no colon, and each
+criterion's line appears once. `created_at` and `updated_at` are times, and
+`revision` is a safe integer. A case links at most 50 answers; the next link
+is refused as `DOSSIER_FULL`, never as a field too long.
+
+A write that loses to another tab (`WRITE_CONFLICT`) is made again, once, on
+the newer record: the framing fields changed on this screen since it was
+shown or last saved replace their stored values, and the others keep the
+stored ones; a value the app puts in a field (the case's question after a
+commit, or the analysis title when the case has none) is not a change (since `RESEARCH-1C`; before, the whole framing on screen
+replaced the stored one, so a later save undid another tab's change), a decision
+applies to the same criterion (id and line) or is refused, and a link is
+added. An answer is linked to the case that was on screen when its import
+began, even if another case has been opened since.

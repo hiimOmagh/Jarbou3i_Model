@@ -15,9 +15,14 @@
 .j-ref::after { content: ""; position: absolute; inset-inline: 0; top: 50%; height: calc(var(--j-control) + 2px); transform: translateY(-50%); }
 .j-ref:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 .j-ref-label { min-width: 0; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+/* An ID keeps one line up to 24ch, the width of 24 digits in the UI font: IDs
+   as the samples write them (BIO-ACT-12) never break at a hyphen, while a run
+   of 22 or more wide capitals already does. A longer ID (up to
+   200) breaks anywhere inside that width rather than push a phone-wide page
+   sideways. */
 .j-ref-id {
   padding: 2px 5px; border-radius: var(--j-r-1); background: var(--j-panel); color: var(--j-signal);
-  font: 600 var(--j-t-12)/1.3 var(--j-font-data); white-space: nowrap;
+  font: 600 var(--j-t-12)/1.3 var(--j-font-data); width: max-content; max-width: 24ch; overflow-wrap: anywhere;
 }
 /* Evidence also reads as evidence by its ID; the tone only adds to it. */
 .j-ref[data-reference-type="evidence"] { border-color: color-mix(in srgb, var(--j-ok) 40%, var(--j-line)); background: var(--j-ok-wash); }

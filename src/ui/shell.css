@@ -96,7 +96,8 @@
   /* In the menu a control reads as its name, then its state. */
   .j-shell-tools .j-btn, .j-shell-tools .j-btn[data-size="icon"] { width: 100%; padding: 0 var(--j-s-3); justify-content: flex-start; }
   .j-shell-tool-name { display: inline; }
-  .j-shell-tools #densityLabel { margin-inline-start: auto; color: var(--j-fg-muted); }
+  .j-shell-tools #densityLabel,
+  .j-shell-tools #textStyleLabel { margin-inline-start: auto; color: var(--j-fg-muted); }
 @media (max-width: 720px) {
   .j-shell-tools > #menuCommandsBtn { display: inline-flex; }
   .j-shell-cluster > #commandPaletteBtn { display: none; }

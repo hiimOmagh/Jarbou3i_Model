@@ -13,12 +13,13 @@ Switching lenses hides an imported analysis from the other contract, so its fiel
 1. Select the interface language and the analysis output language separately.
 2. Select the lens.
 3. Enter a specific topic.
-4. Add a time and geographic context where possible. Optionally, open **What the analysis covers** and write, one item per line, what is in scope, what is out of scope, the terms in dispute (the term, a colon, then what you mean by it) and the limits of the research. These go into the prompt with your context, and are kept on this device with the case: an answer you import for it is linked to it, keeps your question as you wrote it, and brings the case back when you reopen that analysis.
-5. Choose Focused, Expert, or Research.
-6. Choose the source access: no access (a conceptual draft), sources supplied in context, or live web research. With supplied sources, paste text or links into the **Supplied sources** box, and list there the names of any files you will attach in your AI assistant's chat; the box is added to the prompt, which tells the assistant to read the attached files and cite each by its file name. Evidence from a file has no web link. In the Biopolitical lens its page or section (`source_locator`) makes it traceable, and like every source it is verified by a reviewer before publication; in the Strategic lens the evidence summary lists it as a source that is not traceable, for review.
-7. Preview or copy the prompt.
-8. Run it in the AI assistant of your choice.
-9. Copy the returned JSON.
+4. Add a time and geographic context where possible. Optionally, open **What the analysis covers** and write, one item per line, what is in scope, what is out of scope, the terms in dispute (the term, a colon, then what you mean by it), the limits of the research, and when the analysis is done (one criterion per line; you mark each one met, with your reason, at the end of the case file overview). These go into the prompt with your context, and are kept on this device with the case: an answer you import for it is linked to it, keeps your question as you wrote it, and brings the case back when you reopen that analysis. Every case is listed under **Cases** in the Local workspaces dialog, where you can open it again (before any answer too), export it as its own file, restore one from a file, or remove it (its answers stay).
+5. Optionally, open **Your sources**, also in the topic step, and add the sources the case rests on: a title, a link, the source's own date and the date you opened it. Under each, add the excerpts you took from it, quoted or in your words, with where each is in the source. Mark an excerpt **Matches the source** or **Does not match** once you have checked it against the source, saying how you checked or what differs; this is your claim, never the app's. They are kept on this device with the case, and with **Sources supplied in context** the sources you send go into the prompt with their excerpts (not one that does not match, and never your checks).
+6. Choose Focused, Expert, or Research.
+7. Choose the source access: no access (a conceptual draft), sources supplied in context, or live web research. With supplied sources, paste text or links into the **Supplied sources** box, and list there the names of any files you will attach in your AI assistant's chat; the box is added to the prompt, which tells the assistant to read the attached files and cite each by its file name. Evidence from a file has no web link. In the Biopolitical lens its page or section (`source_locator`) makes it traceable, and like every source it is verified by a reviewer before publication; in the Strategic lens the evidence summary lists it as a source that is not traceable, for review.
+8. Preview or copy the prompt.
+9. Run it in the AI assistant of your choice.
+10. Copy the returned JSON.
 
 Research mode asks for the strongest evidence metadata and causal links. Focused mode remains concise but does not omit intervention classification, rival explanations, calibrated judgment, or the self-audit. For Strategic, Focused asks for a compact answer (two or three items per section, one or two evidence items, short text values) so assistants with small output limits can finish.
 
@@ -53,6 +54,17 @@ or:
 ```
 
 A Biopolitical v1.1 six-array file becomes `biopolitical-migrated-draft-v1@1.0.0` and is visibly marked as non-canonical. The adapter does not fill unsupported conclusions. Unknown and future contract versions are rejected.
+
+## From your sources to the evidence
+
+When the analysis on screen belongs to your case, its case file shows your sources (step 5) beside the evidence, in both lenses. Nothing in the analysis changes until you confirm a change.
+
+- An evidence record that comes from one of your sources says so under its title: "From your source: <title>". A record and a source belong together by their link; a record with no link, by its source title ("matched by title"). A title that several linked sources share joins nothing.
+- **Your sources**, folded after the evidence records, lists each source with the records that come from it, and its excerpts with your checks. It is not printed.
+- **Make it evidence**, on an excerpt you marked **Matches the source**, opens a short form under it: a **New evidence record** made from the source and the excerpt, or **Fill E3 from your source** for a record from that source that lacks its link, date or place (only empty fields are filled). The form asks for every judgement the lens needs; the app makes none for you, except that a Biopolitical record starts its replication at "unknown". In the Biopolitical lens, **verified** is offered only when the lens's checks would pass, and Fill can set a record from that source to verified even when nothing is left to fill.
+- **Review the change** opens the change as a revision, with a rationale you can start from; **Confirm** commits one revision under your name. **Close** leaves the analysis as it was. The case is read again at both steps: an excerpt changed in the meantime is refused. A working draft with changes must be saved or discarded first.
+- After the commit, the excerpt shows "Evidence E7 (revision 4)", and "Changed since" if you later edit the excerpt or its source. The new record is not yet cited by any claim: cite it in the editor (in the Biopolitical lens, an uncited record holds publication). If the case could not save the link to the record, the excerpt says so and **Save again** retries it. An excerpt can become evidence up to 10 times; after that, add it again as a new excerpt.
+- In the review ledger, a provenance task on such a record names your source, and **Complete** starts its rationale from your check. What you save there is yours: removing the source later does not remove it.
 
 ## Review a Biopolitical v2 analysis
 
