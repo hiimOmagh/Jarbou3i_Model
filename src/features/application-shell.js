@@ -208,6 +208,8 @@ export function createApplicationShell({
     state.shellSection = section;
     renderRegion("shell");
     scheduleFrame(() => {
+      // A folded setup opens first, so the jump has somewhere to land.
+      if (section === "workflow") reveal("flowStepTitle");
       byId(SHELL_TARGETS[section])?.scrollIntoView({
         behavior: reducedMotion() ? "auto" : "smooth",
         block: "start",

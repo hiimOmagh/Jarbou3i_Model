@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
-import { openStep } from "./helpers/guided-flow.js";
+import { openStep, openSetup } from "./helpers/guided-flow.js";
 import { displayControl } from "./helpers/display-menu.js";
 import {
   clearWorkspaceRecords,
@@ -180,6 +180,7 @@ test("switching lens while the analysis saves keeps it with its workspace", asyn
 test("importing the analysis already open does not save it twice", async ({ page }) => {
   await useEnglish(page);
   await createSavedWorkspace(page, "strategic");
+  await openSetup(page);
   await page.locator("#loadSampleBtn").click();
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
   await page.locator("#workspaceSaveState").click();

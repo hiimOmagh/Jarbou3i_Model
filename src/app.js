@@ -10735,6 +10735,7 @@ async function persistImportedAnalysis(analysis, previousId = state.activeWorksp
 
 function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   const analysis = normalizeAnalysis(structuredClone(workspace.working_draft.canonical_payload));
+  if (!keepPendingReply) GUIDED_FLOW.setExpanded(false);
   state.analysis = analysis;
   state.analysisLens = analysis.analysis_lens;
   state.activeWorkspaceId = workspace.workspace_id;
@@ -11723,6 +11724,7 @@ $("importBtn").onclick = async () => {
   const previousId = state.activeWorkspaceId;
   state.activeWorkspaceId = null;
   renderAll();
+  GUIDED_FLOW.setExpanded(false);
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
   // whatever the user is clicking by then. To the review's top, however tall.
@@ -11802,6 +11804,7 @@ $("loadSampleBtn").onclick = async (event) => {
   toast(t("sampleLoaded"));
   if (needsReviewGraph(a)) await loadBiopoliticalGraph().catch(() => {});
   renderAll();
+  GUIDED_FLOW.setExpanded(false);
   $("reviewTitle").focus({ preventScroll: true });
   // Scroll now, not when the save ends: a late scroll moves the page under
   // whatever the user is clicking by then. To the review's top, however tall.

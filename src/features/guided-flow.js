@@ -15,6 +15,17 @@ export function createGuidedFlow({
   const byId = (id) => document.getElementById(id);
   let current = FLOW_STEPS[0];
 
+  function setExpanded(expanded) {
+    const root = byId("workflowPanel");
+    const button = byId("workflowDisclosure");
+    if (!root || !button) return;
+    const hadFocus = !expanded && root.contains(document.activeElement);
+    root.hidden = !expanded;
+    button.setAttribute("aria-expanded", String(expanded));
+    // The button shows only while the setup is folded, so focus moves to it after.
+    if (hadFocus) button.focus();
+  }
+
   function render({ focus = false } = {}) {
     const root = byId("workflowPanel");
     if (!root) return;
@@ -78,6 +89,7 @@ export function createGuidedFlow({
 
   function go(step, options) {
     if (!FLOW_STEPS.includes(step)) return;
+    setExpanded(true);
     const moved = step !== current;
     current = step;
     render(options);
@@ -86,6 +98,7 @@ export function createGuidedFlow({
 
   // Opens the step that holds a control, so it can be reached or focused.
   function reveal(id) {
+    setExpanded(true);
     const step = byId(id)?.closest("[data-flow-panel]")?.dataset.flowPanel;
     if (step && step !== current) go(step);
   }
@@ -94,6 +107,11 @@ export function createGuidedFlow({
 
   function bind() {
     const root = byId("workflowPanel");
+    byId("workflowDisclosure")?.addEventListener("click", () => {
+      setExpanded(true);
+      // The button leaves the page as the setup opens; focus follows into it.
+      byId("flowStepTitle")?.focus({ preventScroll: true });
+    });
     root.addEventListener("click", (event) => {
       const step = event.target.closest("[data-flow-step]");
       if (step) go(step.dataset.flowStep, { focus: true });
@@ -107,5 +125,5 @@ export function createGuidedFlow({
     render();
   }
 
-  return { bind, render, go, reveal, get step() { return current; } };
+  return { bind, render, go, reveal, setExpanded, get step() { return current; } };
 }

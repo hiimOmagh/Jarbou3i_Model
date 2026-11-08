@@ -79,6 +79,31 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#shellNextAction")).toHaveAttribute("data-variant", "primary");
   });
 
+  test("a failed import keeps the setup open; a good one folds it and the disclosure gives it back", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await step(page, "answer").click();
+    await page.locator("#jsonInput").fill("not json at all");
+    await expect(page.locator("#workflowPanel")).toBeVisible();
+    await expect(page.locator("#workflowDisclosure")).toHaveAttribute("aria-expanded", "true");
+    await page.locator("#jsonInput").fill(await answer("sample-analysis-en.json"));
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#workflowDisclosure")).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#workflowPanel")).toBeHidden();
+    await page.locator("#workflowDisclosure").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#workflowDisclosure")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("#workflowPanel")).toBeVisible();
+    await expect(page.locator("#flowStepTitle")).toBeFocused();
+    // The button shows only while the setup is folded.
+    await expect(page.locator("#workflowDisclosure")).toBeHidden();
+    // The header's Set up opens a folded setup too.
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#workflowPanel")).toBeHidden();
+    await page.locator('[data-shell-nav="workflow"]').click();
+    await expect(page.locator("#workflowPanel")).toBeVisible();
+  });
+
   test("the guide reacts to the pasted answer", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();
@@ -92,6 +117,10 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#flowGuide")).toHaveAttribute("data-mood", "ok");
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();
+    await expect(page.locator("#workflowPanel")).toBeHidden();
+    await page.locator("#workflowDisclosure").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#workflowPanel")).toBeVisible();
     // Once imported, the answer step says so instead of offering the import again,
     // and keeps saying so in another language.
     await step(page, "answer").click();
