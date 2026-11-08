@@ -354,3 +354,6 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
 @media print {
   .j-toast, .j-skip { display: none !important; }
 }
+
+/* Arabic is a connected script: tracking (negative or positive) breaks its joins, so it keeps normal spacing. */
+:root[dir="rtl"] * { letter-spacing: normal; }
