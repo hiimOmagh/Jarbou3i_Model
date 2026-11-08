@@ -81,3 +81,20 @@ test("shared explanation hierarchy drills into authored details across both lens
   await expect(explanation.locator("[data-explanation-section]")).toHaveCount(5);
   await expect(explanation.locator('[data-explanation-section="effects"] [data-explanation-open]')).toBeVisible();
 });
+
+for (const lens of ["strategic", "biopolitical"]) {
+  test(`${lens} explanation keeps an Arabic claim apart from its counter-evidence`, async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langAr").click();
+    await openStep(page, "settings");
+    await page.locator("#analysisLang").selectOption("ar");
+    await openStep(page, "lens");
+    await page.locator(`[data-lens="${lens}"]`).click();
+    await page.locator("#loadSampleBtn").click();
+    const summary = page.locator('[data-results-explanation] [data-explanation-section="evidence"] .j-brief-items p').first();
+    await expect(summary).toContainText("الدليل المضاد");
+    // The mark is isolated, and it is not the middle dot that reads as an Arabic zero.
+    const text = await summary.textContent();
+    expect(text).toMatch(/⁦[^\p{L}\p{N}\s·٠]+⁩/u);
+  });
+}

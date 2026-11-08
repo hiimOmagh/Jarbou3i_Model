@@ -6951,7 +6951,7 @@ function strategicResultsExplanation(a) {
     name: authoredText(item.source_title, item.claim),
     summary: authoredText(
       item.counter_evidence
-        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}${colonMark()} ${item.counter_evidence}`
+        ? `${item.claim || ""} \u2066—\u2069 ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}${colonMark()} ${item.counter_evidence}`
         : item.claim,
       item.source_note,
       item.uncertainty,
@@ -7043,7 +7043,7 @@ function biopoliticalResultsExplanation(a) {
     name: authoredText(item.source_title, item.claim),
     summary: authoredText(
       item.counter_evidence
-        ? `${item.claim || ""} · ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}${colonMark()} ${item.counter_evidence}`
+        ? `${item.claim || ""} \u2066—\u2069 ${labelText("Counter-evidence", "الدليل المضاد", "Contre-preuve")}${colonMark()} ${item.counter_evidence}`
         : item.claim,
       item.limitations,
       item.uncertainty,
