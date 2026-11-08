@@ -138,9 +138,10 @@
 .j-flow-guide { position: sticky; top: var(--j-s-4); display: grid; gap: var(--j-s-4); align-content: start; }
 /* Anchor the stations before the variable-length guidance in every language. */
 .j-flow-guide > .j-flow-steps { grid-row: 1; }
-.j-flow-mascot { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
+/* The working guide is the words alone: the mascot image gives its room to the instructions. */
+.j-flow-mascot { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
 .j-flow-mascot img {
-  width: 72px; height: 72px; display: block; border-radius: 50%;
+  width: 72px; height: 72px; display: none; border-radius: 50%;
   border: 2px solid var(--j-line-strong); background: var(--j-panel);
   /* No idle bob: an endless animation here cut WebKit to 2–6 frames a second. */
 }
@@ -148,7 +149,7 @@
 .j-flow-more { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--j-s-1); }
 .j-flow-say {
   padding: var(--j-s-3) var(--j-s-4); border: 2px solid var(--j-line-strong); border-radius: var(--j-r-3);
-  border-start-start-radius: var(--j-r-1); background: var(--j-panel); font-size: var(--j-t-14);
+  background: var(--j-panel); font-size: var(--j-t-14);
 }
 /* Not colour alone: the bubble's edge changes and the mascot stops to react. */
 .j-flow-guide:not([data-mood="idle"]) .j-flow-mascot img { animation: j-flow-pop var(--j-dur-3) var(--j-ease-out); }
