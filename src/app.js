@@ -2018,7 +2018,7 @@ function sourceHtml(source, excerpts) {
   const id = source.source_id;
   const attached = excerpts.filter((excerpt) => excerpt.source_id === id);
   const decided = attached.filter((excerpt) => excerpt.check.status !== "unchecked").length;
-  const title = /^https?:\/\//i.test(source.url) ? `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer" dir="auto">${escapeHtml(source.title)}</a>` : `<span dir="auto">${escapeHtml(source.title)}</span>`;
+  const title = safeHttpUrl(source.url) ? `<a href="${escapeHtml(safeHttpUrl(source.url))}" target="_blank" rel="noopener noreferrer" dir="auto">${escapeHtml(plainLinkText(source.title))}</a>` : `<span dir="auto">${escapeHtml(source.title)}</span>`;
   const said = (key, value) => `${escapeHtml(t(key))}${colonMark()} <bdi dir="auto">${escapeHtml(value)}</bdi>`;
   const when = [source.source_date && said("sourceDate", source.source_date), source.accessed_on && said("sourceOpened", source.accessed_on)].filter(Boolean);
   // Counts are said only when there is something to count.
@@ -5862,6 +5862,10 @@ function escapeHtml(s) {
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
   );
 }
+// Link text never carries bidi controls: they can reorder what a reader sees over the real address.
+function plainLinkText(value) {
+  return String(value ?? "").replace(/[‪-‮⁦-⁩]/g, "");
+}
 function safeHttpUrl(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -8488,8 +8492,8 @@ function caseSourcesFoldHtml({ sources, excerpts, relations }) {
   };
   const rows = sources.map((source) => {
     const id = source.source_id;
-    const title = /^https?:\/\//i.test(source.url)
-      ? `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer" dir="auto" data-case-focus="${caseFocusKey("title", id)}">${escapeHtml(source.title)}</a>`
+    const title = safeHttpUrl(source.url)
+      ? `<a href="${escapeHtml(safeHttpUrl(source.url))}" target="_blank" rel="noopener noreferrer" dir="auto" data-case-focus="${caseFocusKey("title", id)}">${escapeHtml(plainLinkText(source.title))}</a>`
       : `<span dir="auto">${escapeHtml(source.title)}</span>`;
     const when = [source.source_date && said("sourceDate", source.source_date), source.accessed_on && said("sourceOpened", source.accessed_on)].filter(Boolean);
     const ids = relations.bySource[id] || [];

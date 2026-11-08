@@ -180,7 +180,7 @@
   function fact(label, value, options = {}) {
     if (value === "" || value === null || value === undefined || (Array.isArray(value) && !value.length)) return "";
     const content = options.link && validHttpUrl(value)
-      ? `<a href="${escapeHtml(value)}" target="_blank" rel="noopener noreferrer">${escapeHtml(options.linkLabel || value)}</a>`
+      ? `<a href="${escapeHtml(new URL(String(value)).href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(options.linkLabel || value)}</a>`
       : escapeHtml(Array.isArray(value) ? value.join(" · ") : options.raw ? value : options.code ? codeLabel(value) : humanize(value));
     return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd>${content}</dd></div>`;
   }
