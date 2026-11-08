@@ -9149,7 +9149,13 @@ $("caseOutlineReturn").onclick = () => {
   nav.scrollIntoView({ block: "start" });
   (nav.querySelector('[aria-current="location"]') || nav.querySelector("button"))?.focus({ preventScroll: true });
 };
-window.addEventListener("scroll", () => requestAnimationFrame(() => { markCaseLocation(); syncOutlineReturn(); }), { passive: true });
+// One location pass per frame, however many scroll events arrive in it.
+let caseScrollQueued = false;
+window.addEventListener("scroll", () => {
+  if (caseScrollQueued) return;
+  caseScrollQueued = true;
+  requestAnimationFrame(() => { caseScrollQueued = false; markCaseLocation(); syncOutlineReturn(); });
+}, { passive: true });
 document.addEventListener("focusin", (event) => {
   const section = event.target.closest?.(".j-case-sec");
   if (!section) return;
