@@ -74,7 +74,8 @@
 .j-brief-tags { display: flex; flex-wrap: wrap; gap: var(--j-s-1); margin-block-start: var(--j-s-1); }
 /* The confidence tags carry the signal: readable size and full-strength text. */
 .j-brief-tags .j-chip { min-height: 26px; padding: 0 10px; font-size: var(--j-t-13); }
-.j-brief-tags .j-chip:not([data-tone]) { color: var(--j-fg); }
+/* Only actions are outlined pills: a plain tag is a quiet filled label. */
+.j-brief-tags .j-chip:not([data-tone]) { color: var(--j-fg); border-color: transparent; background: var(--j-raise); }
 .j-brief-open { justify-content: space-between; width: 100%; font-size: var(--j-t-14); }
 .j-brief-open:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 /* A step that gets a whole row: its records sit in columns (short lines), its
