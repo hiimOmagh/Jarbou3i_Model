@@ -10733,9 +10733,11 @@ async function persistImportedAnalysis(analysis, previousId = state.activeWorksp
   }
 }
 
-function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
+// A restore at startup (collapse: false) leaves the setup as it was; only a
+// reader's own open, import or sample folds it.
+function applyWorkspaceAnalysis(workspace, { keepPendingReply = false, collapse = true } = {}) {
   const analysis = normalizeAnalysis(structuredClone(workspace.working_draft.canonical_payload));
-  if (!keepPendingReply) GUIDED_FLOW.setExpanded(false);
+  if (collapse && !keepPendingReply) GUIDED_FLOW.setExpanded(false);
   state.analysis = analysis;
   state.analysisLens = analysis.analysis_lens;
   state.activeWorkspaceId = workspace.workspace_id;
@@ -10785,7 +10787,7 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false } = {}) {
   refreshWorkspaceLife();
 }
 
-async function openStoredWorkspace(id, { announce = true, canApply = () => true, dossier: given = null } = {}) {
+async function openStoredWorkspace(id, { announce = true, collapse = announce, canApply = () => true, dossier: given = null } = {}) {
   try {
     const workspace = await WORKSPACE_REPOSITORY.get(id);
     if (!workspace) throw new Error("Workspace was not found on this device.");
@@ -10793,7 +10795,7 @@ async function openStoredWorkspace(id, { announce = true, canApply = () => true,
     const dossier = given || (await caseFor(workspace.workspace_id));
     if (!canApply()) return null;
     showCase(dossier);
-    applyWorkspaceAnalysis(workspace);
+    applyWorkspaceAnalysis(workspace, { collapse });
     if (announce) setWorkspaceStatus("good", workspaceText("opened"));
     return workspace;
   } catch (error) {
@@ -10972,7 +10974,7 @@ async function openCase(id) {
       const onDevice = new Set((await WORKSPACE_REPOSITORY.list()).filter((entry) => entry.integrity_status === "verified").map((entry) => entry.workspace_id));
       const held = dossier.analyses.findLast((link) => onDevice.has(link.workspace_id));
       if (held) {
-        if (await openStoredWorkspace(held.workspace_id, { dossier, announce: false })) {
+        if (await openStoredWorkspace(held.workspace_id, { dossier, announce: false, collapse: true })) {
           discardTrip();
           setCaseListStatus("good", caseListText("openedAnswer"));
         } else {

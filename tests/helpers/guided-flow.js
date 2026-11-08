@@ -3,7 +3,7 @@ import { expect } from "@playwright/test";
 // The setup phase shows one step at a time (src/features/guided-flow.js):
 // a test opens the step that holds the control it is about to use.
 export async function openStep(page, step) {
-  if (await page.locator("#workflowDisclosure").getAttribute("aria-expanded") === "false") await page.locator("#workflowDisclosure").click();
+  await openSetup(page);
   const button = page.locator(`[data-flow-step="${step}"]`);
   // A click that lands while the page still scrolls smoothly can miss the
   // button, so click until the step is the current one.
@@ -17,5 +17,8 @@ export async function openStep(page, step) {
 // needs a setup control again opens it first.
 export async function openSetup(page) {
   const toggle = page.locator("#workflowDisclosure");
-  if ((await toggle.getAttribute("aria-expanded")) === "false") await toggle.click();
+  // The button leaves the page as the setup opens, so click only while it shows,
+  // and wait for the panel either way.
+  if (await toggle.isVisible()) await toggle.click({ timeout: 3000 }).catch(() => {});
+  await expect(page.locator("#workflowPanel")).toBeVisible();
 }
