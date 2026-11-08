@@ -136,6 +136,8 @@
 
 /* ---------- Guide: the mascot, the steps, a sample ---------- */
 .j-flow-guide { position: sticky; top: var(--j-s-4); display: grid; gap: var(--j-s-4); align-content: start; }
+/* Anchor the stations before the variable-length guidance in every language. */
+.j-flow-guide > .j-flow-steps { grid-row: 1; }
 .j-flow-mascot { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
 .j-flow-mascot img {
   width: 72px; height: 72px; display: block; border-radius: 50%;
@@ -253,10 +255,9 @@
   padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line);
   color: var(--j-fg-muted); font-size: var(--j-t-14);
 }
-/* Its order as a station code: the number in an ink ring. */
+/* Plain instruction numerals leave rings reserved for the stations. */
 .j-flow-howto li::before {
-  content: counter(how); display: grid; place-items: center; inline-size: 28px; block-size: 28px; border-radius: 50%;
-  border: var(--j-station) solid var(--j-ink); color: var(--j-fg); font: 700 var(--j-t-12)/1 var(--j-font-ui);
+  content: counter(how); color: var(--j-fg); font: 700 var(--j-t-18)/1 var(--j-font-ui);
 }
 
 .j-flow-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3); }

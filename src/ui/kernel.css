@@ -165,7 +165,6 @@
 }
 .j-btn:hover:not(:disabled) { border-color: var(--j-ink); background: var(--j-raise); }
 .j-btn:active:not(:disabled) { transform: scale(.98); }
-.j-btn:disabled { opacity: .45; cursor: not-allowed; }
 /* The ring is the button's own, so it holds outside a .j-root (the review). */
 .j-btn:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 /* The one primary action: an ink pill, like the line's own name plate. */
@@ -178,6 +177,11 @@
 /* Deletes or resets: said in the critical colour, filled only on hover. */
 .j-btn[data-variant="danger"] { color: var(--j-crit); border-color: color-mix(in srgb, var(--j-crit) 55%, transparent); }
 .j-btn[data-variant="danger"]:hover:not(:disabled) { background: var(--j-crit-wash); border-color: var(--j-crit); }
+/* After variants so disabled labels keep their full muted-token contrast. */
+.j-btn:disabled {
+  background: transparent; border: 1px dashed var(--j-fg-muted); color: var(--j-fg-muted);
+  opacity: 1; cursor: not-allowed;
+}
 .j-kbd {
   white-space: nowrap;
   font: 500 var(--j-t-12) var(--j-font-code); padding: 1px 6px;
