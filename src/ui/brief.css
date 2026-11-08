@@ -34,7 +34,8 @@
   display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; padding: var(--j-s-3) 0 0;
   border-block-start: var(--j-rule) solid var(--j-ink);
 }
-.j-brief-claim > p { margin: 0; color: var(--j-fg); font-size: var(--j-t-18); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+/* A long conclusion reads as prose: regular weight, a readable measure, the author's own line breaks kept. */
+.j-brief-claim > p { margin: 0; max-inline-size: 60ch; color: var(--j-fg); font-size: var(--j-t-18); font-weight: 400; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
 .j-brief-figures { display: grid; gap: var(--j-s-4); margin: 0; }
 .j-brief-figures dd { display: grid; gap: var(--j-s-2); margin: 0; }
 .j-brief-figures b { color: var(--j-fg); font: 700 var(--j-t-28)/1 var(--j-font-data); font-variant-numeric: tabular-nums; }
