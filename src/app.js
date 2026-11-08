@@ -6822,7 +6822,7 @@ function scoreFormulaHtml() {
   const entries = Object.keys(weights)
     .map((k) => `<span><b>${pctText(weights[k])}</b>${escapeHtml(scoreWeightLabel(k))}</span>`)
     .join("");
-  return `<div class="j-rec"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p class="j-brief-desc">${escapeHtml(scoreFormulaText())}</p><span class="j-stats">${entries}</span>${scoreBandsHtml()}</div>`;
+  return `<div class="j-rec"><h4>${escapeHtml(labelText("Scoring formula", "معادلة التقييم"))}</h4><p class="j-brief-desc">${escapeHtml(scoreFormulaText())}</p><span class="j-stats">${entries}</span>${scoreBandsHtml()}<p class="j-brief-desc">${escapeHtml(declaredConfidenceLabel())} — ${escapeHtml(uiMetricDefinition("confidence"))}</p></div>`;
 }
 // What the colour of a score's bar says: the bands of pctTone(). A range reads
 // left to right in Arabic too; the dash between its numbers would reverse it.
