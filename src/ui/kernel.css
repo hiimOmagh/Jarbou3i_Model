@@ -358,4 +358,4 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
 }
 
 /* Arabic is a connected script: tracking (negative or positive) breaks its joins, so it keeps normal spacing. */
-:root[dir="rtl"] * { letter-spacing: normal; }
+:root[dir="rtl"] :is(.j-root, .j-case-doc, .j-card) * { letter-spacing: normal; }
