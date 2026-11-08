@@ -118,6 +118,7 @@ const I18N = {
     displayMenu: "القائمة",
     workspaceNavigation: "التنقل في مساحة العمل",
     workspaceSectionSetup: "الإعداد",
+    setupEdit: "تعديل الإعداد",
     workspaceSectionSetupHint: "حدّد الموضوع واستورد التحليل",
     workspaceSectionModel: "النموذج",
     workspaceSectionModelHint: "افهم البنية التحليلية",
@@ -579,6 +580,7 @@ const I18N = {
     displayMenu: "Menu",
     workspaceNavigation: "Workspace navigation",
     workspaceSectionSetup: "Set up",
+    setupEdit: "Edit setup",
     workspaceSectionSetupHint: "Define and import the analysis",
     workspaceSectionModel: "Model",
     workspaceSectionModelHint: "Understand the analytical structure",
@@ -1051,6 +1053,7 @@ const I18N = {
     displayMenu: "Menu",
     workspaceNavigation: "Navigation de l’espace de travail",
     workspaceSectionSetup: "Préparer",
+    setupEdit: "Modifier la préparation",
     workspaceSectionSetupHint: "Définir et importer l’analyse",
     workspaceSectionModel: "Modèle",
     workspaceSectionModelHint: "Comprendre la structure analytique",
@@ -6870,9 +6873,9 @@ function briefBar(value) {
 }
 function uiMetricDefinition(kind) {
   const definitions = {
-    readiness: () => labelText("How ready this analysis is for decisions, capped until sources are tracked and human-reviewed; not a proof of truth.", "مدى جاهزية التحليل لدعم القرار، مقيّدة بتتبّع المصادر والمراجعة البشرية؛ ولا تضمن صحة النتائج.", "Degré de maturité pour décider, plafonné par le traçage des sources et la relecture humaine ; ne garantit pas la véracité."),
-    coverage: () => labelText("Weighted assessment across required analytical dimensions; not a proof of truth.", "تقييم موزون لاكتمال أبعاد التحليل؛ ولا تعني بالضرورة صحة النتائج.", "Évaluation pondérée de la complétude de l'analyse ; ne mesure pas la véracité des faits."),
-    confidence: () => labelText("Self-reported confidence by the author or AI; not an independent proof or measure of truth.", "درجة الثقة التي حددها المحلل أو نموذج الذكاء الاصطناعي ذاتيًا؛ ولا تعبر عن حقيقة مؤكدة.", "Niveau de certitude auto-déclaré par l'auteur ou l'IA ; ne constitue pas une preuve de vérité."),
+    readiness: () => labelText("How ready this analysis is for decisions, capped until sources are tracked and human-reviewed; not a proof of truth.", "مدى جاهزية التحليل لدعم القرار. تظل الدرجة محدودة إلى حين تتبع المصادر ومراجعتها بشريًا، ولا تضمن صحة النتائج.", "Degré de préparation de l’analyse à la décision. Le score reste plafonné tant que les sources ne sont pas retracées et examinées par une personne ; il ne garantit pas la justesse des résultats."),
+    coverage: () => labelText("Weighted assessment across required analytical dimensions; not a proof of truth.", "تقييم موزون لمدى تغطية أبعاد التحليل المطلوبة؛ ولا يضمن صحة النتائج.", "Évaluation pondérée de la couverture des dimensions d’analyse requises ; elle ne garantit pas la justesse des résultats."),
+    confidence: () => labelText("Self-reported confidence by the author or AI; not an independent proof or measure of truth.", "درجة الثقة التي أعلنها المحلل أو نموذج الذكاء الاصطناعي؛ وهي ليست دليلًا مستقلًا على صحة النتائج ولا مقياسًا لها.", "Niveau de confiance déclaré par l’auteur ou l’IA ; ce n’est ni une preuve indépendante ni une mesure de la justesse des résultats."),
   };
   return definitions[kind]();
 }
