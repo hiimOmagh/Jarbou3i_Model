@@ -271,6 +271,8 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
 .j-input:focus { outline: none; border-color: var(--j-signal); box-shadow: var(--j-glow); }
 .j-input[aria-invalid="true"] { border-color: var(--j-crit); }
 .j-input::placeholder { color: var(--j-fg-faint); opacity: 1; }
+/* Touch screens: below 16px, iOS Safari zooms the page when a field is focused. */
+@media (pointer: coarse) { input.j-input, select.j-input, textarea.j-input, textarea.j-flow-answer { font-size: 16px; } }
 
 /* ---------- Toast ---------- */
 .j-toast {
