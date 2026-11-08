@@ -6868,14 +6868,25 @@ function briefBar(value) {
   const tone = pctTone(value);
   return `<span class="j-brief-bar"${tone ? ` data-tone="${tone}"` : ""} style="--j-pct:${valuePct(value)}%" aria-hidden="true"></span>`;
 }
-function briefFigure(label, value) {
-  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
+function uiMetricDefinition(kind) {
+  const definitions = {
+    readiness: () => labelText("How ready this analysis is for decisions, capped until sources are tracked and human-reviewed; not a proof of truth.", "مدى جاهزية التحليل لدعم القرار، مقيّدة بتتبّع المصادر والمراجعة البشرية؛ ولا تضمن صحة النتائج.", "Degré de maturité pour décider, plafonné par le traçage des sources et la relecture humaine ; ne garantit pas la véracité."),
+    coverage: () => labelText("Weighted assessment across required analytical dimensions; not a proof of truth.", "تقييم موزون لاكتمال أبعاد التحليل؛ ولا تعني بالضرورة صحة النتائج.", "Évaluation pondérée de la complétude de l'analyse ; ne mesure pas la véracité des faits."),
+    confidence: () => labelText("Self-reported confidence by the author or AI; not an independent proof or measure of truth.", "درجة الثقة التي حددها المحلل أو نموذج الذكاء الاصطناعي ذاتيًا؛ ولا تعبر عن حقيقة مؤكدة.", "Niveau de certitude auto-déclaré par l'auteur ou l'IA ; ne constitue pas une preuve de vérité."),
+  };
+  return definitions[kind]();
+}
+function declaredConfidenceLabel() {
+  return labelText("Declared confidence", "الثقة المعلنة", "Confiance déclarée");
+}
+function briefFigure(label, value, definition) {
+  return `<div><dt class="j-label">${escapeHtml(label)}${definition ? `<small class="j-brief-desc">${escapeHtml(definition)}</small>` : ""}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
   // The topic, then the verdict as the brief's heading and why; the
   // conclusion and its figures follow.
-  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage)}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}`;
+  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness, uiMetricDefinition("readiness"))}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage, uiMetricDefinition("coverage"))}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}`;
 }
 // The next action, asked of the AI; its reply goes in the reply box.
 function improvePromptHtml() {
@@ -8630,7 +8641,7 @@ const PROMOTION_CHOICES = {
 const PROMOTION_LABELS = {
   claim: () => t("claim"),
   basis: () => t("basis"),
-  confidence: () => t("confidence"),
+  confidence: () => declaredConfidenceLabel(),
   evidence_strength: () => labelText("Evidence strength", "قوة الدليل", "Force de la preuve"),
   source_type: () => labelText("Source type", "نوع المصدر", "Type de source"),
   uncertainty: () => labelText("Uncertainty", "عدم اليقين", "Incertitude"),

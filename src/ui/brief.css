@@ -63,6 +63,7 @@
 .j-brief-steps > li { display: grid; flex: 1 1 min(100%, 15rem); min-width: 0; container-type: inline-size; }
 .j-brief-steps .j-rec { grid-template-rows: auto auto 1fr auto; align-content: stretch; }
 .j-brief-desc { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; }
+.j-brief-figures .j-brief-desc { display: block; margin-top: var(--j-s-1); font-weight: 400; letter-spacing: normal; text-transform: none; }
 .j-brief-items { display: grid; gap: var(--j-s-3); align-content: start; margin: 0; padding: 0; list-style: none; }
 .j-brief-items > li { display: grid; gap: var(--j-s-1); min-width: 0; padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
 .j-brief-items strong { color: var(--j-fg); font-size: var(--j-t-14); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; text-wrap: balance; }
