@@ -26,6 +26,29 @@ test("evidence source note isolates parts and shortens long links", async ({ pag
   await expect(page.locator("#reviewContent .j-rec-facts bdi", { hasText: "So What If He Hit You?" }).first()).toBeVisible();
 });
 
+// A note appears only when many source links lean on one site; it changes no score.
+test("review shows a note when many source links point to one site, and none otherwise", async ({ page }) => {
+  const load = async (urls) => {
+    const data = JSON.parse(await fs.readFile(path.join(process.cwd(), "fixtures", "sample-analysis-en.json"), "utf8"));
+    const base = data.evidence.items[0];
+    data.evidence.items = urls.map((url, i) => ({ ...base, id: `E${i + 1}`, source_url: url }));
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(JSON.stringify(data));
+    await page.locator("#importBtn").click();
+    await page.locator('[data-review="evidence"]').click();
+  };
+  const note = page.locator("#reviewContent [data-source-concentration]");
+
+  await load(["https://www.one.example/a", "https://one.example/b", "https://one.example/c", "https://two.example/d", "https://three.example/e"]);
+  await expect(note).toHaveText("3 of 5 source links point to one.example. Check that the evidence does not lean on one platform.");
+
+  await load(["https://a.example/1", "https://b.example/2", "https://c.example/3", "https://d.example/4", "https://a.example/5"]);
+  await expect(page.locator('#reviewContent [data-records="evidence"]')).toBeVisible();
+  await expect(note).toHaveCount(0);
+});
+
 // Data that is in the imported answer and in the exported report is also on the screen:
 // a source note next to the source title, the evidence's own uncertainty, a scenario's rationale.
 test("review screens show source note, evidence uncertainty and scenario rationale", async ({ page }) => {

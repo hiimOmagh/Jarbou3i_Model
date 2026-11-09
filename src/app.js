@@ -7258,6 +7258,29 @@ function renderScenarios() {
   };
   return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" role="list" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
+// When many evidence items point at one site, say so beside the list. Only a
+// count of source links; it never changes a score or a gate.
+function sourceConcentration(items) {
+  const hosts = items.map((e) => {
+    const url = safeHttpUrl(e.source_url);
+    return url ? new URL(url).hostname.replace(/^www\./, "") : "";
+  }).filter(Boolean);
+  if (hosts.length < 5) return null;
+  const counts = new Map();
+  hosts.forEach((h) => counts.set(h, (counts.get(h) || 0) + 1));
+  const [host, count] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+  return count >= 3 && count / hosts.length >= 0.4 ? { host, count, total: hosts.length } : null;
+}
+function sourceConcentrationNote(items) {
+  const c = sourceConcentration(items);
+  if (!c) return "";
+  const text = labelText(
+    `${c.count} of ${c.total} source links point to ${c.host}. Check that the evidence does not lean on one platform.`,
+    `${c.count} من أصل ${c.total} رابط مصدر تشير إلى ${c.host}. تأكد من أن الأدلة لا تعتمد على منصة واحدة.`,
+    `${c.count} liens de source sur ${c.total} mènent à ${c.host}. Vérifiez que les preuves ne reposent pas sur une seule plateforme.`,
+  );
+  return `<p class="j-note" data-tone="idle" data-source-concentration><bdi>${escapeHtml(text)}</bdi></p>`;
+}
 function renderEvidence() {
   const ev = normalizeArray(state.analysis.evidence.items),
     as = normalizeArray(state.analysis.assumptions.items);
@@ -7292,7 +7315,7 @@ function renderEvidence() {
       : "";
     return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
   };
-  return `<h3>${t("evidence")}</h3>${ev.length ? `<ol class="j-recs" role="list" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" role="list" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
+  return `<h3>${t("evidence")}</h3>${sourceConcentrationNote(ev)}${ev.length ? `<ol class="j-recs" role="list" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" role="list" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
 }
 function download(name, text, type = "text/plain") {
   const blob = new Blob([text], { type });
