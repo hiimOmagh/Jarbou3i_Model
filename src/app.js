@@ -3168,6 +3168,10 @@ function bindRadioGroupKeyboard(selector, activate) {
     });
   });
 }
+// The first line asks for a topic; once there is one it has nothing left to ask.
+function topicStartText() {
+  return String($("topicInput")?.value ?? state.topic ?? "").trim() ? "" : t("topicStatusStart");
+}
 function refreshDynamicMessages() {
   validateJsonInput();
   const status = $("topicStatus");
@@ -3180,12 +3184,12 @@ function refreshDynamicMessages() {
     status.textContent = t(promptChoiceCleared === "tab" ? "reviewOtherTab" : "reviewStale");
   } else if (state.stage === "topic") {
     status.dataset.tone = "idle";
-    status.textContent = t("topicStatusStart");
+    status.textContent = topicStartText();
   } else if (state.stage === "import") {
     status.dataset.tone = state.lastPrompt ? "ok" : "idle";
     status.textContent = state.lastPrompt
       ? t("promptCopied")
-      : t("topicStatusStart");
+      : topicStartText();
   } else if (state.stage === "review") {
     status.dataset.tone = "ok";
     status.textContent = t("analysisImported");
@@ -12037,6 +12041,8 @@ $("modalCopy").onclick = async () => {
 // Kept for a reload as typed, like a pasted reply.
 $("topicInput").addEventListener("input", () => {
   state.topic = $("topicInput").value;
+  // Only the first line moves: a copy, preview or warning message stays as it is.
+  if ($("topicStatus").dataset.tone === "idle") $("topicStatus").textContent = topicStartText();
   caseTyped.add("question");
   keepTrip();
   scheduleCaseSave();
@@ -12135,7 +12141,7 @@ PLATFORM.performance.measure(
     APPLICATION_SHELL.setDensity(state.density, { persist: false });
     renderAll();
     // Set once here: renders leave this line alone, so copy and import messages stay.
-    $("topicStatus").textContent = t("topicStatusStart");
+    $("topicStatus").textContent = topicStartText();
     validateJsonInput();
   },
   { lens: state.analysisLens, language: state.lang },
