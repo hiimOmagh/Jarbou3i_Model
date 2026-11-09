@@ -659,6 +659,8 @@ test("with no saved analysis the disabled bundle button is tied to the sentence 
   const button = page.locator("#workspaceExport");
   await expect(button).toBeDisabled();
   await expect(button).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
+  await expect(page.locator("#workspaceResetCurrent")).toBeDisabled();
+  await expect(page.locator("#workspaceResetCurrent")).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
   await expect(page.locator("#workspaceEmptyNote")).toContainText("No local workspaces yet");
   // Once an analysis is saved the button is enabled and no longer points at the empty note.
   await expect(page.locator("#workspaceBackdrop")).toHaveClass(/show/);
@@ -668,4 +670,5 @@ test("with no saved analysis the disabled bundle button is tied to the sentence 
   await page.locator("#workspaceSaveState").click();
   await expect(button).toBeEnabled();
   await expect(button).not.toHaveAttribute("aria-describedby", /.*/);
+  await expect(page.locator("#workspaceResetCurrent")).not.toHaveAttribute("aria-describedby", /.*/);
 });

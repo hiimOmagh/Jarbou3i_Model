@@ -10884,13 +10884,16 @@ async function renderWorkspaceList() {
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceSaveState")); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
     // With no workspace the disabled button gets its reason from the sentence already shown below.
-    if (target.querySelector("#workspaceEmptyNote")) $("workspaceExport").setAttribute("aria-describedby", "workspaceEmptyNote");
-    else $("workspaceExport").removeAttribute("aria-describedby");
     $("workspaceResetCurrent").disabled = !state.activeWorkspaceId;
+    for (const id of ["workspaceExport", "workspaceResetCurrent"]) {
+      if (target.querySelector("#workspaceEmptyNote")) $(id).setAttribute("aria-describedby", "workspaceEmptyNote");
+      else $(id).removeAttribute("aria-describedby");
+    }
     await renderCaseList(new Set(entries.filter((entry) => entry.integrity_status === "verified").map((entry) => entry.workspace_id)));
   } catch (error) {
     target.innerHTML = "";
     $("workspaceExport").removeAttribute("aria-describedby");
+    $("workspaceResetCurrent").removeAttribute("aria-describedby");
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
     await renderCaseList(null);
   }
