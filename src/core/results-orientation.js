@@ -23,6 +23,7 @@ export function createResultsOrientation({
   uncertainty,
   nextAction,
   nextActionImprovable = false,
+  readinessLimit = '',
 } = {}) {
   if (!['strategic', 'biopolitical'].includes(lens)) {
     throw new TypeError('Results orientation requires a registered lens.');
@@ -41,6 +42,8 @@ export function createResultsOrientation({
       summary: text(publicationSummary, ''),
     }),
     readiness: score(readiness),
+    // What holds readiness below coverage, in one line; none, and nothing is added.
+    readinessLimit: text(readinessLimit, ''),
     coverage: score(coverage),
     uncertainty: text(uncertainty),
     nextAction: text(nextAction),

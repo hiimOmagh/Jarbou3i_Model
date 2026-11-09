@@ -162,3 +162,17 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
   await page.locator('#importBtn').click();
   await expect(page.locator('[data-orientation="conclusion"] > p')).toHaveText('An improved thesis.');
 });
+
+// Readiness sits below coverage; the brief says which of the two checks holds it down, in each language.
+for (const [button, pattern] of [
+  ['#langEn', /Held down by (source traceability|independent human review) \(\d+%\)\./],
+  ['#langAr', /يحدّها (ضعف تتبع المصادر|نقص المراجعة البشرية المستقلة) \(\d+%\)\./],
+  ['#langFr', /Limitée par (la traçabilité des sources|la revue humaine indépendante) \(\d+ %\)\./],
+]) {
+  test(`the brief says what holds decision readiness down (${button.slice(5).toLowerCase()})`, async ({ page }) => {
+    await page.goto('./');
+    await page.locator(button).click();
+    await page.locator('#loadSampleBtn').click();
+    await expect(page.locator('[data-results-orientation] [data-readiness-limit]')).toHaveText(pattern);
+  });
+}

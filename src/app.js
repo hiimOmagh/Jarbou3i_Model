@@ -6907,14 +6907,25 @@ function uiMetricDefinition(kind) {
 function declaredConfidenceLabel() {
   return labelText("Declared confidence", "الثقة المعلنة", "Confiance déclarée");
 }
-function briefFigure(label, value, definition) {
-  return `<div><dt class="j-label">${escapeHtml(label)}${definition ? `<small class="j-brief-desc">${escapeHtml(definition)}</small>` : ""}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
+// The lower of source traceability and independent human review is what holds
+// decision readiness below analytical coverage; say which, once.
+function readinessLimitText(provenance, readiness, coverage) {
+  if (!provenance || !(readiness < coverage)) return "";
+  const trace = Number(provenance.sourceTraceability);
+  const review = Number(provenance.humanReview);
+  if (!Number.isFinite(trace) || !Number.isFinite(review)) return "";
+  return trace <= review
+    ? labelText(`Held down by source traceability (${Math.round(trace)}%).`, `يحدّها ضعف تتبع المصادر (${Math.round(trace)}%).`, `Limitée par la traçabilité des sources (${Math.round(trace)} %).`)
+    : labelText(`Held down by independent human review (${Math.round(review)}%).`, `يحدّها نقص المراجعة البشرية المستقلة (${Math.round(review)}%).`, `Limitée par la revue humaine indépendante (${Math.round(review)} %).`);
+}
+function briefFigure(label, value, definition, limit = "") {
+  return `<div><dt class="j-label">${escapeHtml(label)}${definition ? `<small class="j-brief-desc">${escapeHtml(definition)}</small>` : ""}${limit ? `<small class="j-brief-desc" data-readiness-limit>${escapeHtml(limit)}</small>` : ""}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
   // The topic, then the verdict as the brief's heading and why; the
   // conclusion and its figures follow.
-  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness, uiMetricDefinition("readiness"))}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage, uiMetricDefinition("coverage"))}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}`;
+  return `<p class="j-brief-topic">${escapeHtml(model.topic)}</p><section class="j-brief" data-results-orientation data-analysis-lens="${escapeHtml(model.lens)}" aria-labelledby="resultsOrientationTitle"><header class="j-brief-head"><div class="j-brief-gate" data-orientation="gate" data-tone="${gateTone}"><h4 id="resultsOrientationTitle"><strong class="j-status" data-tone="${gateTone}">${escapeHtml(model.publication.label)}</strong></h4>${model.publication.summary ? `<p>${escapeHtml(model.publication.summary)}</p>` : ""}</div></header><div class="j-brief-main"><div class="j-brief-claim" data-orientation="conclusion"><span class="j-label">${escapeHtml(labelText("Conclusion", "الخلاصة", "Conclusion"))}</span><p>${escapeHtml(model.conclusion)}</p></div><dl class="j-brief-figures" data-orientation="metrics" aria-label="${escapeHtml(labelText("Readiness summary", "ملخص الجاهزية", "Résumé de préparation"))}">${briefFigure(labelText("Decision readiness", "جاهزية القرار", "Préparation à la décision"), model.readiness, uiMetricDefinition("readiness"), model.readinessLimit)}${briefFigure(labelText("Analytical coverage", "التغطية التحليلية", "Couverture analytique"), model.coverage, uiMetricDefinition("coverage"))}</dl></div><div class="j-brief-signals"><div class="j-brief-signal" data-tone="warn" data-orientation="uncertainty"><span class="j-label">${escapeHtml(labelText("Principal uncertainty", "عدم اليقين الرئيسي", "Incertitude principale"))}</span><p>${escapeHtml(model.uncertainty)}</p></div><div class="j-brief-signal" data-orientation="action"><span class="j-label">${escapeHtml(labelText("Recommended next action", "الإجراء التالي الموصى به", "Prochaine action recommandée"))}</span><p data-next-action>${escapeHtml(model.nextAction)}</p>${model.improvable ? improvePromptHtml() : ""}</div></div></section>${resultsExplanationHtml(explanation)}`;
 }
 // The next action, asked of the AI; its reply goes in the reply box.
 function improvePromptHtml() {
@@ -7216,6 +7227,7 @@ function renderOverview() {
     publicationSummary: gate.summary,
     readiness: b.overall,
     coverage: b.analyticalCoverage,
+    readinessLimit: readinessLimitText(b.provenance, b.overall, b.analyticalCoverage),
     uncertainty: authoredUncertainty || h.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: strategicNextAction(a, h),
     // The analysis's own next step, or a gap the structure check found.
@@ -8120,6 +8132,7 @@ function renderBiopoliticalOverview() {
     publicationSummary: bioGateSummary(a, scores, health),
     readiness: scores.overall,
     coverage: scores.analyticalCoverage,
+    readinessLimit: readinessLimitText(scores.provenance, scores.overall, scores.analyticalCoverage),
     uncertainty: authoredUncertainty || health.missing[0] || labelText("No principal uncertainty was authored.", "لم يُذكر عدم يقين رئيسي.", "Aucune incertitude principale n’a été formulée."),
     nextAction: health.next,
     nextActionImprovable: health.missing.length > 0,
