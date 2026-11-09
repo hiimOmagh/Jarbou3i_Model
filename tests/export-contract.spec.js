@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
 import { openStep } from "./helpers/guided-flow.js";
@@ -502,7 +503,8 @@ test.describe('Report provenance and print', () => {
     for (const lens of ['biopolitical', 'strategic']) {
       const html = await exportSampleReport(page, testInfo, lens);
       // The report on the app's origin, so the kernel's contract check can load.
-      await page.setContent(html);
+      // The report's own CSP would block that check's module import; it is covered by its own tests.
+      await page.setContent(html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, ''));
       const lists = await page.evaluate(async () => {
         const { checkContracts } = await import('./src/ui/contracts.js');
         return checkContracts(document).filter((entry) => entry.contract === 'list');
@@ -562,5 +564,50 @@ test.describe('Report provenance and print', () => {
     expect(look.layerNames).toHaveLength(6);
     expect(look.ring.radius).toBe('50%');
     expect(look.ring.colour).toBe(look.ring.lineTwo);
+  });
+});
+
+test.describe('Exported report Content-Security-Policy', () => {
+  const POLICY_BASE = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'";
+
+  async function openFromDisk(page, testInfo, lens) {
+    const html = await exportSampleReport(page, testInfo, lens);
+    await page.addInitScript(() => {
+      window.__csp = [];
+      document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(e.violatedDirective));
+    });
+    await page.goto(pathToFileURL(testInfo.outputPath(`en-${lens}-export.html`)).href);
+    return html;
+  }
+
+  test('strategic export carries a script-free policy and no executable script', async ({ page }, testInfo) => {
+    const html = await openFromDisk(page, testInfo, 'strategic');
+    const meta = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]*)">/);
+    expect(meta).not.toBeNull();
+    expect(meta[1]).toBe(POLICY_BASE);
+    expect(meta[1]).not.toContain('script-src');
+    const executable = [...html.matchAll(/<script\b([^>]*)>/g)].filter((m) => !/type="application\/json"/.test(m[1]));
+    expect(executable).toHaveLength(0);
+    await expect(page.locator('main.shell')).toBeVisible();
+    expect(await page.evaluate(() => window.__csp)).toEqual([]);
+  });
+
+  test('biopolitical export allows only its own inline script by hash', async ({ page }, testInfo) => {
+    const html = await openFromDisk(page, testInfo, 'biopolitical');
+    const meta = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]*)">/);
+    expect(meta).not.toBeNull();
+    const hash = meta[1].match(/script-src 'sha256-([A-Za-z0-9+/=]+)'/);
+    expect(hash).not.toBeNull();
+    expect(meta[1]).toBe(`${POLICY_BASE}; script-src 'sha256-${hash[1]}'`);
+    const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    expect(inline).toHaveLength(1);
+    expect(hash[1]).toBe(createHash('sha256').update(inline[0][1], 'utf8').digest('base64'));
+
+    const sections = page.locator('.reportSection');
+    await page.locator('[data-expand-all]').click();
+    await expect.poll(() => sections.evaluateAll((els) => els.every((d) => d.open))).toBe(true);
+    await page.locator('[data-collapse-all]').click();
+    await expect.poll(() => sections.evaluateAll((els) => els.every((d) => !d.open))).toBe(true);
+    expect(await page.evaluate(() => window.__csp)).toEqual([]);
   });
 });
