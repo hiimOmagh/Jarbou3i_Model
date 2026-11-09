@@ -8176,7 +8176,7 @@ async function copyConnectionsPrompt(event) {
   $("connGapsAnswer").hidden = false;
   if (!(await copyText(prompt))) {
     toast(t("copyFailed"), "crit");
-    showModal(button.textContent, prompt, button);
+    showModal(button.textContent, prompt, button, t("promptPreviewHint"));
     return;
   }
   // Said beside the button, where the next step is, not in a toast too.
@@ -8205,7 +8205,7 @@ async function copyImprovementPrompt(event) {
   $("improveAnswer").hidden = false;
   if (!(await copyText(prompt))) {
     toast(t("copyFailed"), "crit");
-    showModal(button.textContent, prompt, button);
+    showModal(button.textContent, prompt, button, t("promptPreviewHint"));
     return;
   }
   $("improveStatus").textContent = replyPromptCopiedText();
@@ -11787,6 +11787,7 @@ $("repairPromptBtn").onclick = async (event) => {
       language ? invoker.textContent : t(truncated ? "continuePrompt" : completion ? "completionPrompt" : "repairPrompt"),
       p,
       invoker,
+      t("promptPreviewHint"),
     );
 };
 $("loadSampleBtn").onclick = async (event) => {
