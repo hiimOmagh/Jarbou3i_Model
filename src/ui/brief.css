@@ -146,7 +146,8 @@
 .j-both { display: grid; gap: var(--j-s-2); justify-items: start; margin-block-start: var(--j-s-6); }
 .j-both p { margin: 0; color: var(--j-fg-muted); max-width: 60ch; }
 /* A real outlined button with an arrow, like "Inspect details"; the arrow is drawn, not text. */
-.j-both .j-btn { gap: var(--j-s-3); }
+.j-both .j-btn { justify-content: space-between; gap: var(--j-s-4); min-width: 14rem; font-size: var(--j-t-14); }
+@media (max-width: 31.99rem) { .j-both .j-btn { width: 100%; } }
 .j-both .j-btn::after { content: "→"; }
 .j-both:dir(rtl) .j-btn::after { content: "←"; }
 .j-done { display: grid; gap: var(--j-s-3); margin-block-start: var(--j-s-6); padding-block-start: var(--j-s-4); border-block-start: 2px solid var(--j-fg); }
