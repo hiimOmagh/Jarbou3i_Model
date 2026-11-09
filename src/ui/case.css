@@ -59,6 +59,11 @@
 }
 .j-case-return[hidden] { display: none; }
 @media (min-width: 1121px) { .j-case-return { display: none; } }
+/* While the return button stands in the corner, a toast rises above it
+   instead of covering it. */
+@media (max-width: 1120px) {
+  :root:has(.j-case-return:not([hidden])) .j-toast { bottom: calc(var(--j-s-4) + 3.5rem + env(safe-area-inset-bottom, 0px)); }
+}
 
 @media (forced-colors: active) {
   .j-case-count { border-color: CanvasText; }
