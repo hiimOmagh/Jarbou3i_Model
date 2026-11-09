@@ -2871,7 +2871,7 @@ async function restoreTrip(untouched, record) {
   if (typeof record.reply === "string") $("jsonInput").value = record.reply;
   // Kept until it is imported, like a reply pasted now.
   tripKept = true;
-  if (record.stage === "import") {
+  if (record.stage === "import" || (typeof record.reply === "string" && record.reply.trim())) {
     state.stage = "import";
     state.shellSection = "workflow";
     $("editTopicBtn").classList.remove("hide");
@@ -7143,7 +7143,7 @@ function wireResultsExplanation(lens) {
             : `[data-acc="${CSS.escape(pillar)}"]`
           : `#case-${CSS.escape(review)}`;
         const target = document.querySelector(selector);
-        target?.scrollIntoView({ behavior: "auto", block: "nearest" });
+        if (target) window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - 16, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
         target?.focus({ preventScroll: true });
       });
     };
