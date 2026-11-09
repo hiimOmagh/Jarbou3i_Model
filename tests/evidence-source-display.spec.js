@@ -49,6 +49,27 @@ test("review shows a note when many source links point to one site, and none oth
   await expect(note).toHaveCount(0);
 });
 
+// Filled layers are not "ready to publish": the exported completeness card says the gate is separate.
+for (const [lang, button, sentence] of [
+  ["en", "#langEn", "Filled layers do not mean ready to publish: the publication gate is still open."],
+  ["ar", "#langAr", "اكتمال الطبقات لا يعني الجاهزية للنشر: بوابة النشر ما زالت مفتوحة."],
+  ["fr", "#langFr", "Des couches remplies ne veulent pas dire prêt à publier : le contrôle de publication reste ouvert."],
+]) {
+  test(`exported completeness says the publication gate is separate (${lang})`, async ({ page }, testInfo) => {
+    await page.goto("./");
+    await page.locator(button).click();
+    await openStep(page, "lens");
+    await page.locator('[data-lens="strategic"]').click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#reviewPanel")).toBeVisible();
+    await page.locator('[data-review="exports"]').click();
+    const [download] = await Promise.all([page.waitForEvent("download"), page.locator("#exportHtml").click()]);
+    const file = testInfo.outputPath(`completeness-${lang}.html`);
+    await download.saveAs(file);
+    expect(await fs.readFile(file, "utf8")).toContain(sentence);
+  });
+}
+
 // Data that is in the imported answer and in the exported report is also on the screen:
 // a source note next to the source title, the evidence's own uncertainty, a scenario's rationale.
 test("review screens show source note, evidence uncertainty and scenario rationale", async ({ page }) => {

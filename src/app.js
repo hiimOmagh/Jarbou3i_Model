@@ -6797,7 +6797,18 @@ function scoreDiagnostic(key, val, a = state.analysis) {
                 ),
         },
       };
-  return data[key] || { reason: "", action: "" };
+  const found = data[key] || { reason: "", action: "" };
+  // Filled layers and "not ready to publish" are different questions. Beside the
+  // layers' percentage, say the publication gate is separate and still open.
+  if (key === "completeness" && !isBio && a && found.reason && qualityGate(a).tone !== "ok") {
+    const apart = labelText(
+      "Filled layers do not mean ready to publish: the publication gate is still open.",
+      "اكتمال الطبقات لا يعني الجاهزية للنشر: بوابة النشر ما زالت مفتوحة.",
+      "Des couches remplies ne veulent pas dire prêt à publier : le contrôle de publication reste ouvert.",
+    );
+    return { ...found, reason: `${found.reason} ${apart}` };
+  }
+  return found;
 }
 function scoreWeights() {
   return {
