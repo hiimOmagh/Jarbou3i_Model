@@ -339,6 +339,8 @@ const I18N = {
       "تم نسخ الموجِّه. افتح مساعد الذكاء الاصطناعي والصقه فيه، ثم انسخ إجابته كاملة إلى مربع الإجابة.",
     tripRestored: "استُعيد التحليل الذي كنت تُعدّه قبل إعادة تحميل الصفحة.",
     promptPreview: "معاينة الموجِّه",
+    promptPreviewHint: "هذا هو النص الذي تنسخه إلى مساعدك. العلامات داخله موجّهة للمساعد لا لك.",
+    reportDownloaded: "تم تنزيل التقرير.",
     copyShownText: "نسخ النص المعروض",
     copied: "تم النسخ.",
     copyFailed: "تعذّر النسخ تلقائيًا. انسخ النص من نافذة المعاينة.",
@@ -802,6 +804,8 @@ const I18N = {
       "Prompt copied. Open your AI assistant and paste it, then copy its whole answer into the answer box.",
     tripRestored: "Restored the analysis you were preparing before the page reloaded.",
     promptPreview: "Prompt preview",
+    promptPreviewHint: "This is the text to copy into your AI assistant. The tags inside it are for the assistant, not for you.",
+    reportDownloaded: "Report downloaded.",
     copyShownText: "Copy shown text",
     copied: "Copied.",
     copyFailed: "Automatic copy failed. Copy the text from the preview window.",
@@ -1275,6 +1279,8 @@ const I18N = {
       "Prompt copié. Ouvrez votre assistant IA et collez-le, puis copiez toute sa réponse dans la zone de réponse.",
     tripRestored: "L’analyse que vous prépariez avant le rechargement de la page a été restaurée.",
     promptPreview: "Aperçu du prompt",
+    promptPreviewHint: "Voici le texte à copier dans votre assistant IA. Les balises qu’il contient s’adressent à l’assistant, pas à vous.",
+    reportDownloaded: "Rapport téléchargé.",
     copyShownText: "Copier le texte affiché",
     copied: "Copié.",
     copyFailed:
@@ -9331,6 +9337,7 @@ async function exportBiopoliticalReport() {
       buildLosslessBiopoliticalReport(renderer),
       "text/html",
     );
+    toast(t("reportDownloaded"));
   } catch {
     if (status) {
       status.dataset.tone = "warn";
@@ -9447,12 +9454,14 @@ function renderReview() {
   );
   const eh = $("exportHtml");
   if (eh) {
-    eh.onclick = () =>
+    eh.onclick = () => {
       download(
         `${safeFileSlug(state.analysis?.subject?.title || state.topic)}-report.html`,
         buildLosslessStrategicReport(),
         "text/html",
       );
+      toast(t("reportDownloaded"));
+    };
   }
   const ej = $("exportJson");
   if (ej) {
@@ -11437,8 +11446,11 @@ function arriveAtReview() {
     bar.animate([{ transform: "scaleX(0)" }, { transform: "none" }], { duration: 720, delay: 160, easing, fill: "backwards", pseudoElement: "::before" });
   }
 }
-function showModal(title, content, invoker = document.activeElement) {
+function showModal(title, content, invoker = document.activeElement, hint = "") {
   state.modalInvoker = invoker;
+  const hintEl = $("modalHint");
+  hintEl.textContent = hint;
+  hintEl.hidden = !hint;
   $("modalTitle").textContent = title;
   $("modalClose").setAttribute("aria-label", labelText("Close preview", "إغلاق المعاينة", "Fermer l’aperçu"));
   $("modalContent").textContent = content;
@@ -11623,7 +11635,7 @@ $("copyPromptBtn").onclick = async (event) => {
   $("editTopicBtn").classList.remove("hide");
   $("topicStatus").dataset.tone = ok ? "ok" : "warn";
   $("topicStatus").textContent = `${ok ? t("promptCopied") : t("copyFailed")} ${promptBudgetText(p)}${promptLeftOutText($("analysisLang").value)}`;
-  if (!ok) showModal(t("promptPreview"), p, invoker);
+  if (!ok) showModal(t("promptPreview"), p, invoker, t("promptPreviewHint"));
   renderAll();
 };
 $("previewPromptBtn").onclick = async (event) => {
@@ -11644,7 +11656,7 @@ $("previewPromptBtn").onclick = async (event) => {
   state.lastPrompt = buildPrompt();
   $("topicStatus").dataset.tone = "warn";
   $("topicStatus").textContent = `${promptBudgetText(state.lastPrompt)}${promptLeftOutText($("analysisLang").value)}`;
-  showModal(t("promptPreview"), state.lastPrompt, invoker);
+  showModal(t("promptPreview"), state.lastPrompt, invoker, t("promptPreviewHint"));
 };
 $("editTopicBtn").onclick = () => {
   state.stage = "topic";

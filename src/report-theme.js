@@ -111,6 +111,7 @@
     + `.draftBanner[data-tone="crit"]{border-color:var(--j-crit);background:linear-gradient(var(--j-crit-wash),var(--j-crit-wash)),var(--j-panel)}.draftBanner[data-tone="crit"] strong{color:var(--j-crit)}`
     + `.provenance{margin-top:var(--j-s-6);padding:var(--j-s-4) var(--j-s-4) 0;border-top:1px solid var(--j-line);color:var(--j-fg-muted);font-size:var(--j-t-13)}`
     + `.provenance h2{margin:0 0 var(--j-s-3);color:var(--j-fg);font:700 var(--j-t-16)/1.3 var(--j-font-display)}`
+    + `.provenance .reportNote{margin:0 0 var(--j-s-3);color:var(--j-fg)}`
     + `.provenance dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--j-s-2) var(--j-s-4);margin:0}`
     + `.provenance dl div{min-width:0;padding:0;border:0;background:none}`
     + `.provenance dt{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-ui);letter-spacing:0;text-transform:none}`
@@ -118,9 +119,9 @@
     + `@media print{.provenance{break-inside:avoid-page}}`;
 
   const COPY = Object.freeze({
-    en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Format version", version: "App version" },
-    ar: { draft: "مسودة", exportedOn: "صُدِّر في {date}", about: "عن هذا التقرير", exported: "تاريخ التصدير", answerDated: "تاريخ الإجابة", analysisId: "معرّف التحليل", schema: "إصدار الصيغة", version: "إصدار التطبيق" },
-    fr: { draft: "Brouillon", exportedOn: "Exporté le {date}", about: "À propos de ce rapport", exported: "Exporté le", answerDated: "Date de la réponse", analysisId: "Identifiant de l’analyse", schema: "Version du format", version: "Version de l’application" },
+    en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Format version", version: "App version", note: "This report is a structured analysis prepared by the author with an AI assistant and processed locally by the app. It is not an independent verification or a measure of truth, and it does not by itself decide whether to publish; the author who reviews it is accountable for it." },
+    ar: { draft: "مسودة", exportedOn: "صُدِّر في {date}", about: "عن هذا التقرير", exported: "تاريخ التصدير", answerDated: "تاريخ الإجابة", analysisId: "معرّف التحليل", schema: "إصدار الصيغة", version: "إصدار التطبيق", note: "هذا التقرير تحليل منظّم أعدّه المؤلف بمساعدة أداة ذكاء اصطناعي، وعالجه التطبيق محليًا. ليس تحققًا مستقلًا ولا مقياسًا للحقيقة، ولا يمثّل وحده قرارًا بالنشر؛ والمؤلف الذي يراجعه مسؤول عنه." },
+    fr: { draft: "Brouillon", exportedOn: "Exporté le {date}", about: "À propos de ce rapport", exported: "Exporté le", answerDated: "Date de la réponse", analysisId: "Identifiant de l’analyse", schema: "Version du format", version: "Version de l’application", note: "Ce rapport présente une analyse structurée préparée par l’auteur avec un assistant d’IA et traitée localement par l’application. Il ne constitue ni une vérification indépendante ni une mesure de la vérité, et ne décide pas à lui seul de la publication ; l’auteur qui le relit en est responsable." },
   });
   const copy = (lang) => COPY[lang] || COPY.en;
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
@@ -163,7 +164,7 @@
       [c.schema, schemaVersion],
       [c.version, version],
     ].filter(([, value]) => String(value ?? "").trim());
-    return `<footer class="provenance" data-report-provenance><h2>${escapeHtml(c.about)}</h2><dl>${rows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl></footer>`;
+    return `<footer class="provenance" data-report-provenance><h2>${escapeHtml(c.about)}</h2><p class="reportNote" data-report-note>${escapeHtml(c.note)}</p><dl>${rows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl></footer>`;
   }
 
   // Content-Security-Policy meta for an exported report. Reports run no network, so

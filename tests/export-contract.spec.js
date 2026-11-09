@@ -192,6 +192,22 @@ test('Arabic reports keep figures and letter joins', async ({ page }, testInfo) 
   }
 });
 
+// Every report says what it is and is not, in the report’s own language.
+const REPORT_NOTES = {
+  "en": "This report is a structured analysis prepared by the author with an AI assistant and processed locally by the app. It is not an independent verification or a measure of truth, and it does not by itself decide whether to publish; the author who reviews it is accountable for it.",
+  "ar": "هذا التقرير تحليل منظّم أعدّه المؤلف بمساعدة أداة ذكاء اصطناعي، وعالجه التطبيق محليًا. ليس تحققًا مستقلًا ولا مقياسًا للحقيقة، ولا يمثّل وحده قرارًا بالنشر؛ والمؤلف الذي يراجعه مسؤول عنه.",
+  "fr": "Ce rapport présente une analyse structurée préparée par l’auteur avec un assistant d’IA et traitée localement par l’application. Il ne constitue ni une vérification indépendante ni une mesure de la vérité, et ne décide pas à lui seul de la publication ; l’auteur qui le relit en est responsable."
+};
+test('both reports carry the what-this-report-is note in their language', async ({ page }, testInfo) => {
+  for (const lang of ['en', 'ar', 'fr']) {
+    for (const lens of ['strategic', 'biopolitical']) {
+      await exportSampleReport(page, testInfo, lens, lang);
+      await page.goto(pathToFileURL(testInfo.outputPath(`${lang}-${lens}-export.html`)).href);
+      await expect(page.locator('footer[data-report-provenance] [data-report-note]'), `${lang} ${lens}`).toHaveText(REPORT_NOTES[lang]);
+    }
+  }
+});
+
 async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
   await page.goto('./');
   await expect(page.locator('#loadSampleBtn')).toBeVisible();

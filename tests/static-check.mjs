@@ -261,7 +261,7 @@ for (const token of [
 for (const token of [
   'analysis_id: `sample-strategic-${lang}`',
   "language: lang",
-  "showModal(t(\"promptPreview\"), state.lastPrompt, invoker)",
+  "showModal(t(\"promptPreview\"), state.lastPrompt, invoker",
   "}, 30_000)",
 ]) {
   if (!app.includes(token)) fail(`browser hotfix token missing: ${token}`);
