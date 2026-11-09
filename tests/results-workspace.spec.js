@@ -167,7 +167,7 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
 for (const [button, pattern] of [
   ['#langEn', /Held down by (source traceability|independent human review) \(\d+%\)\./],
   ['#langAr', /يحدّها (ضعف تتبع المصادر|نقص المراجعة البشرية المستقلة) \(\d+%\)\./],
-  ['#langFr', /Limitée par (la traçabilité des sources|la revue humaine indépendante) \(\d+ %\)\./],
+  ['#langFr', /Limitée par (la traçabilité des sources|la revue humaine indépendante) \(\d+\s%\)\./],
 ]) {
   test(`the brief says what holds decision readiness down (${button.slice(5).toLowerCase()})`, async ({ page }) => {
     await page.goto('./');

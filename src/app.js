@@ -6915,11 +6915,11 @@ function readinessLimitText(provenance, readiness, coverage) {
   const review = Number(provenance.humanReview);
   if (!Number.isFinite(trace) || !Number.isFinite(review)) return "";
   return trace <= review
-    ? labelText(`Held down by source traceability (${Math.round(trace)}%).`, `يحدّها ضعف تتبع المصادر (${Math.round(trace)}%).`, `Limitée par la traçabilité des sources (${Math.round(trace)} %).`)
-    : labelText(`Held down by independent human review (${Math.round(review)}%).`, `يحدّها نقص المراجعة البشرية المستقلة (${Math.round(review)}%).`, `Limitée par la revue humaine indépendante (${Math.round(review)} %).`);
+    ? labelText(`Held down by source traceability (${Math.round(trace)}%).`, `يحدّها ضعف تتبع المصادر (${Math.round(trace)}%).`, `Limitée par la traçabilité des sources (${Math.round(trace)} %).`)
+    : labelText(`Held down by independent human review (${Math.round(review)}%).`, `يحدّها نقص المراجعة البشرية المستقلة (${Math.round(review)}%).`, `Limitée par la revue humaine indépendante (${Math.round(review)} %).`);
 }
 function briefFigure(label, value, definition, limit = "") {
-  return `<div><dt class="j-label">${escapeHtml(label)}${definition ? `<small class="j-brief-desc">${escapeHtml(definition)}</small>` : ""}${limit ? `<small class="j-brief-desc" data-readiness-limit>${escapeHtml(limit)}</small>` : ""}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
+  return `<div><dt class="j-label">${escapeHtml(label)}${definition ? `<small class="j-brief-desc">${escapeHtml(definition)}</small>` : ""}${limit ? `<small class="j-brief-desc" data-readiness-limit>${escapeHtml(limit).replace(/(\d+[\s\u202F]?%)/, '<bdi dir="ltr">$1</bdi>')}</small>` : ""}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation) {
   const gateTone = model.publication.tone;
