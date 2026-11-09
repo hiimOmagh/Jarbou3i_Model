@@ -22,11 +22,16 @@ test.describe("Guided flow", () => {
     expect(await hitHeight(step(page, "lens"))).toBeGreaterThanOrEqual(44);
     expect(await hitHeight(page.locator(".j-flow-example").first())).toBeGreaterThanOrEqual(44);
     // A topic is needed to continue; an example gives one, with its context.
-    await expect(page.locator("#flowNext")).toBeDisabled();
+    // Continue stays reachable by keyboard; it says it waits and points at the sentence that says why.
+    await expect(page.locator("#flowNext")).toHaveAttribute("aria-disabled", "true");
+    await expect(page.locator("#flowNext")).toHaveAttribute("aria-describedby", "topicStatus");
+    await page.locator("#flowNext").click({ force: true });
+    await expect(step(page, "topic")).toHaveAttribute("aria-current", "step");
     await page.locator(".j-flow-example").first().click();
     await expect(page.locator("#topicInput")).toHaveValue("Semiconductor export controls");
     await expect(page.locator("#timeframeInput")).toHaveValue("2022–2026, United States, EU, China");
-    await expect(page.locator("#flowNext")).toBeEnabled();
+    await expect(page.locator("#flowNext")).not.toHaveAttribute("aria-disabled", "true");
+    await expect(page.locator("#flowNext")).not.toHaveAttribute("aria-describedby", /.*/);
 
     await page.locator("#flowNext").click();
     await expect(page.locator("#flowStepTitle")).toBeFocused();

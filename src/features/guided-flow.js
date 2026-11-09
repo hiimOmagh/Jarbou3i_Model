@@ -53,7 +53,13 @@ export function createGuidedFlow({
     renderExamples();
     byId("flowBack").hidden = index === 0;
     byId("flowNext").hidden = index === FLOW_STEPS.length - 1;
-    byId("flowNext").disabled = !canContinue(current);
+    // Not `disabled`: a keyboard user can still reach Continue and hear why it waits.
+    const blocked = !canContinue(current);
+    const next = byId("flowNext");
+    if (blocked) next.setAttribute("aria-disabled", "true");
+    else next.removeAttribute("aria-disabled");
+    if (blocked && byId("topicStatus")) next.setAttribute("aria-describedby", "topicStatus");
+    else next.removeAttribute("aria-describedby");
     // One ink action per step: Continue, unless the step has its own.
     const own = root.querySelector(`[data-flow-panel="${current}"] .j-btn[data-variant="primary"]`);
     if (own) delete byId("flowNext").dataset.variant;
@@ -119,7 +125,10 @@ export function createGuidedFlow({
       if (example) useExample(example);
     });
     byId("flowBack").addEventListener("click", () => move(-1));
-    byId("flowNext").addEventListener("click", () => move(1));
+    byId("flowNext").addEventListener("click", (event) => {
+      if (event.currentTarget.getAttribute("aria-disabled") === "true") return;
+      move(1);
+    });
     // The app's own listeners have run by now; the guide and Continue follow them.
     root.addEventListener("input", () => render());
     render();
