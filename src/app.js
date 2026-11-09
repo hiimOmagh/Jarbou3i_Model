@@ -7254,7 +7254,7 @@ function renderScenarios() {
   const items = state.analysis.scenarios.items;
   const scenarioRecord = (s) => {
     const pct = Math.round(valuePct(Number(s.probability)));
-    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}<span class="j-chip">${escapeHtml(t("probability"))} <bdi>${pctText(pct)}</bdi></span>${kernelChip(s.timeframe ? `${t("timeframe")}${colonMark()} ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
+    return `<li><article class="j-rec"${recordAnchor(s)}><header class="j-rec-head">${recordIdCode(s)}<span class="j-chip">${escapeHtml(t("probability"))} <bdi>${pctText(pct)}</bdi></span>${kernelChip(s.timeframe ? `${t("timeframe")}${colonMark()} ${s.timeframe}` : "")}</header><p class="j-rec-title">${escapeHtml(s.name || s.title || "—")}</p><dl class="j-rec-facts" data-prose>${s.rationale ? recordFact(t("rationale"), escapeHtml(s.rationale)) : ""}${recordFact(t("drivers"), factList(s.drivers))}${recordFact(t("earlySignals"), factList(s.early_signals))}${recordFact(t("disprovenIf"), factList(s.disproven_if))}</dl></article></li>`;
   };
   return `<h3>${t("scenarios")}</h3>${items.length ? `<ol class="j-recs" role="list" data-records="scenarios">${items.map(scenarioRecord).join("")}</ol>` : `<p class="j-note" data-tone="idle">${escapeHtml(t("noItems"))}</p>`}`;
 }
@@ -7272,8 +7272,9 @@ function renderEvidence() {
     const strength = Number(e.evidence_strength);
     const facts = [
       strength > 0 ? recordFact(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"), scoreMeter(strength)) : "",
-      recordFact(t("sourceNote"), `${source || escapeHtml(e.source_note || "—")}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url, shortUrlLabel(e.source_url))}` : ""}`),
+      recordFact(t("sourceNote"), `${[source, e.source_note && escapeHtml(e.source_note)].filter(Boolean).join("<br>") || "—"}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url, shortUrlLabel(e.source_url))}` : ""}`),
       counter ? recordFact(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"), escapeHtml(counter)) : "",
+      e.uncertainty ? recordFact(labelText("Uncertainty", "عدم اليقين", "Incertitude"), escapeHtml(e.uncertainty)) : "",
     ].join("");
     return `<li><article class="j-rec"${recordAnchor(e)}><header class="j-rec-head">${recordIdCode(e)}${kernelChip(e.basis ? basisInfo(e.basis).label : "")}${confidenceChip(evidenceConfidenceLevel(e))}</header><p class="j-rec-title">${escapeHtml(e.claim || e.name || "—")}</p><dl class="j-rec-facts">${facts}</dl></article></li>`;
   };
