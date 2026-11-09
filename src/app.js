@@ -1647,7 +1647,11 @@ const PLATFORM = createPlatformRuntime({
   },
   initialState: ({ settings }) => {
     const supported = (language) => SUPPORTED_LANGUAGES.includes(language);
-    const interfaceLanguage = supported(settings.lang) ? settings.lang : "ar";
+    // A first visit follows the browser's language list; Arabic when none is supported.
+    const browserLanguage = (globalThis.navigator?.languages || [])
+      .map((tag) => String(tag).toLowerCase().split("-")[0])
+      .find(supported);
+    const interfaceLanguage = supported(settings.lang) ? settings.lang : browserLanguage || "ar";
     const analysisLanguage = supported(settings.analysisLang)
       ? settings.analysisLang
       : interfaceLanguage;
