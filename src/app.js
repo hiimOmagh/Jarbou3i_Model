@@ -10840,7 +10840,7 @@ async function renderWorkspaceList() {
             .format(new Date(entry.metadata.updated_at));
           return `<article class="j-ws-row"${active ? ' aria-current="true"' : ""} data-workspace-row="${escapeHtml(entry.workspace_id)}"><div><p class="j-ws-name">${escapeHtml(entry.metadata.title)}</p><div class="j-ws-meta"><span>${escapeHtml(t(entry.analysis_identity.lens_id === "biopolitical" ? "lensBiopolitical" : "lensStrategic"))}</span><span>${escapeHtml(date)}</span><span>${escapeHtml(workspaceText("verified"))}</span>${active ? `<strong>${escapeHtml(workspaceText("current"))}</strong>` : ""}</div></div>${active ? "" : `<div class="j-ws-row-acts"><button class="j-btn" type="button" data-workspace-history="${escapeHtml(entry.workspace_id)}">${escapeHtml(revisionText("title"))}</button><button class="j-btn" type="button" data-workspace-edit="${escapeHtml(entry.workspace_id)}">${escapeHtml(editorText("edit"))}</button>${entry.dirty ? `<button class="j-btn" type="button" data-workspace-resolve="${escapeHtml(entry.workspace_id)}">${escapeHtml(resolutionText("commit"))}</button>` : ""}<button class="j-btn" data-variant="primary" type="button" data-workspace-open="${escapeHtml(entry.workspace_id)}">${escapeHtml(workspaceText("open"))}</button></div>`}</article>`;
         }).join("")
-      : `<p class="j-ws-empty">${escapeHtml(workspaceText("empty"))}</p>`;
+      : `<p class="j-ws-empty" id="workspaceEmptyNote">${escapeHtml(workspaceText("empty"))}</p>`;
     target.querySelectorAll("[data-workspace-open]").forEach((button) => {
       button.onclick = async () => {
         if (!confirmReplacingReply(button.dataset.workspaceOpen)) {
@@ -10883,10 +10883,14 @@ async function renderWorkspaceList() {
     });
     target.querySelectorAll("[data-workspace-resolve]").forEach((button) => { button.onclick = async () => { const workspace = await rowWorkspace(button.dataset.workspaceResolve); if (!workspace) return; closeWorkspaceDialog(); await openResolutionTransaction(workspace, $("workspaceSaveState")); }; });
     $("workspaceExport").disabled = !state.activeWorkspaceId;
+    // With no workspace the disabled button gets its reason from the sentence already shown below.
+    if (target.querySelector("#workspaceEmptyNote")) $("workspaceExport").setAttribute("aria-describedby", "workspaceEmptyNote");
+    else $("workspaceExport").removeAttribute("aria-describedby");
     $("workspaceResetCurrent").disabled = !state.activeWorkspaceId;
     await renderCaseList(new Set(entries.filter((entry) => entry.integrity_status === "verified").map((entry) => entry.workspace_id)));
   } catch (error) {
     target.innerHTML = "";
+    $("workspaceExport").removeAttribute("aria-describedby");
     setWorkspaceStatus("bad", workspaceFailureMessage(error));
     await renderCaseList(null);
   }
