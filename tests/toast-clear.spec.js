@@ -11,14 +11,17 @@ test.describe("A toast keeps clear of the return button", () => {
       await page.locator("#exportHtml").evaluate((el) => el.scrollIntoView({ block: "center" }));
       const pill = page.locator("#caseOutlineReturn");
       await expect(pill).toBeVisible();
-      await page.locator("#exportHtml").click();
-      await expect(page.locator("#toast")).toHaveAttribute("data-open", "true");
-      await page.waitForTimeout(450); // past the slide-in
-      const rects = await page.evaluate(() => {
-        const r = (id) => document.getElementById(id).getBoundingClientRect();
-        const t = r("toast"), p = r("caseOutlineReturn");
-        return { toastBottom: t.bottom, pillTop: p.top, apart: t.right <= p.left || p.right <= t.left || t.bottom <= p.top || p.bottom <= t.top };
+      // Click and measure in the page itself, so a slow browser cannot let the
+      // 2.6 s toast close before it is looked at.
+      const rects = await page.evaluate(async () => {
+        document.getElementById("exportHtml").click();
+        await new Promise((done) => setTimeout(done, 450)); // past the slide-in
+        const toast = document.getElementById("toast");
+        const r = (el) => el.getBoundingClientRect();
+        const t = r(toast), p = r(document.getElementById("caseOutlineReturn"));
+        return { open: toast.dataset.open, apart: t.right <= p.left || p.right <= t.left || t.bottom <= p.top || p.bottom <= t.top };
       });
+      expect(rects.open).toBe("true");
       expect(rects.apart).toBe(true);
     });
   }

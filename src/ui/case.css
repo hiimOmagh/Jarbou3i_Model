@@ -63,6 +63,7 @@
    instead of covering it. */
 @media (max-width: 1120px) {
   :root:has(.j-case-return:not([hidden])) .j-toast { bottom: calc(var(--j-s-4) + 3.5rem + env(safe-area-inset-bottom, 0px)); }
+  :root:has(.j-case-return:not([hidden])) .j-toast[data-open="false"] { translate: 0 calc(100% + 3.5rem + var(--j-s-5) + var(--j-s-4) + env(safe-area-inset-bottom, 0px)); }
 }
 
 @media (forced-colors: active) {
