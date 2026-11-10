@@ -170,3 +170,24 @@ test.describe("Guided flow", () => {
     }
   });
 });
+
+test("handoff boundary En", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator('[data-flow-step="prompt"]').click();
+  await expect(page.locator("#flowStepHint")).toHaveText("The app prepares the prompt and never contacts an AI itself; your AI writes the analysis. Copy the prompt into your chosen AI chat, then paste its reply here.");
+});
+
+test("handoff boundary Ar", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langAr").click();
+  await page.locator('[data-flow-step="prompt"]').click();
+  await expect(page.locator("#flowStepHint")).toHaveText("يجهّز التطبيق الموجِّه ولا يتصل بأي مساعد ذكاء اصطناعي بنفسه؛ ويكتب مساعدك الذكي التحليل. انسخ الموجِّه إلى محادثة الذكاء الاصطناعي التي تختارها، ثم الصق ردّه هنا.");
+});
+
+test("handoff boundary Fr", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langFr").click();
+  await page.locator('[data-flow-step="prompt"]').click();
+  await expect(page.locator("#flowStepHint")).toHaveText("L’application prépare le prompt sans jamais contacter d’IA ; votre IA rédige l’analyse. Copiez le prompt dans la conversation avec l’IA de votre choix, puis collez sa réponse ici.");
+});
