@@ -194,9 +194,9 @@ test('Arabic reports keep figures and letter joins', async ({ page }, testInfo) 
 
 // Every report says what it is and is not, in the report’s own language.
 const REPORT_NOTES = {
-  "en": "This report is a structured analysis prepared by the author with an AI assistant and processed locally by the app. It is not an independent verification or a measure of truth, and it does not by itself decide whether to publish; the author who reviews it is accountable for it.",
-  "ar": "هذا التقرير تحليل منظّم أعدّه المؤلف بمساعدة أداة ذكاء اصطناعي، وعالجه التطبيق محليًا. ليس تحققًا مستقلًا ولا مقياسًا للحقيقة، ولا يمثّل وحده قرارًا بالنشر؛ والمؤلف الذي يراجعه مسؤول عنه.",
-  "fr": "Ce rapport présente une analyse structurée préparée par l’auteur avec un assistant d’IA et traitée localement par l’application. Il ne constitue ni une vérification indépendante ni une mesure de la vérité, et ne décide pas à lui seul de la publication ; l’auteur qui le relit en est responsable."
+  "en": "This report helps you examine a question using the analyst’s inputs. It is not a verdict or proof. It does not predict what will happen.",
+  "ar": "يساعدك هذا التقرير على النظر في سؤال باستخدام ما أدخله المحلل. ليس حكمًا نهائيًا أو دليلًا قاطعًا. ولا يتنبأ بما سيحدث.",
+  "fr": "Ce rapport aide à examiner une question à partir des informations fournies par l’analyste. Ce n’est ni un verdict ni une preuve. Il ne prédit pas ce qui va se passer."
 };
 test('both reports carry the what-this-report-is note in their language', async ({ page }, testInfo) => {
   for (const lang of ['en', 'ar', 'fr']) {
