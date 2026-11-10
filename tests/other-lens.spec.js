@@ -8,7 +8,7 @@ test.describe("Run the other lens", () => {
     await page.locator("#loadSampleBtn").click();
     const action = page.locator("[data-other-lens]");
     await expect(action).toBeVisible({ timeout: 15000 });
-    await expect(action).toHaveText("Run the Biopolitical lens on this topic");
+    await expect(action).toHaveText("Switch to the Biopolitical lens");
     // It reads as a button: an outline and an arrow, not bare text.
     const look = await action.evaluate((el) => ({
       border: parseFloat(getComputedStyle(el).borderTopWidth),
@@ -23,6 +23,6 @@ test.describe("Run the other lens", () => {
     // The first result is kept: switching back brings it back with the other action.
     await page.locator('[data-flow-step="lens"]').click();
     await page.locator('#analysisLens [data-lens="strategic"]').click();
-    await expect(page.locator("[data-other-lens]")).toHaveText("Run the Biopolitical lens on this topic");
+    await expect(page.locator("[data-other-lens]")).toHaveText("Switch to the Biopolitical lens");
   });
 });

@@ -2529,8 +2529,8 @@ function otherLensHtml() {
     "Regardez aussi ce sujet avec l’autre lentille. Votre sujet, son cadrage et vos sources sont repris, et ce résultat est conservé.",
   );
   const label = toBio
-    ? labelText("Run the Biopolitical lens on this topic", "شغّل عدسة السياسة الحيوية على هذا الموضوع", "Lancer la lentille Biopolitique sur ce sujet")
-    : labelText("Run the Strategic lens on this topic", "شغّل العدسة الاستراتيجية على هذا الموضوع", "Lancer la lentille Stratégique sur ce sujet");
+    ? labelText("Switch to the Biopolitical lens", "انتقل إلى عدسة السياسة الحيوية", "Passer à la lentille biopolitique")
+    : labelText("Switch to the Strategic lens", "انتقل إلى العدسة الاستراتيجية", "Passer à la lentille stratégique");
   return `<section class="j-both" data-other-lens-block><p>${escapeHtml(note)}</p><button class="j-btn" type="button" data-other-lens>${escapeHtml(label)}</button></section>`;
 }
 function runOtherLens() {
@@ -9537,7 +9537,7 @@ function workspaceText(key, values = {}) {
     resetConfirm: ["Click again to permanently remove every local workspace and reset app preferences", "انقر مرة أخرى لحذف كل مساحات العمل المحلية وإعادة ضبط تفضيلات الأداة نهائيًا", "Cliquez à nouveau pour supprimer définitivement tous les espaces locaux et réinitialiser les préférences"],
     resetDone: ["All local workspaces and app preferences were removed.", "حُذفت كل مساحات العمل المحلية وتفضيلات الأداة.", "Tous les espaces locaux et préférences ont été supprimés."],
     storagePersistent: ["Persistent storage granted. Browser eviction risk is reduced, but exported backups remain necessary.", "تم منح التخزين الدائم. انخفض خطر حذف المتصفح للبيانات، لكن النسخ الاحتياطية المصدّرة تظل ضرورية.", "Stockage persistant accordé. Le risque d’éviction diminue, mais les sauvegardes exportées restent nécessaires."],
-    storageBestEffort: ["Best-effort browser storage: data may be evicted under device pressure. Request persistence and export backups.", "تخزين المتصفح بأفضل جهد: قد تُحذف البيانات تحت ضغط مساحة الجهاز. اطلب التخزين الدائم وصدّر نسخًا احتياطية.", "Stockage navigateur au mieux : les données peuvent être évincées sous pression. Demandez la persistance et exportez des sauvegardes."],
+    storageBestEffort: ["Your browser may delete saved work if your device runs low on space. Request persistent storage and export backups.", "قد يحذف المتصفح عملك المحفوظ إذا قاربت مساحة الجهاز على النفاد. اطلب التخزين الدائم وصدّر نسخًا احتياطية.", "Votre navigateur peut supprimer le travail enregistré si votre appareil manque d’espace. Demandez le stockage persistant et exportez des sauvegardes."],
     storagePressure: ["Storage pressure detected ({percent}% used). Export a backup before adding more work.", "تم اكتشاف ضغط في التخزين ({percent}% مستخدم). صدّر نسخة احتياطية قبل إضافة عمل جديد.", "Pression de stockage détectée ({percent} % utilisés). Exportez une sauvegarde avant d’ajouter du travail."],
     storageUnknown: ["Storage durability or quota cannot be measured in this browser. Treat local data as best effort and export backups.", "لا يمكن قياس ديمومة التخزين أو حصته في هذا المتصفح. اعتبر البيانات المحلية بأفضل جهد وصدّر نسخًا احتياطية.", "La durabilité ou le quota ne peut pas être mesuré. Considérez les données locales comme provisoires et exportez des sauvegardes."],
     empty: ["No local workspaces yet. Import or load an analysis to create one.", "لا توجد مساحات عمل محلية بعد. استورد تحليلًا أو حمّل مثالًا لإنشاء واحدة.", "Aucun espace local. Importez ou chargez une analyse pour en créer un."],
