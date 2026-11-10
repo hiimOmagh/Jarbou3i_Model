@@ -522,7 +522,7 @@ then its detailed diagnostics.
   says an analysis is sound, and the gate already says whether it is. The
   principal uncertainty and
   the next action as `.j-brief-signal` blocks. Its parts carry
-  `data-orientation` (`gate`, `conclusion`, `metrics`, `uncertainty`, `action`).
+  `data-orientation` (`gate`, `question` (the authored question, after the gate), `conclusion`, `metrics`, `uncertainty`, `action`).
 - **How the conclusion is built** (`data-results-explanation`): an
   `ol.j-brief-steps` of five `.j-rec` cards (`data-explanation-section`), each
   with an `h5` title, a count chip, its strongest records (`.j-brief-items`,

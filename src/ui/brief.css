@@ -11,8 +11,9 @@
 .j-brief-head > div { display: grid; gap: var(--j-s-1); flex: 1 1 24ch; min-width: 0; }
 .j-brief-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-22)/1.25 var(--j-font-display); letter-spacing: -.01em; text-wrap: balance; }
 .j-brief-head > div > p { max-width: 72ch; margin: 0; color: var(--j-fg-muted); line-height: 1.55; overflow-wrap: anywhere; }
-/* The overview's topic, under its title. */
-.j-brief-topic { margin: calc(-1 * var(--j-s-2)) 0 var(--j-s-4); color: var(--j-fg-muted); font-size: var(--j-t-16); line-height: 1.45; overflow-wrap: anywhere; }
+/* The authored question follows the publication warning in reading order. */
+.j-brief-question { display: grid; gap: var(--j-s-2); min-width: 0; }
+.j-brief-topic { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-16); line-height: 1.45; overflow-wrap: anywhere; }
 /* The publication verdict opens the overview: the gate's status as the
    heading, its shape and words saying the tone, under a rule in that tone,
    then why. */
