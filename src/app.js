@@ -331,8 +331,8 @@ const I18N = {
     flowHowTo1: "افتح مساعدك الذكي في تبويب آخر.",
     flowHowTo2: "الصق الموجِّه وأرسله.",
     flowHowTo3: "انتظر الإجابة كاملة ثم عد إلى هنا.",
-    lensStrategicDesc: "تنظر في من يريد ماذا، وكيف يسعى إليه، وكيف يبرّر ذلك، وماذا حدث.",
-    lensBiopoliticalDesc: "تنظر في كيفية إدارة أجساد الناس والمؤسسات والبيانات الشخصية، وكيف يُصنَّف الناس، ومن يدفع الثمن.",
+    lensStrategicDesc: "تنظر في من يريد ماذا، وكيف يسعى إليه، وكيف يبرّر ذلك، وماذا حدث. مثال: شركة تقرر دخول سوق جديدة.",
+    lensBiopoliticalDesc: "تنظر في كيفية إدارة أجساد الناس والمؤسسات والبيانات الشخصية، وكيف يُصنَّف الناس، ومن يدفع الثمن. مثال: كيف تؤثر سياسة صحية في حياة الناس اليومية.",
     topicStatusStart: "أدخل موضوعًا واضحًا ثم انسخ الموجِّه إلى مساعدك المفضل.",
     topicNeeded: "أدخل موضوع التحليل أولًا.",
     promptCopied:
@@ -795,8 +795,8 @@ const I18N = {
     flowHowTo1: "Open your AI assistant in another tab.",
     flowHowTo2: "Paste the prompt and send it.",
     flowHowTo3: "Wait for the full answer, then come back here.",
-    lensStrategicDesc: "Looks at who wants what, how they try to get it, how they justify it, and what happened.",
-    lensBiopoliticalDesc: "Looks at how people’s bodies, institutions and personal information are managed, how people are grouped, and who pays the price.",
+    lensStrategicDesc: "Looks at who wants what, how they try to get it, how they justify it, and what happened. Example: a company deciding whether to enter a new market.",
+    lensBiopoliticalDesc: "Looks at how people’s bodies, institutions and personal information are managed, how people are grouped, and who pays the price. Example: how a health policy shapes people’s daily lives.",
     topicStatusStart:
       "Enter a clear topic, then copy the prompt into your preferred assistant.",
     topicNeeded: "Enter an analysis topic first.",
@@ -1270,8 +1270,8 @@ const I18N = {
     flowHowTo1: "Ouvrez votre assistant IA dans un autre onglet.",
     flowHowTo2: "Collez le prompt et envoyez-le.",
     flowHowTo3: "Attendez la réponse complète, puis revenez ici.",
-    lensStrategicDesc: "Examine qui veut quoi, comment il cherche à l’obtenir, comment il le justifie et ce qui s’est passé.",
-    lensBiopoliticalDesc: "Examine comment sont gérés le corps des personnes, les institutions et les données personnelles, comment les personnes sont classées et qui en paie le prix.",
+    lensStrategicDesc: "Examine qui veut quoi, comment il cherche à l’obtenir, comment il le justifie et ce qui s’est passé. Exemple : une entreprise décide d’entrer sur un nouveau marché.",
+    lensBiopoliticalDesc: "Examine comment sont gérés le corps des personnes, les institutions et les données personnelles, comment les personnes sont classées et qui en paie le prix. Exemple : comment une politique sanitaire influence la vie quotidienne.",
     topicStatusStart:
       "Saisissez un sujet clair, puis copiez le prompt dans votre assistant préféré.",
     topicNeeded: "Saisissez d’abord un sujet d’analyse.",
