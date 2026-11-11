@@ -6953,7 +6953,8 @@ function readinessLimitText(provenance, readiness, coverage) {
     : labelText(`Held down by independent human review (${Math.round(review)}%).`, `يحدّها نقص المراجعة البشرية المستقلة (${Math.round(review)}%).`, `Limitée par la revue humaine indépendante (${Math.round(review)} %).`);
 }
 function briefFigure(label, value, definition, limit = "") {
-  return `<div><dt class="j-label">${escapeHtml(label)}${definition ? `<small class="j-brief-desc">${escapeHtml(definition)}</small>` : ""}${limit ? `<small class="j-brief-desc" data-readiness-limit>${escapeHtml(limit).replace(/(\d+[\s\u202F]?%)/, '<bdi dir="ltr">$1</bdi>')}</small>` : ""}</dt><dd><b>${pctText(value)}</b>${briefBar(value)}</dd></div>`;
+  const hintId = `meter-hint-${label.replace(/[^a-zA-Z0-9\u0600-\u06ff]/g, "-")}`;
+  return `<div><dt class="j-label">${escapeHtml(label)}</dt><dd aria-describedby="${escapeHtml(hintId)}"><b>${pctText(value)}</b>${briefBar(value)}<small class="j-brief-desc" id="${escapeHtml(hintId)}">${escapeHtml(definition || "")}</small>${limit ? `<small class="j-brief-desc" data-readiness-limit>${escapeHtml(limit).replace(/(\d+[\s\u202F]?%)/, '<bdi dir="ltr">$1</bdi>')}</small>` : ""}</dd></div>`;
 }
 function resultsOrientationHtml(model, explanation, question) {
   const gateTone = model.publication.tone;
@@ -7371,7 +7372,7 @@ function renderEvidence() {
     const ifWrong = a.implication_if_wrong
       ? recordFact(labelText("If wrong", "إذا كان خاطئًا"), escapeHtml(a.implication_if_wrong))
       : "";
-    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? confidenceInfo(a.confidence).label : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
+    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? `${labelText("How sure we are", "مدى اليقين", "Degré de certitude")}${colonMark()} ${confidenceInfo(a.confidence).label}` : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
   };
   return `<h3>${t("evidence")}</h3>${sourceConcentrationNote(ev)}${ev.length ? `<ol class="j-recs" role="list" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" role="list" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
 }
