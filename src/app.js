@@ -453,7 +453,7 @@ const I18N = {
     healthMissingEvidence: "اطلب أدلة/افتراضات أو استخدم نمط الخبير.",
     healthMissingFeedback: "أضف حلقات تغذية راجعة تربط النتائج بالتكيّف.",
     jsonAutoRecovered: "تم تنظيف النص واستخراج JSON صالح تلقائيًا.",
-    jsonParseProblem: "لم يُعثر على تحليل في هذا النص. انسخ إجابة الذكاء الاصطناعي كاملة (كتلة كود JSON) والصقها هنا. وإذا أجاب بنص عادي، فاستخدم موجِّه الإصلاح لتطلب منه JSON.",
+    jsonParseProblem: "لم يُعثر على تحليل. انسخ إجابة الذكاء الاصطناعي كاملة والصقها هنا. للنص العادي، استخدم موجِّه الإصلاح لطلب JSON.",
     reportSubtitle:
       "تقرير قابل للمشاركة مبني على نموذج المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة.",
     scoreSystem: "نظام التقييم",
@@ -920,7 +920,7 @@ const I18N = {
     healthMissingFeedback: "Add feedback loops linking results to adaptation.",
     jsonAutoRecovered:
       "Text was cleaned and valid JSON was extracted automatically.",
-    jsonParseProblem: "No analysis was found in this text. Copy the AI’s whole answer (the JSON code block) and paste it here. If the AI answered in plain text, use the repair prompt to ask it for the JSON.",
+    jsonParseProblem: "No analysis was found. Copy the AI’s whole answer and paste it here. For plain text, use the repair prompt to request JSON.",
     reportSubtitle:
       "A shareable report built on the Interests → Actors → Tools → Narrative → Results → Feedback model.",
     scoreSystem: "Scoring system",
@@ -1405,7 +1405,7 @@ const I18N = {
     jsonAutoRecovered:
       "Le texte a été nettoyé et un JSON valide a été extrait automatiquement.",
     jsonParseProblem:
-      "Aucune analyse n’a été trouvée dans ce texte. Copiez toute la réponse de l’IA (le bloc de code JSON) et collez-la ici. Si l’IA a répondu en texte simple, utilisez le prompt de réparation pour lui demander le JSON.",
+      "Aucune analyse trouvée. Copiez toute la réponse de l’IA et collez-la ici. Pour du texte simple, utilisez le prompt de réparation pour demander du JSON.",
     reportSubtitle:
       "Rapport partageable fondé sur le modèle Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.",
     scoreSystem: "Système de score",
@@ -3489,9 +3489,9 @@ function importErrorText(error) {
   }
   if (error?.code === "TRUNCATED_JSON" && error.fromReply) {
     return labelText(
-      `The AI says this answer is cut off, so it could not repair it. The answer is back in the box: click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears above.`,
-      `يقول الذكاء الاصطناعي إن هذه الإجابة مقطوعة، لذا لم يستطع إصلاحها. أُعيدت الإجابة إلى المربع: انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أعلاه.`,
-      `L’IA indique que cette réponse est coupée et qu’elle ne peut donc pas la réparer. La réponse a été remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessus.`,
+      `Answer cut off; repair failed. The answer is back in the box: click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears above.`,
+      `الإجابة مقطوعة؛ تعذّر إصلاحها. أُعيدت إلى المربع: انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أعلاه.`,
+      `Réponse coupée ; réparation impossible. La réponse est remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessus.`,
     );
   }
   if (error?.code === "INVALID_JSON" && error.fromReply) {

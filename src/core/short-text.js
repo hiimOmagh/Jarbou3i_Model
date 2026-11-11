@@ -17,7 +17,6 @@ const SHORT_TEXT = Object.freeze({
     repairCopied: "تم نسخ موجِّه الإصلاح. أرسله في المحادثة نفسها، ثم الصق الإجابة المصحّحة في المربع تحت إجابتك.",
     completionCopied: "تم نسخ موجِّه الاستكمال. أرسله في المحادثة نفسها، ثم الصق الرد في المربع تحت إجابتك. ستُضاف الأجزاء الناقصة إلى إجابتك.",
     replyNotRead: "لا يحتوي هذا النص على ردّ يمكن قراءته. بقيت إجابتك كما هي. أرسل الموجِّه إلى الذكاء الاصطناعي، ثم الصق هنا جزء JSON من ردّه، الذي يبدأ بـ {.",
-    jsonParseProblem: "لم نجد تحليلًا في هذا النص. انسخ إجابة الذكاء الاصطناعي كاملة (كتلة كود JSON) والصقها هنا. إذا أجاب بنص عادي، فاستخدم موجِّه الإصلاح لطلب JSON.",
   }),
   en: Object.freeze({
     appSubtitle: "Trace who wants what and how lives are governed, with your own AI assistant. For anyone seeking to understand a news story, not just researchers and journalists.",
@@ -27,7 +26,6 @@ const SHORT_TEXT = Object.freeze({
     repairCopied: "Repair prompt copied. Send it in the same chat. Paste the corrected answer in the box under your answer.",
     completionCopied: "Completion prompt copied. Send it in the same chat. Paste the AI’s reply in the box under your answer. The missing parts are added to your answer.",
     replyNotRead: "No readable reply found in this text. Your answer is unchanged. Send the prompt to the AI, then paste the JSON part of its reply here, starting with {.",
-    jsonParseProblem: "No analysis found in this text. Copy the AI’s whole answer (the JSON code block) and paste it here. If it answered in plain text, use the repair prompt to request JSON.",
   }),
   fr: Object.freeze({
     appSubtitle: "Avec votre propre assistant IA, explorez qui veut quoi et comment la vie des gens est gouvernée. Pour toute personne souhaitant comprendre l’actualité, pas seulement les chercheurs et les journalistes.",
@@ -37,7 +35,6 @@ const SHORT_TEXT = Object.freeze({
     repairCopied: "Prompt de réparation copié. Envoyez-le dans la même conversation, puis collez la réponse corrigée dans la zone sous votre réponse.",
     completionCopied: "Prompt de complétion copié. Envoyez-le dans la même conversation. Collez la réponse de l’IA dans la zone sous votre réponse. Les parties manquantes sont ajoutées à votre réponse.",
     replyNotRead: "Aucune réponse lisible dans ce texte. Votre réponse reste inchangée. Envoyez le prompt à l’IA, puis collez ici la partie JSON de sa réponse, qui commence par {.",
-    jsonParseProblem: "Aucune analyse trouvée dans ce texte. Copiez toute la réponse de l’IA (le bloc de code JSON) et collez-la ici. Si l’IA a répondu en texte simple, utilisez le prompt de réparation pour lui demander du JSON.",
   }),
 });
 
