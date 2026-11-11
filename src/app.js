@@ -383,7 +383,7 @@ const I18N = {
     score: "مؤشر الجودة",
     noItems: "لا توجد عناصر.",
     emptyEngine:
-      "لم يتم استيراد تحليل بعد. خريطة النموذج ظاهرة هنا حتى يعرف المستخدم الطبقات التي سيملؤها التحليل.",
+      "لا يوجد تحليل بعد. حمّل مثالًا لاستكشاف النموذج.",
     pillars: {
       interests: ["المصالح", "الحوافز والرهانات"],
       actors: ["الفاعلون", "أصحاب القرار والتأثير"],
@@ -849,7 +849,7 @@ const I18N = {
     score: "Quality index",
     noItems: "No items.",
     emptyEngine:
-      "No analysis has been imported yet. The model map remains visible so users understand which layers the analysis will fill.",
+      "No analysis yet. Load an example to explore the model.",
     pillars: {
       interests: ["Interests", "Expected material or symbolic benefits."],
       actors: ["Actors", "Decision-makers and influence holders."],
@@ -1326,7 +1326,7 @@ const I18N = {
     score: "Indice de qualité",
     noItems: "Aucun élément.",
     emptyEngine:
-      "Aucune analyse n’a encore été importée. La carte du modèle reste visible pour montrer les couches qui seront remplies.",
+      "Aucune analyse pour le moment. Chargez un exemple pour explorer le modèle.",
     pillars: {
       interests: ["Intérêts", "Bénéfices matériels ou symboliques attendus."],
       actors: ["Acteurs", "Décideurs et détenteurs d’influence."],
@@ -9566,7 +9566,7 @@ function workspaceText(key, values = {}) {
     storageBestEffort: ["Your browser may delete saved work if your device runs low on space. Request persistent storage and export backups.", "قد يحذف المتصفح عملك المحفوظ إذا قاربت مساحة الجهاز على النفاد. اطلب التخزين الدائم وصدّر نسخًا احتياطية.", "Votre navigateur peut supprimer le travail enregistré si votre appareil manque d’espace. Demandez le stockage persistant et exportez des sauvegardes."],
     storagePressure: ["Storage pressure detected ({percent}% used). Export a backup before adding more work.", "تم اكتشاف ضغط في التخزين ({percent}% مستخدم). صدّر نسخة احتياطية قبل إضافة عمل جديد.", "Pression de stockage détectée ({percent} % utilisés). Exportez une sauvegarde avant d’ajouter du travail."],
     storageUnknown: ["Storage durability or quota cannot be measured in this browser. Treat local data as best effort and export backups.", "لا يمكن قياس ديمومة التخزين أو حصته في هذا المتصفح. اعتبر البيانات المحلية بأفضل جهد وصدّر نسخًا احتياطية.", "La durabilité ou le quota ne peut pas être mesuré. Considérez les données locales comme provisoires et exportez des sauvegardes."],
-    empty: ["No local workspaces yet. Import or load an analysis to create one.", "لا توجد مساحات عمل محلية بعد. استورد تحليلًا أو حمّل مثالًا لإنشاء واحدة.", "Aucun espace local. Importez ou chargez une analyse pour en créer un."],
+    empty: ["No saved workspaces yet. Load an example to create one.", "لا توجد مساحات عمل محفوظة بعد. حمّل مثالًا لإنشاء واحدة.", "Aucun espace de travail enregistré. Chargez un exemple pour en créer un."],
     open: ["Open", "فتح", "Ouvrir"],
     current: ["Current", "الحالية", "Actuel"],
     ready: ["Workspace storage is ready.", "تخزين مساحات العمل جاهز.", "Le stockage des espaces est prêt."],
