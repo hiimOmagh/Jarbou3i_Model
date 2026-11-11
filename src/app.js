@@ -1813,6 +1813,7 @@ let caseDossier = null;
 function setCaseDossier(next) {
   caseDossier = next;
   syncPromptReview();
+  refreshSavedWork();
 }
 // Raised when another case is shown, so a write still running for the one
 // before does not take its place.
@@ -10874,6 +10875,7 @@ async function openStoredWorkspace(id, { announce = true, collapse = announce, c
 }
 
 async function renderWorkspaceList() {
+  refreshSavedWork();
   const target = $("workspaceList");
   if (!target) return;
   try {
@@ -11214,9 +11216,28 @@ function lifeText(key, values = {}) {
 }
 
 let workspaceLifeSeq = 0;
+let savedWorkSeq = 0;
+let hasSavedWork = false;
+function renderSavedWork() {
+  $("resumeWork").textContent = lifeText("where");
+  $("resumeWork").hidden = !hasSavedWork;
+}
+// Settings and the route map say nothing about whether work is kept here.
+// Read both stores: a case can be saved before it has an analysis.
+async function refreshSavedWork() {
+  const seq = ++savedWorkSeq;
+  const lists = await Promise.all([
+    WORKSPACE_REPOSITORY.list().catch(() => []),
+    DOSSIER_REPOSITORY.list().catch(() => []),
+  ]);
+  if (seq !== savedWorkSeq) return;
+  hasSavedWork = lists.some((entries) => entries.length > 0);
+  renderSavedWork();
+}
 // Reads where the open workspace's work is, for the save light, the banners
 // and the work panel. The newest read wins.
 async function refreshWorkspaceLife() {
+  refreshSavedWork();
   const seq = ++workspaceLifeSeq;
   const life = { workspaceId: state.activeWorkspaceId, workspace: null, history: null, head: 0, uncommitted: false, snapshot: false, conflict: false, damaged: 0 };
   try {
@@ -11274,6 +11295,7 @@ function renderLifeBanners() {
 }
 
 function renderWorkLife() {
+  renderSavedWork();
   const target = $("workLife");
   if (!target) return;
   const life = currentLife();
@@ -11901,6 +11923,7 @@ $("loadSampleBtn").onclick = async (event) => {
 };
 $("modalClose").onclick = closeModal;
 $("workspaceSaveState").onclick = (event) => openWorkspaceDialog(event.currentTarget);
+$("resumeWork").onclick = (event) => openWorkspaceDialog(event.currentTarget);
 ["lifeBanners", "workLife"].forEach((id) => $(id).addEventListener("click", (event) => {
   const button = event.target.closest("[data-life-action]");
   if (button) runLifeAction(button);
