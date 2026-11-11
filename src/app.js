@@ -1792,7 +1792,7 @@ const FIRST_RIDE = createFirstRide({
     $("loadSampleBtn").click();
     if (state.analysis && state.analysis !== before) {
       // The ride's card stands where the "sample loaded" toast would.
-      $("toast").dataset.open = "false";
+      closeToast();
       EXAMPLE_RIDE.start();
     }
   },
@@ -3206,6 +3206,13 @@ function refreshDynamicMessages() {
   }
 }
 let toastTimer = 0;
+function closeToast() {
+  clearTimeout(toastTimer);
+  const el = $("toast");
+  el.dataset.open = "false";
+  el.removeAttribute("tabindex");
+  if (document.activeElement === el) el.blur();
+}
 // announce:false when an on-screen status region already announces the same message.
 function toast(msg, tone = "", { announce = true } = {}) {
   const el = $("toast");
@@ -3226,13 +3233,12 @@ function toast(msg, tone = "", { announce = true } = {}) {
     running = false;
   };
   const resume = () => {
-    if (running || el.matches(":hover") || el.contains(document.activeElement)) return;
+    if (el.dataset.open !== "true" || running || el.matches(":hover") || el.contains(document.activeElement)) return;
     started = performance.now();
     running = true;
     toastTimer = setTimeout(() => {
       running = false;
-      el.dataset.open = "false";
-      el.removeAttribute("tabindex");
+      closeToast();
     }, remaining);
   };
   el.onmouseenter = pause;

@@ -22,3 +22,16 @@ for (const interaction of ['hover', 'focus']) {
     await expect(toast).not.toHaveAttribute('tabindex');
   });
 }
+
+test('closeToast removes tabindex and releases focus', async ({ page }) => {
+  await page.setContent('<div id="toast" class="j-toast"></div>');
+  await page.addScriptTag({ content: 'const $ = id => document.getElementById(id);\n' + toastCode + '\nwindow.showToast = toast; window.dismissToast = () => closeToast();' });
+  await page.evaluate(() => window.showToast('Critical', 'crit'));
+  const toast = page.locator('.j-toast');
+  await toast.focus();
+  await expect(toast).toBeFocused();
+  await page.evaluate(() => window.dismissToast());
+  await expect(toast).toHaveAttribute('data-open', 'false');
+  await expect(toast).not.toHaveAttribute('tabindex');
+  await expect(toast).not.toBeFocused();
+});
