@@ -119,6 +119,9 @@ test.describe('HTML export lens contract', () => {
       'Analytical coverage',
       'data-canonical-contract="complete"'
     ]);
+    const counts = [...html.matchAll(/<summary><span class="sectionNumber">0[1-9]<\/span>(?:(?!<\/summary>)[\s\S])*?class="recordCount">([^<]+)<\/span>/g)].map((match) => match[1]);
+    expect(counts.length).toBeGreaterThan(0);
+    for (const count of counts) expect(count).toMatch(/^\d+ records?$/);
     // Readiness takes the app's score bands: the sample's 40% is a warning.
     expect(html).toContain('<strong>40%</strong><span class="metricBar" data-tone="warn" style="--pct:40%" aria-hidden="true">');
     expect(html).not.toMatch(/[\uE000-\uF8FF]/);
@@ -164,6 +167,10 @@ test.describe('Localized HTML export contract', () => {
           ...locale[lens],
         ]);
         if (lens === 'biopolitical') {
+          const counts = [...html.matchAll(/<summary><span class="sectionNumber">0[1-9]<\/span>(?:(?!<\/summary>)[\s\S])*?class="recordCount">([^<]+)<\/span>/g)].map((match) => match[1]);
+          expect(counts.length).toBeGreaterThan(0);
+          const wording = lang === 'fr' ? /^\d+ fiches?$/ : /^(?:لا سجلات|سجل واحد|سجلان|\d+ (?:سجلات|سجلًا|سجل))$/;
+          for (const count of counts) expect(count).toMatch(wording);
           expectAll(html, ['name="analysis-contract" content="biopolitical-training-map-v2"', 'name="schema-version" content="2.1.0"']);
         }
         expectNone(html, ENGLISH_TITLES[lens]);
