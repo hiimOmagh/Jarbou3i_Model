@@ -11406,6 +11406,22 @@ function trapWorkspaceFocus(event) {
   }
 }
 
+function trapEditorFocus(event) {
+  const backdrop = $("editorBackdrop");
+  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
+  const focusable = [...backdrop.querySelectorAll(
+    '.j-btn:not(:disabled),.j-input:not(:disabled),.j-textarea:not(:disabled),.j-select:not(:disabled),.j-root [href],.j-root [tabindex]:not([tabindex="-1"])',
+  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("editorDialog"))) {
+    last.focus(); event.preventDefault();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    first.focus(); event.preventDefault();
+  }
+}
+
 function trapLedgerFocus(event) {
   const backdrop = $("ledgerBackdrop");
   if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
@@ -12123,6 +12139,7 @@ document.addEventListener("keydown", (e) => {
   trapModalFocus(e);
   trapWorkspaceFocus(e);
   trapLedgerFocus(e);
+  trapEditorFocus(e);
   trapRevisionFocus(e);
   trapResolutionFocus(e);
 });
