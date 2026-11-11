@@ -441,7 +441,7 @@ const I18N = {
     assumption: "افتراض",
     risk: "المخاطر",
     test: "اختبار النقض",
-    loadSample: "تحميل مثال",
+    loadSample: "جرّب مثالًا",
     sampleLoaded:
       "تم تحميل مثال تجريبي. يمكنك مراجعة النتائج أو استبدالها بموضوعك.",
     completeness: "الاكتمال",
@@ -908,7 +908,7 @@ const I18N = {
     assumption: "Assumption",
     risk: "Risk",
     test: "Disproving test",
-    loadSample: "Load sample",
+    loadSample: "Try a sample",
     sampleLoaded:
       "Sample analysis loaded. You can review it or replace it with your own topic.",
     completeness: "Completeness",
@@ -1389,7 +1389,7 @@ const I18N = {
     assumption: "Hypothèse",
     risk: "Risque",
     test: "Test de réfutation",
-    loadSample: "Charger un exemple",
+    loadSample: "Essayer un exemple",
     sampleLoaded:
       "Exemple chargé. Vous pouvez l’examiner ou le remplacer par votre propre sujet.",
     completeness: "Complétude",
@@ -6949,8 +6949,8 @@ function readinessLimitText(provenance, readiness, coverage) {
   const review = Number(provenance.humanReview);
   if (!Number.isFinite(trace) || !Number.isFinite(review)) return "";
   return trace <= review
-    ? labelText(`Held down by source traceability (${Math.round(trace)}%).`, `يحدّها ضعف تتبع المصادر (${Math.round(trace)}%).`, `Limitée par la traçabilité des sources (${Math.round(trace)} %).`)
-    : labelText(`Held down by independent human review (${Math.round(review)}%).`, `يحدّها نقص المراجعة البشرية المستقلة (${Math.round(review)}%).`, `Limitée par la revue humaine indépendante (${Math.round(review)} %).`);
+    ? labelText(`Next step: trace sources (${Math.round(trace)}%).`, `الخطوة التالية: تتبع المصادر (${Math.round(trace)}%).`, `Prochaine étape : vérifier l’origine des sources (${Math.round(trace)} %).`)
+    : labelText(`Next step: request independent human review (${Math.round(review)}%).`, `الخطوة التالية: طلب مراجعة بشرية مستقلة (${Math.round(review)}%).`, `Prochaine étape : demander une revue humaine indépendante (${Math.round(review)} %).`);
 }
 function briefFigure(label, value, definition, limit = "") {
   const hintId = `meter-hint-${label.replace(/[^a-zA-Z0-9\u0600-\u06ff]/g, "-")}`;

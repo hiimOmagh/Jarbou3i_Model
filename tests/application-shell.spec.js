@@ -276,3 +276,27 @@ test("the open case's title has its own header row, not a few letters", async ({
   await expect(title).toHaveText(data.subject.title);
   expect(await title.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
 });
+
+test("sample action is outlined and above the phone fold in every language", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("./");
+
+  for (const [lang, label] of [["Ar", "جرّب مثالًا"], ["En", "Try a sample"], ["Fr", "Essayer un exemple"]]) {
+    await page.locator("#lang" + lang).click();
+    const sample = page.locator("#loadSampleBtn");
+    await expect(sample).toHaveText(label);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const box = await sample.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(844);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    const border = await sample.evaluate(el => {
+      const css = getComputedStyle(el);
+      return { width: parseFloat(css.borderTopWidth), color: css.borderTopColor };
+    });
+    expect(border.width).toBeGreaterThanOrEqual(2);
+    expect(border.color).not.toBe("rgba(0, 0, 0, 0)");
+  }
+});
