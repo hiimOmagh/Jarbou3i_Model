@@ -84,6 +84,7 @@ const I18N = {
     topicLabel: "موضوع التحليل",
     topicPlaceholder: "مثال: صعود اليمين المتطرف في أوروبا من 2022 إلى 2026",
     analysisLang: "لغة التحليل",
+    analysisLangHint: "تحدّد اللغة التي يُطلب من الذكاء الاصطناعي كتابة التحليل بها.",
     assistantPreset: "المساعد المفضل",
     promptMode: "نمط الموجِّه",
     modeSimple: "مركّز",
@@ -548,6 +549,7 @@ const I18N = {
     topicLabel: "Analysis topic",
     topicPlaceholder: "Example: Rise of the far right in Europe, 2022–2026",
     analysisLang: "Analysis language",
+    analysisLangHint: "Sets the language the AI is asked to write the analysis in.",
     assistantPreset: "Preferred assistant",
     promptMode: "Prompt mode",
     modeSimple: "Focused",
@@ -1023,6 +1025,7 @@ const I18N = {
     topicPlaceholder:
       "Exemple : montée de l’extrême droite en Europe, 2022–2026",
     analysisLang: "Langue de l’analyse",
+    analysisLangHint: "Définit la langue dans laquelle l’IA doit rédiger l’analyse.",
     assistantPreset: "Assistant préféré",
     promptMode: "Mode du prompt",
     modeSimple: "Ciblé",
