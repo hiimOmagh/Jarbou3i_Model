@@ -272,7 +272,7 @@ section.j-card { scroll-margin-top: var(--j-s-4); }
   transition: border-color var(--j-dur-1) var(--j-ease-out), box-shadow var(--j-dur-1) var(--j-ease-out);
 }
 textarea.j-input { resize: vertical; line-height: 1.5; }
-.j-input:focus { outline: none; border-color: var(--j-signal); box-shadow: var(--j-glow); }
+.j-input:focus { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 .j-input[aria-invalid="true"] { border-color: var(--j-crit); }
 .j-input::placeholder { color: var(--j-fg-faint); opacity: 1; }
 /* Touch screens: below 16px, iOS Safari zooms the page when a field is focused. */
