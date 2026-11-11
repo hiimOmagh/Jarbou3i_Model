@@ -11373,7 +11373,7 @@ function trapWorkspaceFocus(event) {
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) {
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("workspaceDialog"))) {
     last.focus();
     event.preventDefault();
   } else if (!event.shiftKey && document.activeElement === last) {
@@ -11391,7 +11391,7 @@ function trapLedgerFocus(event) {
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) {
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("ledgerDialog"))) {
     last.focus(); event.preventDefault();
   } else if (!event.shiftKey && document.activeElement === last) {
     first.focus(); event.preventDefault();
@@ -11407,7 +11407,7 @@ function trapResolutionFocus(event) {
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) { last.focus(); event.preventDefault(); }
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("resolutionDialog"))) { last.focus(); event.preventDefault(); }
   else if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
 }
 
@@ -11420,7 +11420,7 @@ function trapRevisionFocus(event) {
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) { last.focus(); event.preventDefault(); }
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("revisionDialog"))) { last.focus(); event.preventDefault(); }
   else if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
 }
 
@@ -11559,7 +11559,7 @@ function trapModalFocus(e) {
   if (!focusables.length) return;
   const first = focusables[0],
     last = focusables[focusables.length - 1];
-  if (e.shiftKey && document.activeElement === first) {
+  if (e.shiftKey && (document.activeElement === first || document.activeElement === $("modalDialog"))) {
     last.focus();
     e.preventDefault();
   } else if (!e.shiftKey && document.activeElement === last) {
