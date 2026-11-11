@@ -126,7 +126,7 @@ const FREE_CLASSES = [
   "j-ride", "j-ride-skip", "j-ride-head", "j-ride-doors", "j-ride-line", "j-ride-stop", "j-ride-ring", "j-ride-name", "j-ride-here", "j-ride-time", "j-ride-text", "j-ride-end",
   "j-trip", "j-trip-say", "j-trip-title", "j-trip-text", "j-trip-foot", "j-trip-where", "j-trip-line", "j-trip-count",
   "j-flow", "j-flow-guide", "j-flow-mascot", "j-flow-more", "j-flow-say", "j-flow-steps", "j-flow-step", "j-flow-step-n",
-  "j-flow-card", "j-flow-head", "j-flow-panel", "j-flow-topic", "j-flow-answer", "j-flow-examples",
+  "j-flow-card", "j-flow-head", "j-flow-panel", "j-flow-topic", "j-flow-answer", "j-flow-examples", "j-resume-work",
   "j-flow-example-list", "j-flow-example", "j-flow-choices", "j-flow-choice", "j-flow-note", "j-flow-grid",
   "j-flow-howto", "j-flow-row", "j-flow-actions", "j-mode-field", "j-mode-help",
   "j-case", "j-case-outline", "j-case-link", "j-case-count", "j-case-doc", "j-case-sec", "j-case-return",

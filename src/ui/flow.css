@@ -213,6 +213,7 @@
 .j-case-fold > [role="status"]:not(:empty) { padding: 0 var(--j-s-3) var(--j-s-3); }
 
 .j-flow-examples { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); color: var(--j-fg-muted); font-size: var(--j-t-13); }
+.j-resume-work { align-self: flex-start; margin-block: var(--j-s-2); }
 .j-flow-example-list { display: contents; }
 .j-flow-example {
   min-height: var(--j-control); padding: 0 var(--j-s-4); border: 2px solid var(--j-line); border-radius: var(--j-r-pill);
