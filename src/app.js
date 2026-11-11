@@ -3212,7 +3212,31 @@ function toast(msg, tone = "", { announce = true } = {}) {
   else delete el.dataset.tone;
   el.dataset.open = "true";
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.dataset.open = "false"; }, 2600);
+  el.tabIndex = 0;
+  let remaining = tone === "warn" || tone === "crit" ? 8000 : 2600;
+  let started = 0;
+  let running = false;
+  const pause = () => {
+    if (!running) return;
+    remaining = Math.max(0, remaining - (performance.now() - started));
+    clearTimeout(toastTimer);
+    running = false;
+  };
+  const resume = () => {
+    if (running || el.matches(":hover") || el.contains(document.activeElement)) return;
+    started = performance.now();
+    running = true;
+    toastTimer = setTimeout(() => {
+      running = false;
+      el.dataset.open = "false";
+      el.removeAttribute("tabindex");
+    }, remaining);
+  };
+  el.onmouseenter = pause;
+  el.onmouseleave = resume;
+  el.onfocus = pause;
+  el.onblur = () => queueMicrotask(resume);
+  resume();
 }
 function setTheme(isDark, persist = true) {
   document.body.classList.toggle("dark", !!isDark);
