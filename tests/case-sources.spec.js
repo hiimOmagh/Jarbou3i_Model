@@ -135,7 +135,7 @@ test.describe("Your sources", () => {
     await expect(page.locator("#sourcesStatus")).toContainText("Not saved on this device");
     await expect(addForm(page).getByLabel("Title (required)")).toHaveValue("Council minutes");
     await page.locator("#workspaceSaveState").click();
-    await expect(page.locator("#caseList [data-case-row]")).toContainText("Sources: 1");
+    await expect(page.locator("#caseList [data-case-row]")).toContainText("Source notes: 1");
   });
 
   test("excerpt decisions need a reason, count both decisions, reopen, and edits reopen checks", async ({ page }) => {
@@ -440,7 +440,7 @@ test.describe("Your sources", () => {
     await expect(sourceAction(excerpt, "reopen")).toBeVisible();
     const [before] = await readCases(page);
     await page.locator("#langFr").click();
-    await expect(page.locator("#sourcesFold > summary")).toHaveText("Vos sources");
+    await expect(page.locator("#sourcesFold > summary")).toHaveText("Vos notes de sources");
     await expect(row).toContainText("Conforme à la source");
     await page.locator("#langEn").click();
     await openStep(page, "lens");
@@ -473,7 +473,7 @@ test.describe("Your sources", () => {
   test("Arabic fold uses RTL labels and auto direction for analyst text", async ({ page }) => {
     await start(page, "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.locator("#sourcesFold > summary")).toHaveText("مصادرك");
+    await expect(page.locator("#sourcesFold > summary")).toHaveText("ملاحظاتك عن المصادر");
     await addForm(page).getByLabel("العنوان (مطلوب)").fill("وثيقة <أصلية>");
     await addForm(page).getByRole("button", { name: "أضف مصدرًا", exact: true }).click();
     const row = rows(page).first();
@@ -805,3 +805,13 @@ test.describe("Your sources", () => {
     expect(await caseBytes()).toBe(bytes);
   });
 });
+
+// New AR/EN/FR wording needs native check.
+for (const [lang, notes, access] of [['en', 'Your source notes', 'AI source access'], ['ar', 'ملاحظاتك عن المصادر', 'وصول الذكاء الاصطناعي إلى المصادر'], ['fr', 'Vos notes de sources', 'Accès de l’IA aux sources']]) {
+  test(`source notes and AI access have distinct labels: ${lang}`, async ({ page }) => {
+    await start(page, lang);
+    await expect(page.locator('#sourcesFold > summary')).toContainText(notes);
+    await openStep(page, 'settings');
+    await expect(page.locator('[data-i18n="evidenceAccess"]')).toHaveText(access);
+  });
+}

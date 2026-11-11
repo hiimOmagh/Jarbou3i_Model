@@ -125,7 +125,7 @@ test.describe("Your sources in the case file", () => {
     // After the evidence records, before Assumptions, folded.
     await expect(fold(page)).not.toHaveAttribute("open");
     expect(await fold(page).evaluate((node) => [node.previousElementSibling.dataset.records, node.nextElementSibling.tagName, node.nextElementSibling.textContent])).toEqual(["evidence", "H3", "Assumption"]);
-    await expect(fold(page).locator(":scope > summary")).toHaveText("Your sources");
+    await expect(fold(page).locator(":scope > summary")).toHaveText("Your source notes");
     await fold(page).locator(":scope > summary").click();
     await expect(foldRows(page)).toHaveCount(2);
     const [related, other] = [foldRows(page).nth(0), foldRows(page).nth(1)];
@@ -308,8 +308,8 @@ test.describe("Your sources in the case file", () => {
   });
 
   for (const [lang, copy] of Object.entries({
-    ar: { dir: "rtl", line: `من مصدرك: «${STRATEGIC_TITLE}» · مطابقة بالعنوان`, summary: "مصادرك", related: "في هذا التحليل: E1", none: "لا دليل هنا بهذا الرابط أو العنوان", unchecked: "لم يُتحقَّق منه بعد", matches: "يطابق المصدر" },
-    fr: { dir: "ltr", line: `De votre source : « ${STRATEGIC_TITLE} » · rapproché par le titre`, summary: "Vos sources", related: "Dans cette analyse : E1", none: "Aucune preuve ici n’a ce lien ou ce titre", unchecked: "Pas encore vérifié", matches: "Conforme à la source" },
+    ar: { dir: "rtl", line: `من مصدرك: «${STRATEGIC_TITLE}» · مطابقة بالعنوان`, summary: "ملاحظاتك عن المصادر", related: "في هذا التحليل: E1", none: "لا دليل هنا بهذا الرابط أو العنوان", unchecked: "لم يُتحقَّق منه بعد", matches: "يطابق المصدر" },
+    fr: { dir: "ltr", line: `De votre source : « ${STRATEGIC_TITLE} » · rapproché par le titre`, summary: "Vos notes de sources", related: "Dans cette analyse : E1", none: "Aucune preuve ici n’a ce lien ou ce titre", unchecked: "Pas encore vérifié", matches: "Conforme à la source" },
   })) {
     test(`${lang}: the line and the fold in its words, kept open across a language change`, async ({ page }) => {
       await linkedCase(page);
