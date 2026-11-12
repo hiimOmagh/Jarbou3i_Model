@@ -116,7 +116,12 @@
     + `.provenance dl div{min-width:0;padding:0;border:0;background:none}`
     + `.provenance dt{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-ui);letter-spacing:0;text-transform:none}`
     + `.provenance dd{margin:2px 0 0;color:var(--j-fg);overflow-wrap:anywhere}`
-    + `@media print{.provenance{break-inside:avoid-page}}`;
+    + `.j-executive-brief,.j-report-appendix{overflow-wrap:anywhere;min-width:0}`
+    + `.j-executive-brief .j-brief-title{margin:0 0 1rem;font:700 var(--j-t-16)/1.3 var(--j-font-ui)}`
+    + `.j-report-appendix{margin-block-start:3rem;border-block-start:3px solid var(--j-ink);padding-block-start:1rem}`
+    + `.j-executive-brief .thesis{margin-block-start:1rem;padding-block-start:1rem}`
+    + `.j-executive-brief .thesis p{margin-block:.5rem}.j-appendix-link{display:inline-block;margin-block-start:.5rem}`
+    + `@media print{.provenance{break-inside:avoid-page}.j-report-appendix{break-before:page;margin-block-start:0}.j-executive-brief{font-size:10pt;line-height:1.4}.j-executive-brief .hero{padding-block-start:1rem}.j-executive-brief .hero h1{font-size:23pt}.j-executive-brief .heroGrid{grid-template-columns:minmax(0,1fr) 180px;gap:1rem}.j-executive-brief .draftBanner{margin-block-end:1rem;padding:.5rem}.j-executive-brief .overall{padding-block-start:.5rem;gap:.35rem}}`;
 
   const COPY = Object.freeze({
     en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Format version", version: "App version", note: "This report helps you examine a question using the analyst’s inputs. It is not a verdict or proof. It does not predict what will happen." },

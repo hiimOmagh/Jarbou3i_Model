@@ -52,6 +52,46 @@ function expectNone(html, tokens) {
   for (const token of tokens) expect(html).not.toContain(token);
 }
 
+for (const lang of ['en', 'ar', 'fr']) {
+  test(`Strategic executive brief and appendix: ${lang}, phone and print`, async ({ page }, testInfo) => {
+    const html = await exportSampleReport(page, testInfo, 'strategic', lang);
+    await page.goto(pathToFileURL(testInfo.outputPath(`${lang}-strategic-export.html`)).href);
+    const outline = () => page.locator('main h1, main h2').allTextContents();
+    const brief = page.locator('[data-executive-brief]');
+    const appendix = page.locator('[data-report-appendix]');
+    await expect(brief).toBeVisible();
+    await expect(appendix).toBeVisible();
+    await expect(brief.locator('.thesis')).toContainText(/\S/);
+    await expect(brief.locator('.overall .gate')).toBeVisible();
+    await expect(brief.locator('.metric, .formula, .item, table')).toHaveCount(0);
+    await expect(appendix.locator('.metric')).toHaveCount(6);
+    await expect(appendix.locator('.layer')).toHaveCount(6);
+    expect(await outline()).toEqual(JSON.parse(await fs.readFile(`tests/goldens/strategic-after-${lang}.json`, 'utf8')));
+    const canonical = JSON.parse(await page.locator('#canonical-analysis').textContent());
+    await expect(appendix).toContainText(canonical.subject.executive_thesis);
+    await expect(appendix).toContainText(canonical.subject.context);
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+    await page.screenshot({ path: testInfo.outputPath(`strategic-after-${lang}.png`), fullPage: true });
+    await page.emulateMedia({ media: 'print' });
+    await page.setViewportSize({ width: 688, height: 1000 });
+    expect(await appendix.evaluate((el) => getComputedStyle(el).breakBefore)).toBe('page');
+    // A4 printable height after the report's 16mm top/bottom margins.
+    expect(await brief.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(1001);
+    if (testInfo.project.name === 'chromium') {
+      // Print the opening section itself: no hidden overflow or extra page.
+      await page.addStyleTag({ content: '@media print{.j-report-appendix{display:none!important}}' });
+      const pdf = await page.pdf({ format: 'A4', preferCSSPageSize: true });
+      expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+      await testInfo.attach(`brief-${lang}.pdf`, { body: pdf, contentType: 'application/pdf' });
+    }
+    expect(html).toContain(`dir="${lang === 'ar' ? 'rtl' : 'ltr'}"`);
+    if (lang !== 'en') await expect(brief).toHaveAttribute('data-copy-review', 'needs-native-check');
+  });
+}
+
 test.describe('HTML export lens contract', () => {
   test('strategic export keeps the strategic report contract', async ({ page }, testInfo) => {
     const html = await exportSampleReport(page, testInfo, 'strategic');
@@ -238,6 +278,29 @@ async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
 
 const strategicFixture = async (name) =>
   JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/${name}`, 'utf8'));
+
+test('a long Strategic brief keeps the full authored text and next action in its appendix', async ({ page }, testInfo) => {
+  const data = await strategicFixture('sample-analysis-en.json');
+  data.subject.title = 'A lengthy subject '.repeat(30);
+  data.subject.question = 'Which claims can the available sources support? '.repeat(30);
+  data.subject.executive_thesis = 'The sources support a qualified finding. '.repeat(80);
+  data.quality_gate.next_improvement = 'Check the primary sources and record uncertainty. '.repeat(40);
+  await exportImportedStrategic(page, testInfo, data, 'long-brief');
+  await page.goto(pathToFileURL(testInfo.outputPath('long-brief.html')).href);
+  const appendix = page.locator('[data-report-appendix]');
+  for (const text of [data.subject.title, data.subject.question, data.subject.executive_thesis, data.quality_gate.next_improvement]) {
+    await expect(appendix).toContainText(text);
+  }
+  await expect(page.locator('[data-executive-brief] .thesis')).toContainText('…');
+  await page.emulateMedia({ media: 'print' });
+  await page.setViewportSize({ width: 688, height: 1000 });
+  expect(await page.locator('[data-executive-brief]').evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(1001);
+  if (testInfo.project.name === 'chromium') {
+    await page.addStyleTag({ content: '@media print{.j-report-appendix{display:none!important}}' });
+    const pdf = await page.pdf({ format: 'A4', preferCSSPageSize: true });
+    expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+  }
+});
 
 test.describe('Strategic HTML report content', () => {
   test('the hero states capped decision readiness, coverage and the quality gate', async ({ page }, testInfo) => {
