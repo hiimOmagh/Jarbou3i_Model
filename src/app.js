@@ -6949,8 +6949,8 @@ function readinessLimitText(provenance, readiness, coverage) {
   const review = Number(provenance.humanReview);
   if (!Number.isFinite(trace) || !Number.isFinite(review)) return "";
   return trace <= review
-    ? labelText(`Next step: trace sources (${Math.round(trace)}%).`, `الخطوة التالية: تتبع المصادر (${Math.round(trace)}%).`, `Prochaine étape : vérifier l’origine des sources (${Math.round(trace)} %).`)
-    : labelText(`Next step: request independent human review (${Math.round(review)}%).`, `الخطوة التالية: طلب مراجعة بشرية مستقلة (${Math.round(review)}%).`, `Prochaine étape : demander une revue humaine indépendante (${Math.round(review)} %).`);
+    ? labelText(`Next step: trace sources (${Math.round(trace)}%).`, `الخطوة التالية: تتبع المصادر (${Math.round(trace)}%).`, `Prochaine étape : vérifier l’origine des sources (${Math.round(trace)} %).`)
+    : labelText(`Next step: request independent human review (${Math.round(review)}%).`, `الخطوة التالية: طلب مراجعة بشرية مستقلة (${Math.round(review)}%).`, `Prochaine étape : demander une revue humaine indépendante (${Math.round(review)} %).`);
 }
 function briefFigure(label, value, definition, limit = "") {
   const hintId = `meter-hint-${label.replace(/[^a-zA-Z0-9\u0600-\u06ff]/g, "-")}`;
@@ -11227,7 +11227,7 @@ function closeWorkspaceDialog() {
 // draft, and the immutable revisions.
 function lifeText(key, values = {}) {
   const copy = {
-    where: ["Where your work is", "أين عملك", "Où en est votre travail"],
+    where: ["Where your work is", "أين عملك", "Où se trouve votre travail"],
     whereHint: ["Three separate places, so nothing is lost or replaced without you knowing: interrupted work, your draft, and saved revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء ولا يُستبدل دون علمك: العمل المنقطع، ومسودتك، والنسخ المحفوظة.", "Trois endroits séparés, pour que rien ne se perde ni ne soit remplacé à votre insu : le travail interrompu, votre brouillon et les révisions enregistrées."],
     snapTitle: ["Interrupted work", "العمل المنقطع", "Travail interrompu"],
     snapshot: ["Recovery found", "استرداد متاح", "Récupération"],
