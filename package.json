@@ -51,7 +51,7 @@
     "test:performance": "node tests/performance-foundations-check.mjs",
     "test:provenance": "node tests/provenance-check.mjs",
     "test:parser": "node tests/json-parser-check.mjs",
-    "test:ai-interchange": "node tests/ai-interchange-reliability-check.mjs",
+    "test:ai-interchange": "node tests/ai-interchange-reliability-check.mjs && node tests/follow-up-source-boundary-check.mjs",
     "test:i18n:bio": "node tests/biopolitical-language-check.mjs",
     "test:schema": "node tests/schema-check.mjs",
     "test:fixtures": "node tests/fixtures-check.mjs",

@@ -4670,6 +4670,15 @@ ${AI_INTERCHANGE.buildChecklist(lang)}`;
 function sentPromptSources() {
   return state.evidenceAccess === "provided" ? (caseDossier?.sources || []).filter((source) => source.send === true) : [];
 }
+// What a follow-up prompt states of the source access CURRENTLY set (nothing
+// is stored with the answer): the mode, and the titles (or links) of the
+// supplied sources that are sent now.
+function followUpBoundary() {
+  return {
+    access: ["none", "provided", "web"].includes(state.evidenceAccess) ? state.evidenceAccess : "web",
+    sources: sentPromptSources().map((source) => (source.title || "").trim() || (source.url || "").trim()),
+  };
+}
 /* RESEARCH-1D D3: supplied material is capped (8,000 characters a source, 32,000
    in all, counted as the prompt carries it: src/core/source-prompt-budget.js).
    Preview and Copy both ask promptSourcePlan() and share its result. Over a
@@ -8289,7 +8298,7 @@ async function copyImprovementPrompt(event) {
   const button = event.currentTarget;
   const lang = ["ar", "en", "fr"].includes(state.analysis?.language) ? state.analysis.language : state.analysisLang;
   const action = button.closest('[data-orientation="action"]').querySelector("[data-next-action]").textContent;
-  const prompt = AI_INTERCHANGE.buildImprovementPrompt(state.analysis, action, lang);
+  const prompt = AI_INTERCHANGE.buildImprovementPrompt(state.analysis, action, lang, followUpBoundary());
   // A whole answer is awaited, not parts of an earlier one.
   completionBase = null;
   replyFor = "improve";
@@ -11644,17 +11653,20 @@ function repairPrompt() {
     const diagnostics = state.importAudit.completionDiagnostics;
     try {
       // The prompt template shows the AI the shape of each missing record.
+      // It is built for the answer's own source access, never the web one.
+      const access = followUpBoundary().access;
       const template =
         candidate.analysis_lens === "biopolitical"
-          ? JSON.parse(BIO.buildSchemaTemplate(state.analysisLang, "research", "web"))
+          ? JSON.parse(BIO.buildSchemaTemplate(state.analysisLang, "research", access))
           : JSON.parse(
-              buildSchema(state.analysisLang, "research", "strategic", "web").replace(/^[^\n]*\n/, ""),
+              buildSchema(state.analysisLang, "research", "strategic", access).replace(/^[^\n]*\n/, ""),
             );
       const prompt = AI_INTERCHANGE.buildCompletionPrompt(
         candidate,
         diagnostics,
         state.analysisLang,
         template,
+        followUpBoundary(),
       );
       completionBase = {
         value: candidate,
