@@ -661,7 +661,7 @@ test("with no saved analysis the disabled bundle button is tied to the sentence 
   await expect(button).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
   await expect(page.locator("#workspaceResetCurrent")).toBeDisabled();
   await expect(page.locator("#workspaceResetCurrent")).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
-  await expect(page.locator("#workspaceEmptyNote")).toHaveText("No saved workspaces yet. Load an example to create one.");
+  await expect(page.locator("#workspaceEmptyNote")).toHaveText("No saved workspaces yet. Try a sample to create one.");
   // Once an analysis is saved the button is enabled and no longer points at the empty note.
   await expect(page.locator("#workspaceBackdrop")).toHaveClass(/show/);
   await page.locator("#workspaceDialog").press("Escape");
@@ -675,8 +675,8 @@ test("with no saved analysis the disabled bundle button is tied to the sentence 
 
 // Arabic and French copy needs native check.
 for (const [lang, empty] of [
-  ["Ar", "لا توجد مساحات عمل محفوظة بعد. حمّل مثالًا لإنشاء واحدة."],
-  ["Fr", "Aucun espace de travail enregistré. Chargez un exemple pour en créer un."],
+  ["Ar", "لا توجد مساحات عمل محفوظة بعد. جرّب مثالًا لإنشاء واحدة."],
+  ["Fr", "Aucun espace de travail enregistré. Essayer un exemple pour en créer un."],
 ]) {
   test(`empty workspace guidance keeps disabled actions described in ${lang}`, async ({ page }) => {
     await page.goto("./");
