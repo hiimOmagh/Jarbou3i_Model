@@ -167,7 +167,7 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
 for (const [button, pattern] of [
   ['#langEn', /Next step: (trace sources|request independent human review) \(\d+%\)\./],
   ['#langAr', /الخطوة التالية: (تتبع المصادر|طلب مراجعة بشرية مستقلة) \(\d+%\)\./],
-  ['#langFr', /Prochaine étape : (vérifier l’origine des sources|demander une revue humaine indépendante) \(\d+\s%\)\./],
+  ['#langFr', /Prochaine étape : (vérifier l’origine des sources|demander une revue humaine indépendante) \(\d+\s%\)\./],
 ]) {
   test(`the brief says what holds decision readiness down (${button.slice(5).toLowerCase()})`, async ({ page }) => {
     await page.goto('./');
