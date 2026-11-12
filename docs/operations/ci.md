@@ -61,8 +61,9 @@ deployment dependency, together with `No-browser gates`.
 
 - Matrix fail-fast is disabled, so one browser failure does not hide results from
   the other engines.
-- Every failed core leg uploads a uniquely named debug artifact, including
-  separate artifacts for each WebKit shard.
+- Every failed core leg uploads a uniquely named debug artifact
+  (`browser-debug-<leg>`), one per shard for every browser: for example
+  `chromium-1-of-4`, `firefox-1-of-3`, `webkit-1-of-5`, `mobile-chrome-1-of-3`.
 - Evidence artifacts upload even when their producing step fails, provided files
   exist.
 - Debug artifacts are kept for 7 days; release evidence for 14 days.
