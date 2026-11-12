@@ -676,7 +676,7 @@ test("with no saved analysis the disabled bundle button is tied to the sentence 
 // Arabic and French copy needs native check.
 for (const [lang, empty] of [
   ["Ar", "لا توجد مساحات عمل محفوظة بعد. جرّب مثالًا لإنشاء واحدة."],
-  ["Fr", "Aucun espace de travail enregistré. Essayer un exemple pour en créer un."],
+  ["Fr", "Aucun espace de travail enregistré. Essayez un exemple pour en créer un."],
 ]) {
   test(`empty workspace guidance keeps disabled actions described in ${lang}`, async ({ page }) => {
     await page.goto("./");
