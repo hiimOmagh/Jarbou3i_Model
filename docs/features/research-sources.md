@@ -22,7 +22,7 @@ every answer.
 
 **Today (observed):**
 
-- Source access (`#evidenceAccess`) and the free-text box **Supplied
+- AI source access (`#evidenceAccess`) and the free-text box **Supplied
   sources** (`#sourcesInput`) are in step 3, Settings (`index.html`, the
   `settings` flow panel). The box shows only with "Sources supplied in
   context" (`provided`), and is required then: both prompt buttons refuse an
@@ -110,7 +110,7 @@ amendment is made in research-dossier.md when this page is accepted.
   promoted in 1C);
 - relating imported evidence to the case's sources, showing sources in the
   case file, and carrying checks into review, reports or exports (1C);
-- sending sources with Source access "No access" or "Live web search";
+- sending sources with AI source access "No access" or "Live web search";
 - any change to the Strategic 1.1.0 or Biopolitical 2.1.0 payloads, the
   workspace format (v3), the workspace bundle or the import policy.
 
@@ -152,11 +152,11 @@ bounded to: a case with no source stays format 1, exactly as 1A writes it.
 5. Only the analyst decides a check. An import, the sample, a lens switch, a
    language change or a saved edit of an answer never changes a source, an
    excerpt or a check.
-6. With Source access "Sources supplied in context", each source sent goes in
-   the fenced material under "Your sources", with its excerpts except those
+6. With AI source access "Sources supplied in context", each source sent goes in
+   the fenced material under "Your source notes", with its excerpts except those
    that do not match. When at least one source is sent, and only then, the
    supplied-sources rule, outside the fence, in both lenses and three
-   languages, also says: a source under "Your sources" counts as
+   languages, also says: a source under "Your source notes" counts as
    supplied even when it cannot be opened; its excerpts are the analyst's
    reading of it, never to be presented as its own words; cite it by its
    title as written there and its link when it has one (for a file too, which
@@ -259,7 +259,7 @@ bounded to: a case with no source stays format 1, exactly as 1A writes it.
 6. **S6, Your source notes.** The fold, its forms and focus, the send state, the
    Settings line, "Sources: n" in the cases list, the restore guard; AR/EN/FR.
    Test: `tests/case-sources.spec.js` (new).
-7. **S7, the prompt.** "Your sources" in the material, the supplied-sources
+7. **S7, the prompt.** "Your source notes" in the material, the supplied-sources
    rule amended in both lenses and three languages, the Biopolitical tag
    guard, the buttons accepting a sent source. Tests:
    `tests/case-sources.spec.js`, the golden prompts from 1A, and every spec
@@ -269,7 +269,7 @@ bounded to: a case with no source stays format 1, exactly as 1A writes it.
 
 - **Where.** A fold **Your source notes** in the topic step, right after "What
   the analysis covers": the sources belong to the case and open with it. It
-  says whether they will be sent: "Sent to the AI when Source access (step 3)
+  says whether they will be sent: "Sent to the AI when AI source access (step 3)
   is Sources supplied in context." In step 3, under the Supplied sources box
   (shown only for that access), a line counts them: "Your source notes sent to
   the AI: n (step 1)"; with none sent, the line is not shown.
