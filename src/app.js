@@ -4177,7 +4177,7 @@ function validateJsonInput() {
         ? labelText(
             `Reviewable draft. Evidence awaiting independent approval: ${provenance.total - provenance.approved} of ${provenance.total}. Review: ${problems.length} format or consistency warning${problems.length === 1 ? "" : "s"}. You can import it; publication stays blocked.`,
             `مسودة قابلة للمراجعة. أدلة تنتظر اعتمادًا مستقلًا: ${provenance.total - provenance.approved} من ${provenance.total}. المراجعة: ${problems.length} ${problems.length === 1 ? "تنبيه يخص الصيغة أو الاتساق" : "تنبيهات تخص الصيغة أو الاتساق"}. يمكنك استيرادها، ويظل النشر محظورًا.`,
-            `Brouillon révisable. Preuves en attente d’approbation indépendante : ${provenance.total - provenance.approved} sur ${provenance.total}. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de format ou de cohérence. Vous pouvez l’importer ; la publication reste bloquée.`,
+            `Brouillon révisable. Preuves en attente d’approbation indépendante : ${provenance.total - provenance.approved} sur ${provenance.total}. Révision : ${problems.length} avertissement${problems.length === 1 ? "" : "s"} de format ou de cohérence. Vous pouvez l’importer ; la publication reste bloquée.`,
           )
         : warnings.length
           ? labelText(
