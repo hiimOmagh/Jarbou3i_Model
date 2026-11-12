@@ -586,7 +586,7 @@ test.describe("Your source notes in the review ledger", () => {
 
   for (const [lang, copy] of Object.entries({
     ar: { phase: "التحقق من المصدر", line: `مصدرك: «${STRATEGIC_TITLE}» · المقتطفات المطابقة: 1`, start: (date) => `من مصدرك «${STRATEGIC_TITLE}»، في p. 12، تُحقّق منه في ${date}: Compared with the printed table.` },
-    fr: { phase: "Vérifier la provenance", line: `Votre source : « ${STRATEGIC_TITLE} » · extraits conformes : 1`, start: (date) => `De votre source « ${STRATEGIC_TITLE} », à p. 12, vérifié le ${date} : Compared with the printed table.` },
+    fr: { phase: "Vérifier la provenance", line: `Votre source : « ${STRATEGIC_TITLE} » · extraits conformes : 1`, start: (date) => `De votre source « ${STRATEGIC_TITLE} », à p. 12, vérifié le ${date} : Compared with the printed table.` },
   })) {
     test(`${lang}: the line and the started rationale in its words`, async ({ page }) => {
       await linkedCase(page);

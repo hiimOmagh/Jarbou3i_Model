@@ -328,7 +328,7 @@ test.describe('supplied material over a cap', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.locator('#langFr').click();
     await closed(page);
-    await expect(page.locator('#topicStatus')).toHaveText('Le dossier ou les réglages ont changé ; votre choix pour ce prompt a été effacé. Choisissez à nouveau.');
+    await expect(page.locator('#topicStatus')).toHaveText('Le dossier ou les réglages ont changé ; votre choix pour ce prompt a été effacé. Choisissez à nouveau.');
     await page.locator('#copyPromptBtn').click();
     await expect(page.locator('#promptReviewHead')).toHaveText('Choisissez ce qui entre dans ce prompt');
     await expect(sourceUse(page, 'Big report')).toContainText('Cette source utilise');

@@ -133,7 +133,7 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#flowSay")).toHaveText("Imported. Your review is ready.");
     await expect(page.locator("#jsonStatus")).toHaveText(/^Imported: this is the analysis under review/);
     await page.locator("#langFr").click();
-    await expect(page.locator("#jsonStatus")).toHaveText(/^Importée : c’est l’analyse en cours d’examen/);
+    await expect(page.locator("#jsonStatus")).toHaveText(/^Importée : c’est l’analyse en cours d’examen/);
   });
 
   test("says what each prompt mode asks for, beside the choice", async ({ page }) => {
@@ -189,5 +189,5 @@ test("handoff boundary Fr", async ({ page }) => {
   await page.goto("./");
   await page.locator("#langFr").click();
   await page.locator('[data-flow-step="prompt"]').click();
-  await expect(page.locator("#flowStepHint")).toHaveText("L’application prépare le prompt sans jamais contacter d’IA ; votre IA rédige l’analyse. Copiez le prompt dans la conversation avec l’IA de votre choix, puis collez sa réponse ici.");
+  await expect(page.locator("#flowStepHint")).toHaveText("L’application prépare le prompt sans jamais contacter d’IA ; votre IA rédige l’analyse. Copiez le prompt dans la conversation avec l’IA de votre choix, puis collez sa réponse ici.");
 });
