@@ -177,7 +177,7 @@ export function createApplicationShell({
             : { saved: "ok", error: "crit" }[currentSaveState] || "idle";
       workspaceSaveState.setAttribute(
         "aria-label",
-        `${localize("Where your work is", "أين عملك", "Où se trouve votre travail")}: ${workspaceSaveState.textContent}`,
+        `${localize("Where your work is", "أين عملك", "Où se trouve votre travail")}${localize("", "", " ")}: ${workspaceSaveState.textContent}`,
       );
     }
     // Global context: the case open now.

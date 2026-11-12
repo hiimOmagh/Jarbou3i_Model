@@ -3822,7 +3822,7 @@ function renderImportAuditDetails({
     : "";
   body.innerHTML = `${
     provenance?.total
-      ? `<section class="j-audit-group"><h3>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h3><p>${escapeHtml(labelText(`Evidence awaiting independent approval: ${blocking} of ${provenance.total}. Verification the AI declares for its own sources is not trusted.`, `أدلة تنتظر اعتمادًا مستقلًا: ${blocking} من ${provenance.total}. لا يُعتدّ بالتحقق الذي يعلنه الذكاء الاصطناعي لمصادره.`, `Preuves en attente d’approbation indépendante : ${blocking} sur ${provenance.total}. La vérification que l’IA déclare pour ses propres sources n’est pas fiable.`))}</p></section>`
+      ? `<section class="j-audit-group"><h3>${escapeHtml(labelText("Publication blockers", "عوائق النشر", "Blocages de publication"))}</h3><p>${escapeHtml(labelText(`Evidence awaiting independent approval: ${blocking} of ${provenance.total}. Verification the AI declares for its own sources is not trusted.`, `أدلة تنتظر اعتمادًا مستقلًا: ${blocking} من ${provenance.total}. لا يُعتدّ بالتحقق الذي يعلنه الذكاء الاصطناعي لمصادره.`, `Preuves en attente d’approbation indépendante : ${blocking} sur ${provenance.total}. La vérification que l’IA déclare pour ses propres sources n’est pas fiable.`))}</p></section>`
       : ""
   }<section class="j-audit-group"><h3>${escapeHtml(labelText("Review required", "تتطلب مراجعة", "Révision requise"))}</h3>${warningItems}</section><section class="j-audit-group"><h3>${escapeHtml(labelText("Automatic structural repair", "الإصلاح البنيوي التلقائي", "Réparation structurelle automatique"))}</h3>${repairs.length ? `<ul>${repairs.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : `<p>${escapeHtml(labelText("No automatic structural repair was required. Analytical content and evidence are never invented or rewritten here.", "لم يلزم إصلاح بنيوي تلقائي. لا يُختلق أو يُعاد تحرير المحتوى التحليلي والأدلة هنا.", "Aucune réparation structurelle automatique n’a été nécessaire. Le contenu analytique et les preuves ne sont jamais inventés ni réécrits ici."))}</p>`}<p>${escapeHtml(labelText("The original pasted text is preserved in the current import audit until the input is cleared.", "يُحفظ النص الأصلي الملصق في تدقيق الاستيراد الحالي حتى مسح الإدخال.", "Le texte collé d’origine reste conservé dans l’audit courant jusqu’à l’effacement de l’entrée."))}</p></section>${quarantineHtml}`;
   details.hidden = false;
@@ -7230,7 +7230,7 @@ function strategicSelfAssessment(a) {
     : ["evidence", "contradictions", "scenarios"].includes(weakestKey) ? t(weakestKey) : weakestKey;
   const risk = String(a.quality_gate?.publication_risk || "").trim();
   if (!weakest && !risk) return null;
-  const colon = labelText(": ", ": ", " : ");
+  const colon = labelText(": ", ": ", " : ");
   const riskText = {
     low: labelText("low", "منخفض", "faible"),
     medium: labelText("medium", "متوسط", "moyen"),
@@ -8303,7 +8303,7 @@ function openAnswerBox() {
   $(replyFor ? "continuationInput" : "jsonInput").focus();
 }
 function connectionsShownText(shown, total) {
-  return labelText("Shown: {shown} of {total}", "المعروض: {shown} من {total}", "Affichées : {shown} sur {total}")
+  return labelText("Shown: {shown} of {total}", "المعروض: {shown} من {total}", "Affichées : {shown} sur {total}")
     .replace("{shown}", shown)
     .replace("{total}", total);
 }
