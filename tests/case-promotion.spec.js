@@ -99,7 +99,7 @@ const holdCaseWrites = (page) => page.evaluate(() => {
 const LONG_ID = `E${"9".repeat(199)}`;
 const withLongId = (answer) => Object.assign(answer, JSON.parse(JSON.stringify(answer).replaceAll('"E1"', JSON.stringify(LONG_ID))));
 const pageOverflow = (page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-// A save in the topic step's Your sources, made without moving focus, as a
+// A save in the topic step's Your source notes, made without moving focus, as a
 // queued save lands while the analyst works in the case file.
 const addSourceQuietly = (page, title) => page.evaluate((value) => {
   const add = document.querySelector('[data-source-form="add"]');
@@ -648,7 +648,7 @@ test.describe("Make it evidence", () => {
     await expectNoSidewaysScroll(page);
   });
 
-  test("a pointer this tab saved is no change elsewhere: an excerpt edit left open in Your sources still saves, and the case file says Changed since", async ({ page }) => {
+  test("a pointer this tab saved is no change elsewhere: an excerpt edit left open in Your source notes still saves, and the case file says Changed since", async ({ page }) => {
     await promotableCase(page, {
       beforeImport: async () => {
         const excerpt = page.locator("#sourcesBody [data-excerpt-row]").first();
@@ -820,7 +820,7 @@ test.describe("Make it evidence", () => {
     });
     const typed = async () => Promise.all(["basis", "confidence", "evidence_strength", "source_type", "uncertainty"].map((name) => field(page, name).inputValue()));
     const values = ["source_based", "medium", "4", "Survey report", "One survey year only."];
-    // A save in Your sources draws the fold again in place.
+    // A save in Your source notes draws the fold again in place.
     await caretAt(4, 9);
     await addSourceQuietly(page, "Field notes");
     await expect(foldRows(page)).toHaveCount(2);

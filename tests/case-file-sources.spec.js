@@ -115,7 +115,7 @@ const printedHtml = (page) => page.evaluate(() => {
   return html;
 });
 
-test.describe("Your sources in the case file", () => {
+test.describe("Your source notes in the case file", () => {
   test("Strategic: the related record says its source under its title and the fold lists every source", async ({ page }) => {
     await linkedCase(page);
     await expect(line(page, "E1")).toHaveText(`From your source: ${STRATEGIC_TITLE} · matched by title`);
@@ -468,7 +468,7 @@ async function appendLedger(page, action, text = "") {
 const DIRECTION_MARKS = new RegExp(`[${String.fromCharCode(0x200e, 0x200f, 0x61c)}]`, "g");
 const checkedOn = async (page, iso, lang = "en") => (await page.evaluate(([value, locale]) => new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(value)), [iso, lang])).replace(DIRECTION_MARKS, "");
 
-test.describe("Your sources in the review ledger", () => {
+test.describe("Your source notes in the review ledger", () => {
   for (const answer of ["en", "bio-en"]) {
     test(`${answer}: the related provenance task names your source, Complete starts from your check, and the tasks are the same without the case`, async ({ page }) => {
       const evidence = JSON.parse(await fixture(answer)).evidence.items[0];

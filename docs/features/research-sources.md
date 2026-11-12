@@ -256,7 +256,7 @@ bounded to: a case with no source stays format 1, exactly as 1A writes it.
    `tests/research-dossier.spec.js` (a record sealed by `origin/main`'s
    module, with a colon-led term, lists as verified in real IndexedDB in all
    four engines).
-6. **S6, Your sources.** The fold, its forms and focus, the send state, the
+6. **S6, Your source notes.** The fold, its forms and focus, the send state, the
    Settings line, "Sources: n" in the cases list, the restore guard; AR/EN/FR.
    Test: `tests/case-sources.spec.js` (new).
 7. **S7, the prompt.** "Your sources" in the material, the supplied-sources
@@ -265,13 +265,13 @@ bounded to: a case with no source stays format 1, exactly as 1A writes it.
    `tests/case-sources.spec.js`, the golden prompts from 1A, and every spec
    that pins prompt text.
 
-## Your sources (S6)
+## Your source notes (S6)
 
-- **Where.** A fold **Your sources** in the topic step, right after "What
+- **Where.** A fold **Your source notes** in the topic step, right after "What
   the analysis covers": the sources belong to the case and open with it. It
   says whether they will be sent: "Sent to the AI when Source access (step 3)
   is Sources supplied in context." In step 3, under the Supplied sources box
-  (shown only for that access), a line counts them: "Your sources sent to
+  (shown only for that access), a line counts them: "Your source notes sent to
   the AI: n (step 1)"; with none sent, the line is not shown.
 - **Add a source.** Title (required), Link, Date of the source, Opened on
   (empty until the analyst sets it), **Send to the AI** (ticked). **Add

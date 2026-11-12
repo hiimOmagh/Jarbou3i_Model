@@ -99,7 +99,7 @@
   }
   .j-case-link > small { display: none; }
 }
-/* Your sources beside the evidence (RESEARCH-1C S8): a record's line under its
+/* Your source notes beside the evidence (RESEARCH-1C S8): a record's line under its
    title, and a fold after the evidence records ruled as the diagnostics fold.
    Its source and evidence links are buttons that read as links. */
 .j-case-doc [data-case-source-line] { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; overflow-wrap: anywhere; }

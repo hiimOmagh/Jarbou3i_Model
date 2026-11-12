@@ -156,9 +156,9 @@ sources })` in `src/core/source-relations.js`, returns
   among its facts: "From your source: <title>", with " · matched by title" when
   related by title. It opens the fold and moves focus to the source's row,
   as the record links do. Nothing else changes.
-- **Your sources fold** in the Evidence section, both lenses, after the
+- **Your source notes fold** in the Evidence section, both lenses, after the
   evidence records (Strategic: before Assumptions), folded. It shows the
-  case as the topic step's Your sources saves it, drawn again in place after
+  case as the topic step's Your source notes saves it, drawn again in place after
   each saved change there, as the completion block is. Its only control is
   Make it evidence. It stays open across redraws of the same analysis, as
   other folds do, and opens again after a commit made from it. Each source:
@@ -182,7 +182,7 @@ sources })` in `src/core/source-relations.js`, returns
   (below), **Review the change**, **Cancel**. An empty required field is
   refused at its field. The form keeps the excerpt it was opened on, its
   choice and what was typed across redraws of the case file, and focus stays
-  on the same field, as in Your sources (1B). Using the form counts as a use
+  on the same field, as in Your source notes (1B). Using the form counts as a use
   of the fold for the startup restore.
 - **Review the change** reads the case again; if the excerpt is gone, no
   longer "Matches the source", or its text or locator changed since the form

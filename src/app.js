@@ -150,7 +150,7 @@ const I18N = {
     caseFold: "ما الذي يشمله التحليل",
     sourcesFold: "ملاحظاتك عن المصادر",
     sourcesWhen: "تُرسل إلى الذكاء الاصطناعي حين يكون وصول الذكاء الاصطناعي إلى المصادر (الخطوة 3) مصادر مقدمة في السياق.",
-    sourcesSentCount: "مصادرك المرسلة إلى الذكاء الاصطناعي: {n} (الخطوة 1)",
+    sourcesSentCount: "ملاحظاتك عن المصادر المرسلة إلى الذكاء الاصطناعي: {n} (الخطوة 1)",
     sourceTitle: "العنوان (مطلوب)",
     sourceLink: "الرابط",
     sourceDate: "تاريخ المصدر",
@@ -215,7 +215,7 @@ const I18N = {
     fileNoUnsupported: "هذا النوع من الملفات غير مدعوم. استخدم ملفًا نصيًا أو الصق مقتطفًا.",
     fileNoUnsafeHtml: "تعذّرت قراءة هذا الـ HTML بأمان. استخدم نسخة نصية أو الصق مقتطفًا.",
     reviewHead: "اختر ما يدخل في هذا الموجِّه",
-    reviewIntro: "مصادرك أطول مما يتسع له موجِّه واحد هنا. ألغِ تحديد مقتطفات كاملة لاستبعادها من هذا الموجِّه فقط. لا يُقتطع شيء ولا يُرتَّب، ولا تتغير قضيتك.",
+    reviewIntro: "ملاحظاتك عن المصادر أطول مما يتسع له موجِّه واحد هنا. ألغِ تحديد مقتطفات كاملة لاستبعادها من هذا الموجِّه فقط. لا يُقتطع شيء ولا يُرتَّب، ولا تتغير قضيتك.",
     reviewSourceUse: "يستخدم هذا المصدر {n} من {cap} حرفًا",
     reviewTotalUse: "تستخدم المواد المقدمة {n} من {cap} حرفًا",
     reviewFewer: "اختر مقتطفات أقل قبل النسخ",
@@ -615,7 +615,7 @@ const I18N = {
     caseFold: "What the analysis covers",
     sourcesFold: "Your source notes",
     sourcesWhen: "Sent to the AI when AI source access (step 3) is Sources supplied in context.",
-    sourcesSentCount: "Your sources sent to the AI: {n} (step 1)",
+    sourcesSentCount: "Your source notes sent to the AI: {n} (step 1)",
     sourceTitle: "Title (required)",
     sourceLink: "Link",
     sourceDate: "Date of the source",
@@ -680,7 +680,7 @@ const I18N = {
     fileNoUnsupported: "This file type is not supported. Use a text file or paste a passage.",
     fileNoUnsafeHtml: "This HTML cannot be read safely. Use a text version or paste a passage.",
     reviewHead: "Choose what goes in this prompt",
-    reviewIntro: "Your sources are longer than one prompt can carry here. Untick whole passages to leave them out of this prompt only. Nothing is cut or ranked, and your case does not change.",
+    reviewIntro: "Your source notes are longer than one prompt can carry here. Untick whole passages to leave them out of this prompt only. Nothing is cut or ranked, and your case does not change.",
     reviewSourceUse: "This source uses {n} of {cap} characters",
     reviewTotalUse: "Supplied material uses {n} of {cap} characters",
     reviewFewer: "Choose fewer passages before copying",
@@ -1091,7 +1091,7 @@ const I18N = {
     caseFold: "Ce que couvre l’analyse",
     sourcesFold: "Vos notes de sources",
     sourcesWhen: "Envoyées à l’IA lorsque l’accès de l’IA aux sources (étape 3) est Sources fournies dans le contexte.",
-    sourcesSentCount: "Vos sources envoyées à l’IA : {n} (étape 1)",
+    sourcesSentCount: "Vos notes de sources envoyées à l’IA : {n} (étape 1)",
     sourceTitle: "Titre (obligatoire)",
     sourceLink: "Lien",
     sourceDate: "Date de la source",
@@ -1156,7 +1156,7 @@ const I18N = {
     fileNoUnsupported: "Ce type de fichier n’est pas pris en charge. Utilisez un fichier texte ou collez un passage.",
     fileNoUnsafeHtml: "Ce HTML ne peut pas être lu en toute sécurité. Utilisez une version texte ou collez un passage.",
     reviewHead: "Choisissez ce qui entre dans ce prompt",
-    reviewIntro: "Vos sources sont plus longues que ce qu’un prompt peut porter ici. Décochez des passages entiers pour les exclure de ce prompt seulement. Rien n’est coupé ni classé, et votre dossier ne change pas.",
+    reviewIntro: "Vos notes de sources sont plus longues que ce qu’un prompt peut porter ici. Décochez des passages entiers pour les exclure de ce prompt seulement. Rien n’est coupé ni classé, et votre dossier ne change pas.",
     reviewSourceUse: "Cette source utilise {n} caractères sur {cap}",
     reviewTotalUse: "Le matériel fourni utilise {n} caractères sur {cap}",
     reviewFewer: "Choisissez moins de passages avant de copier",
@@ -1966,7 +1966,7 @@ async function saveCase() {
     if (shown === caseShown) showCaseStatus(error);
   }
 }
-// Your sources (RESEARCH-1B S6). Drafts belong to the case on screen and
+// Your source notes (RESEARCH-1B S6). Drafts belong to the case on screen and
 // keep the exact item the analyst saw, including while a queued save waits.
 const SOURCE_ERRORS = { SOURCE_LIST_FULL: "sourceListFull", EXCERPT_LIST_FULL: "excerptListFull", SOURCE_EXISTS: "sourceExists", SOURCE_IDENTITY_CHANGED: "fileSourceChanged", SOURCE_GONE: "sourceGone", CHANGED_ELSEWHERE: "sourceChanged", DOSSIER_FORMAT_NEWER: "caseNewer" };
 const emptySource = () => ({ title: "", url: "", source_date: "", accessed_on: "", send: true });
@@ -2764,9 +2764,9 @@ function confirmReplacingReply(target) {
 // A prompt that must use only the supplied sources is not sent without them.
 function sourcesNeededText() {
   return labelText(
-    "List the sources the AI must use in the Supplied sources box, or tick “Send to the AI” on one of Your sources (step 1).",
-    "اذكر المصادر في مربع المصادر المقدمة، أو حدّد «أرسل إلى الذكاء الاصطناعي» على أحد مصادرك (الخطوة 1).",
-    "Indiquez les sources dans la zone Sources fournies, ou cochez « Envoyer à l’IA » sur l’une de Vos sources (étape 1).",
+    "List the sources the AI must use in the Supplied sources box, or tick “Send to the AI” on one of Your source notes (step 1).",
+    "اذكر المصادر في مربع المصادر المقدمة، أو حدّد «أرسل إلى الذكاء الاصطناعي» على إحدى ملاحظاتك عن المصادر (الخطوة 1).",
+    "Indiquez les sources dans la zone Sources fournies, ou cochez « Envoyer à l’IA » sur l’une de Vos notes de sources (étape 1).",
   );
 }
 function replaceReplyText() {
@@ -8522,7 +8522,7 @@ function caseFolds(root) {
   });
 }
 // The same answer applied again (the stored version reopened) is a new object
-// with the same content: Your sources and its form stay as the reader left them.
+// with the same content: Your source notes and its form stay as the reader left them.
 // An answer drawn before it was saved has no workspace yet.
 let caseFileWorkspace = null;
 function drawCaseFile(html) {
@@ -8540,7 +8540,7 @@ function drawCaseFile(html) {
   for (const [key, fold] of caseFolds(root)) if (left.has(key)) fold.open = left.get(key);
   drawCaseSources(sourcesOpen, kept);
 }
-// Your sources beside the evidence (RESEARCH-1C S8, research-promotion.md):
+// Your source notes beside the evidence (RESEARCH-1C S8, research-promotion.md):
 // for an analysis the case on screen holds, each evidence record related to
 // one of its sources says so under its title, and a fold after the evidence
 // records shows the case's sources as the topic step saves them. Relations are
@@ -9124,7 +9124,7 @@ async function writePromotion(excerptId, dossierId, pointer, basis) {
       || [...document.querySelectorAll("#case-evidence [data-case-source-row]")].find((node) => node.contains($(promotionId(excerptId, "open"))));
   target?.focus({ preventScroll: true });
 }
-// A pointer this tab saved is no change elsewhere: what Your sources holds open
+// A pointer this tab saved is no change elsewhere: what Your source notes holds open
 // on that excerpt (an edit, a check, an armed removal, the rows' shown items)
 // takes the saved excerpt, when it differs from it by its pointers only.
 function keepSourcesSeen(saved, excerptId) {
@@ -9280,7 +9280,7 @@ $("reviewContent").addEventListener("focusin", (event) => {
   }));
 });
 // The case file prints whole: its folds open for the print and close after.
-// Your sources do not print (case.css), so their fold stays as it is.
+// Your source notes do not print (case.css), so their fold stays as it is.
 let foldsOpenedToPrint = [];
 window.addEventListener("beforeprint", () => {
   foldsOpenedToPrint = [...$("reviewContent").querySelectorAll("details:not([open]):not([data-case-sources])")];

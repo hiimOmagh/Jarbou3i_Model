@@ -77,7 +77,7 @@ async function downloadText(page, button) {
   return fs.readFile(path, "utf8");
 }
 
-test.describe("Your sources", () => {
+test.describe("Your source notes", () => {
   test("first source creates a verified format-2 case, survives reload, and the last removal returns format 1", async ({ page }) => {
     await start(page);
     await expect(addForm(page).getByLabel("Opened on", { exact: true })).toHaveValue("");
@@ -120,7 +120,7 @@ test.describe("Your sources", () => {
     await expect(row).toContainText("2026-11-01");
     await openStep(page, "settings");
     await page.locator("#evidenceAccess").selectOption("provided");
-    await expect(page.locator("#sourcesSentCount")).toHaveText("Your sources sent to the AI: 1 (step 1)");
+    await expect(page.locator("#sourcesSentCount")).toHaveText("Your source notes sent to the AI: 1 (step 1)");
     await openStep(page, "topic");
     await row.getByRole("switch").uncheck();
     await expect(row.getByRole("switch")).not.toBeChecked();
@@ -663,7 +663,7 @@ test.describe("Your sources", () => {
     await expect(row).not.toContainText("Checked:");
     await openStep(page, "settings");
     await expect(page.locator("#sourcesField #sourcesSentCount")).toBeVisible();
-    await expect(page.locator("#sourcesSentCount")).toHaveText("Your sources sent to the AI: 1 (step 1)");
+    await expect(page.locator("#sourcesSentCount")).toHaveText("Your source notes sent to the AI: 1 (step 1)");
     await openStep(page, "topic");
     await row.getByRole("switch").uncheck();
     await openStep(page, "settings");

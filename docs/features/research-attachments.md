@@ -113,7 +113,7 @@ read, took too long). The internal codes are `unsupported`, `too-large`,
 
 ## The reader and what is kept
 
-- **Read text from a file** is in the topic step's *Your sources* fold. It says:
+- **Read text from a file** is in the topic step's *Your source notes* fold. It says:
   read on this device, choose passages, the original is not kept or attached.
 - The text is shown in a box that is the person's to read and select, not to
   change (`aria-readonly`; every edit is cancelled and a change that gets
