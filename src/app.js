@@ -404,7 +404,7 @@ const I18N = {
     },
     navHints: {
       overview: "أهم النقاط، ومدى موثوقية التحليل",
-      pillars: "الأجزاء الستة التي تصنع النتيجة",
+      pillars: "الطبقات الست التي تصنع النتيجة",
       contradictions: "حيث لا يطابق الكلامُ الفعل",
       scenarios: "ما قد يحدث لاحقًا، وما الذي يثبت خطأه",
       evidence: "ما يُزعَم، وما يُفترَض، وكيف يمكن التحقق منه",
@@ -871,7 +871,7 @@ const I18N = {
     },
     navHints: {
       overview: "The main points, and how reliable the analysis is",
-      pillars: "The six parts that drive the outcome",
+      pillars: "The six layers that drive the outcome",
       contradictions: "Where words and actions don’t match",
       scenarios: "What could happen next, and what would prove it wrong",
       evidence: "What is claimed, what is assumed, and how to check it",
@@ -1352,7 +1352,7 @@ const I18N = {
     },
     navHints: {
       overview: "L’essentiel, et la fiabilité de l’analyse",
-      pillars: "Les six éléments qui produisent le résultat",
+      pillars: "Les six couches qui produisent le résultat",
       contradictions: "Quand les paroles ne correspondent pas aux actes",
       scenarios: "Ce qui pourrait arriver, et ce qui prouverait le contraire",
       evidence: "Ce qui est affirmé, ce qui est supposé et comment le vérifier",

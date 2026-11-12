@@ -24,6 +24,19 @@ test.describe("Case file", () => {
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "connections", "evidence", "conclusion", "inspection", "exports"].map((key) => `case-${key}`));
   });
 
+  test("layers hint names layers in every language and lens", async ({ page }) => {
+    await page.goto("./");
+    for (const lens of ["strategic", "biopolitical"]) {
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      for (const [lang, word] of [["En", "layers"], ["Fr", "couches"], ["Ar", "طبقات"]]) {
+        await page.locator(`#lang${lang}`).click();
+        await expect(page.locator('#reviewNav .j-case-link[data-review="pillars"] small, #reviewNav .j-case-link[data-bio-review="pillars"] small')).toContainText(word);
+      }
+    }
+  });
+
   // One idea, one word: a station names its section in the words of the
   // section's own heading, in each language and lens (Arabic's article and
   // French elision aside), and an English title is in sentence case.

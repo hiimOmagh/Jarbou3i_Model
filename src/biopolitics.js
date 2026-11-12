@@ -177,7 +177,7 @@
       },
       navHints: {
         overview: "The finding, whether it is ready, and what blocks it",
-        pillars: "The nine parts of the analysis",
+        pillars: "The nine layers of the analysis",
         evidence: "Sources, and other possible explanations",
         conclusion: "The conclusion, how confident we can be in it, and a review of the analysis",
         inspection: "Where each item comes from, and what changed",
@@ -288,7 +288,7 @@
       },
       navHints: {
         overview: "النتيجة، وهل هي جاهزة، وما الذي يعيقها",
-        pillars: "الأجزاء التسعة للتحليل",
+        pillars: "الطبقات التسع للتحليل",
         evidence: "المصادر، والتفسيرات الأخرى الممكنة",
         conclusion: "الخلاصة، ومدى الثقة بها، ومراجعة التحليل",
         inspection: "من أين يأتي كل عنصر، وما الذي تغيّر",
@@ -400,7 +400,7 @@
       },
       navHints: {
         overview: "La conclusion, si elle est prête, et ce qui la bloque",
-        pillars: "Les neuf parties de l’analyse",
+        pillars: "Les neuf couches de l’analyse",
         evidence: "Les sources, et d’autres explications possibles",
         conclusion: "La conclusion, son degré de certitude et la vérification de l’analyse",
         inspection: "D’où vient chaque élément, et ce qui a changé",
