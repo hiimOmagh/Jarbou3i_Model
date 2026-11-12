@@ -24,15 +24,21 @@ test.describe("Case file", () => {
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "connections", "evidence", "conclusion", "inspection", "exports"].map((key) => `case-${key}`));
   });
 
-  test("layers hint names layers in every language and lens", async ({ page }) => {
+  test("outline hint names layers only for the Strategic lens", async ({ page }) => {
     await page.goto("./");
     for (const lens of ["strategic", "biopolitical"]) {
       await openStep(page, "lens");
       await page.locator(`[data-lens="${lens}"]`).click();
       await page.locator("#loadSampleBtn").click();
-      for (const [lang, word] of [["En", "layers"], ["Fr", "couches"], ["Ar", "طبقات"]]) {
+      for (const [lang, strategicWord, bioHint] of [
+        ["En", "layers", "The nine pillars of the analysis"],
+        ["Fr", "couches", "Les neuf piliers de l’analyse"],
+        ["Ar", "طبقات", "الركائز التسع للتحليل"],
+      ]) {
         await page.locator(`#lang${lang}`).click();
-        await expect(page.locator('#reviewNav .j-case-link[data-review="pillars"] small, #reviewNav .j-case-link[data-bio-review="pillars"] small')).toContainText(word);
+        const hint = page.locator('#reviewNav .j-case-link[data-review="pillars"] small, #reviewNav .j-case-link[data-bio-review="pillars"] small');
+        if (lens === "strategic") await expect(hint).toContainText(strategicWord);
+        else await expect(hint).toHaveText(bioHint);
       }
     }
   });
