@@ -150,8 +150,16 @@ the reformatted value.
 
 When a canonical-shaped result contains only reviewable completion gaps, the
 application keeps the import button available, lists the exact JSON Pointer
-paths, and offers a targeted completion prompt. The prompt includes the
-preserved canonical candidate and permits changes only at those paths. It
+paths, and offers a targeted completion prompt. It lists at most 50 gaps per
+request; above 50, an explicit batch line gives batch 1 of the total batch count,
+50 requested gaps, and the total remaining gaps. Each gap carries a compact
+fragment of its current record (ID, label and current fields, clipped to 120
+characters), so local edits provide context without resending the full candidate.
+Numeric gaps state the exact canonical range; enum gaps list the template codes
+or diagnostic allowed values. Evidence references include all existing evidence
+IDs; other references include the full record ID inventory with collection paths
+and the required record types. Inventory labels are clipped, IDs are not.
+The prompt permits changes only at the listed paths. It
 requires specific content grounded in the existing record or an explicit
 statement of what evidence remains unlocated; it forbids invented sources,
 verification states, and unrelated rewrites. A path in the reply without its
