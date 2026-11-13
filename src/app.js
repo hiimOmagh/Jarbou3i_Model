@@ -2729,6 +2729,7 @@ function keepTrip() {
     completion: completionBase,
     repair: repairBase,
     reply_for: replyFor,
+    sent_boundary: pendingBoundary,
     verdict: cutOffVerdict,
   });
   tripKept = true;
@@ -2871,6 +2872,7 @@ async function restoreTrip(untouched, record) {
     state.promptMode = record.mode;
     $("promptMode").value = record.mode;
   }
+  pendingBoundary = record.sent_boundary || null;
   if (typeof record.prompt === "string") state.lastPrompt = record.prompt;
   if (Array.isArray(record.completion?.targets)) completionBase = record.completion;
   if (typeof record.repair === "string") repairBase = record.repair;
@@ -3062,6 +3064,14 @@ let repairBase = null;
 // answer: "repair", "language", "completion" or "links" (a cut-off answer's
 // rest is awaited there too, while the answer is cut off).
 let replyFor = null;
+let pendingBoundary = null;
+const answerBoundaries = new WeakMap();
+function finishPendingReply() {
+  if (pendingBoundary?.prompt === state.lastPrompt && pendingBoundary?.replyFor === replyFor) {
+    pendingBoundary = { ...pendingBoundary, replyFor: null };
+  }
+  replyFor = null;
+}
 // What the AI's own replies showed about one answer, which outranks the
 // parser's guess: {text, cutOff}. A continue reply that adds nothing means the
 // answer was complete; a repair reply of {"repair_status":"incomplete_input"}
@@ -3151,6 +3161,7 @@ function setAnalysisLens(lens) {
     }
   }
   state.lastPrompt = "";
+  pendingBoundary = null;
   renderAll();
   refreshDynamicMessages();
 }
@@ -3908,7 +3919,7 @@ function validateJsonInput() {
     $("repairPromptBtn").textContent = t("repairPrompt");
     // An empty answer has nothing to fix or complete; the new links or the
     // improvement asked for the analysis on screen are still awaited.
-    if (!["links", "improve"].includes(replyFor)) replyFor = null;
+    if (!["links", "improve"].includes(replyFor)) finishPendingReply();
     syncReplyBox(false);
     $("jsonStatus").dataset.tone = "idle";
     $("jsonStatus").textContent = t("jsonWaiting");
@@ -3946,7 +3957,7 @@ function validateJsonInput() {
       );
       const links = completionBase.targets.includes(AI_INTERCHANGE.LINK_FILL_TARGET);
       completionBase = null;
-      replyFor = null;
+      finishPendingReply();
       const mergedText = JSON.stringify(merged.value);
       completionNotice = { text: mergedText, applied: merged.applied, ignored: merged.ignored.length, links };
       $("jsonInput").value = mergedText;
@@ -3963,7 +3974,7 @@ function validateJsonInput() {
       cutOffVerdict = { text: repairBase, cutOff: true };
       $("jsonInput").value = repairBase;
       repairBase = null;
-      replyFor = null;
+      finishPendingReply();
       return validateJsonInput();
     }
     const recognized = AI_INTERCHANGE.recognize(parsed.value);
@@ -4272,7 +4283,7 @@ function validateJsonInput() {
     $("pasteCard").classList.remove("invalid");
     // A whole answer needs no reply, except the new links or improvement
     // asked for it, or the rewrite asked while it is still in the wrong language.
-    if (!["links", "improve"].includes(replyFor) && !(replyFor === "language" && languageMismatch)) replyFor = null;
+    if (!["links", "improve"].includes(replyFor) && !(replyFor === "language" && languageMismatch)) finishPendingReply();
     syncReplyBox(false);
     return analysis;
   } catch (e) {
@@ -4670,10 +4681,12 @@ ${AI_INTERCHANGE.buildChecklist(lang)}`;
 function sentPromptSources() {
   return state.evidenceAccess === "provided" ? (caseDossier?.sources || []).filter((source) => source.send === true) : [];
 }
-// What a follow-up prompt states of the source access CURRENTLY set (nothing
-// is stored with the answer): the mode, and the titles (or links) of the
-// supplied sources that are sent now.
-function followUpBoundary() {
+// Pending replies and on-screen answers carry independent source boundaries.
+// Legacy analyses fall back to the current setup.
+function followUpBoundary(kind = "pending") {
+  const stored = kind === "answer" ? answerBoundaries.get(state.analysis) :
+    pendingBoundary?.prompt === state.lastPrompt && pendingBoundary?.replyFor === replyFor ? pendingBoundary.boundary : null;
+  if (stored) return structuredClone(stored);
   return {
     access: ["none", "provided", "web"].includes(state.evidenceAccess) ? state.evidenceAccess : "web",
     sources: sentPromptSources().map((source) => (source.title || "").trim() || (source.url || "").trim()),
@@ -8299,10 +8312,12 @@ async function copyImprovementPrompt(event) {
   const button = event.currentTarget;
   const lang = ["ar", "en", "fr"].includes(state.analysis?.language) ? state.analysis.language : state.analysisLang;
   const action = button.closest('[data-orientation="action"]').querySelector("[data-next-action]").textContent;
-  const prompt = AI_INTERCHANGE.buildImprovementPrompt(state.analysis, action, lang, followUpBoundary());
+  const prompt = AI_INTERCHANGE.buildImprovementPrompt(state.analysis, action, lang, followUpBoundary("answer"));
   // A whole answer is awaited, not parts of an earlier one.
   completionBase = null;
   replyFor = "improve";
+  state.lastPrompt = prompt;
+  pendingBoundary = { prompt, replyFor, boundary: followUpBoundary("answer") };
   syncReplyBox(false);
   keepTrip();
   // The reply box awaits the reply even when the prompt is copied by hand.
@@ -10824,12 +10839,21 @@ async function persistImportedAnalysis(analysis, previousId = state.activeWorksp
       analysis,
       manifest,
       title: analysis.subject?.title || state.topic,
+      answerBoundary: answerBoundaries.get(analysis),
     });
     // The analysis already open, imported again, is not saved twice.
     const previous = previousId && await WORKSPACE_REPOSITORY.get(previousId).catch(() => null);
     const same = previous?.working_draft.payload_checksum === workspace.working_draft.payload_checksum;
     if (!same) await WORKSPACE_REPOSITORY.create(workspace);
-    const saved = same ? previous : workspace;
+    let saved = same ? previous : workspace;
+    if (same && JSON.stringify(previous.metadata.answer_boundary) !== JSON.stringify(workspace.metadata.answer_boundary)) {
+      if (workspace.metadata.answer_boundary) previous.metadata.answer_boundary = workspace.metadata.answer_boundary;
+      else delete previous.metadata.answer_boundary;
+      previous.metadata.updated_at = workspace.metadata.updated_at;
+      const expectedRevision = previous.repository_revision;
+      previous.repository_revision += 1;
+      saved = await WORKSPACE_REPOSITORY.replace(previous, { expectedRevision });
+    }
     // The lens changed while it saved: the result set aside keeps its
     // workspace, and the other lens on screen is left as it is.
     const setAside = keptResults[analysis.analysis_lens];
@@ -10863,6 +10887,7 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false, collapse 
   const analysis = normalizeAnalysis(structuredClone(workspace.working_draft.canonical_payload));
   if (collapse && !keepPendingReply) GUIDED_FLOW.setExpanded(false);
   state.analysis = analysis;
+  if (workspace.metadata.answer_boundary) answerBoundaries.set(analysis, structuredClone(workspace.metadata.answer_boundary));
   state.analysisLens = analysis.analysis_lens;
   state.activeWorkspaceId = workspace.workspace_id;
   state.stage = "review";
@@ -10898,7 +10923,8 @@ function applyWorkspaceAnalysis(workspace, { keepPendingReply = false, collapse 
     $("jsonInput").value = savedReply;
     $("importBtn").disabled = true;
     showReplyImported();
-    replyFor = null;
+    pendingBoundary = null;
+    finishPendingReply();
     syncReplyBox(false);
   }
   writeSettings({ activeWorkspaceId: workspace.workspace_id, analysisLens: state.analysisLens });
@@ -11124,7 +11150,7 @@ async function openCase(id) {
           $("jsonInput").value = "";
           validateJsonInput();
         }
-        replyFor = null;
+        finishPendingReply();
         completionBase = null;
         syncReplyBox(false);
         state.stage = "topic";
@@ -11552,6 +11578,8 @@ function restorableInputs() {
     repairBase,
     replyFor,
     cutOffVerdict,
+    pendingBoundary,
+    state.lastPrompt,
   ];
 }
 // The last analysis and the analysis being prepared are read from storage after
@@ -11779,7 +11807,10 @@ $("copyPromptBtn").onclick = async (event) => {
   // Over a cap: the review opens; nothing is copied and the flow does not advance.
   if (!promptWithinBudget(invoker)) return;
   const p = buildPrompt();
+  pendingBoundary = null;
+  const boundary = followUpBoundary();
   state.lastPrompt = p;
+  pendingBoundary = { prompt: p, replyFor, boundary };
   const ok = await copyText(p);
   state.stage = "import";
   keepTrip();
@@ -11835,7 +11866,7 @@ $("continuationInput").addEventListener("input", () => {
     // A reply to the repair, language, completion or link prompt: missing
     // parts and links are merged into the answer they complete when it is
     // read; a whole answer replaces it.
-    replyFor = null;
+    finishPendingReply();
     $("jsonInput").value = continuation;
   } else if (JSON_TOOLS.continuesAnswer(answer, continuation)) {
     $("jsonInput").value = JSON_TOOLS.joinContinuation(answer, continuation);
@@ -11849,6 +11880,7 @@ $("continuationInput").addEventListener("input", () => {
   keepTrip();
 });
 $("clearJsonBtn").onclick = () => {
+  pendingBoundary = null;
   $("jsonInput").value = "";
   $("continuationInput").value = "";
   validateJsonInput();
@@ -11867,6 +11899,9 @@ $("importBtn").onclick = async () => {
   }
   // The case the answer is imported for, whatever is shown by the time it is saved.
   const importedFor = { shown: caseShown, dossierId: caseDossier?.dossier_id };
+  const acceptedBoundary = pendingBoundary?.prompt === state.lastPrompt && pendingBoundary?.replyFor === replyFor ? pendingBoundary.boundary : null;
+  if (acceptedBoundary) answerBoundaries.set(a, structuredClone(acceptedBoundary));
+  pendingBoundary = null;
   state.analysis = a;
   if (["strategic", "biopolitical"].includes(a.analysis_lens)) {
     state.analysisLens = a.analysis_lens;
@@ -11887,7 +11922,7 @@ $("importBtn").onclick = async () => {
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
   // A new analysis on screen ends any reply that was awaited.
-  replyFor = null;
+  finishPendingReply();
   syncReplyBox(false);
   $("importBtn").disabled = true;
   showReplyImported();
@@ -11919,9 +11954,12 @@ $("repairPromptBtn").onclick = async (event) => {
   const language = Boolean(state.importAudit?.languageMismatch);
   const completion = !language && Boolean(state.importAudit?.completionCandidate);
   const truncated = state.importAudit?.code === "TRUNCATED_JSON";
+  const boundary = followUpBoundary();
   const p = repairPrompt();
   // The reply has its own box under the answer (a cut-off answer's already does).
   if (!truncated) replyFor = language ? "language" : completion ? "completion" : "repair";
+  state.lastPrompt = p;
+  pendingBoundary = { prompt: p, replyFor, boundary };
   syncReplyBox(truncated);
   keepTrip();
   const ok = await copyText(p);
@@ -11958,6 +11996,7 @@ $("loadSampleBtn").onclick = async (event) => {
   } else {
     state.importValidation = null;
   }
+  pendingBoundary = null;
   state.analysis = a;
   state.analysisLens = a.analysis_lens || state.analysisLens;
   writeSettings({ analysisLens: state.analysisLens });
@@ -11974,7 +12013,7 @@ $("loadSampleBtn").onclick = async (event) => {
   $("jsonInput").value = JSON.stringify(a, null, 2);
   savedReply = $("jsonInput").value;
   // A new analysis on screen ends any reply that was awaited.
-  replyFor = null;
+  finishPendingReply();
   syncReplyBox(false);
   $("importBtn").disabled = true;
   showReplyImported();
@@ -12034,6 +12073,7 @@ $("workspaceResetCurrent").onclick = async () => {
       if (kept.workspaceId === state.activeWorkspaceId) delete keptResults[lens];
     }
     state.activeWorkspaceId = null;
+    pendingBoundary = null;
     state.analysis = null;
     state.stage = "topic";
     state.shellSection = "workflow";
@@ -12080,6 +12120,7 @@ $("workspaceResetAll").onclick = async () => {
     FIRST_RIDE.forget();
     tabStorage.set(TAB_WORKSPACE_KEY, "");
     state.activeWorkspaceId = null;
+    pendingBoundary = null;
     state.analysis = null;
     state.stage = "topic";
     state.shellSection = "workflow";
