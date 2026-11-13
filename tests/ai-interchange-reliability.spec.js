@@ -1399,9 +1399,9 @@ test.describe("AI interchange reliability", () => {
 
   test("the Focused Strategic prompt asks for a compact answer", async ({ page }) => {
     const compact = {
-      en: "two or three items per section",
-      ar: "عنصران أو ثلاثة في كل قسم",
-      fr: "deux ou trois éléments par section",
+      en: "at most 2 records per variable collection",
+      ar: "بحد أقصى 2 سجلات لكل مجموعة متغيرة",
+      fr: "au plus 2 éléments par collection variable",
     };
     await page.goto("./");
     await page.locator("#langEn").click();

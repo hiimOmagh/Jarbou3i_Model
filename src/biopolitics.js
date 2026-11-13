@@ -1745,6 +1745,14 @@
     return JSON.stringify(skeleton);
   }
 
+  // Budgets guide variable detail only; canonical completeness always wins.
+  function buildBrevityRule(lang = "en", mode = "research") {
+    const [sentences, records] = mode === "research" ? [3, 5] : mode === "expert" ? [2, 3] : [1, 2];
+    if (lang === "ar") return `ميزانية الإيجاز: بحد أقصى ${sentences} جملة قصيرة لكل قيمة نصية تحليلية، وبحد أقصى ${records} سجلات لكل مجموعة متغيرة و${records} عناصر لكل قائمة نصية متداخلة. استخدم الحد الأدنى اللازم؛ يمكن ترك المجموعات الاختيارية فارغة عندما لا تكون ذات صلة. هذه الحدود لا تشمل المجموعات الثابتة، ولا تبرر إسقاط تقييم أو دليل مضاد أو عدم يقين أو شرط إبطال مطلوب. لا تحذف أي حقل إلزامي أو سجل مطلوب؛ إذا تطلب الاكتمال مزيدًا من السجلات أو المراجع فتجاوز حد المجموعة وحده. أبقِ عناوين المصادر والروابط والمحددات والنصوص النائبة الحرفية كما تفرضها قواعد المصادر، وأعد استخدام معرفات الأدلة بدل تكرارها. لا تستخدم علامات حذف ولا تغلق JSON المقطوع اصطناعيًا؛ إذا بلغت حد الإخراج فتوقف حيث وصلت وستطلب منصة العمل المتابعة.`;
+    if (lang === "fr") return `Budget de concision : au plus ${sentences} phrase(s) courte(s) par valeur analytique textuelle, au plus ${records} éléments par collection variable et ${records} entrées par liste textuelle imbriquée. Utilisez le minimum nécessaire ; les collections facultatives peuvent rester vides si elles ne sont pas pertinentes. Ces plafonds ne concernent pas les ensembles à clés obligatoires et ne justifient jamais de supprimer une évaluation, une contre-preuve, une incertitude ou un réfutateur requis. Ne supprimez jamais un champ obligatoire ni un élément requis ; si la complétude exige davantage d’éléments ou de références, dépassez seulement le plafond de la collection. Préservez titres de sources, URL, localisateurs et textes substitutifs littéraux selon les règles de sources ; réutilisez les identifiants de preuve plutôt que de répéter leur contenu. N’utilisez pas d’ellipses et ne fermez jamais artificiellement un JSON tronqué ; si la limite de sortie vous arrête, arrêtez-vous là et l’atelier demandera la suite.`;
+    return `Brevity budget: at most ${sentences} short sentence(s) per analytical text value, at most ${records} records per variable collection and ${records} entries per nested text list. Use the minimum needed; optional collections may stay empty when irrelevant. These caps do not apply to fixed sets and never justify dropping a required assessment, counter-evidence, uncertainty, or falsifier. Never omit a mandatory field or required record; if completeness needs more records or references, exceed only the collection cap. Preserve source titles, URLs, locators, and literal placeholders as the source rules require; reuse evidence IDs instead of repeating their content. Never use ellipses and never close cut-off JSON artificially; if your output limit stops you, stop where you are and the workbench will request continuation.`;
+  }
+
   function buildPrompt({
     lang = "en",
     mode = "research",
@@ -1788,7 +1796,7 @@
             : "استخدم أدلة قابلة للتتبع، وأدلة مضادة، وبيانات وصفية لتصميم القياس الكمي، وعدم يقين، وروابط سببية معرّفة."
           : mode === "expert"
             ? "استخدم أدلة وافتراضات وتفسيرات منافسة وشروط إبطال وروابط سببية صريحة."
-            : "عمق مركّز للمساعدات ذات حدود الإخراج الصغيرة: سجل واحد لكل مجموعة مطلوبة ما لم يكن سجل ثانٍ ضروريًا، وجملة واحدة قصيرة لكل قيمة نصية، وعنصر دليل واحد لكل مصدر متميز. أكمل مع ذلك كل الاختبارات والمجموعات الثابتة الإلزامية. إذا بلغت حد الإخراج فتوقف ببساطة دون اختصار أو علامات حذف؛ ستطلب منصة العمل المتابعة.";
+            : "عمق مركّز: أعط الأولوية للآليات الأساسية والتفسيرات المنافسة مع إكمال كل تقييم ومجموعة ثابتة إلزامية.";
       return `أنت نموذج صارم لتحليل السياسة الحيوية تحكمه خريطة تدريب جربوعي 2.1. حلّل كيف تصبح وظائف الإنسان والأجساد والسكان والعلاقات والبيئات وأنظمة المعنى موضوعًا للحكم والمعرفة والتحسين والتسليع والانضباط والحماية والإقصاء والمقاومة.
 
 لغة الإخراج الإلزامية: العربية. اكتب جميع القيم التحليلية المقروءة بالعربية؛ أبقِ مفاتيح JSON والمعرّفات وقيم التعداد النظامية كما يحددها المخطط، وأبقِ كل source_title كما يرد في المصدر نفسه دون ترجمة.
@@ -1819,9 +1827,10 @@ ${evidenceRule}
 13. لا تصنع الخوف، ولا تجرد جماعة من إنسانيتها، ولا تسهّل التحرش أو العقاب الجماعي، وقدّم الادعاءات المتنازع عليها بوصفها ادعاءات لا حقائق.
 14. قدّم مقاومة وفاعلية وبدائل واقعية أقل ضررًا وخلاصة مُعايرة وشروطًا قد تغيّرها.
 15. اكتب بلغة واضحة وملموسة: سمِّ الفاعل أو المؤسسة أو القانون أو المكان أو التاريخ أو الرقم المحدد، لا فئته («الجهات التنظيمية»، «أصحاب المصلحة»)؛ وقل من يفعل ماذا وبمن، بجمل قصيرة؛ دون قوائم من الأسماء المجردة، ودون جملة تصلح لأي موضوع. لا تختلق اسمًا أو تاريخًا أو رقمًا لتبدو دقيقًا: إن كان مجهولًا فقل ذلك.
-16. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تستخدم علامات حذف ولا تختصر المحتوى ليتسع؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
+16. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر، ثم أعد كائن JSON واحدًا كاملًا ومضغوطًا داخل كتلة كود واحدة \`\`\`json، دون أي نص قبلها أو بعدها. لا تحذف محتوى مطلوبًا ولا تستخدم علامات حذف؛ إذا أوقفك حد الإخراج فستطلب منصة العمل الجزء المتبقي.
 
 العمق: ${modeName}. ${depth}${angleRule(lang, mode)}
+${buildBrevityRule(lang, mode)}
 
 أعد فقط عقد التبادل المضغوط التالي. ستضيف الأداة البيانات الوصفية محليًا ثم تحوّله إلى العقد النظامي؛ املأ كل مجموعة ذات مفاتيح يعرضها:
 ${schema}${interchangeGuide}`;
@@ -1840,7 +1849,7 @@ ${schema}${interchangeGuide}`;
             : "Utilisez des preuves traçables, des contre-preuves, des métadonnées quantitatives, l’incertitude et des liens causaux identifiés."
           : mode === "expert"
             ? "Utilisez preuves, hypothèses, explications rivales, falsificateurs et liens causaux explicites."
-            : "Profondeur ciblée pour les assistants à faible limite de sortie : un seul élément par collection requise sauf si un second est indispensable, une phrase courte par valeur textuelle et un élément de preuve par source distincte. Complétez néanmoins chaque test et ensemble fixe obligatoire. Si vous atteignez votre limite de sortie, arrêtez-vous simplement, sans abréger ni utiliser de points de suspension : l’atelier demandera la suite.";
+            : "Profondeur ciblée : privilégiez les mécanismes essentiels et les explications rivales tout en complétant chaque évaluation et ensemble fixe obligatoire.";
       return `Vous êtes un modèle d’analyse biopolitique rigoureux régi par la Carte d’entraînement Jarbou3i 2.1. Analysez comment fonctions humaines, corps, populations, relations, environnements et systèmes de sens deviennent objets de gouvernement, savoir, optimisation, marchandisation, discipline, protection, exclusion et résistance.
 
 Langue de sortie obligatoire : français. Rédigez en français toutes les valeurs analytiques lisibles ; conservez les clés JSON, identifiants et codes d’énumération prescrits par le schéma, et gardez chaque source_title tel que la source le donne, sans le traduire.
@@ -1871,9 +1880,10 @@ ${evidenceRule}
 13. Ne fabriquez pas la peur, ne déshumanisez pas, ne facilitez ni harcèlement ni punition collective, et présentez les allégations contestées comme telles.
 14. Incluez résistance, agentivité, alternatives réalistes moins nocives, conclusion calibrée et éléments susceptibles de la modifier.
 15. Écrivez simplement et concrètement : nommez l’acteur, l’institution, la loi, le lieu, la date ou le chiffre précis, pas sa catégorie (« les régulateurs », « les parties prenantes ») ; dites qui fait quoi à qui, en phrases courtes ; pas de liste de noms abstraits ni de phrase qui conviendrait à n’importe quel sujet. N’inventez jamais un nom, une date ou un chiffre pour paraître précis : s’il est inconnu, dites-le.
-16. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. N’utilisez pas d’ellipse et n’abrégez pas le contenu pour qu’il tienne ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
+16. Exécutez l’auto-audit à dix-huit points, puis retournez un seul objet JSON complet et minifié, dans un unique bloc de code \`\`\`json, sans aucun texte avant ou après. Ne supprimez aucun contenu requis et n’utilisez pas d’ellipse ; si votre limite de sortie vous arrête, l’atelier demandera la suite.
 
 Profondeur : ${modeName}. ${depth}${angleRule(lang, mode)}
+${buildBrevityRule(lang, mode)}
 
 Retournez uniquement le contrat d’échange compact suivant. L’outil ajoutera localement les métadonnées, puis le compilera vers le contrat canonique ; remplissez chaque ensemble à clés qu’il présente :
 ${schema}${interchangeGuide}`;
@@ -1891,7 +1901,7 @@ ${schema}${interchangeGuide}`;
           : "Use traceable evidence, counter-evidence, quantitative design metadata, uncertainty, and ID-based causal links."
         : mode === "expert"
           ? "Use explicit evidence, assumptions, rival explanations, falsifiers, and causal links."
-          : "Focused depth for assistants with small output limits: one record per required collection unless a second is essential, one short sentence per text value, and one evidence record per distinct source. Still complete every mandatory assessment and fixed set. If you reach your output limit, simply stop without abbreviating or using ellipses; the workbench will ask you to continue.";
+          : "Focused depth: prioritize the essential mechanisms and rival accounts while completing every mandatory assessment and fixed set.";
     return `You are a rigorous biopolitical analytical model governed by the Jarbou3i Training Map 2.1. Analyze how human functions, bodies, populations, relationships, environments, and meaning systems become objects of governance, knowledge, optimization, commercialization, discipline, protection, exclusion, and resistance.
 
 Mandatory output language: English. Write every human-readable analytical value in English; preserve JSON keys, IDs, and schema enum codes in their canonical form, and keep each source_title exactly as the source gives it, without translating it.
@@ -1922,9 +1932,10 @@ ${evidenceRule}
 13. Do not manufacture fear, dehumanize groups, facilitate harassment or collective punishment, or state contested allegations as established fact.
 14. Include agency, resistance, feasible lower-harm alternatives, a calibrated conclusion, and evidence that would change it.
 15. Write plainly and concretely: name the specific actor, institution, law, place, date or figure, not its category ("regulators", "stakeholders"); say who does what to whom, in short sentences; no list of abstract nouns and no sentence that would fit any topic. Never invent a name, date or figure to sound specific: where one is unknown, say so.
-16. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never use ellipses or shorten content to make it fit; if your output limit stops you, the workbench will request the remainder.
+16. Complete the eighteen-point self-audit, then return one complete minified JSON object inside a single \`\`\`json code block, with no text before or after it. Never omit required content or use ellipses; if your output limit stops you, the workbench will request the remainder.
 
 Depth: ${modeName}. ${depth}${angleRule(lang, mode)}
+${buildBrevityRule(lang, mode)}
 
 Return only the compact interchange contract below. The workbench adds the metadata locally, then compiles it into the canonical contract; fill every keyed set it shows:
 ${schema}${interchangeGuide}`;
@@ -4828,6 +4839,7 @@ ${schema}${interchangeGuide}`;
     unsourcedPlaceholder,
     isPlaceholderEvidence,
     buildPrompt,
+    buildBrevityRule,
     sample: makeSample,
     recordsFor,
     pillarCount,
