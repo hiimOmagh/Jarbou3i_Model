@@ -66,7 +66,11 @@ for (const lang of ['en', 'ar', 'fr']) {
     await expect(brief.locator('.metric, .formula, .item, table')).toHaveCount(0);
     await expect(appendix.locator('.metric')).toHaveCount(6);
     await expect(appendix.locator('.layer')).toHaveCount(6);
-    expect(await outline()).toEqual(JSON.parse(await fs.readFile(`tests/goldens/strategic-after-${lang}.json`, 'utf8')));
+    const golden = JSON.parse(await fs.readFile(`tests/goldens/strategic-after-${lang}.json`, 'utf8'));
+    expect(await outline()).toEqual(golden.headings);
+    expect(await appendix.locator('.layer > header > span').allTextContents()).toEqual(golden.recordCounts);
+    const visibleCopy = await page.locator('main').innerText();
+    expect(visibleCopy).not.toMatch({ en: /\bitems?\b/i, ar: /عناصر|عنصر/, fr: /éléments?/i }[lang]);
     const canonical = JSON.parse(await page.locator('#canonical-analysis').textContent());
     await expect(appendix).toContainText(canonical.subject.executive_thesis);
     await expect(appendix).toContainText(canonical.subject.context);
@@ -278,6 +282,27 @@ async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
 
 const strategicFixture = async (name) =>
   JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/${name}`, 'utf8'));
+
+// Catch a regression to generic item counts or empty-section wording in exports.
+for (const [lang, recordCounts, empty] of [
+  ['en', ['1 record', '2 records', '3 records', '11 records', '100 records', '1 record'], 'No authored records.'],
+  ['ar', ['سجل واحد', 'سجلان', '3 سجلات', '11 سجلًا', '100 سجل', 'سجل واحد'], 'لا توجد سجلات مؤلفة.'],
+  ['fr', ['1 fiche', '2 fiches', '3 fiches', '11 fiches', '100 fiches', '1 fiche'], 'Aucune fiche rédigée.'],
+]) {
+  test(`Strategic record counts and empty sections: ${lang}`, async ({ page }, testInfo) => {
+    const data = await strategicFixture(`sample-analysis-${lang}.json`);
+    ['interests', 'actors', 'tools', 'narrative', 'results', 'feedback'].forEach((key, index) => {
+      const first = data[key][0];
+      data[key] = Array.from({ length: [1, 2, 3, 11, 100, 1][index] }, (_, i) => ({ ...first, id: `${first.id.replace(/\d+$/, '')}${i + 1}` }));
+    });
+    data.assumptions.items = [];
+    const html = await exportImportedStrategic(page, testInfo, data, `record-counts-${lang}`, lang[0].toUpperCase() + lang[1]);
+    await page.goto(pathToFileURL(testInfo.outputPath(`record-counts-${lang}.html`)).href);
+    expect(await page.locator('.layer > header > span').allTextContents()).toEqual(recordCounts);
+    await expect(page.locator('[data-report-appendix] > .block').last()).toContainText(empty);
+    expect(html).not.toContain({ en: 'No items.', ar: 'لا توجد عناصر.', fr: 'Aucun élément.' }[lang]);
+  });
+}
 
 test('a long Strategic brief keeps the full authored text and next action in its appendix', async ({ page }, testInfo) => {
   const data = await strategicFixture('sample-analysis-en.json');

@@ -5751,9 +5751,9 @@ function schemaHealth(a = state.analysis) {
   if (ev.length && !ev.some((e) => /source/.test(normalizeToken(e.basis))))
     missing.push(
       labelText(
-        "Add at least one source-grounded evidence item.",
-        "أضف دليلًا واحدًا على الأقل مرتكزًا على مصدر.",
-        "Ajoutez au moins un élément probant fondé sur une source.",
+        "Add at least one source-grounded evidence record.",
+        "أضف سجل دليل واحدًا على الأقل مرتكزًا على مصدر.",
+        "Ajoutez au moins une fiche de preuve fondée sur une source.",
       ),
     );
   if (
@@ -6011,8 +6011,8 @@ function labelText(en, ar, fr) {
       "Certaines couches du modèle restent faibles ou vides.",
     "The six-layer structure is substantially populated.":
       "La structure à six couches est largement remplie.",
-    "Add missing layer items, especially feedback and results.":
-      "Ajoutez les éléments manquants, surtout résultats et rétroaction.",
+    "Add missing layer records, especially feedback and results.":
+      "Ajoutez les fiches manquantes, surtout résultats et rétroaction.",
     "Review quality rather than adding more volume.":
       "Révisez la qualité plutôt que d’ajouter du volume.",
     "Causal links across interests, actors, tools, and results need clearer connection.":
@@ -6707,8 +6707,8 @@ function scoreDiagnostic(key, val, a = state.analysis) {
           action:
             val < 70
               ? labelText(
-                  "Add missing layer items, especially feedback and results.",
-                  "أضف عناصر للطبقات الناقصة، خصوصًا النتائج والتغذية الراجعة.",
+                  "Add missing layer records, especially feedback and results.",
+                  "أضف سجلات للطبقات الناقصة، خصوصًا النتائج والتغذية الراجعة.",
                 )
               : labelText(
                   "Review quality rather than adding more volume.",
@@ -6799,9 +6799,9 @@ function scoreDiagnostic(key, val, a = state.analysis) {
                 ),
           action: !strategicEvidenceCited(a)
             ? labelText(
-                "Link each evidence item to the records it supports or contradicts.",
-                "اربط كل دليل بالسجلات التي يدعمها أو يناقضها.",
-                "Reliez chaque preuve aux fiches qu’elle étaye ou contredit.",
+                "Link each evidence record to the records it supports or contradicts.",
+                "اربط كل سجل دليل بالسجلات التي يدعمها أو يناقضها.",
+                "Reliez chaque fiche de preuve aux fiches qu’elle étaye ou contredit.",
               )
             : val < 70
               ? labelText(
@@ -7404,6 +7404,7 @@ function currentAppVersion() {
 }
 function htmlReport() {
   const a = state.analysis || normalizeAnalysis({});
+  const noRecords = labelText("No authored records.", "لا توجد سجلات مؤلفة.", "Aucune fiche rédigée.");
   const b = scoreBreakdown(a);
   const h = schemaHealth(a);
   const dir = state.lang === "ar" ? "rtl" : "ltr";
@@ -7477,7 +7478,7 @@ function htmlReport() {
     facts.length ? `<dl class="facts">${facts.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl>` : "";
   const pillarsHtml = PILLARS.map(
     (p, index) =>
-      `<section class="block layer" style="--j-layer:var(--j-l${index + 1})"><header><h2>${escapeHtml(t("pillars")[p][0])}</h2><span>${escapeHtml(pluralText(normalizeArray(a[p]).length, ITEM_COUNT))}</span></header>${
+      `<section class="block layer" style="--j-layer:var(--j-l${index + 1})"><header><h2>${escapeHtml(t("pillars")[p][0])}</h2><span>${escapeHtml(pluralText(normalizeArray(a[p]).length, RECORD_COUNT))}</span></header>${
         normalizeArray(a[p])
           .map(
             (x) =>
@@ -7495,7 +7496,7 @@ function htmlReport() {
                   "",
                 )}</div>${x.rationale ? `<p>${escapeHtml(x.rationale)}</p>` : ""}${factsHtml(modelMetricsFor(p, x))}</article>`,
           )
-          .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`
+          .join("") || `<p class="muted">${escapeHtml(noRecords)}</p>`
       }</section>`,
   ).join("");
   const contradictions =
@@ -7513,7 +7514,7 @@ function htmlReport() {
             "",
           )}</ul><p><b>${escapeHtml(t("interpretation"))}${colonMark()}</b> ${escapeHtml(c.interpretation || "")}</p></article>`;
       })
-      .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
+      .join("") || `<p class="muted">${escapeHtml(noRecords)}</p>`;
   const scenarios =
     normalizeArray(a.scenarios?.items)
       .map(
@@ -7532,7 +7533,7 @@ function htmlReport() {
               .join("") || "<p>—</p>"
           }</div></div></article>`,
       )
-      .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
+      .join("") || `<p class="muted">${escapeHtml(noRecords)}</p>`;
   const evidence =
     normalizeArray(a.evidence?.items)
       .map((e) => {
@@ -7548,14 +7549,14 @@ function htmlReport() {
         const strength = e.evidence_strength ? `<br><span class="muted">${escapeHtml(labelText("Evidence strength", "قوة الدليل", "Force de la preuve"))}${colonMark()} ${escapeHtml(e.evidence_strength)}/5</span>` : "";
         return `<tr><td>${rid(e)}<b>${escapeHtml(e.claim || e.name || "—")}</b>${counter ? `<br><span class="muted">${escapeHtml(labelText("Counter-evidence", "دليل مضاد", "Contre-preuve"))}${colonMark()} ${escapeHtml(counter)}</span>` : ""}${uncertainty}</td><td data-label="${escapeHtml(t("basis"))}"><em>${escapeHtml(basisInfo(e.basis).label)}</em></td><td data-label="${escapeHtml(t("confidence"))}"><em>${escapeHtml(confidenceLabel(evidenceConfidenceLevel(e)))}</em>${strength}</td><td data-label="${escapeHtml(t("sourceNote"))}">${sourceLines}${safeHttpUrl(e.source_url) ? `<br>${sourceAnchor(e.source_url)}` : ""}</td></tr>`;
       })
-      .join("") || `<tr><td colspan="4">${escapeHtml(t("noItems"))}</td></tr>`;
+      .join("") || `<tr><td colspan="4">${escapeHtml(noRecords)}</td></tr>`;
   const assumptions =
     normalizeArray(a.assumptions?.items)
       .map(
         (x) =>
           `<article class="assumption"><h3>${escapeHtml(x.assumption || x.name || "—")}</h3><div class="chips">${rid(x)}<em>${escapeHtml(riskInfo(x.risk || x.risk_level).label)}</em>${x.confidence ? `<em>${escapeHtml(confidenceInfo(x.confidence).label)}</em>` : ""}</div><p><b>${escapeHtml(t("test"))}${colonMark()}</b> ${escapeHtml(x.disproving_test || x.test || "—")}</p>${x.implication_if_wrong ? `<p><b>${escapeHtml(labelText("If wrong", "إذا كان خاطئًا"))}${colonMark()}</b> ${escapeHtml(x.implication_if_wrong)}</p>` : ""}</article>`,
       )
-      .join("") || `<p class="muted">${escapeHtml(t("noItems"))}</p>`;
+      .join("") || `<p class="muted">${escapeHtml(noRecords)}</p>`;
   const gate = qualityGate(a);
   // On the theme's tokens (src/report-theme.js), as the Biopolitical report.
   const css = `    *{box-sizing:border-box}html{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{margin:0;background:var(--j-bg);color:var(--j-fg);font:15px/1.65 var(--j-font-ui);-webkit-font-smoothing:antialiased}a{color:var(--j-signal)}
