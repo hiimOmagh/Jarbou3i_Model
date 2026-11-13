@@ -52,6 +52,12 @@ test.describe('golden prompts captured through Copy prompt', () => {
     const key = `${lens}/${lang}/${access}/${full ? 'full' : 'minimal'}`;
     test(key, async ({ page }) => {
       const prompt = await promptFromUI(page, { lens, lang, access, full });
+      if (lens === 'biopolitical') {
+        const accessLabel = { ar: 'وضع الوصول إلى الأدلة:', en: 'Evidence-access mode:', fr: 'Mode d’accès aux preuves :' }[lang];
+        const depthLabel = { ar: 'العمق:', en: 'Depth:', fr: 'Profondeur :' }[lang];
+        // Access constraints must remain close to the output template, after analytical depth.
+        expect(prompt.indexOf(accessLabel)).toBeGreaterThan(prompt.indexOf(depthLabel));
+      }
       if (update) {
         const goldens = fs.existsSync(fixturePath) ? JSON.parse(fs.readFileSync(fixturePath, 'utf8')) : {};
         goldens[key] = prompt;
