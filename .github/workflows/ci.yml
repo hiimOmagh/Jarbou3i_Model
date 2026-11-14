@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ux0-preview
   pull_request:
 
 permissions:
