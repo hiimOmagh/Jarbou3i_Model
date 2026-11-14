@@ -15,6 +15,17 @@ export function createGuidedFlow({
   const byId = (id) => document.getElementById(id);
   let current = FLOW_STEPS[0];
 
+  function setExpanded(expanded) {
+    const root = byId("workflowPanel");
+    const button = byId("workflowDisclosure");
+    if (!root || !button) return;
+    const hadFocus = !expanded && root.contains(document.activeElement);
+    root.hidden = !expanded;
+    button.setAttribute("aria-expanded", String(expanded));
+    // The button shows only while the setup is folded, so focus moves to it after.
+    if (hadFocus) button.focus();
+  }
+
   function render({ focus = false } = {}) {
     const root = byId("workflowPanel");
     if (!root) return;
@@ -42,7 +53,13 @@ export function createGuidedFlow({
     renderExamples();
     byId("flowBack").hidden = index === 0;
     byId("flowNext").hidden = index === FLOW_STEPS.length - 1;
-    byId("flowNext").disabled = !canContinue(current);
+    // Not `disabled`: a keyboard user can still reach Continue and hear why it waits.
+    const blocked = !canContinue(current);
+    const next = byId("flowNext");
+    if (blocked) next.setAttribute("aria-disabled", "true");
+    else next.removeAttribute("aria-disabled");
+    if (blocked && byId("topicStatus")) next.setAttribute("aria-describedby", "topicStatus");
+    else next.removeAttribute("aria-describedby");
     // One ink action per step: Continue, unless the step has its own.
     const own = root.querySelector(`[data-flow-panel="${current}"] .j-btn[data-variant="primary"]`);
     if (own) delete byId("flowNext").dataset.variant;
@@ -78,6 +95,7 @@ export function createGuidedFlow({
 
   function go(step, options) {
     if (!FLOW_STEPS.includes(step)) return;
+    setExpanded(true);
     const moved = step !== current;
     current = step;
     render(options);
@@ -86,6 +104,7 @@ export function createGuidedFlow({
 
   // Opens the step that holds a control, so it can be reached or focused.
   function reveal(id) {
+    setExpanded(true);
     const step = byId(id)?.closest("[data-flow-panel]")?.dataset.flowPanel;
     if (step && step !== current) go(step);
   }
@@ -94,6 +113,11 @@ export function createGuidedFlow({
 
   function bind() {
     const root = byId("workflowPanel");
+    byId("workflowDisclosure")?.addEventListener("click", () => {
+      setExpanded(true);
+      // The button leaves the page as the setup opens; focus follows into it.
+      byId("flowStepTitle")?.focus({ preventScroll: true });
+    });
     root.addEventListener("click", (event) => {
       const step = event.target.closest("[data-flow-step]");
       if (step) go(step.dataset.flowStep, { focus: true });
@@ -101,11 +125,14 @@ export function createGuidedFlow({
       if (example) useExample(example);
     });
     byId("flowBack").addEventListener("click", () => move(-1));
-    byId("flowNext").addEventListener("click", () => move(1));
+    byId("flowNext").addEventListener("click", (event) => {
+      if (event.currentTarget.getAttribute("aria-disabled") === "true") return;
+      move(1);
+    });
     // The app's own listeners have run by now; the guide and Continue follow them.
     root.addEventListener("input", () => render());
     render();
   }
 
-  return { bind, render, go, reveal, get step() { return current; } };
+  return { bind, render, go, reveal, setExpanded, get step() { return current; } };
 }

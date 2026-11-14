@@ -67,7 +67,7 @@ test("strategic contradictions and scenarios read as record cards", async ({ pag
   const scenario = page.locator('#case-scenarios [data-records="scenarios"] > li').first();
   await expectKernel(page, "#case-scenarios");
   await expect(scenario.locator(".j-chip")).toHaveText(["Probability 70%", "Timeframe: 1947–1955"]);
-  await expect(scenario.locator("dt")).toHaveText(["Drivers", "Early signals", "Disproven if"]);
+  await expect(scenario.locator("dt")).toHaveText(["Rationale", "Drivers", "Early signals", "Disproven if"]);
   await expect(scenario.locator("dd li").first()).toHaveText("Ideological polarization");
 });
 

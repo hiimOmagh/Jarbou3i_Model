@@ -1,0 +1,35 @@
+{
+  "format": "jarbou3i-research-dossier",
+  "format_version": 1,
+  "dossier_id": "dossier_8a75621e-8ac1-42aa-a6ee-1ca40a6df365",
+  "revision": 1,
+  "created_at": "2026-11-02T12:00:00.000Z",
+  "updated_at": "2026-11-02T12:00:00.000Z",
+  "framing": {
+    "question": "Released writer compatibility",
+    "timeframe": "",
+    "scope_in": [],
+    "scope_out": [],
+    "contested_terms": [
+      {
+        "term": ":x",
+        "working_definition": ""
+      },
+      {
+        "term": "：تعريف",
+        "working_definition": ""
+      },
+      {
+        "term": "Term",
+        "working_definition": "meaning"
+      }
+    ],
+    "limits": []
+  },
+  "completion": [],
+  "analyses": [],
+  "checksum": {
+    "algorithm": "SHA-256",
+    "value": "adc0ff0137b18391d8e32170194ae0ddff273d817917109f2c59dd3946cf61de"
+  }
+}

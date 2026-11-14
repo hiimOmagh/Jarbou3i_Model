@@ -22,11 +22,16 @@ test.describe("Guided flow", () => {
     expect(await hitHeight(step(page, "lens"))).toBeGreaterThanOrEqual(44);
     expect(await hitHeight(page.locator(".j-flow-example").first())).toBeGreaterThanOrEqual(44);
     // A topic is needed to continue; an example gives one, with its context.
-    await expect(page.locator("#flowNext")).toBeDisabled();
+    // Continue stays reachable by keyboard; it says it waits and points at the sentence that says why.
+    await expect(page.locator("#flowNext")).toHaveAttribute("aria-disabled", "true");
+    await expect(page.locator("#flowNext")).toHaveAttribute("aria-describedby", "topicStatus");
+    await page.locator("#flowNext").click({ force: true });
+    await expect(step(page, "topic")).toHaveAttribute("aria-current", "step");
     await page.locator(".j-flow-example").first().click();
     await expect(page.locator("#topicInput")).toHaveValue("Semiconductor export controls");
     await expect(page.locator("#timeframeInput")).toHaveValue("2022–2026, United States, EU, China");
-    await expect(page.locator("#flowNext")).toBeEnabled();
+    await expect(page.locator("#flowNext")).not.toHaveAttribute("aria-disabled", "true");
+    await expect(page.locator("#flowNext")).not.toHaveAttribute("aria-describedby", /.*/);
 
     await page.locator("#flowNext").click();
     await expect(page.locator("#flowStepTitle")).toBeFocused();
@@ -79,6 +84,31 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#shellNextAction")).toHaveAttribute("data-variant", "primary");
   });
 
+  test("a failed import keeps the setup open; a good one folds it and the disclosure gives it back", async ({ page }) => {
+    await page.goto("./");
+    await page.locator("#langEn").click();
+    await step(page, "answer").click();
+    await page.locator("#jsonInput").fill("not json at all");
+    await expect(page.locator("#workflowPanel")).toBeVisible();
+    await expect(page.locator("#workflowDisclosure")).toHaveAttribute("aria-expanded", "true");
+    await page.locator("#jsonInput").fill(await answer("sample-analysis-en.json"));
+    await page.locator("#importBtn").click();
+    await expect(page.locator("#workflowDisclosure")).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#workflowPanel")).toBeHidden();
+    await page.locator("#workflowDisclosure").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#workflowDisclosure")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("#workflowPanel")).toBeVisible();
+    await expect(page.locator("#flowStepTitle")).toBeFocused();
+    // The button shows only while the setup is folded.
+    await expect(page.locator("#workflowDisclosure")).toBeHidden();
+    // The header's Set up opens a folded setup too.
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#workflowPanel")).toBeHidden();
+    await page.locator('[data-shell-nav="workflow"]').click();
+    await expect(page.locator("#workflowPanel")).toBeVisible();
+  });
+
   test("the guide reacts to the pasted answer", async ({ page }) => {
     await page.goto("./");
     await page.locator("#langEn").click();
@@ -92,6 +122,10 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#flowGuide")).toHaveAttribute("data-mood", "ok");
     await page.locator("#importBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();
+    await expect(page.locator("#workflowPanel")).toBeHidden();
+    await page.locator("#workflowDisclosure").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#workflowPanel")).toBeVisible();
     // Once imported, the answer step says so instead of offering the import again,
     // and keeps saying so in another language.
     await step(page, "answer").click();
@@ -99,7 +133,7 @@ test.describe("Guided flow", () => {
     await expect(page.locator("#flowSay")).toHaveText("Imported. Your review is ready.");
     await expect(page.locator("#jsonStatus")).toHaveText(/^Imported: this is the analysis under review/);
     await page.locator("#langFr").click();
-    await expect(page.locator("#jsonStatus")).toHaveText(/^Importée : c’est l’analyse en cours d’examen/);
+    await expect(page.locator("#jsonStatus")).toHaveText(/^Importée : c’est l’analyse en cours d’examen/);
   });
 
   test("says what each prompt mode asks for, beside the choice", async ({ page }) => {
@@ -135,4 +169,25 @@ test.describe("Guided flow", () => {
       expect(serious, `${name}: ${JSON.stringify(serious, null, 2)}`).toEqual([]);
     }
   });
+});
+
+test("handoff boundary En", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator('[data-flow-step="prompt"]').click();
+  await expect(page.locator("#flowStepHint")).toHaveText("The app prepares the prompt and never contacts an AI itself; your AI writes the analysis. Copy the prompt into your chosen AI chat, then paste its reply here.");
+});
+
+test("handoff boundary Ar", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langAr").click();
+  await page.locator('[data-flow-step="prompt"]').click();
+  await expect(page.locator("#flowStepHint")).toHaveText("يجهّز التطبيق الموجِّه ولا يتصل بأي مساعد ذكاء اصطناعي بنفسه؛ ويكتب مساعدك الذكي التحليل. انسخ الموجِّه إلى محادثة الذكاء الاصطناعي التي تختارها، ثم الصق ردّه هنا.");
+});
+
+test("handoff boundary Fr", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langFr").click();
+  await page.locator('[data-flow-step="prompt"]').click();
+  await expect(page.locator("#flowStepHint")).toHaveText("L’application prépare le prompt sans jamais contacter d’IA ; votre IA rédige l’analyse. Copiez le prompt dans la conversation avec l’IA de votre choix, puis collez sa réponse ici.");
 });

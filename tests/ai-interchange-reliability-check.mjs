@@ -326,6 +326,21 @@ if (
 const bioTemplate = JSON.parse(
   window.Jarbou3iBiopolitics.buildSchemaTemplate("en", "research", "web"),
 );
+// Catch silent batching, truncated ID choices, and stale context after a local edit.
+for (const lang of ["en", "ar", "fr"]) {
+  const candidate = {
+    actors: Array.from({ length: 61 }, (_, i) => ({ id: `A${i + 1}`, name: `Actor ${i + 1}`, mandate: "Locally edited mandate", confidence: "" })),
+    evidence: { items: Array.from({ length: 45 }, (_, i) => ({ id: `E${i + 1}`, claim: `Claim ${i + 1}` })) },
+  };
+  const gaps = candidate.actors.map((_, i) => ({ path: `/actors/${i}`, code: "SCHEMA_REQUIRED", keyword: "required", params: { missingProperty: "confidence" } }));
+  const prompt = compiler.buildCompletionPrompt(candidate, gaps, lang, { actors: [{ confidence: "high|medium|low" }] });
+  if (!prompt.includes("1/2") || !prompt.includes("50") || !prompt.includes("61") || prompt.includes("/actors/50/confidence —")) fail(`${lang}: batch size and total must be explicit`);
+  if (!prompt.includes("Locally edited mandate") || !prompt.includes('"A1"') || !prompt.includes("high")) fail(`${lang}: current record and enum constraints must travel with a gap`);
+  const refs = compiler.buildCompletionPrompt(candidate, [{ code: "BROKEN_REFERENCE", path: "/actors/0/target", reference: "missing", allowedTypes: ["actor"] }, { code: "BROKEN_REFERENCE", path: "/actors/0/evidence_ids/0", reference: "missing", allowedTypes: ["evidence"] }], lang);
+  if (!refs.includes("A61 —") || !refs.includes("E45 —") || !refs.includes("actor")) fail(`${lang}: reference choices must include the full ID inventory and required types`);
+  const numeric = compiler.buildCompletionPrompt(fixture, [{ path: "/intervention_assessment/care_control_tensions/0", code: "SCHEMA_REQUIRED", keyword: "required", params: { missingProperty: "severity" } }, { path: "/scale_time/future_feedback_loops/0", code: "SCHEMA_REQUIRED", keyword: "required", params: { missingProperty: "probability" } }], lang, bioTemplate);
+  if (!numeric.includes("0–5") || !numeric.includes("0–100")) fail(`${lang}: numeric gaps must include both bounds`);
+}
 const completionPrompt = compiler.buildCompletionPrompt(
   reusedCanonical,
   reusedValidation.errors,

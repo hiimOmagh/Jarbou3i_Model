@@ -95,6 +95,143 @@
   when you change the language: the diagnostics, a record's details, a layer
   of connections. Another answer starts with every fold closed.
 
+### Read text from a file (RESEARCH-1D, text files)
+
+- **Your sources can read a text file.** In the topic step's *Your sources*
+  fold, **Read text from a file** takes a `.txt`, `.md`, `.csv`, `.json`,
+  `.html` or `.htm` file of up to 2 MB, reads it on the device (UTF-8, or
+  UTF-16 with a byte-order mark; a file that is neither is refused, never
+  repaired), and shows it as plain text. HTML is reduced to its visible text
+  by a small tokenizer: nothing is mounted, loaded or run.
+- **Only the passages you choose are kept.** Select up to 2,000 characters,
+  choose them, edit them, add a locator, and save them to a new source or one
+  you have. They are ordinary unchecked excerpts: the original file and the
+  rest of its text are not stored, exported or attached to the AI chat, and
+  the file has to be chosen again to take more.
+- **A source made from a file starts with *Send to the AI* off**, until you
+  have read what was taken. The source and its first passage are one save.
+- **HTML hides what a browser hides** (scripts and their escape states,
+  styles, frames, `noscript`, `svg`, comments including `<!-->`) and decodes
+  the whole HTML 4 named-reference set (so `caf&eacute;` reads as café), in
+  linear time with the text read in slices so Cancel is heard. **A page with a
+  `template`, `xmp` or `plaintext` tag is refused whole** ("This HTML cannot be
+  read safely. Use a text version or paste a passage."), with no text shown:
+  the reader is plain text, not a faithful rendering, and does not copy a
+  browser's tree building. A passage for a source renamed, relinked, or deleted
+  and made again in another page is not saved, and says so.
+- **Words in Arabic, English and French** for every refusal (not supported,
+  too large, no readable text, not UTF-8/UTF-16, binary, too long, could not
+  be read, took too long, HTML that cannot be read safely).
+- No stored format, schema, database version or limit changed. PDF files are
+  the next slice.
+
+### Supplied material has a size, and you choose what goes (RESEARCH-1D, prompt caps)
+
+- **Supplied material is capped at 8,000 characters for each source and 32,000
+  for all of it** (the *Supplied sources* box included), counted as the prompt
+  carries it: a Strategic prompt writes each quote, backslash and line break
+  longer, a Biopolitical one breaks each `</`. Within the caps and with nothing
+  left out, the prompt is exactly what it was.
+- **Over a cap, Preview and Copy open a review instead of the prompt.** Copy
+  copies nothing and does not move on. Each passage has a checkbox (whole
+  passages only; nothing is cut, ranked or chosen for you), each source says
+  "This source uses {n} of 8,000 characters", and the total "Supplied material
+  uses {n} of 32,000 characters", in Arabic, English and French.
+- **What is left out is said**: "{n} passages left out of this prompt" in the
+  review, a matching note inside that source's part of the prompt (counted in
+  the budget), and "No text from this source goes to the AI." when none is
+  left. Source details or the box that are over a cap on their own are named:
+  edit them or switch the source off; the box is never cut for you.
+- **The choice is for this prompt only**: kept in memory, cleared by any change
+  to the case, a source, a passage, a switch, the box, the lens, the access or
+  a language, and by a reload. It is never saved in the case.
+
+### From your sources to the evidence (RESEARCH-1C)
+
+- When the analysis on screen belongs to your case, its case file shows your
+  sources beside the evidence (AR/EN/FR, both lenses): an evidence record
+  that comes from one of your sources says so under its title, by its link
+  or, with no link, by its source title; and a **Your sources** fold after
+  the evidence records lists each source, the records from it, and its
+  excerpts with your checks. Neither is printed. Without a case, the case
+  file, reports and exports are exactly as before.
+- **Make it evidence** on an excerpt that matches its source: a new evidence
+  record from the source and the excerpt, or a related record's empty link,
+  date or place filled from them. You give every judgement the lens asks
+  for; in the Biopolitical lens, verified is offered only when its checks
+  pass, and a related record may be set to verified even when it has
+  nothing left to fill. The change opens in the resolution dialog as one revision, with a
+  rationale you can start from, and nothing is saved until you confirm.
+  The case is read again before the dialog opens and before the commit.
+- The excerpt then shows the record and its revision, and says "Changed
+  since" when the excerpt or its source is edited later. A link the case
+  could not save is said, with **Save again**. Up to 10 per excerpt.
+- In the review ledger, a provenance task on a record from your source names
+  it, and Complete starts the rationale from your check. The review plan
+  itself is the same with and without a case.
+- Long record ids wrap on narrow screens instead of widening the page.
+- What the analysis covers saves only the fields you changed on this screen;
+  a value the app put in a field, such as the case's question after a commit,
+  is not your change, so a case with no question no longer takes the analysis
+  title shown in its place. Before, any later save here (one made when you left the step, too) wrote
+  every field back, undoing what another tab had changed in the others once
+  this tab had saved anything to the case after it.
+
+### Your sources, kept with the case (RESEARCH-1B)
+
+- The topic step has a second fold, **Your sources** (AR/EN/FR): each source
+  with its title, link, its own date and the date you opened it, and the
+  excerpts you took from it, quoted or in your words, each with where it is
+  in the source. Sources and excerpts are saved by their buttons, to the
+  case, and a case without sources is written exactly as before.
+- **Matches the source** or **Does not match** records your check of an
+  excerpt against its source, with how you checked or what differs, as your
+  claim and its date. The app never checks an excerpt. Changing an
+  excerpt's text or place reopens its check.
+- With **Sources supplied in context** (step 3), the sources you send go
+  into the prompt with their excerpts, inside the material the AI is told
+  never to obey, each excerpt line marked as yours; the prompt asks the AI
+  to cite them by their titles and never to present an excerpt as the
+  source's own words. An excerpt that does not match, and your checks, are
+  never sent. Step 3 says how many of your sources are sent.
+- The cases list says how many sources a case has. A case saved by a newer
+  version of the app is listed as such and kept. A case file may be up to
+  28 MiB, room for the largest case the record allows.
+- Pasted text can no longer close the Biopolitical prompt's material tags.
+- A change made in another tab is made again once on the newer case, and is
+  refused, with what to do, when the item you were changing has changed
+  there. A form being saved is locked until its save ends.
+
+### Keep your cases, and take them with you (RESEARCH-1A, slice 4)
+
+- The Local workspaces dialog lists **Cases**: each case's question, its
+  linked answers (and how many are not on this device), "Met: n of m" and
+  its last change.
+- **Open** brings a case back: its newest answer on this device, or, before
+  any answer, its question and framing in the topic step.
+- **Export** saves a case as its own file. **Restore a case from a file**
+  brings it back, only if the file is unchanged, and never over a case
+  already here.
+- **Remove** takes a second click, and the case's answers stay in
+  Workspaces.
+- A case changed in another tab keeps your decisions and links: they are
+  made again on the newer case. A reason being written stays with its own
+  criterion, and an answer is linked to the case it was imported for.
+
+### Say when the analysis is done, and mark it yourself (RESEARCH-1A, slice 3)
+
+- **What the analysis covers** has a fifth field, **The analysis is done
+  when**, with one criterion per line. The criteria go into the prompt with
+  the rest.
+- The overview of an answer imported for the case ends with those criteria
+  and a count ("Met: 1 of 3").
+- **Mark as met** asks why. An empty reason is refused at its field. A met
+  criterion reads "Met · your claim" with the date and your reason, and
+  **Reopen** makes it open again.
+- The app never marks one met, and a criterion changes no score or gate.
+- Editing the list keeps each unchanged line's decision. A changed line is a
+  new criterion, open.
+
 ### Say what the analysis covers before asking the AI (RESEARCH-1A, slice 2)
 
 - The topic step has a fold, **What the analysis covers**, in Arabic,

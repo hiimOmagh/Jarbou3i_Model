@@ -34,6 +34,25 @@ const localeContracts = {
   fr: ["ltr", "Rapport d’analyse biopolitique — Carte d’entraînement v2"],
 };
 
+// Exported section counts use the same record noun as the directory.
+const recordCounts = {
+  en: [[0, '0 records'], [1, '1 record'], [2, '2 records']],
+  fr: [[0, '0 fiche'], [1, '1 fiche'], [2, '2 fiches']],
+  ar: [[0, 'لا سجلات'], [1, 'سجل واحد'], [2, 'سجلان'], [3, '3 سجلات'], [11, '11 سجلًا'], [100, '100 سجل']],
+};
+for (const [lang, cases] of Object.entries(recordCounts)) {
+  for (const [n, expected] of cases) {
+    const analysis = bio.sample(lang);
+    const countingBio = { ...bio, recordsFor: (key, a, locale) => {
+      const records = bio.recordsFor(key, a, locale);
+      return records.length ? Array.from({ length: n }, () => records[0]) : records;
+    } };
+    const output = reportApi.build({ analysis, lang, version: PRODUCT_VERSION, bio: countingBio, graphApi });
+    assert.ok(output.includes(`class="recordCount">${expected}</span>`), `${lang}/${n}: exported record count`);
+    if (n === 0) assert.ok(output.includes({ en: 'No authored records.', fr: 'Aucune fiche rédigée.', ar: 'لا توجد سجلات مؤلفة.' }[lang]));
+  }
+}
+
 for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
   const analysis = bio.sample(lang);
   if (lang === "en") analysis.evidence.items[0].source_url = fixture.evidence.items[0].source_url;

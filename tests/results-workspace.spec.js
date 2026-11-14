@@ -15,7 +15,7 @@ test('shared results orientation prioritizes decision context across both lenses
   // The verdict opens the overview, as its heading, and says why.
   await expect(orientation.locator('#resultsOrientationTitle')).toHaveText('Do not publish yet');
   await expect(orientation.locator('[data-orientation="gate"] p')).toContainText('Parts of the analysis are missing');
-  await expect(page.locator('#case-overview .j-brief-topic')).toHaveText('Sample: World War II outcomes');
+  await expect(page.locator('#case-overview .j-brief-topic')).toHaveText('How did World War II outcomes reshape the global system?');
   await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('bipolar order');
   // One verdict: the brief says what the quality gate says.
   await expect(page.locator('[data-diagnostic="gate"] h4')).toHaveText('Publication gate: Do not publish yet');
@@ -162,3 +162,44 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
   await page.locator('#importBtn').click();
   await expect(page.locator('[data-orientation="conclusion"] > p')).toHaveText('An improved thesis.');
 });
+
+// Readiness sits below coverage; the brief says which of the two checks holds it down, in each language.
+for (const [button, pattern] of [
+  ['#langEn', /Next step: (trace sources|request independent human review) \(\d+%\)\./],
+  ['#langAr', /الخطوة التالية: (تتبع المصادر|طلب مراجعة بشرية مستقلة) \(\d+%\)\./],
+  ['#langFr', /Prochaine étape : (vérifier l’origine des sources|demander une revue humaine indépendante) \(\d+\s%\)\./],
+]) {
+  test(`the brief says what holds decision readiness down (${button.slice(5).toLowerCase()})`, async ({ page }) => {
+    await page.goto('./');
+    await page.locator(button).click();
+    await page.locator('#loadSampleBtn').click();
+    await expect(page.locator('[data-results-orientation] [data-readiness-limit]')).toHaveText(pattern);
+  });
+}
+
+// A missing question, a title substituted for it, or a reordered warning breaks this contract.
+for (const [language, labels] of [
+  ['en', ['Question', 'Conclusion', 'What is uncertain']],
+  ['ar', ['السؤال', 'الخلاصة', 'ما الذي لا نعرفه بعد']],
+  ['fr', ['Question', 'Conclusion', 'Ce qui reste incertain']],
+]) {
+  for (const lens of ['strategic', 'biopolitical']) {
+    test(`the ${language} ${lens} brief opens with the warning then the authored question`, async ({ page }) => {
+      const suffix = lens === 'biopolitical' ? `bio-${language}` : language;
+      const data = JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/sample-analysis-${suffix}.json`, 'utf8'));
+      await page.goto('./');
+      await page.locator(`#lang${language[0].toUpperCase()}${language.slice(1)}`).click();
+      await openStep(page, 'answer');
+      await page.locator('#jsonInput').fill(JSON.stringify(data));
+      await page.locator('#importBtn').click();
+      const brief = page.locator('[data-results-orientation]');
+      await expect(brief.locator('[data-orientation="question"] .j-label')).toHaveText(labels[0]);
+      await expect(brief.locator('[data-orientation="question"] p')).toHaveText(data.subject.question || data.subject.research_question);
+      await expect(brief.locator('[data-orientation="conclusion"] .j-label')).toHaveText(labels[1]);
+      await expect(brief.locator('[data-orientation="conclusion"] p')).toHaveText(data.subject.executive_thesis || data.subject.executive_finding);
+      await expect(brief.locator('[data-orientation="uncertainty"] .j-label')).toHaveText(labels[2]);
+      expect(await brief.locator('[data-orientation]').evaluateAll(nodes => nodes.map(node => node.dataset.orientation)))
+        .toEqual(['gate', 'question', 'conclusion', 'metrics', 'uncertainty', 'action']);
+    });
+  }
+}

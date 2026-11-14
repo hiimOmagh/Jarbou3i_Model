@@ -11,8 +11,9 @@
 .j-brief-head > div { display: grid; gap: var(--j-s-1); flex: 1 1 24ch; min-width: 0; }
 .j-brief-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-22)/1.25 var(--j-font-display); letter-spacing: -.01em; text-wrap: balance; }
 .j-brief-head > div > p { max-width: 72ch; margin: 0; color: var(--j-fg-muted); line-height: 1.55; overflow-wrap: anywhere; }
-/* The overview's topic, under its title. */
-.j-brief-topic { margin: calc(-1 * var(--j-s-2)) 0 var(--j-s-4); color: var(--j-fg-muted); font-size: var(--j-t-16); line-height: 1.45; overflow-wrap: anywhere; }
+/* The authored question follows the publication warning in reading order. */
+.j-brief-question { display: grid; gap: var(--j-s-2); min-width: 0; }
+.j-brief-topic { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-16); line-height: 1.45; overflow-wrap: anywhere; }
 /* The publication verdict opens the overview: the gate's status as the
    heading, its shape and words saying the tone, under a rule in that tone,
    then why. */
@@ -34,7 +35,8 @@
   display: grid; gap: var(--j-s-2); align-content: start; min-width: 0; padding: var(--j-s-3) 0 0;
   border-block-start: var(--j-rule) solid var(--j-ink);
 }
-.j-brief-claim > p { margin: 0; color: var(--j-fg); font-size: var(--j-t-18); font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+/* A long conclusion reads as prose: regular weight, a readable measure, the author's own line breaks kept. */
+.j-brief-claim > p { margin: 0; max-inline-size: 60ch; color: var(--j-fg); font-size: var(--j-t-18); font-weight: 400; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
 .j-brief-figures { display: grid; gap: var(--j-s-4); margin: 0; }
 .j-brief-figures dd { display: grid; gap: var(--j-s-2); margin: 0; }
 .j-brief-figures b { color: var(--j-fg); font: 700 var(--j-t-28)/1 var(--j-font-data); font-variant-numeric: tabular-nums; }
@@ -56,28 +58,43 @@
 
 /* How the conclusion is built: its steps, each a record that ends on its link. */
 .j-brief-steps {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--j-s-5);
+  display: flex; flex-wrap: wrap; gap: var(--j-s-5);
   margin: 0; padding: 0; list-style: none;
 }
-.j-brief-steps > li { display: grid; min-width: 0; }
+/* Wrapping steps share the last row, so a lone fifth step fills it instead of leaving a gap. */
+.j-brief-steps > li { display: grid; flex: 1 1 min(100%, 15rem); min-width: 0; container-type: inline-size; }
 .j-brief-steps .j-rec { grid-template-rows: auto auto 1fr auto; align-content: stretch; }
 .j-brief-desc { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-13); line-height: 1.5; }
+.j-brief-figures .j-brief-desc { display: block; margin-top: var(--j-s-1); font-weight: 400; letter-spacing: normal; text-transform: none; }
 .j-brief-items { display: grid; gap: var(--j-s-3); align-content: start; margin: 0; padding: 0; list-style: none; }
 .j-brief-items > li { display: grid; gap: var(--j-s-1); min-width: 0; padding-block-start: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
-.j-brief-items strong { color: var(--j-fg); font-size: var(--j-t-14); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.j-brief-items strong { color: var(--j-fg); font-size: var(--j-t-14); font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; text-wrap: balance; }
 /* Three lines at most; the step's link opens the whole record. */
 .j-brief-items p {
   display: -webkit-box; margin: 0; overflow: hidden; color: var(--j-fg); font-size: var(--j-t-13); line-height: 1.55;
   overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3;
 }
 .j-brief-tags { display: flex; flex-wrap: wrap; gap: var(--j-s-1); margin-block-start: var(--j-s-1); }
+/* The confidence tags carry the signal: readable size and full-strength text. */
+.j-brief-tags .j-chip { min-height: 26px; padding: 0 10px; font-size: var(--j-t-13); }
+/* Only actions are outlined pills: a plain tag is a quiet filled label. */
+.j-brief-tags .j-chip:not([data-tone]) { color: var(--j-fg); border-color: transparent; background: var(--j-raise); }
 .j-brief-open { justify-content: space-between; width: 100%; font-size: var(--j-t-14); }
 .j-brief-open:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
+/* A step that gets a whole row: its records sit in columns (short lines), its
+   count stays beside its name, and its button is a pill, not a bar. */
+@container (min-width: 32rem) {
+  .j-brief-items { grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); column-gap: var(--j-s-5); }
+  .j-rec-head > .j-rec-title { flex: 0 1 auto; }
+  .j-brief-open { width: fit-content; min-width: 14rem; gap: var(--j-s-4); }
+}
 
 /* The diagnostics, folded after the brief under one row between rules: their
    name over how many items block publishing. */
-.j-diag-fold { margin-top: var(--j-s-2); border: 0; border-block: 1px solid var(--j-line); border-radius: 0; background: none; }
-.j-diag-fold > summary { padding: var(--j-s-2) 0; color: var(--j-fg); font-size: var(--j-t-14); }
+.j-diag-fold { margin-top: var(--j-s-2); border: 1px solid var(--j-line-strong); border-radius: var(--j-r-2); background: none; }
+.j-diag-fold > summary { padding: var(--j-s-2) var(--j-s-4); color: var(--j-fg); font-size: var(--j-t-14); }
+.j-diag-fold > summary:hover { background: var(--j-raise); }
+.j-diag-fold > .j-diag { padding-inline: var(--j-s-4); }
 .j-diag-fold > summary small { display: block; color: var(--j-fg-muted); font-size: var(--j-t-13); font-weight: 400; }
 .j-diag-fold > .j-diag { padding-block: var(--j-s-2) var(--j-s-4); }
 /* A note above the brief, such as a migrated import. */
@@ -123,3 +140,28 @@
   .j-brief-bar { forced-color-adjust: none; border: 1px solid CanvasText; background: Canvas; }
   .j-brief-bar::before { background: Highlight; }
 }
+
+/* The analyst's completion contract, after the overview: a heavy rule opens
+   it, hairlines part its criteria. A met one is the analyst's claim, so its
+   reason reads as a quote. */
+.j-both { display: grid; gap: var(--j-s-2); justify-items: start; margin-block-start: var(--j-s-6); }
+.j-both p { margin: 0; color: var(--j-fg-muted); max-width: 60ch; }
+/* A real outlined button with an arrow, like "Inspect details"; the arrow is drawn, not text. */
+.j-both .j-btn { justify-content: space-between; gap: var(--j-s-4); min-width: 14rem; font-size: var(--j-t-14); }
+@media (max-width: 31.99rem) { .j-both .j-btn { width: 100%; } }
+.j-both .j-btn::after { content: "→"; }
+.j-both:dir(rtl) .j-btn::after { content: "←"; }
+.j-done { display: grid; gap: var(--j-s-3); margin-block-start: var(--j-s-6); padding-block-start: var(--j-s-4); border-block-start: 2px solid var(--j-fg); }
+.j-done-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--j-s-1) var(--j-s-4); }
+.j-done-head h4 { margin: 0; color: var(--j-fg); font: 700 var(--j-t-18)/1.3 var(--j-font-display); }
+.j-done-head p { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-14); }
+.j-done-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.j-done-item { display: grid; gap: var(--j-s-2); padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line); }
+.j-done-item > .j-btn { justify-self: start; }
+.j-done-text { margin: 0; max-width: 72ch; color: var(--j-fg); font-weight: 600; overflow-wrap: anywhere; }
+.j-done-state { margin: 0; color: var(--j-fg-muted); font-size: var(--j-t-14); }
+.j-done-state strong { color: var(--j-fg); }
+.j-done-reason { margin: 0; max-width: 72ch; padding-inline-start: var(--j-s-3); border-inline-start: 2px solid var(--j-line); overflow-wrap: anywhere; }
+.j-done-form { display: grid; gap: var(--j-s-3); max-width: 72ch; }
+.j-done-acts { display: flex; flex-wrap: wrap; gap: var(--j-s-2); }
+.j-done [hidden] { display: none; }

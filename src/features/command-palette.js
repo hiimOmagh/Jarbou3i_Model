@@ -22,12 +22,13 @@ export function createCommandPalette({ document, translate }) {
   // passed over here.
   function reachable(el) {
     for (let node = el; node && node !== document.body; node = node.parentElement) {
-      if (node.matches("[data-flow-panel][hidden]")) continue;
+      if (node.matches("[data-flow-panel][hidden], #workflowPanel[hidden]")) continue;
       if (node.hidden || document.defaultView.getComputedStyle(node).display === "none") return false;
     }
     return true;
   }
   function prepare(el) {
+    if (el.closest("#workflowPanel[hidden]")) byId("workflowDisclosure")?.click();
     for (let node = el.parentElement; node; node = node.parentElement) {
       if (node.matches("details:not([open])")) node.open = true;
     }

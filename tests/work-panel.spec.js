@@ -44,6 +44,13 @@ test.describe("Work panel", () => {
     await page.locator("#langEn").click();
   });
 
+  test("French save light and panel say where the work is", async ({ page }) => {
+    await page.locator("#langFr").click();
+    await expect(light(page)).toHaveAttribute("aria-label", /^Où se trouve votre travail : /);
+    await light(page).click();
+    await expect(page.locator("#workspaceDialogTitle")).toHaveText("Où se trouve votre travail");
+  });
+
   test("the save light opens where the work is", async ({ page }) => {
     await expect(light(page)).toHaveText("No saved workspace");
     await page.locator("#loadSampleBtn").click();

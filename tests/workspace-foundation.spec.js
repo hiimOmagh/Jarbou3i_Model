@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs/promises";
-import { openStep } from "./helpers/guided-flow.js";
+import { openStep, openSetup } from "./helpers/guided-flow.js";
 import { displayControl } from "./helpers/display-menu.js";
 import {
   clearWorkspaceRecords,
@@ -180,6 +180,7 @@ test("switching lens while the analysis saves keeps it with its workspace", asyn
 test("importing the analysis already open does not save it twice", async ({ page }) => {
   await useEnglish(page);
   await createSavedWorkspace(page, "strategic");
+  await openSetup(page);
   await page.locator("#loadSampleBtn").click();
   await expect(page.locator("#workspaceSaveState")).toHaveAttribute("data-state", "saved");
   await page.locator("#workspaceSaveState").click();
@@ -650,3 +651,41 @@ test("full reset clears workspaces and preferences", async ({ page }) => {
   .toHaveAttribute("data-state", "empty");
   await expect(page.locator("#reviewPanel")).toBeHidden();
 });
+
+test("with no saved analysis the disabled bundle button is tied to the sentence that says why", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("#langEn").click();
+  await page.locator("#workspaceSaveState").click();
+  const button = page.locator("#workspaceExport");
+  await expect(button).toBeDisabled();
+  await expect(button).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
+  await expect(page.locator("#workspaceResetCurrent")).toBeDisabled();
+  await expect(page.locator("#workspaceResetCurrent")).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
+  await expect(page.locator("#workspaceEmptyNote")).toHaveText("No saved workspaces yet. Close this and try a sample to create one.");
+  // Once an analysis is saved the button is enabled and no longer points at the empty note.
+  await expect(page.locator("#workspaceBackdrop")).toHaveClass(/show/);
+  await page.locator("#workspaceDialog").press("Escape");
+  await expect(page.locator("#workspaceBackdrop")).not.toHaveClass(/show/);
+  await createSavedWorkspace(page, "strategic");
+  await page.locator("#workspaceSaveState").click();
+  await expect(button).toBeEnabled();
+  await expect(button).not.toHaveAttribute("aria-describedby", /.*/);
+  await expect(page.locator("#workspaceResetCurrent")).not.toHaveAttribute("aria-describedby", /.*/);
+});
+
+// Arabic and French copy needs native check.
+for (const [lang, empty] of [
+  ["Ar", "لا توجد مساحات عمل محفوظة بعد. أغلق هذه النافذة وجرّب مثالًا لإنشاء واحدة."],
+  ["Fr", "Aucun espace de travail enregistré. Fermez cette fenêtre et essayez un exemple pour en créer un."],
+]) {
+  test(`empty workspace guidance keeps disabled actions described in ${lang}`, async ({ page }) => {
+    await page.goto("./");
+    await page.locator(`#lang${lang}`).click();
+    await page.locator("#workspaceSaveState").click();
+    await expect(page.locator("#workspaceEmptyNote")).toHaveText(empty);
+    for (const id of ["workspaceExport", "workspaceResetCurrent"]) {
+      await expect(page.locator(`#${id}`)).toBeDisabled();
+      await expect(page.locator(`#${id}`)).toHaveAttribute("aria-describedby", "workspaceEmptyNote");
+    }
+  });
+}

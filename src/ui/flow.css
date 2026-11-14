@@ -136,9 +136,12 @@
 
 /* ---------- Guide: the mascot, the steps, a sample ---------- */
 .j-flow-guide { position: sticky; top: var(--j-s-4); display: grid; gap: var(--j-s-4); align-content: start; }
-.j-flow-mascot { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
+/* Anchor the stations before the variable-length guidance in every language. */
+.j-flow-guide > .j-flow-steps { grid-row: 1; }
+/* The working guide is the words alone: the mascot image gives its room to the instructions. */
+.j-flow-mascot { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--j-s-3); align-items: start; }
 .j-flow-mascot img {
-  width: 72px; height: 72px; display: block; border-radius: 50%;
+  width: 72px; height: 72px; display: none; border-radius: 50%;
   border: 2px solid var(--j-line-strong); background: var(--j-panel);
   /* No idle bob: an endless animation here cut WebKit to 2–6 frames a second. */
 }
@@ -146,7 +149,7 @@
 .j-flow-more { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--j-s-1); }
 .j-flow-say {
   padding: var(--j-s-3) var(--j-s-4); border: 2px solid var(--j-line-strong); border-radius: var(--j-r-3);
-  border-start-start-radius: var(--j-r-1); background: var(--j-panel); font-size: var(--j-t-14);
+  background: var(--j-panel); font-size: var(--j-t-14);
 }
 /* Not colour alone: the bubble's edge changes and the mascot stops to react. */
 .j-flow-guide:not([data-mood="idle"]) .j-flow-mascot img { animation: j-flow-pop var(--j-dur-3) var(--j-ease-out); }
@@ -210,6 +213,7 @@
 .j-case-fold > [role="status"]:not(:empty) { padding: 0 var(--j-s-3) var(--j-s-3); }
 
 .j-flow-examples { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-2); color: var(--j-fg-muted); font-size: var(--j-t-13); }
+.j-resume-work { align-self: flex-start; margin-block: var(--j-s-2); }
 .j-flow-example-list { display: contents; }
 .j-flow-example {
   min-height: var(--j-control); padding: 0 var(--j-s-4); border: 2px solid var(--j-line); border-radius: var(--j-r-pill);
@@ -253,10 +257,9 @@
   padding-block: var(--j-s-3); border-block-start: 1px solid var(--j-line);
   color: var(--j-fg-muted); font-size: var(--j-t-14);
 }
-/* Its order as a station code: the number in an ink ring. */
+/* Plain instruction numerals leave rings reserved for the stations. */
 .j-flow-howto li::before {
-  content: counter(how); display: grid; place-items: center; inline-size: 28px; block-size: 28px; border-radius: 50%;
-  border: var(--j-station) solid var(--j-ink); color: var(--j-fg); font: 700 var(--j-t-12)/1 var(--j-font-ui);
+  content: counter(how); color: var(--j-fg); font: 700 var(--j-t-18)/1 var(--j-font-ui);
 }
 
 .j-flow-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--j-s-3); }
@@ -298,3 +301,26 @@
   /* A checked choice is painted in system colours; its description follows them. */
   .j-flow-choice span { color: inherit; }
 }
+
+/* Sources follow the framing fold and completion rows, on kernel controls. */
+.j-case-fold #sourcesBody, .j-case-fold #sourcesBody [data-source-form], .j-case-fold #sourcesBody [data-excerpt-form],
+.j-case-fold #sourcesBody [data-excerpt-decision] { display: grid; gap: var(--j-s-3); min-width: 0; }
+/* A row's column never grows past the fold; a long removal label wraps inside
+   its button (WebKit sizes a flex button by its unbroken text otherwise). */
+.j-case-fold #sourcesBody .j-done-item { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.j-case-fold #sourcesBody .j-flow-row > .j-btn { min-width: 0; }
+.j-case-fold #sourcesBody .j-btn > span { min-width: 0; overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody h3 { margin: 0; font-size: var(--j-t-18); overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody .j-flow-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.j-case-fold #sourcesBody label:has(> input[type="checkbox"]) { display: flex; align-items: center; gap: var(--j-s-2); min-height: var(--j-control); overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody input[type="checkbox"] { flex: 0 0 auto; width: 20px; height: 20px; accent-color: var(--j-ink); }
+.j-case-fold #sourcesBody .j-btn { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.j-case-fold #sourcesBody .j-done-text, .j-case-fold #sourcesBody .j-done-reason { white-space: pre-wrap; }
+.j-case-fold#sourcesFold [hidden] { display: none; }
+
+.j-case-fold #sourcesBody .j-done-list { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.j-case-fold #sourcesBody .j-done-state { overflow-wrap: anywhere; }
+
+/* The setup collapses behind its disclosure after an import (guided-flow.js). */
+.j-flow[hidden] { display: none; }
+.j-btn[id="workflowDisclosure"][aria-expanded="true"] { display: none; }

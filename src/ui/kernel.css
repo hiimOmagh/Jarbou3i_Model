@@ -163,14 +163,13 @@
   font-weight: 700; text-decoration: none;
   transition: background-color var(--j-dur-1) var(--j-ease-out), border-color var(--j-dur-1) var(--j-ease-out), color var(--j-dur-1) var(--j-ease-out), transform var(--j-dur-1) var(--j-ease-out);
 }
-.j-btn:hover:not(:disabled) { border-color: var(--j-ink); background: var(--j-raise); }
-.j-btn:active:not(:disabled) { transform: scale(.98); }
-.j-btn:disabled { opacity: .45; cursor: not-allowed; }
+.j-btn:hover:not(:disabled, [aria-disabled="true"]) { border-color: var(--j-ink); background: var(--j-raise); }
+.j-btn:active:not(:disabled, [aria-disabled="true"]) { transform: scale(.98); }
 /* The ring is the button's own, so it holds outside a .j-root (the review). */
 .j-btn:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 /* The one primary action: an ink pill, like the line's own name plate. */
 .j-btn[data-variant="primary"] { background: var(--j-ink); border-color: var(--j-ink); color: var(--j-on-ink); }
-.j-btn[data-variant="primary"]:hover:not(:disabled) { background: var(--j-ink-hover); border-color: var(--j-ink-hover); }
+.j-btn[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--j-ink-hover); border-color: var(--j-ink-hover); }
 .j-btn[data-variant="ghost"] { background: transparent; border-color: transparent; color: var(--j-fg-muted); }
 .j-btn[data-variant="ghost"]:hover:not(:disabled) { color: var(--j-fg); background: var(--j-raise); border-color: transparent; }
 .j-btn[data-size="lg"] { min-height: 52px; padding: 0 var(--j-s-5); font-size: var(--j-t-16); }
@@ -178,6 +177,11 @@
 /* Deletes or resets: said in the critical colour, filled only on hover. */
 .j-btn[data-variant="danger"] { color: var(--j-crit); border-color: color-mix(in srgb, var(--j-crit) 55%, transparent); }
 .j-btn[data-variant="danger"]:hover:not(:disabled) { background: var(--j-crit-wash); border-color: var(--j-crit); }
+/* After variants so disabled labels keep their full muted-token contrast. */
+.j-btn:disabled, .j-btn[aria-disabled="true"] {
+  background: transparent; border: 1px dashed var(--j-fg-muted); color: var(--j-fg-muted);
+  opacity: 1; cursor: not-allowed;
+}
 .j-kbd {
   white-space: nowrap;
   font: 500 var(--j-t-12) var(--j-font-code); padding: 1px 6px;
@@ -268,9 +272,11 @@ section.j-card { scroll-margin-top: var(--j-s-4); }
   transition: border-color var(--j-dur-1) var(--j-ease-out), box-shadow var(--j-dur-1) var(--j-ease-out);
 }
 textarea.j-input { resize: vertical; line-height: 1.5; }
-.j-input:focus { outline: none; border-color: var(--j-signal); box-shadow: var(--j-glow); }
+.j-input:focus { outline: 3px solid var(--j-signal); outline-offset: 2px; }
 .j-input[aria-invalid="true"] { border-color: var(--j-crit); }
 .j-input::placeholder { color: var(--j-fg-faint); opacity: 1; }
+/* Touch screens: below 16px, iOS Safari zooms the page when a field is focused. */
+@media (pointer: coarse) { input.j-input, select.j-input, textarea.j-input, textarea.j-flow-answer { font-size: 16px; } }
 
 /* ---------- Toast ---------- */
 .j-toast {
@@ -347,10 +353,13 @@ textarea.j-input { resize: vertical; line-height: 1.5; }
   /* An ink plate stays a filled plate in system colours. Set, not left to the
      browser: Chromium keeps the light ink colour as the text's fill colour. */
   .j-btn[data-variant="primary"] { forced-color-adjust: none; background: ButtonText; border: 2px solid ButtonText; color: ButtonFace; }
-  .j-btn[data-variant="primary"]:disabled { background: ButtonFace; border-color: GrayText; color: GrayText; }
+  .j-btn[data-variant="primary"]:disabled, .j-btn[data-variant="primary"][aria-disabled="true"] { background: ButtonFace; border-color: GrayText; color: GrayText; }
   .j-option[aria-selected="true"] { outline: 2px solid Highlight; }
 }
 /* Page furniture does not print. */
 @media print {
   .j-toast, .j-skip { display: none !important; }
 }
+
+/* Arabic is a connected script: tracking (negative or positive) breaks its joins, so it keeps normal spacing. */
+:root[dir="rtl"] :is(.j-root, .j-case-doc, .j-card) * { letter-spacing: normal; }
