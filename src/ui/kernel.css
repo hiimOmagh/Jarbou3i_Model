@@ -171,16 +171,16 @@
 .j-btn[data-variant="primary"] { background: var(--j-ink); border-color: var(--j-ink); color: var(--j-on-ink); }
 .j-btn[data-variant="primary"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--j-ink-hover); border-color: var(--j-ink-hover); }
 .j-btn[data-variant="ghost"] { background: transparent; border-color: transparent; color: var(--j-fg-muted); }
-.j-btn[data-variant="ghost"]:hover:not(:disabled) { color: var(--j-fg); background: var(--j-raise); border-color: transparent; }
+.j-btn[data-variant="ghost"]:hover:not(:disabled, [aria-disabled="true"]) { color: var(--j-fg); background: var(--j-raise); border-color: transparent; }
 .j-btn[data-size="lg"] { min-height: 52px; padding: 0 var(--j-s-5); font-size: var(--j-t-16); }
 .j-btn[data-size="icon"] { width: var(--j-control); padding: 0; flex: none; }
 /* Deletes or resets: said in the critical colour, filled only on hover. */
 .j-btn[data-variant="danger"] { color: var(--j-crit); border-color: color-mix(in srgb, var(--j-crit) 55%, transparent); }
-.j-btn[data-variant="danger"]:hover:not(:disabled) { background: var(--j-crit-wash); border-color: var(--j-crit); }
-/* After variants so disabled labels keep their full muted-token contrast. */
-.j-btn:disabled, .j-btn[aria-disabled="true"] {
+.j-btn[data-variant="danger"]:hover:not(:disabled, [aria-disabled="true"]) { background: var(--j-crit-wash); border-color: var(--j-crit); }
+/* Disabled actions remain visible but read as unavailable. */
+.j-btn:disabled, .j-btn[aria-disabled="true"], .j-btn[data-variant][aria-disabled="true"] {
   background: transparent; border: 1px dashed var(--j-fg-muted); color: var(--j-fg-muted);
-  opacity: 1; cursor: not-allowed;
+  opacity: .5; cursor: not-allowed;
 }
 .j-kbd {
   white-space: nowrap;
