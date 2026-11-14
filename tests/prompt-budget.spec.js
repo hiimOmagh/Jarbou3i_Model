@@ -101,8 +101,10 @@ test.describe('supplied material over a cap', () => {
     await page.locator('#previewPromptBtn').click();
     await expect(review(page)).toBeVisible();
     await expect(page.locator('#modalContent')).toBeHidden();
+    // Preview reads the saved case before rebuilding this already-visible review.
+    // Its heading focus marks completion; only then start keyboard navigation.
+    await expect(page.locator('#promptReviewHead')).toBeFocused();
     // From the keyboard alone: Tab to the first passage, Space to leave it out.
-    await page.locator('#promptReviewHead').focus();
     await tabTo(page, boxes(page).first());
     await page.keyboard.press('Space');
     await expect(boxes(page).first()).not.toBeChecked();
