@@ -194,9 +194,9 @@ test.describe("Work panel", () => {
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
     await page.locator("#langAr").click();
     await page.locator("#loadSampleBtn").click();
-    await expect(light(page)).toHaveAttribute("aria-label", "أين عملك: محفوظ محليًا");
+    await expect(light(page)).toHaveAttribute("aria-label", "عملك المحفوظ: محفوظ محليًا");
     await light(page).click();
-    await expect(page.locator("#workspaceDialogTitle")).toHaveText("أين عملك");
+    await expect(page.locator("#workspaceDialogTitle")).toHaveText("عملك المحفوظ");
     await expect(page.locator("#workLife")).toContainText("تطابق النسخة 1، وهي النسخة الحالية.");
     const problems = await page.evaluate(async () => {
       const { checkContracts } = await import("./src/ui/contracts.js");

@@ -53,7 +53,7 @@ test("review shows a note when many source links point to one site, and none oth
 for (const [lang, button, sentence] of [
   ["en", "#langEn", "Filled layers do not mean ready to publish: the publication gate is still open."],
   ["ar", "#langAr", "اكتمال الطبقات لا يعني الجاهزية للنشر: بوابة النشر ما زالت مفتوحة."],
-  ["fr", "#langFr", "Des couches remplies ne veulent pas dire prêt à publier : le contrôle de publication reste ouvert."],
+  ["fr", "#langFr", "Des couches remplies ne veulent pas dire prêt à publier : le contrôle de publication reste ouvert."],
 ]) {
   test(`exported completeness says the publication gate is separate (${lang})`, async ({ page }, testInfo) => {
     await page.goto("./");

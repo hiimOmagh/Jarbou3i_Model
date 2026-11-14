@@ -454,7 +454,7 @@ const I18N = {
     healthMissingEvidence: "اطلب أدلة/افتراضات أو استخدم نمط الخبير.",
     healthMissingFeedback: "أضف حلقات تغذية راجعة تربط النتائج بالتكيّف.",
     jsonAutoRecovered: "تم تنظيف النص واستخراج JSON صالح تلقائيًا.",
-    jsonParseProblem: "لم يُعثر على تحليل. انسخ إجابة الذكاء الاصطناعي كاملة والصقها هنا. للنص العادي، استخدم موجِّه الإصلاح لطلب JSON.",
+    jsonParseProblem: "لم يُعثر على تحليل. انسخ إجابة الذكاء الاصطناعي كاملة والصقها هنا. وإذا أجاب بنص عادي، فاستخدم موجِّه الإصلاح لطلب JSON.",
     reportSubtitle:
       "تقرير قابل للمشاركة مبني على نموذج المصالح ← الفاعلون ← الأدوات ← السردية ← النتائج ← التغذية الراجعة.",
     scoreSystem: "نظام التقييم",
@@ -922,7 +922,7 @@ const I18N = {
     healthMissingFeedback: "Add feedback loops linking results to adaptation.",
     jsonAutoRecovered:
       "Text was cleaned and valid JSON was extracted automatically.",
-    jsonParseProblem: "No analysis was found. Copy the AI’s whole answer and paste it here. For plain text, use the repair prompt to request JSON.",
+    jsonParseProblem: "No analysis was found. Copy the AI’s whole answer and paste it here. If it replied in plain text, use the repair prompt to ask for JSON.",
     reportSubtitle:
       "A shareable report built on the Interests → Actors → Tools → Narrative → Results → Feedback model.",
     scoreSystem: "Scoring system",
@@ -1408,7 +1408,7 @@ const I18N = {
     jsonAutoRecovered:
       "Le texte a été nettoyé et un JSON valide a été extrait automatiquement.",
     jsonParseProblem:
-      "Aucune analyse trouvée. Copiez toute la réponse de l’IA et collez-la ici. Pour du texte simple, utilisez le prompt de réparation pour demander du JSON.",
+      "Aucune analyse trouvée. Copiez toute la réponse de l’IA et collez-la ici. Si l’IA a répondu en texte simple, utilisez le prompt de réparation pour demander du JSON.",
     reportSubtitle:
       "Rapport partageable fondé sur le modèle Intérêts → Acteurs → Outils → Narratif → Résultats → Rétroaction.",
     scoreSystem: "Système de score",
@@ -3511,7 +3511,7 @@ function importErrorText(error) {
     return labelText(
       `Answer cut off; repair failed. The answer is back in the box: click “${t("continuePrompt")}”, paste it into the same AI chat, then paste the rest of the answer in the box that appears above.`,
       `الإجابة مقطوعة؛ تعذّر إصلاحها. أُعيدت إلى المربع: انقر «${t("continuePrompt")}» والصقه في محادثة الذكاء الاصطناعي نفسها، ثم الصق بقية الإجابة في المربع الذي يظهر أعلاه.`,
-      `Réponse coupée ; réparation impossible. La réponse est remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessus.`,
+      `Réponse coupée ; réparation impossible. La réponse est remise dans la zone : cliquez sur « ${t("continuePrompt")} », collez-le dans la même conversation avec l’IA, puis collez la suite de la réponse dans la zone qui apparaît ci-dessus.`,
     );
   }
   if (error?.code === "INVALID_JSON" && error.fromReply) {
@@ -6863,7 +6863,7 @@ function scoreDiagnostic(key, val, a = state.analysis) {
     const apart = labelText(
       "Filled layers do not mean ready to publish: the publication gate is still open.",
       "اكتمال الطبقات لا يعني الجاهزية للنشر: بوابة النشر ما زالت مفتوحة.",
-      "Des couches remplies ne veulent pas dire prêt à publier : le contrôle de publication reste ouvert.",
+      "Des couches remplies ne veulent pas dire prêt à publier : le contrôle de publication reste ouvert.",
     );
     return { ...found, reason: `${found.reason} ${apart}` };
   }
@@ -7358,12 +7358,13 @@ function sourceConcentration(items) {
 function sourceConcentrationNote(items) {
   const c = sourceConcentration(items);
   if (!c) return "";
+  const host = `<bdi dir="ltr">${escapeHtml(c.host)}</bdi>`;
   const text = labelText(
-    `${c.count} of ${c.total} source links point to ${c.host}. Check that the evidence does not lean on one platform.`,
-    `${c.count} من أصل ${c.total} رابط مصدر تشير إلى ${c.host}. تأكد من أن الأدلة لا تعتمد على منصة واحدة.`,
-    `${c.count} liens de source sur ${c.total} mènent à ${c.host}. Vérifiez que les preuves ne reposent pas sur une seule plateforme.`,
+    `${c.count} of ${c.total} source links point to ${host}. Check that the evidence does not lean on one platform.`,
+    `${c.count} من أصل ${c.total} من روابط المصادر تشير إلى ${host}. تأكد من أن الأدلة لا تعتمد على منصة واحدة.`,
+    `${c.count} liens de source sur ${c.total} mènent à ${host}. Vérifiez que les preuves ne reposent pas sur une seule plateforme.`,
   );
-  return `<p class="j-note" data-tone="idle" data-source-concentration><bdi>${escapeHtml(text)}</bdi></p>`;
+  return `<p class="j-note" data-tone="idle" data-source-concentration>${text}</p>`;
 }
 function renderEvidence() {
   const ev = normalizeArray(state.analysis.evidence.items),
@@ -11276,7 +11277,7 @@ function closeWorkspaceDialog() {
 // draft, and the immutable revisions.
 function lifeText(key, values = {}) {
   const copy = {
-    where: ["Where your work is", "أين عملك", "Où se trouve votre travail"],
+    where: ["Where your work is", "عملك المحفوظ", "Où se trouve votre travail"],
     whereHint: ["Three separate places, so nothing is lost or replaced without you knowing: interrupted work, your draft, and saved revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء ولا يُستبدل دون علمك: العمل المنقطع، ومسودتك، والنسخ المحفوظة.", "Trois endroits séparés, pour que rien ne se perde ni ne soit remplacé à votre insu : le travail interrompu, votre brouillon et les révisions enregistrées."],
     snapTitle: ["Interrupted work", "العمل المنقطع", "Travail interrompu"],
     snapshot: ["Recovery found", "استرداد متاح", "Récupération"],
