@@ -2533,8 +2533,8 @@ function otherLensHtml() {
     "Regardez aussi ce sujet avec l’autre lentille. Votre sujet, son cadrage et vos sources sont repris, et ce résultat est conservé.",
   );
   const label = toBio
-    ? labelText("Switch to the Biopolitical lens", "انتقل إلى عدسة السياسة الحيوية", "Passer à la lentille Biopolitique")
-    : labelText("Switch to the Strategic lens", "انتقل إلى العدسة الاستراتيجية", "Passer à la lentille Stratégique");
+    ? labelText("Switch to the Biopolitical lens", "انتقل إلى عدسة السياسة الحيوية", "Passer à la lentille biopolitique")
+    : labelText("Switch to the Strategic lens", "انتقل إلى العدسة الاستراتيجية", "Passer à la lentille stratégique");
   return `<section class="j-both" data-other-lens-block><p>${escapeHtml(note)}</p><button class="j-btn" type="button" data-other-lens>${escapeHtml(label)}</button></section>`;
 }
 function runOtherLens() {
