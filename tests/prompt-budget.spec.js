@@ -12,7 +12,7 @@ const LANG_BUTTON = { en: '#langEn', ar: '#langAr', fr: '#langFr' };
 const LEFT_OUT = { en: '1 passage left out of this prompt', ar: 'استُبعد مقتطف واحد من هذا الموجِّه', fr: '1 passage exclu de ce prompt' };
 const TAGS = { en: 'UNTRUSTED_CONTEXT_MATERIAL', ar: 'مادة_سياق_غير_موثوقة', fr: 'CONTEXTE_NON_FIABLE' };
 const JSON_LABELS = { en: 'UNTRUSTED_ANALYSIS_MATERIAL_JSON:', ar: 'مادة_التحليل_غير_الموثوقة_JSON:', fr: 'MATIERE_ANALYTIQUE_NON_FIABLE_JSON :' };
-const HEADINGS = { en: 'Your sources', ar: 'مصادرك', fr: 'Vos sources' };
+const HEADINGS = { en: 'Your source notes', ar: 'ملاحظاتك عن المصادر', fr: 'Vos notes de sources' };
 
 const review = (page) => page.locator('#promptReview');
 const closed = (page) => expect(review(page)).toHaveJSProperty('hidden', true);

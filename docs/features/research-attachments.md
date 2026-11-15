@@ -192,7 +192,7 @@ window is promised. The existing whole-prompt character count stays.
   breaks each closing-tag opener, so `</` counts as `&lt;/` (+3). A source's
   size is its block: the `[S2] title` line, link, dates, labels, each
   `> ` passage line, the line breaks and the omission notice. The total is
-  the section (`Your sources:` and the blocks, with their `\n\n` breaks), the
+  the section (`Your source notes:` and the blocks, with their `\n\n` breaks), the
   box with its heading, and the breaks that join them to what comes before. The
   framing and the topic are not supplied material. Exactly 8,000 and 32,000
   fit; one more does not (the node check lands on 7,999, 8,000, 8,001,

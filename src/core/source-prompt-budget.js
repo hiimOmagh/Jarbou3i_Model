@@ -14,9 +14,9 @@ export const SOURCE_PROMPT_LIMIT = 8000;
 export const SUPPLIED_PROMPT_LIMIT = 32000;
 
 const LABELS = {
-  en: ["Your sources", "Date of the source", "Opened on", "Excerpt"],
-  ar: ["مصادرك", "تاريخ المصدر", "تاريخ الاطلاع", "مقتطف"],
-  fr: ["Vos sources", "Date de la source", "Consultée le", "Extrait"],
+  en: ["Your source notes", "Date of the source", "Opened on", "Excerpt"],
+  ar: ["ملاحظاتك عن المصادر", "تاريخ المصدر", "تاريخ الاطلاع", "مقتطف"],
+  fr: ["Vos notes de sources", "Date de la source", "Consultée le", "Extrait"],
 };
 const FREE_HEADING = { en: "Supplied sources", ar: "المصادر المقدمة", fr: "Sources fournies" };
 const labelsOf = (lang) => LABELS[lang] || LABELS.en;

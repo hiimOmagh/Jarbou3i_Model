@@ -29,10 +29,10 @@ function referenceSections(lang, dossier) {
   const sources = dossier.sources.filter((source) => source.send === true);
   if (!sources.length) return "";
   const labels = {
-    en: ["Your sources", "Date of the source", "Opened on", "Excerpt"],
-    ar: ["مصادرك", "تاريخ المصدر", "تاريخ الاطلاع", "مقتطف"],
-    fr: ["Vos sources", "Date de la source", "Consultée le", "Extrait"],
-  }[lang] || ["Your sources", "Date of the source", "Opened on", "Excerpt"];
+    en: ["Your source notes", "Date of the source", "Opened on", "Excerpt"],
+    ar: ["ملاحظاتك عن المصادر", "تاريخ المصدر", "تاريخ الاطلاع", "مقتطف"],
+    fr: ["Vos notes de sources", "Date de la source", "Consultée le", "Extrait"],
+  }[lang] || ["Your source notes", "Date of the source", "Opened on", "Excerpt"];
   return `${labels[0]}:\n` + sources.map((source) => {
     const ref = `[S${dossier.sources.indexOf(source) + 1}]`;
     const lines = [`${ref} ${source.title}`];
