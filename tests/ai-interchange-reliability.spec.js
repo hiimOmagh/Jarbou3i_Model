@@ -1397,7 +1397,7 @@ test.describe("AI interchange reliability", () => {
     }
   });
 
-  test("the Focused Strategic prompt asks for a compact answer", async ({ page }) => {
+  test("the Strategic prompt does not cap variable collections", async ({ page }) => {
     const compact = {
       en: "at most 2 records per variable collection",
       ar: "بحد أقصى سجلان لكل مجموعة متغيرة",
@@ -1422,8 +1422,7 @@ test.describe("AI interchange reliability", () => {
       await page.locator("#previewPromptBtn").click();
       const prompt = await page.locator("#modalContent").textContent();
       await page.keyboard.press("Escape");
-      if (mode === "simple") expect.soft(prompt, language).toContain(compact[language]);
-      else expect.soft(prompt, mode).not.toContain(compact[language]);
+      expect.soft(prompt, `${mode}/${language}`).not.toContain(compact[language]);
     }
   });
 

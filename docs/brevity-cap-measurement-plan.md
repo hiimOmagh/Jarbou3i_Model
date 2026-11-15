@@ -248,3 +248,5 @@ Avant d’envoyer, vérifiez :
 - Si votre limite de sortie vous arrête, arrêtez-vous là ; la suite vous sera demandée.
 ````
 
+
+The per-mode brevity caps were reverted on 2026-11-15 per owner.

@@ -1745,23 +1745,9 @@
     return JSON.stringify(skeleton);
   }
 
-  // Budgets guide variable detail only; canonical completeness always wins.
   // Shared with the UI's record counts (Intl.PluralRules categories).
   function pluralCount(count, forms, lang) {
     return (forms[new Intl.PluralRules(lang).select(count)] || forms.other).replace("{count}", count);
-  }
-
-  const BREVITY_COUNTS_AR = {
-    records: { one: "سجل واحد", two: "سجلان", few: "{count} سجلات", many: "{count} سجلًا", other: "{count} سجل" },
-    items: { one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصرًا" },
-    sentences: { one: "جملة واحدة قصيرة", two: "جملتان قصيرتان", few: "{count} جمل قصيرة", many: "{count} جملة قصيرة", other: "{count} جملة قصيرة" },
-  };
-
-  function buildBrevityRule(lang = "en", mode = "research") {
-    const [sentences, records] = mode === "research" ? [3, 5] : mode === "expert" ? [2, 3] : [1, 2];
-    if (lang === "ar") return `ميزانية الإيجاز: بحد أقصى ${pluralCount(sentences, BREVITY_COUNTS_AR.sentences, "ar")} لكل قيمة نصية تحليلية، وبحد أقصى ${pluralCount(records, BREVITY_COUNTS_AR.records, "ar")} لكل مجموعة متغيرة و${pluralCount(records, BREVITY_COUNTS_AR.items, "ar")} لكل قائمة نصية متداخلة. استخدم الحد الأدنى اللازم؛ يمكن ترك المجموعات الاختيارية فارغة عندما لا تكون ذات صلة. هذه الحدود لا تشمل المجموعات الثابتة، ولا تبرر إسقاط تقييم أو دليل مضاد أو عدم يقين أو شرط إبطال مطلوب. لا تحذف أي حقل إلزامي أو سجل مطلوب؛ إذا تطلب الاكتمال مزيدًا من السجلات أو المراجع فتجاوز حد المجموعة وحده. أبقِ عناوين المصادر والروابط والمحددات والنصوص النائبة الحرفية كما تفرضها قواعد المصادر، وأعد استخدام معرفات الأدلة بدل تكرارها. لا تستخدم علامات حذف ولا تغلق JSON المقطوع اصطناعيًا؛ إذا بلغت حد الإخراج فتوقف حيث وصلت وستطلب منصة العمل المتابعة.`;
-    if (lang === "fr") return `Budget de concision : au plus ${sentences} phrase(s) courte(s) par valeur analytique textuelle, au plus ${records} fiches par collection variable et ${records} entrées par liste textuelle imbriquée. Utilisez le minimum nécessaire ; les collections facultatives peuvent rester vides si elles ne sont pas pertinentes. Ces plafonds ne concernent pas les ensembles à clés obligatoires et ne justifient jamais de supprimer une évaluation, une contre-preuve, une incertitude ou un réfutateur requis. Ne supprimez jamais un champ obligatoire ni une fiche requise ; si la complétude exige davantage de fiches ou de références, dépassez seulement le plafond de la collection. Préservez titres de sources, URL, localisateurs et textes substitutifs littéraux selon les règles de sources ; réutilisez les identifiants de preuve plutôt que de répéter leur contenu. N’utilisez pas d’ellipses et ne fermez jamais artificiellement un JSON tronqué ; si la limite de sortie vous arrête, arrêtez-vous là et l’atelier demandera la suite.`;
-    return `Brevity budget: at most ${sentences} short sentence(s) per analytical text value, at most ${records} records per variable collection and ${records} entries per nested text list. Use the minimum needed; optional collections may stay empty when irrelevant. These caps do not apply to fixed sets and never justify dropping a required assessment, counter-evidence, uncertainty, or falsifier. Never omit a mandatory field or required record; if completeness needs more records or references, exceed only the collection cap. Preserve source titles, URLs, locators, and literal placeholders as the source rules require; reuse evidence IDs instead of repeating their content. Never use ellipses and never close cut-off JSON artificially; if your output limit stops you, stop where you are and the workbench will request continuation.`;
   }
 
   function buildPrompt({
@@ -1839,7 +1825,6 @@ ${untrustedContext || "غير محدد"}
 16. أجرِ المراجعة الذاتية ذات البنود الثمانية عشر.
 
 العمق: ${modeName}. ${depth}${angleRule(lang, mode)}
-${buildBrevityRule(lang, mode)}
 
 لغة الإخراج الإلزامية: العربية. اكتب جميع القيم التحليلية المقروءة بالعربية؛ أبقِ مفاتيح JSON والمعرّفات وقيم التعداد النظامية كما يحددها المخطط، وأبقِ كل source_title كما يرد في المصدر نفسه دون ترجمة.
 ${evidenceRule}
@@ -1894,7 +1879,6 @@ Règles obligatoires :
 16. Exécutez l’auto-audit à dix-huit points.
 
 Profondeur : ${modeName}. ${depth}${angleRule(lang, mode)}
-${buildBrevityRule(lang, mode)}
 
 Langue de sortie obligatoire : français. Rédigez en français toutes les valeurs analytiques lisibles ; conservez les clés JSON, identifiants et codes d’énumération prescrits par le schéma, et gardez chaque source_title tel que la source le donne, sans le traduire.
 ${evidenceRule}
@@ -1948,7 +1932,6 @@ Mandatory rules:
 16. Complete the eighteen-point self-audit.
 
 Depth: ${modeName}. ${depth}${angleRule(lang, mode)}
-${buildBrevityRule(lang, mode)}
 
 Mandatory output language: English. Write every human-readable analytical value in English; preserve JSON keys, IDs, and schema enum codes in their canonical form, and keep each source_title exactly as the source gives it, without translating it.
 ${evidenceRule}
@@ -4856,7 +4839,6 @@ ${schema}${interchangeGuide}`;
     unsourcedPlaceholder,
     isPlaceholderEvidence,
     buildPrompt,
-    buildBrevityRule,
     pluralCount,
     sample: makeSample,
     recordsFor,
