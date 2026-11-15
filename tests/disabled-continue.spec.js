@@ -10,6 +10,13 @@ test("blocked setup Continue looks unavailable and does not react to hover", asy
     const s = getComputedStyle(el);
     return { opacity: Number(s.opacity), background: s.backgroundColor, border: s.borderColor, color: s.color, transform: s.transform };
   });
+  let last = "";
+  await expect.poll(async () => {
+    const now = JSON.stringify(await appearance());
+    const settled = now === last;
+    last = now;
+    return settled;
+  }).toBe(true);
   const before = await appearance();
   expect(before.opacity).toBeLessThan(1);
   await next.hover({ force: true });
