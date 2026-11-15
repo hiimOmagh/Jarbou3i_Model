@@ -11275,7 +11275,7 @@ function closeWorkspaceDialog() {
 function lifeText(key, values = {}) {
   const copy = {
     where: ["Where your work is", "عملك المحفوظ", "Où se trouve votre travail"],
-    whereHint: ["Three separate places, so nothing is lost or replaced without you knowing: interrupted work, your draft, and saved revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء ولا يُستبدل دون علمك: العمل المنقطع، ومسودتك، والنسخ المحفوظة.", "Trois endroits séparés, pour que rien ne se perde ni ne soit remplacé à votre insu : le travail interrompu, votre brouillon et les révisions enregistrées."],
+    whereHint: ["Three separate places, so nothing is lost or replaced without you knowing: interrupted work, your draft, and saved revisions.", "ثلاثة أماكن منفصلة حتى لا يضيع شيء ولا يُستبدل دون علمك: العمل المنقطع، ومسودتك، والنسخ المحفوظة.", "Trois endroits séparés, pour que rien ne se perde ni ne soit remplacé à votre insu : le travail interrompu, votre brouillon et les révisions enregistrées."],
     snapTitle: ["Interrupted work", "العمل المنقطع", "Travail interrompu"],
     snapshot: ["Recovery found", "استرداد متاح", "Récupération"],
     snapNone: ["None. No unsaved work was interrupted.", "لا يوجد. لم يُقاطَع أي عمل غير محفوظ.", "Aucun. Aucun travail non enregistré n’a été interrompu."],
@@ -11285,7 +11285,7 @@ function lifeText(key, values = {}) {
     matchesHead: ["Matches revision {n}, the current version.", "تطابق النسخة {n}، وهي النسخة الحالية.", "Identique à la révision {n}, la version actuelle."],
     reviewCommit: ["Review and commit", "مراجعة واعتماد", "Examiner et valider"],
     damagedOne: ["One saved workspace is damaged. Nothing was loaded from it.", "مساحة عمل محفوظة واحدة تالفة. لم يُحمَّل منها أي شيء.", "Un espace enregistré est endommagé. Rien n’en a été chargé."],
-    damagedMany: ["Damaged saved workspaces: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة تالفة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés endommagés : {n}. Rien n’en a été chargé."],
+    damagedMany: ["Damaged saved workspaces: {n}. Nothing was loaded from them.", "مساحات عمل محفوظة تالفة: {n}. لم يُحمَّل منها أي شيء.", "Espaces enregistrés endommagés : {n}. Rien n’en a été chargé."],
     reviewWorkspaces: ["Review workspaces", "مراجعة مساحات العمل", "Examiner les espaces"],
     offline: ["You are offline. Everything here runs on this device; only the AI chat you paste the prompt into needs a connection.", "أنت غير متصل. كل ما هنا يعمل على هذا الجهاز؛ وحدها محادثة الذكاء الاصطناعي التي تلصق فيها الموجِّه تحتاج إلى اتصال.", "Vous êtes hors ligne. Tout fonctionne sur cet appareil ; seul le chat d’IA où vous collez le prompt a besoin d’une connexion."],
     workspaces: ["Workspaces", "مساحات العمل", "Espaces de travail"],
