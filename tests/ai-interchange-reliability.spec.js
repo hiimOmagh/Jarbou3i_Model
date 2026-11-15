@@ -1400,8 +1400,8 @@ test.describe("AI interchange reliability", () => {
   test("the Focused Strategic prompt asks for a compact answer", async ({ page }) => {
     const compact = {
       en: "at most 2 records per variable collection",
-      ar: "بحد أقصى 2 سجلات لكل مجموعة متغيرة",
-      fr: "au plus 2 éléments par collection variable",
+      ar: "بحد أقصى سجلان لكل مجموعة متغيرة",
+      fr: "au plus 2 fiches par collection variable",
     };
     await page.goto("./");
     await page.locator("#langEn").click();

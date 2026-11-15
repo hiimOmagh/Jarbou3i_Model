@@ -28,7 +28,7 @@ const SHORT_TEXT = Object.freeze({
     replyNotRead: "No readable reply found in this text. Your answer is unchanged. Send the prompt to the AI, then paste the JSON part of its reply here, starting with {.",
   }),
   fr: Object.freeze({
-    appSubtitle: "Avec votre assistant IA, explorez qui veut quoi et comment les vies sont gouvernées. Pour toute personne qui veut comprendre l’actualité, pas seulement les chercheurs et journalistes.",
+    appSubtitle: "Avec votre assistant IA, explorez qui veut quoi et comment la vie des gens est gouvernée. Pour toute personne qui veut comprendre l’actualité, pas seulement les chercheurs et journalistes.",
     sourcesHelp: "Collez des textes ou des liens. Joignez un PDF ou un autre fichier dans la conversation avec l’IA et indiquez ici son nom. L’assistant le lit et le cite par son nom. Cette application ne lit pas les PDF.",
     fileHelp: "Texte, Markdown, CSV, JSON ou HTML, jusqu’à 2 Mo. Le fichier est lu sur cet appareil. Vous choisissez les passages à enregistrer et à envoyer. Le fichier original n’est ni conservé ni joint à la conversation avec l’IA.",
     reviewIntro: "Vos notes de sources sont trop longues pour un seul prompt ici. Décochez des passages entiers pour les exclure de ce prompt seulement. Rien n’est coupé ni classé. Votre dossier reste inchangé.",

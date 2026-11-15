@@ -149,7 +149,7 @@ const I18N = {
     sourcesHelp: "الصق نصوصًا أو روابط. أما ملف PDF أو أي ملف آخر فأرفقه أنت في محادثة مساعد الذكاء الاصطناعي، واذكر اسمه هنا مع الصفحة إن لزم. يطلب الموجِّه من المساعد قراءة كل ملف مرفق والاستشهاد به باسمه. هذا التطبيق لا يقرأ ملفات PDF.",
     caseFold: "ما الذي يشمله التحليل",
     sourcesFold: "ملاحظاتك عن المصادر",
-    sourcesWhen: "تُرسل إلى الذكاء الاصطناعي حين يكون وصول الذكاء الاصطناعي إلى المصادر (الخطوة 3) مصادر مقدمة في السياق.",
+    sourcesWhen: "تُرسل إلى الذكاء الاصطناعي حين يكون الوصول إلى المصادر (الخطوة 3) هو «مصادر مقدمة في السياق».",
     sourcesSentCount: "ملاحظاتك عن المصادر المرسلة إلى الذكاء الاصطناعي: {n} (الخطوة 1)",
     sourceTitle: "العنوان (مطلوب)",
     sourceLink: "الرابط",
@@ -341,7 +341,7 @@ const I18N = {
     tripRestored: "استُعيد التحليل الذي كنت تُعدّه قبل إعادة تحميل الصفحة.",
     promptPreview: "معاينة الموجِّه",
     promptPreviewHint: "هذا هو النص الذي تنسخه إلى مساعدك. العلامات داخله موجّهة للمساعد لا لك.",
-    reportDownloaded: "تم تنزيل التقرير.",
+    reportDownloaded: "نُزِّل التقرير.",
     copyShownText: "نسخ النص المعروض",
     copied: "تم النسخ.",
     copyFailed: "تعذّر النسخ تلقائيًا. انسخ النص من نافذة المعاينة.",
@@ -1020,7 +1020,7 @@ const I18N = {
   },
   fr: {
     appTitle: "Analyse stratégique et biopolitique",
-    appSubtitle: "Retracez qui veut quoi, et comment les vies sont gouvernées, avec votre propre assistant IA. Pour toute personne qui veut comprendre une actualité, pas seulement les chercheurs et les journalistes.",
+    appSubtitle: "Retracez qui veut quoi, et comment la vie des gens est gouvernée, avec votre propre assistant IA. Pour toute personne qui veut comprendre une actualité, pas seulement les chercheurs et les journalistes.",
     topicLabel: "Sujet d’analyse",
     topicPlaceholder:
       "Exemple : montée de l’extrême droite en Europe, 2022–2026",
@@ -2533,8 +2533,8 @@ function otherLensHtml() {
     "Regardez aussi ce sujet avec l’autre lentille. Votre sujet, son cadrage et vos sources sont repris, et ce résultat est conservé.",
   );
   const label = toBio
-    ? labelText("Switch to the Biopolitical lens", "انتقل إلى عدسة السياسة الحيوية", "Passer à la lentille biopolitique")
-    : labelText("Switch to the Strategic lens", "انتقل إلى العدسة الاستراتيجية", "Passer à la lentille stratégique");
+    ? labelText("Switch to the Biopolitical lens", "انتقل إلى عدسة السياسة الحيوية", "Passer à la lentille Biopolitique")
+    : labelText("Switch to the Strategic lens", "انتقل إلى العدسة الاستراتيجية", "Passer à la lentille Stratégique");
   return `<section class="j-both" data-other-lens-block><p>${escapeHtml(note)}</p><button class="j-btn" type="button" data-other-lens>${escapeHtml(label)}</button></section>`;
 }
 function runOtherLens() {
@@ -7398,7 +7398,7 @@ function renderEvidence() {
     const ifWrong = a.implication_if_wrong
       ? recordFact(labelText("If wrong", "إذا كان خاطئًا"), escapeHtml(a.implication_if_wrong))
       : "";
-    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? `${labelText("How sure we are", "مدى اليقين", "Degré de certitude")}${colonMark()} ${confidenceInfo(a.confidence).label}` : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
+    return `<li><article class="j-rec"${tone ? ` data-tone="${tone}"` : ""}${recordAnchor(a)}><header class="j-rec-head">${recordIdCode(a)}${riskText ? kernelChip(risk.label, tone) : ""}${kernelChip(a.confidence ? `${labelText("How sure we are", "درجة الثقة", "Degré de certitude")}${colonMark()} ${confidenceInfo(a.confidence).label}` : "", confidenceTone(a.confidence))}</header><p class="j-rec-title">${escapeHtml(a.assumption || a.name || a.title || a.description || "—")}</p><dl class="j-rec-facts">${riskFact}${recordFact(t("test"), escapeHtml(a.disproving_test || a.test || labelText("No falsifier provided.", "لا يوجد اختبار إبطال.")))}${ifWrong}</dl></article></li>`;
   };
   return `<h3>${t("evidence")}</h3>${sourceConcentrationNote(ev)}${ev.length ? `<ol class="j-recs" role="list" data-records="evidence">${ev.map(evidenceRecord).join("")}</ol>` : empty}<h3>${t("assumption")}</h3>${as.length ? `<ol class="j-recs" role="list" data-records="assumptions"${as.length > 1 ? ' data-cols="2"' : ""}>${as.map(assumptionRecord).join("")}</ol>` : empty}`;
 }
@@ -10406,7 +10406,7 @@ const REVISION_COUNT = {
 
 function pluralText(count, forms) {
   const lang = ["ar", "fr"].includes(state.lang) ? state.lang : "en";
-  return (forms[lang][new Intl.PluralRules(lang).select(count)] || forms[lang].other).replace("{count}", count);
+  return window.Jarbou3iBiopolitics.pluralCount(count, forms[lang], lang);
 }
 // A count in words with its number in bold: "<b>3</b> items".
 function countHtml(count, forms) {
