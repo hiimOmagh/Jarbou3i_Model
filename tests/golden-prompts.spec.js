@@ -127,8 +127,8 @@ test.describe('mode brevity budgets preserve the complete contract', () => {
         const prompt = await promptFromUI(page, { lens, lang, mode, access: 'none' });
         const budget = {
           en: [`at most ${sentences} short sentence(s) per analytical text value`, `at most ${records} records per variable collection`, 'Never omit a mandatory field', 'never close cut-off JSON artificially'],
-          fr: [`au plus ${sentences} phrase(s) courte(s) par valeur analytique textuelle`, `au plus ${records} éléments par collection variable`, 'Ne supprimez jamais un champ obligatoire', 'ne fermez jamais artificiellement un JSON tronqué'],
-          ar: [`بحد أقصى ${sentences} جملة قصيرة لكل قيمة نصية تحليلية`, `بحد أقصى ${records} سجلات لكل مجموعة متغيرة`, 'لا تحذف أي حقل إلزامي', 'لا تغلق JSON المقطوع اصطناعيًا'],
+          fr: [`au plus ${sentences} phrase(s) courte(s) par valeur analytique textuelle`, `au plus ${records} fiches par collection variable`, 'Ne supprimez jamais un champ obligatoire', 'ne fermez jamais artificiellement un JSON tronqué'],
+          ar: [`بحد أقصى ${({1: "جملة واحدة قصيرة", 2: "جملتان قصيرتان", 3: "3 جمل قصيرة"})[sentences]} لكل قيمة نصية تحليلية`, `بحد أقصى ${records === 2 ? "سجلان" : `${records} سجلات`} لكل مجموعة متغيرة`, 'لا تحذف أي حقل إلزامي', 'لا تغلق JSON المقطوع اصطناعيًا'],
         }[lang];
         for (const rule of budget) expect(prompt).toContain(rule);
         if (lens === 'biopolitical') {

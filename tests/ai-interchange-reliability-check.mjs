@@ -339,7 +339,7 @@ for (const lang of ["en", "ar", "fr"]) {
   const refs = compiler.buildCompletionPrompt(candidate, [{ code: "BROKEN_REFERENCE", path: "/actors/0/target", reference: "missing", allowedTypes: ["actor"] }, { code: "BROKEN_REFERENCE", path: "/actors/0/evidence_ids/0", reference: "missing", allowedTypes: ["evidence"] }], lang);
   if (!refs.includes("A61 —") || !refs.includes("E45 —") || !refs.includes("actor")) fail(`${lang}: reference choices must include the full ID inventory and required types`);
   const numeric = compiler.buildCompletionPrompt(fixture, [{ path: "/intervention_assessment/care_control_tensions/0", code: "SCHEMA_REQUIRED", keyword: "required", params: { missingProperty: "severity" } }, { path: "/scale_time/future_feedback_loops/0", code: "SCHEMA_REQUIRED", keyword: "required", params: { missingProperty: "probability" } }], lang, bioTemplate);
-  if (!numeric.includes("0–5") || !numeric.includes("0–100")) fail(`${lang}: numeric gaps must include both bounds`);
+  if (!numeric.includes(lang === "fr" ? "compris entre 0 et 5" : "0–5") || !numeric.includes(lang === "fr" ? "compris entre 0 et 100" : "0–100")) fail(`${lang}: numeric gaps must include both bounds`);
 }
 const completionPrompt = compiler.buildCompletionPrompt(
   reusedCanonical,
