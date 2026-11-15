@@ -1752,7 +1752,7 @@
   }
 
   const BREVITY_COUNTS_AR = {
-    records: { one: "سجل واحد", two: "سجلان", few: "{count} سجلات", many: "{count} سجلًا", other: "{count} سجلًا" },
+    records: { one: "سجل واحد", two: "سجلان", few: "{count} سجلات", many: "{count} سجلًا", other: "{count} سجل" },
     items: { one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصرًا" },
     sentences: { one: "جملة واحدة قصيرة", two: "جملتان قصيرتان", few: "{count} جمل قصيرة", many: "{count} جملة قصيرة", other: "{count} جملة قصيرة" },
   };
