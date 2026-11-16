@@ -9960,7 +9960,7 @@ async function openCanonicalEditor(workspace = null) {
   editorCapture = null;
   const recovery = await RECOVERY_JOURNAL.inspect(loaded);
   state.editorRecovery = recovery.status === "recoverable" && !(await heldElsewhere(recovery.record)) ? recovery.record : null;
-  $("editorBackdrop").classList.add("show");
+  openDialogBoundary($("editorBackdrop"));
   $("editorBackdrop").setAttribute("aria-hidden", "false");
   renderCanonicalEditor();
   $("editorDialog").focus();
@@ -9984,7 +9984,7 @@ function closeCanonicalEditor() {
   }
   const discarding = editorHasPendingInput() || state.editorSession?.inspect().dirty;
   if (discarding && !window.confirm(editorText("closeDirty"))) return;
-  $("editorBackdrop").classList.remove("show");
+  closeDialogBoundary($("editorBackdrop"));
   $("editorBackdrop").setAttribute("aria-hidden", "true");
   clearTimeout(editorRecoveryTimer);
   const workspaceId = state.editorWorkspace?.workspace_id;
@@ -10231,7 +10231,7 @@ async function openRevisionHistory(workspace = null, invoker = document.activeEl
       "Close revision history", "إغلاق سجل النسخ", "Fermer l’historique des révisions",
     ));
     $("revisionStatus").textContent = "";
-    $("revisionBackdrop").classList.add("show");
+    openDialogBoundary($("revisionBackdrop"));
     $("revisionBackdrop").setAttribute("aria-hidden", "false");
     await renderRevisionHistory();
     $("revisionDialog").focus();
@@ -10242,7 +10242,7 @@ async function openRevisionHistory(workspace = null, invoker = document.activeEl
 
 function closeRevisionHistory() {
   if (!$("revisionBackdrop").classList.contains("show") || revisionRestorePending) return;
-  $("revisionBackdrop").classList.remove("show");
+  closeDialogBoundary($("revisionBackdrop"));
   $("revisionBackdrop").setAttribute("aria-hidden", "true");
   state.revisionWorkspace = null;
   state.revisionHistory = null;
@@ -10265,7 +10265,7 @@ async function prepareSelectedRevisionRestore() {
       deriveDiagnostics: (payload) => resolutionDiagnosticsFor(workspace, payload),
     });
     revisionRestorePending = false;
-    $("revisionBackdrop").classList.remove("show");
+    closeDialogBoundary($("revisionBackdrop"));
     $("revisionBackdrop").setAttribute("aria-hidden", "true");
     state.revisionWorkspace = null;
     state.revisionHistory = null;
@@ -10480,7 +10480,7 @@ async function openResolutionTransaction(workspace = null, invoker = document.ac
     $("resolutionRationale").value = options.rationale || "";
     $("resolutionConfirm").checked = false;
     $("resolutionStatus").textContent = "";
-    $("resolutionBackdrop").classList.add("show");
+    openDialogBoundary($("resolutionBackdrop"));
     $("resolutionBackdrop").setAttribute("aria-hidden", "false");
     renderResolutionProposal();
     $("resolutionDialog").focus();
@@ -10494,7 +10494,7 @@ async function openResolutionTransaction(workspace = null, invoker = document.ac
 
 function closeResolutionTransaction() {
   if (!$("resolutionBackdrop").classList.contains("show") || resolutionCommitPending) return;
-  $("resolutionBackdrop").classList.remove("show");
+  closeDialogBoundary($("resolutionBackdrop"));
   $("resolutionBackdrop").setAttribute("aria-hidden", "true");
   state.resolutionWorkspace = null;
   state.resolutionProposal = null;
@@ -10745,7 +10745,7 @@ async function openReviewLedger(tasks, invoker = document.activeElement) {
     const settings = readSettings();
     if (!settings.reviewerId) writeSettings({ reviewerId: globalThis.crypto.randomUUID() });
     $("ledgerReviewer").value = settings.reviewerName || "";
-    $("ledgerBackdrop").classList.add("show");
+    openDialogBoundary($("ledgerBackdrop"));
     $("ledgerBackdrop").setAttribute("aria-hidden", "false");
     $("ledgerStatus").textContent = "";
     await renderReviewLedger();
@@ -10757,7 +10757,7 @@ async function openReviewLedger(tasks, invoker = document.activeElement) {
 
 function closeReviewLedger() {
   if (!$("ledgerBackdrop").classList.contains("show")) return;
-  $("ledgerBackdrop").classList.remove("show");
+  closeDialogBoundary($("ledgerBackdrop"));
   $("ledgerBackdrop").setAttribute("aria-hidden", "true");
   state.ledgerWorkspace = null;
   state.ledgerTasks = [];
@@ -11239,7 +11239,7 @@ async function openWorkspaceDialog(invoker = document.activeElement) {
   await renderWorkspaceList();
   await renderStorageHealth();
   // Shown only once current, so a click never lands on a button about to move.
-  $("workspaceBackdrop").classList.add("show");
+  openDialogBoundary($("workspaceBackdrop"));
   $("workspaceBackdrop").setAttribute("aria-hidden", "false");
   $("workspaceDialog").focus();
 }
@@ -11263,7 +11263,7 @@ async function keepPickFocus(list, pick, attribute, redraw, focused = document.a
 function closeWorkspaceDialog() {
   const backdrop = $("workspaceBackdrop");
   if (!backdrop.classList.contains("show")) return;
-  backdrop.classList.remove("show");
+  closeDialogBoundary(backdrop);
   backdrop.setAttribute("aria-hidden", "true");
   if (workspaceDialogInvoker?.isConnected) workspaceDialogInvoker.focus();
   workspaceDialogInvoker = null;
@@ -11445,81 +11445,15 @@ async function runLifeAction(button) {
   }
 }
 
-function trapWorkspaceFocus(event) {
-  const backdrop = $("workspaceBackdrop");
-  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
-  const focusable = [...backdrop.querySelectorAll(
-    'button:not(:disabled),input:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
-  )].filter((element) => !element.classList.contains("srOnly"));
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("workspaceDialog"))) {
-    last.focus();
-    event.preventDefault();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    first.focus();
-    event.preventDefault();
-  }
-}
 
-function trapEditorFocus(event) {
-  const backdrop = $("editorBackdrop");
-  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
-  const focusable = [...backdrop.querySelectorAll(
-    '.j-btn:not(:disabled),.j-input:not(:disabled),.j-textarea:not(:disabled),.j-select:not(:disabled),.j-root [href],.j-root [tabindex]:not([tabindex="-1"])',
-  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("editorDialog"))) {
-    last.focus(); event.preventDefault();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    first.focus(); event.preventDefault();
-  }
-}
 
-function trapLedgerFocus(event) {
-  const backdrop = $("ledgerBackdrop");
-  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
-  const focusable = [...backdrop.querySelectorAll(
-    'button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
-  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("ledgerDialog"))) {
-    last.focus(); event.preventDefault();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    first.focus(); event.preventDefault();
-  }
-}
 
-function trapResolutionFocus(event) {
-  const backdrop = $("resolutionBackdrop");
-  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
-  const focusable = [...backdrop.querySelectorAll(
-    'button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
-  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("resolutionDialog"))) { last.focus(); event.preventDefault(); }
-  else if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
-}
 
-function trapRevisionFocus(event) {
-  const backdrop = $("revisionBackdrop");
-  if (!backdrop.classList.contains("show") || event.key !== "Tab") return;
-  const focusable = [...backdrop.querySelectorAll(
-    'button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),[href],[tabindex]:not([tabindex="-1"])',
-  )].filter((element) => !element.hidden && !element.closest("[hidden]"));
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && (document.activeElement === first || document.activeElement === $("revisionDialog"))) { last.focus(); event.preventDefault(); }
-  else if (!event.shiftKey && document.activeElement === last) { first.focus(); event.preventDefault(); }
-}
+
+
+
+
+
 
 async function exportActiveWorkspace() {
   if (!state.activeWorkspaceId) return;
@@ -11623,6 +11557,39 @@ function arriveAtReview() {
     bar.animate([{ transform: "scaleX(0)" }, { transform: "none" }], { duration: 720, delay: 160, easing, fill: "backwards", pseudoElement: "::before" });
   }
 }
+const customDialogNames = ["modal", "workspace", "editor", "ledger", "revision", "resolution"];
+const dialogOpeners = new Map();
+function syncDialogInert() {
+  $("appShell").inert = customDialogNames.some(name => $(`${name}Backdrop`).classList.contains("show"));
+}
+function openDialogBoundary(backdrop) {
+  dialogOpeners.set(backdrop, document.activeElement);
+  backdrop.classList.add("show");
+  syncDialogInert();
+}
+function closeDialogBoundary(backdrop) {
+  backdrop.classList.remove("show");
+  syncDialogInert();
+  const opener = dialogOpeners.get(backdrop);
+  dialogOpeners.delete(backdrop);
+  if (opener?.isConnected) opener.focus();
+}
+function trapModalFocus(event) {
+  if (event.key !== "Tab") return;
+  const name = customDialogNames.find(name => $(`${name}Backdrop`).classList.contains("show"));
+  if (!name) return;
+  const dialog = $(`${name}Dialog`);
+  const controls = [...dialog.querySelectorAll('button,input,textarea,select,[href],[tabindex]')]
+    .filter(el => !el.disabled && el.tabIndex >= 0 && el.getClientRects().length && !el.classList.contains("srOnly") && !el.closest('[hidden], [inert]'));
+  const first = controls[0] || dialog;
+  const last = controls.at(-1) || dialog;
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog || !dialog.contains(document.activeElement))) {
+    last.focus(); event.preventDefault();
+  } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+    first.focus(); event.preventDefault();
+  }
+}
+
 function showModal(title, content, invoker = document.activeElement, hint = "") {
   state.modalInvoker = invoker;
   const hintEl = $("modalHint");
@@ -11632,14 +11599,14 @@ function showModal(title, content, invoker = document.activeElement, hint = "") 
   $("modalClose").setAttribute("aria-label", labelText("Close preview", "إغلاق المعاينة", "Fermer l’aperçu"));
   $("modalContent").textContent = content;
   const back = $("modalBackdrop");
-  back.classList.add("show");
+  openDialogBoundary(back);
   back.setAttribute("aria-hidden", "false");
   setTimeout(() => $("modalDialog")?.focus(), 0);
 }
 function closeModal() {
   const back = $("modalBackdrop");
   if (!back.classList.contains("show")) return;
-  back.classList.remove("show");
+  closeDialogBoundary(back);
   back.setAttribute("aria-hidden", "true");
   const invoker = state.modalInvoker;
   state.modalInvoker = null;
@@ -11647,25 +11614,7 @@ function closeModal() {
     invoker.focus();
   }
 }
-function trapModalFocus(e) {
-  const back = $("modalBackdrop");
-  if (!back.classList.contains("show") || e.key !== "Tab") return;
-  const focusables = [
-    ...back.querySelectorAll(
-      'button,[href],textarea,input,select,[tabindex]:not([tabindex="-1"])',
-    ),
-  ].filter((el) => !el.disabled);
-  if (!focusables.length) return;
-  const first = focusables[0],
-    last = focusables[focusables.length - 1];
-  if (e.shiftKey && (document.activeElement === first || document.activeElement === $("modalDialog"))) {
-    last.focus();
-    e.preventDefault();
-  } else if (!e.shiftKey && document.activeElement === last) {
-    first.focus();
-    e.preventDefault();
-  }
-}
+
 function repairPrompt() {
   // Asked in the chosen language; the AI still has its answer in the same chat.
   const mismatch = state.importAudit?.languageMismatch;
@@ -12203,6 +12152,7 @@ $("modalBackdrop").addEventListener("click", (e) => {
   if (e.target === $("modalBackdrop")) closeModal();
 });
 document.addEventListener("keydown", (e) => {
+  trapModalFocus(e);
   if (e.key === "Escape") {
     closeModal();
     closeWorkspaceDialog();
@@ -12211,12 +12161,6 @@ document.addEventListener("keydown", (e) => {
     closeRevisionHistory();
     closeResolutionTransaction();
   }
-  trapModalFocus(e);
-  trapWorkspaceFocus(e);
-  trapLedgerFocus(e);
-  trapEditorFocus(e);
-  trapRevisionFocus(e);
-  trapResolutionFocus(e);
 });
 window.addEventListener("beforeunload", (event) => {
   if (!editorHasPendingInput() && !state.editorSession?.inspect().dirty) return;
