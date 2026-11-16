@@ -16,7 +16,7 @@ const SHORT_TEXT = Object.freeze({
     reviewIntro: "ملاحظاتك عن المصادر أطول مما يتسع له موجِّه واحد هنا. ألغِ تحديد مقتطفات كاملة لاستبعادها من هذا الموجِّه فقط. لا يُقتطع شيء ولا يُرتَّب. قضيتك لا تتغير.",
     repairCopied: "تم نسخ موجِّه الإصلاح. أرسله في المحادثة نفسها، ثم الصق الإجابة المصحّحة في المربع تحت إجابتك.",
     completionCopied: "تم نسخ موجِّه الاستكمال. أرسله في المحادثة نفسها، ثم الصق الرد في المربع تحت إجابتك. ستُضاف الأجزاء الناقصة إلى إجابتك.",
-    replyNotRead: "لا ردّ مقروءًا في هذا النص. بقيت إجابتك كما هي. أرسل الموجِّه إلى الذكاء الاصطناعي، ثم الصق هنا جزء JSON من ردّه، الذي يبدأ بـ {.",
+    replyNotRead: "تعذّرت قراءة أي رد في هذا النص. بقيت إجابتك كما هي. أرسل الموجِّه إلى الذكاء الاصطناعي، ثم الصق هنا جزء JSON من ردّه، الذي يبدأ بـ {.",
   }),
   en: Object.freeze({
     appSubtitle: "Trace who wants what and how lives are governed, with your own AI assistant. For anyone seeking to understand a news story, not just researchers and journalists.",
