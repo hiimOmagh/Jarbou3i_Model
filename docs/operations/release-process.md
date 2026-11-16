@@ -8,7 +8,7 @@ Create `feature/<row>-<slug>` from `ux0-preview` for the intake row. Implement i
 
 ## Publish a release
 
-Cut `release/<version>` from accepted `ux0-preview`. Check `package.json`, update the changelog and record compatibility risks. Version `2.1.0-alpha.57` needs no bump. Run `npm ci`, `npm run test:ci:no-browser` and `npm run test:ci:browser`, then complete the [manual release review](manual-release-review.md). Open a pull request into `main` with the evidence and different-model review. The owner merges after both checks pass. Tag the accepted commit with the matching version, verify the main push and Pages deployment, then back-merge main into `ux0-preview` through a gated pull request.
+Cut `release/<version>` from accepted `ux0-preview`. Check `package.json`, update the changelog and record compatibility risks. Version `2.1.0-alpha.57` needs no bump. Run `npm ci`, `npm run test:ci:no-browser` and `npm run test:ci:browser`, then complete the [manual release review](manual-release-review.md). Open a pull request into `main` with the evidence and different-model review. The owner approves after both checks pass; an agent executes the merge. Tag the accepted commit with the matching version, verify the main push and Pages deployment, then back-merge main into `ux0-preview` through a gated pull request.
 
 ## Verified branch protection
 
@@ -29,8 +29,8 @@ The [workflow](../../.github/workflows/ci.yml) runs on `pull_request` and pushes
 
 ## Hotfix and rollback
 
-Create `hotfix/<slug>` from main. Submit a pull request into main with the same gates and review, obtain owner merge, tag the accepted fix and back-merge it into `ux0-preview` through a pull request.
+Create `hotfix/<slug>` from main. Submit a pull request into main with the same gates and review. After the owner approves, an agent executes the merge, tags the accepted fix and back-merges it into `ux0-preview` through a pull request.
 
-For rollback, identify the last accepted release and offending changes. Preserve exported workspace data before testing an older build. Revert the changes on a hotfix branch through a reviewed pull request, run complete gates, obtain owner merge and verify deployment. Back-merge the correction and record affected versions in the changelog. Do not reset or force-push protected branches.
+For rollback, identify the last accepted release and offending changes. Preserve exported workspace data before testing an older build. Revert the changes on a hotfix branch through a reviewed pull request, run complete gates and ask the owner to approve. After approval, an agent executes the merge and verifies deployment. Back-merge the correction and record affected versions in the changelog. Do not reset or force-push protected branches.
 
 Read the [format-2 rollback warning](../release-notes-draft-format2-rollback.md) before reverting dossier support: format-1-only builds cannot read format-2 cases. Preserve those cases and restore a compatible build if needed. The cap revert in a67f2f8 did not change storage compatibility.
