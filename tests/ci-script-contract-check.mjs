@@ -60,6 +60,12 @@ if (pkg.scripts?.["benchmark:gate0"] !== "node scripts/gate0-benchmark.mjs") {
   fail("benchmark:gate0 must execute the benchmark preparation and reporting CLI");
 }
 
+const registeredSpecs = new Set(Object.entries(pkg.scripts || {}).filter(([name]) => name.startsWith("test:browser:")).flatMap(([, command]) => command.match(/tests\/[\w./-]+\.spec\.js/g) || []));
+for (const file of fs.readdirSync("tests", { recursive: true }).filter((name) => name.endsWith(".spec.js"))) {
+  const spec = "tests/" + file.replaceAll("\\", "/");
+  if (!registeredSpecs.has(spec)) fail("unregistered browser spec: " + spec);
+}
+
 const core = pkg.scripts?.["test:browser:core"] || "";
 for (const spec of [
   "tests/results-workspace.spec.js",
