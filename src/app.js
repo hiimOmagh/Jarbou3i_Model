@@ -9338,6 +9338,10 @@ $("reviewNav").addEventListener("focusin", (event) => {
   if (shift) nav.scrollBy({ left: shift });
 });
 // The skip link leads to the review once a case is open, else to the setup.
+document.querySelector(".j-skip").addEventListener("click", () => {
+  const target = $( !$("reviewPanel").classList.contains("hide") ? "reviewPanel" : "workflowPanel");
+  target.focus();
+});
 new MutationObserver(() => {
   const skip = document.querySelector(".j-skip");
   const toReview = !$("reviewPanel").classList.contains("hide");
