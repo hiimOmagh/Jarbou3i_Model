@@ -1,6 +1,6 @@
 /* Append-only operational review ledger. Review state never mutates canonical analysis. */
 
-import { canonicalStringify, sha256, WorkspaceContractError } from "./workspace-contract.js";
+import { canonicalStringify, sha256, WorkspaceContractError } from "./canonical-json.js";
 
 export const REVIEW_LEDGER_FORMAT = "jarbou3i-operational-review-ledger";
 export const REVIEW_LEDGER_VERSION = 1;
