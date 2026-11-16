@@ -1,5 +1,7 @@
 # Brevity cap measurement plan
 
+Status: Historical experiment. Caps were reverted in a67f2f8. Prompts and line references below describe the experiment, not current HEAD; use the recorded candidate commit for measurement.
+
 Compare matched strategic research-mode generations using the same AI, model settings, topic, context and source access. The fixture inputs are in tests/golden-prompts.spec.js:10-20 and the baseline is commit 623e780^; the candidate fixture is at HEAD. Run each language and version in a fresh conversation. Paste each complete prompt below, without adding instructions.
 
 Record model and settings, date, language, version, output length in characters and tokens if available, truncation or continuation, JSON validity, and each mandatory field or required record missing. Compare matched outputs by language; do not treat shorter output as success if completeness suffers. The cap rules and completeness priority are in src/biopolitics.js:1748 and commit 623e780.

@@ -2,7 +2,9 @@
 
 The CI workflow (`.github/workflows/ci.yml`) runs the complete Chromium, Firefox,
 WebKit, mobile Chromium, hosted-evidence, and visual-audit coverage on every pull
-request and every push to `main`. The local commands below run the same suites.
+request and every push to `main` and `ux0-preview`. The local commands below run the same suites.
+
+The workflow runs on `pull_request` and pushes to `main` and `ux0-preview`.
 
 ## Local commands
 

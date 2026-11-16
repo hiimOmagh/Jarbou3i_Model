@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+Nothing yet.
+
+## v2.1.0-alpha.57
+
+Changes since v2.1.0-alpha.46.
+
+### Research, prompts and language
+
+- Research dossiers keep source notes and checked excerpts with the case. Text-file sources, excerpt checking and source links help you trace evidence back to its origin.
+- Prompts state whether the AI may use no sources, supplied sources only or the web. Follow-up prompts preserve that setting, treat supplied titles as data and include the record details needed to complete an answer.
+- The Strategic report opens with an executive brief and keeps the detailed analysis in an appendix. Reports clarify what coverage, readiness and declared confidence mean.
+- Arabic and French wording, plural agreement and punctuation are clearer. These translations are machine-checked, not native-checked; native language review remains outstanding.
+- Per-mode brevity caps were added and then removed in a67f2f8. Current prompts retain required fields without those caps.
+- Automated browser coverage now includes answer-boundary, follow-up-source-access, lens-examples and resume-saved-work. Disabled Continue behavior also has CI coverage.
+
+
 ### A visual identity of its own: the transit line
 
 - **New colours in both themes**: a daylight ground with ink text and one
