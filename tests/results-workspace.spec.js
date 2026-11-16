@@ -123,6 +123,8 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
   await openStep(page, "answer");
   await page.locator('#jsonInput').fill(JSON.stringify(data));
   await page.locator('#importBtn').click();
+  // The intake marker and workspace are saved separately; reload needs both.
+  await expect(page.locator('#workspaceSaveState')).toHaveAttribute('data-state', 'saved');
   // What the page copies, so the test reads the prompt it would paste.
   await page.evaluate(() => {
     window.__copied = [];
@@ -146,6 +148,7 @@ test('the recommended next action is asked of the AI, whose whole answer comes b
   // The reply is awaited across a reload, once the page has kept that it is.
   await expect.poll(async () => (await readIntakeDraft(page))?.reply_for).toBe('improve');
   await page.reload();
+  await expect(page.locator('#improveAnswer')).toBeVisible();
   await page.locator('#improveAnswer').click();
   const reply = page.locator('#continuationInput');
   await expect(reply).toBeFocused();
