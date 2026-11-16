@@ -1,0 +1,48 @@
+{
+  "format": "jarbou3i-research-dossier",
+  "format_version": 1,
+  "dossier_id": "dossier_released_legacy",
+  "revision": 1,
+  "created_at": "released nonempty clock",
+  "updated_at": "released nonempty clock",
+  "framing": {
+    "question": "",
+    "timeframe": "",
+    "scope_in": [
+      "two\nlines"
+    ],
+    "scope_out": [
+      "carriage\rreturn"
+    ],
+    "contested_terms": [
+      {
+        "term": "Term: colon",
+        "working_definition": "two\nlines"
+      }
+    ],
+    "limits": [
+      "two\nlines"
+    ]
+  },
+  "completion": [
+    {
+      "criterion_id": "C1",
+      "text": "two\nlines",
+      "status": "open",
+      "rationale": "",
+      "decided_at": null
+    },
+    {
+      "criterion_id": "C2",
+      "text": "two\nlines",
+      "status": "met",
+      "rationale": "checked",
+      "decided_at": "released nonempty clock"
+    }
+  ],
+  "analyses": [],
+  "checksum": {
+    "algorithm": "SHA-256",
+    "value": "cd373ac5239e2fc70bc69699a13e64f9ec63d5f7e82717b84c275016773d82cb"
+  }
+}

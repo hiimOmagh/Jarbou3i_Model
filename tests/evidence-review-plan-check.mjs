@@ -36,4 +36,10 @@ assert(manifest.app_version === PRODUCT_VERSION, "review-plan version missing");
 assert(!("analysis" in manifest), "raw canonical analysis leaked into review plan");
 assert(!JSON.stringify(manifest).includes("Under what conditions did digital health passes"), "canonical research question leaked into review plan");
 
+// The plan never reads the case (RESEARCH-1C): the same analysis has the same
+// tasks with and without one, because the module reaches no case module.
+const planSource = fs.readFileSync(new URL("../src/core/evidence-review-plan.js", import.meta.url), "utf8");
+const planImports = [...planSource.matchAll(/\bimport\s*(?:[^"'();]*?\bfrom\s*)?\(?\s*["']([^"']+)["']/g)].map((match) => match[1]);
+assert(planImports.every((specifier) => !/research-dossier|source-relations|promotion/.test(specifier)), `the review plan reads the case through ${planImports.join(", ")}`);
+
 console.log("Evidence review plan checks passed.");

@@ -20,12 +20,15 @@
 ## Operations
 
 - [Continuous integration](operations/ci.md)
+- [Release process and Git flow](operations/release-process.md)
 - [Deployment and release operations](operations/deployment.md)
 - [Manual release review](operations/manual-release-review.md)
 
 ## Governance and planning
 
 - [Versioning policy](VERSIONING.md)
+- [Historical brevity cap measurement plan](brevity-cap-measurement-plan.md)
+- [Format-2 rollback compatibility note](release-notes-draft-format2-rollback.md)
 - [Capability authority map](capability-authority-map.md)
 - [Product and UI execution plan](product-ui-execution-plan.md)
 - [Architecture decision records](decisions/README.md)

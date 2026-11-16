@@ -106,6 +106,7 @@ function resolveIdentity(analysis, manifest = {}) {
 
 export async function createWorkspace({
   analysis,
+  answerBoundary,
   manifest,
   title,
   clock,
@@ -125,6 +126,7 @@ export async function createWorkspace({
     workspace_id: workspaceId,
     repository_revision: 1,
     metadata: {
+      ...(answerBoundary ? { answer_boundary: clone(answerBoundary) } : {}),
       title: String(title || analysis?.subject?.title || "Untitled analysis").trim(),
       created_at: createdAt,
       updated_at: createdAt,

@@ -12,7 +12,7 @@ test('runs under the production content security policy without violations', asy
   const response = await page.goto('./');
   expect(response?.headers()['content-security-policy']).toContain("script-src 'self'");
   await page.locator('#loadSampleBtn').click();
-  await expect(page.locator('#loadSampleBtn')).toBeVisible();
+  await expect(page.locator('#reviewPanel')).toBeVisible();
   expect(await page.evaluate(() => window.__cspViolations)).toEqual([]);
 });
 

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { openStep } from "./helpers/guided-flow.js";
+import { openStep, openSetup } from "./helpers/guided-flow.js";
 
 // The review as the UX-0 case file (ADR-0002): one document in reading order,
 // with an outline that jumps to a section and marks where the reader is.
@@ -22,6 +22,25 @@ test.describe("Case file", () => {
     await page.locator("#loadSampleBtn").click();
     await expect(page.locator("#case-conclusion")).toBeAttached();
     expect(await sectionIds(page)).toEqual(["overview", "pillars", "connections", "evidence", "conclusion", "inspection", "exports"].map((key) => `case-${key}`));
+  });
+
+  test("outline hint names layers only for the Strategic lens", async ({ page }) => {
+    await page.goto("./");
+    for (const lens of ["strategic", "biopolitical"]) {
+      await openStep(page, "lens");
+      await page.locator(`[data-lens="${lens}"]`).click();
+      await page.locator("#loadSampleBtn").click();
+      for (const [lang, strategicWord, bioHint] of [
+        ["En", "layers", "The nine pillars of the analysis"],
+        ["Fr", "couches", "Les neuf piliers de l’analyse"],
+        ["Ar", "طبقات", "الركائز التسع للتحليل"],
+      ]) {
+        await page.locator(`#lang${lang}`).click();
+        const hint = page.locator('#reviewNav .j-case-link[data-review="pillars"] small, #reviewNav .j-case-link[data-bio-review="pillars"] small');
+        if (lens === "strategic") await expect(hint).toContainText(strategicWord);
+        else await expect(hint).toHaveText(bioHint);
+      }
+    }
   });
 
   // One idea, one word: a station names its section in the words of the
@@ -151,6 +170,7 @@ test.describe("Case file", () => {
     await page.locator('[data-lens="biopolitical"]').click();
     for (const lang of ["en", "ar", "fr"]) {
       await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+      await openSetup(page);
       await page.locator("#loadSampleBtn").click();
       const record = page.locator('#case-evidence [data-inspection-id="E1"]');
       await expect(record.locator(":scope > .j-rec-facts > div")).toHaveCount(4);
@@ -196,6 +216,7 @@ test.describe("Case file", () => {
       await page.locator(`[data-lens="${lens}"]`).click();
       for (const lang of ["en", "ar", "fr"]) {
         await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+        await openSetup(page);
         await page.locator("#loadSampleBtn").click();
         const fold = page.locator("#case-overview [data-diagnostics]");
         await expect(fold).not.toHaveAttribute("open");
@@ -240,6 +261,7 @@ test.describe("Case file", () => {
       await expect(more.nth(1)).toHaveAttribute("open", "");
       expect(await openFolds()).toBe(2);
     }
+    await openSetup(page);
     await page.locator("#loadSampleBtn").click();
     await expect(diagnostics).not.toHaveAttribute("open");
     expect(await openFolds()).toBe(0);

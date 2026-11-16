@@ -43,7 +43,7 @@
 .j-conn-centre:focus-visible { outline: 3px solid var(--j-signal); outline-offset: 3px; }
 .j-conn-centre strong { color: var(--j-fg); font-size: var(--j-t-16); line-height: 1.4; overflow-wrap: anywhere; }
 .j-conn-centre .j-btn { margin-top: var(--j-s-2); }
-:is(.j-conn-centre, .j-conn-node) code { color: var(--j-signal); font: 600 var(--j-t-12)/1.3 var(--j-font-code); }
+:is(.j-conn-centre, .j-conn-node) code { color: var(--j-signal); font: 600 var(--j-t-12)/1.3 var(--j-font-code); overflow-wrap: anywhere; }
 
 /* A neighbour under its relation to the record: its name and ID; pressed, it
    moves to the middle. */

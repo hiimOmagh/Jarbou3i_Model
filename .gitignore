@@ -14,5 +14,6 @@ build/
 /GATE-0-RUN-Easy-Launcher/
 /GATE-0-RUN-Easy-Launcher.zip
 /.claude/skills/
+/.agents/
 /tests/evals/
 skills-lock.json

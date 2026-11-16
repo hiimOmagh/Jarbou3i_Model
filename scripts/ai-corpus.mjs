@@ -22,6 +22,7 @@
 // Reply files are named <model>-<lens>-<lang>-<depth>-<access>.txt; -cont1.txt
 // and on continue a cut-off answer, and -fix.txt answers the app's follow-up
 // prompt (targeted completion, language, or JSON repair).
+import { openStep } from "../tests/helpers/guided-flow.js";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -238,7 +239,7 @@ function counts(state) {
   };
   return {
     ...state,
-    gaps: number(/with (\d+) (?:targeted completion )?gaps?\b/, state.status) ?? 0,
+    gaps: state.gapCount,
     added: number(/Added (\d+) missing parts?/, state.status),
     blockers: number(/(\d+) publication blockers?/, state.audit),
     review: number(/(\d+) review\b/, state.audit),
@@ -252,6 +253,16 @@ const snapshot = (page) =>
       const el = (id) => document.getElementById(id);
       const visible = (id) => Boolean(el(id) && !el(id).hidden && el(id).offsetParent !== null);
       return {
+        gapCount: (() => {
+          // The app keeps state private and renders only the first five gaps.
+          // Count rendered records plus its localized overflow summary.
+          const list = el("importGaps");
+          if (!list || list.hidden) return 0;
+          const items = [...list.children];
+          const last = items.at(-1);
+          const overflow = last && !last.querySelector("b") ? Number((last.textContent.replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6f0).match(/\d+/) || [0])[0]) : 0;
+          return items.filter(item => item.querySelector("b")).length + overflow;
+        })(),
         status: el("jsonStatus")?.textContent.trim().replace(/\s+/g, " ") || "",
         audit: visible("importAuditDetails") ? el("importAuditSummary")?.textContent.trim() || "" : "",
         importable: !el("importBtn")?.disabled,
@@ -264,7 +275,7 @@ const snapshot = (page) =>
 // One case, start to finish. `reply(name, messages)` returns the answer to the
 // last message (from the API or a saved file), or null when there is none.
 async function runCase(browser, base, kase, reply, config) {
-  const context = await browser.newContext();
+  const context = await browser.newContext({ locale: process.env.AI_CORPUS_LOCALE || "en" });
   try {
     const page = await context.newPage();
     const pageErrors = [];
@@ -287,15 +298,22 @@ async function runCase(browser, base, kase, reply, config) {
     };
     const settle = () => page.waitForTimeout(400);
 
-    await page.locator("#langEn").click();
+    await page.locator(process.env.AI_CORPUS_LOCALE === "ar" ? "#langAr" : "#langEn").click();
+    await openStep(page, "lens");
     await page.locator(`[data-lens="${kase.lens}"]`).click();
+    await openStep(page, "settings");
     await page.locator("#analysisLang").selectOption(kase.lang);
     await page.locator("#promptMode").selectOption(MODES[kase.depth]);
     if (kase.access) await page.locator("#evidenceAccess").selectOption(kase.access);
     let prompt = null;
     if (kase.topic) {
+      await openStep(page, "topic");
       await page.locator("#topicInput").fill(kase.topic);
-      if (kase.sources) await page.locator("#sourcesInput").fill(kase.sources);
+      if (kase.sources) {
+        await openStep(page, "settings");
+        await page.locator("#sourcesInput").fill(kase.sources);
+      }
+      await openStep(page, "prompt");
       prompt = await copied("#copyPromptBtn");
     }
 
@@ -310,9 +328,10 @@ async function runCase(browser, base, kase, reply, config) {
     };
     const continueCutOff = async (step) => {
       let used = 0;
-      while (used < config.maxContinues && (await page.locator("#continuationField").isVisible())) {
+      while (used < config.maxContinues && (await page.locator('#continuationField[data-reply="continue"]').isVisible())) {
         const answer = await say(`${step}-cont${used + 1}`, await copied("#repairPromptBtn"));
         if (answer === null) break;
+        await openStep(page, "answer");
         await page.locator("#continuationInput").fill(answer);
         await settle();
         used += 1;
@@ -322,27 +341,31 @@ async function runCase(browser, base, kase, reply, config) {
 
     const answer = await say("", prompt);
     if (answer === null) throw new Error("no reply");
-    await page.locator("#jsonInput").fill(answer);
+    await openStep(page, "answer");
+    await page.locator("#jsonInput").fill(answer, { timeout: 120_000 });
     await settle();
     const continues = [await continueCutOff("")];
     const first = await snapshot(page);
     // The answer to the prompt itself, continues joined. Merging a follow-up
     // can rewrite the box into the app's canonical form.
+    await openStep(page, "answer");
     const answered = await page.locator("#jsonInput").inputValue();
     const followUps = [];
     for (let round = 1; round <= config.followUps; round += 1) {
-      if ((await page.locator("#continuationField").isVisible()) || !(await page.locator("#repairPromptBtn").isEnabled())) break;
+      if ((await page.locator('#continuationField[data-reply="continue"]').isVisible()) || !(await page.locator("#repairPromptBtn").isEnabled())) break;
       const asked = (await page.locator("#repairPromptBtn").textContent()).trim();
       const step = `-fix${round > 1 ? round : ""}`;
       const fix = await say(step, await copied("#repairPromptBtn"));
       if (fix === null) break;
-      await page.locator("#jsonInput").fill(fix);
+      await openStep(page, "answer");
+      await page.locator("#continuationInput").fill(fix);
       await settle();
       continues.push(await continueCutOff(step));
       followUps.push(asked);
     }
     const final = await snapshot(page);
     // The analysis as the app holds it: continues joined, completions merged.
+    await openStep(page, "answer");
     const text = await page.locator("#jsonInput").inputValue();
     let imported = false;
     if (final.importable) {
@@ -355,7 +378,9 @@ async function runCase(browser, base, kase, reply, config) {
           () => false,
         );
     }
-    return { name: kase.name, chars, continues, followUps, first, final, imported, pageErrors, prompt, answered, text };
+    const publication = imported ? await page.locator('[data-orientation="gate"]').getAttribute("data-tone") : null;
+    const qualityScore = imported ? await page.locator('[data-metric]').evaluateAll(nodes => Object.fromEntries(nodes.map(node => [node.dataset.metric, node.querySelector("dd b")?.textContent || null]))) : null;
+    return { canonicalComplete: final.importable && final.gaps === 0, publication, qualityScore, name: kase.name, chars, continues, followUps, first, final, imported, pageErrors, prompt, answered, text };
   } finally {
     await context.close();
   }
@@ -370,7 +395,7 @@ async function runCases(browser, base, cases, replyFor, config) {
     } catch (error) {
       if (error instanceof StopRun) return { rows, stopped: error.message };
       log(`    error: ${error.message}`);
-      rows.push({ name: kase.name, error: error.message });
+      rows.push({ name: kase.name, imported: null, canonicalComplete: null, publication: null, qualityScore: null, error: error.message });
     }
   }
   return { rows, stopped: "" };
@@ -581,9 +606,10 @@ async function replay(args) {
       const inRuns = path.dirname(dir) === path.join(home, "runs");
       const file = inRuns ? path.join(dir, "results.json") : path.join(home, "baselines", `${slug(path.resolve(dir)).slice(-80)}.json`);
       const baseline = readJson(file, null);
+      writeJson(path.join(os.tmpdir(), `corpus-replay-${process.env.AI_CORPUS_LOCALE || "en"}-${slug(dir)}.json`), { dir, rows });
       log(`\n${table(rows, baseline?.rows, "baseline")}\n`);
       const regressions = baseline ? rows.filter((row) => compare(baseline.rows.find((old) => old.name === row.name), row).worse.length) : [];
-      if (!baseline || args.accept) {
+      if (args.accept) {
         writeJson(file, { ...(baseline || {}), commit: commit(), at: new Date().toISOString(), rows });
         log(baseline ? `Baseline updated: ${file}` : `Baseline saved: ${file}`);
       } else {

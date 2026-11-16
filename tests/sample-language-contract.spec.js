@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openStep } from "./helpers/guided-flow.js";
+import { openStep, openSetup } from "./helpers/guided-flow.js";
 
 const LOCALES = [
   {
@@ -85,6 +85,7 @@ test("the Strategic sample is the same analysis in every language", async ({ pag
   const seen = {};
   for (const locale of LOCALES) {
     await page.locator(locale.button).click();
+    await openSetup(page);
     await page.locator("#loadSampleBtn").click();
     await expect(page.locator("#reviewPanel")).toBeVisible();
     const { language, analysis_id, ...sample } = await readLoadedSample(page);

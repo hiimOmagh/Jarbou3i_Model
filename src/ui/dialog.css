@@ -67,6 +67,8 @@ html:has(.j-modal-back[data-variant="sheet"][aria-hidden="false"]) { overflow: h
 .j-ledger-counts { display: flex; flex-wrap: wrap; gap: var(--j-s-1); }
 .j-ledger-selected { display: grid; gap: var(--j-s-1); justify-items: start; padding-block-start: var(--j-s-3); border-block-start: 2px solid var(--j-ink); }
 .j-ledger-selected code, .j-ledger-selected small { overflow-wrap: anywhere; font-family: var(--j-font-code); font-size: var(--j-t-12); }
+/* Your source, said under the task (RESEARCH-1C S9). */
+.j-ledger-selected p { max-width: 100%; overflow-wrap: anywhere; font-size: var(--j-t-13); }
 .j-ledger-waiver { display: grid; gap: var(--j-s-3); padding-block-start: var(--j-s-3); border-block-start: 2px solid var(--j-warn); }
 .j-ledger-history ol { display: grid; gap: var(--j-s-2); margin: 0; padding: 0 var(--j-s-3) var(--j-s-3) var(--j-s-6); font-size: var(--j-t-13); }
 .j-ledger-history li > div { display: flex; flex-wrap: wrap; gap: var(--j-s-1) var(--j-s-3); }

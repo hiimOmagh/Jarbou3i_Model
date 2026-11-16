@@ -44,6 +44,13 @@ test.describe("Work panel", () => {
     await page.locator("#langEn").click();
   });
 
+  test("French save light and panel say where the work is", async ({ page }) => {
+    await page.locator("#langFr").click();
+    await expect(light(page)).toHaveAttribute("aria-label", /^Où se trouve votre travail : /);
+    await light(page).click();
+    await expect(page.locator("#workspaceDialogTitle")).toHaveText("Où se trouve votre travail");
+  });
+
   test("the save light opens where the work is", async ({ page }) => {
     await expect(light(page)).toHaveText("No saved workspace");
     await page.locator("#loadSampleBtn").click();
@@ -187,9 +194,9 @@ test.describe("Work panel", () => {
   test("speaks the page language and keeps its contracts and contrast", async ({ page }) => {
     await page.locator("#langAr").click();
     await page.locator("#loadSampleBtn").click();
-    await expect(light(page)).toHaveAttribute("aria-label", "أين عملك: محفوظ محليًا");
+    await expect(light(page)).toHaveAttribute("aria-label", "عملك المحفوظ: محفوظ محليًا");
     await light(page).click();
-    await expect(page.locator("#workspaceDialogTitle")).toHaveText("أين عملك");
+    await expect(page.locator("#workspaceDialogTitle")).toHaveText("عملك المحفوظ");
     await expect(page.locator("#workLife")).toContainText("تطابق النسخة 1، وهي النسخة الحالية.");
     const problems = await page.evaluate(async () => {
       const { checkContracts } = await import("./src/ui/contracts.js");

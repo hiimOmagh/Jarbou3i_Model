@@ -42,7 +42,7 @@
       expand: "Expand all",
       collapse: "Collapse all",
       print: "Print / Save PDF",
-      records: { one: "{count} item", other: "{count} items" },
+      records: { one: "{count} record", other: "{count} records" },
       noRecords: "No authored records.",
       conclusion: "Calibrated conclusion and self-audit",
       conclusionHint: "What is supported, disputed, unknown, or capable of changing the judgment.",
@@ -99,7 +99,7 @@
       expand: "توسيع الكل",
       collapse: "طي الكل",
       print: "طباعة / حفظ PDF",
-      records: { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" },
+      records: { zero: "لا سجلات", one: "سجل واحد", two: "سجلان", few: "{count} سجلات", many: "{count} سجلًا", other: "{count} سجل" },
       noRecords: "لا توجد سجلات مؤلفة.",
       conclusion: "الخلاصة المُعايرة والمراجعة الذاتية",
       conclusionHint: "ما هو مدعوم أو متنازع عليه أو مجهول أو قادر على تغيير الحكم.",
@@ -156,8 +156,8 @@
       expand: "Tout développer",
       collapse: "Tout réduire",
       print: "Imprimer / Enregistrer en PDF",
-      records: { one: "{count} élément", other: "{count} éléments" },
-      noRecords: "Aucun élément rédigé.",
+      records: { one: "{count} fiche", other: "{count} fiches" },
+      noRecords: "Aucune fiche rédigée.",
       conclusion: "Conclusion calibrée et auto-audit",
       conclusionHint: "Ce qui est étayé, contesté, inconnu ou susceptible de modifier le jugement.",
       atlas: "Atlas des relations et du contexte",
@@ -416,7 +416,7 @@
     `;
     const script = `(function(){const sections=[...document.querySelectorAll('.reportSection')];document.querySelector('[data-expand-all]').addEventListener('click',()=>sections.forEach(s=>s.open=true));document.querySelector('[data-collapse-all]').addEventListener('click',()=>sections.forEach(s=>s.open=false));document.querySelector('[data-print]').addEventListener('click',()=>window.print());document.addEventListener('click',event=>{const link=event.target.closest('.referenceChip');if(!link)return;const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();let parent=target.closest('details');while(parent){parent.open=true;parent=parent.parentElement.closest('details')}history.replaceState(null,'',link.getAttribute('href'));target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});let closed=[];addEventListener('beforeprint',()=>{closed=[...document.querySelectorAll('details:not([open])')].filter(d=>!d.closest('.jsonInspector'));closed.forEach(d=>d.open=true)});addEventListener('afterprint',()=>{closed.forEach(d=>d.open=false);closed=[]});const inspector=document.querySelector('.jsonInspector');inspector.addEventListener('toggle',()=>{if(!inspector.open)return;const target=document.getElementById('canonical-json-view');if(target.textContent)return;try{target.textContent=JSON.stringify(JSON.parse(document.getElementById('canonical-analysis').textContent),null,2)}catch(error){target.textContent='Unable to show the JSON.'}});})();`;
 
-    return `<!doctype html><html lang="${locale}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="${escapeHtml(version)}"><meta name="analysis-lens" content="biopolitical"><meta name="analysis-contract" content="${escapeHtml(bio.APP_CONTRACT)}"><meta name="schema-version" content="${escapeHtml(bio.SCHEMA_VERSION)}"><title>${escapeHtml(a.subject.title || c.title)}</title><style>${theme.css}${css}${theme.printCss(locale, a.subject.title || c.title, !health.publishable)}</style></head><body data-publication-gate="${gate}"><a class="skipLink" href="#report-content">${escapeHtml(c.skip)}</a><main class="shell" id="report-content" data-analysis-lens="biopolitical" data-export-contract-lens="biopolitical" data-analysis-contract="${escapeHtml(bio.APP_CONTRACT)}" data-schema-version="${escapeHtml(bio.SCHEMA_VERSION)}" data-app-version="${escapeHtml(version)}">
+    return `<!doctype html><html lang="${locale}" dir="${dir}"><head><meta charset="utf-8">${theme.cspMeta(script)}<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="app-version" content="${escapeHtml(version)}"><meta name="analysis-lens" content="biopolitical"><meta name="analysis-contract" content="${escapeHtml(bio.APP_CONTRACT)}"><meta name="schema-version" content="${escapeHtml(bio.SCHEMA_VERSION)}"><title>${escapeHtml(a.subject.title || c.title)}</title><style>${theme.css}${css}${theme.printCss(locale, a.subject.title || c.title, !health.publishable)}</style></head><body data-publication-gate="${gate}"><a class="skipLink" href="#report-content">${escapeHtml(c.skip)}</a><main class="shell" id="report-content" data-analysis-lens="biopolitical" data-export-contract-lens="biopolitical" data-analysis-contract="${escapeHtml(bio.APP_CONTRACT)}" data-schema-version="${escapeHtml(bio.SCHEMA_VERSION)}" data-app-version="${escapeHtml(version)}">
       ${health.publishable ? "" : theme.draftHtml(locale, verdictTone, c.blockedNote)}<header class="hero"><div class="heroGrid"><div><h1>${escapeHtml(a.subject.title || c.title)}</h1><p>${escapeHtml(c.title)}</p>${theme.exportedHtml(locale, exportedAt)}<p class="chain">${escapeHtml(c.chain)}</p></div><div class="statusPanel"><section class="metricCard gateCard"><span class="gateBadge" data-tone="${verdictTone}">${escapeHtml(verdict)}</span><span>${escapeHtml(c.publication)}</span><small>${escapeHtml(health.publishable ? c.passedNote : c.blockedNote)}</small></section><section class="metricCard"><strong>${pct(score.overall)}</strong><span class="metricBar"${readinessTone ? ` data-tone="${readinessTone}"` : ""} style="--pct:${score.overall}%" aria-hidden="true"></span><span>${escapeHtml(c.analyticalReadiness)}</span><small>${escapeHtml(c.readinessNote)}</small></section><section class="metricCard compactMetrics"><span><b>${pct(score.analyticalCoverage)}</b> ${escapeHtml(c.analyticalCoverage)}</span><span><b>${pct(score.provenance.sourceTraceability)}</b> ${escapeHtml(c.sourceTraceability)}</span><span><b>${pct(score.provenance.humanReview)}</b> ${escapeHtml(c.humanReview)}</span></section></div></div></header>
       <div class="overviewGrid"><section class="overviewCard"><h2>${escapeHtml(c.executive)}</h2><p>${renderValue(a.subject.executive_finding || "—")}</p><p>${renderValue(a.subject.context || "")}</p></section><section class="overviewCard blockers" data-tone="${verdictTone}"><h2>${escapeHtml(c.reviewFirst)}</h2>${health.missing.length ? `<ol>${health.missing.slice(0,5).map((item)=>`<li>${renderValue(item)}</li>`).join("")}</ol>` : `<p>${escapeHtml(c.passedNote)}</p>`}</section></div>
       <nav class="reportToc" aria-label="${escapeHtml(c.contents)}"><h2>${escapeHtml(c.contents)}</h2><ol>${toc.map((item)=>`<li><a href="${item.href}"><span>${item.number}</span>${escapeHtml(item.label)}</a></li>`).join("")}</ol></nav>

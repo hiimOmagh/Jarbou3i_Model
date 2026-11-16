@@ -75,3 +75,13 @@ test("closing the inspector gives focus back while a stylesheet is still loading
   await expect(reference).toBeFocused();
   release();
 });
+
+test("reference inspector keeps Shift+Tab inside right after it opens", async ({ page }) => {
+  const reference = await evidenceReference(page);
+  await reference.focus();
+  await reference.press("Enter");
+  const inspector = page.locator("#referenceInspector");
+  await expect(inspector).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect.poll(() => inspector.evaluate((el) => el.contains(document.activeElement) && el !== document.activeElement)).toBe(true);
+});

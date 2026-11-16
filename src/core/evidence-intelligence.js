@@ -17,11 +17,11 @@ function resolvePointer(source, pointer) {
     .reduce((value, token) => value?.[token], source);
 }
 
-function normalizedText(value) {
+export function normalizedText(value) {
   return text(value).normalize("NFKC").replace(/\s+/g, " ").toLocaleLowerCase("en");
 }
 
-function normalizedUrl(value) {
+export function normalizedUrl(value) {
   try {
     const url = new URL(text(value));
     if (!["http:", "https:"].includes(url.protocol)) return "";

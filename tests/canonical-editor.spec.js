@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { clearWorkspaceStorage, countRecoverySnapshots, restoreSavedDraft } from "./helpers/browser-persistence.js";
 import { expectKernel } from "./helpers/kernel-check.js";
+import { openSetup } from "./helpers/guided-flow.js";
 
 test.describe("Structured canonical editor", () => {
   test.beforeEach(async ({ page }) => {
@@ -317,6 +318,7 @@ test.describe("Structured canonical editor", () => {
   });
 
   test("puts each Biopolitical section under the pillar the case file shows it in", async ({ page }) => {
+    await openSetup(page);
     await page.locator('[data-flow-step="lens"]').click();
     await page.locator('[data-lens="biopolitical"]').click();
     await page.locator("#loadSampleBtn").click();

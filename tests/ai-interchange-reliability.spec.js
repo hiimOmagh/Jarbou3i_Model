@@ -1079,7 +1079,7 @@ test.describe("AI interchange reliability", () => {
     await expect(page.locator("#jsonInput")).toHaveValue(broken.slice(0, cut));
     await expect(page.locator("#continuationField")).toBeVisible();
     await expect(page.locator("#repairPromptBtn")).toHaveText("Copy a prompt to continue it");
-    await expect(page.locator("#jsonStatus")).toContainText("The AI says this answer is cut off");
+    await expect(page.locator("#jsonStatus")).toContainText("Answer cut off; repair failed");
 
     await openStep(page, "answer");
     await page.locator("#continuationInput").fill(broken.slice(cut));
@@ -1158,7 +1158,7 @@ test.describe("AI interchange reliability", () => {
     await captureCopies(page);
     await openStep(page, "answer");
     await page.locator("#jsonInput").fill("## Summary\nThe evidence is mixed.\n- States\n- Venues");
-    await expect(page.locator("#jsonStatus")).toContainText("No analysis was found in this text");
+    await expect(page.locator("#jsonStatus")).toContainText("No analysis was found");
     await openStep(page, "answer");
     await page.locator("#repairPromptBtn").click();
     expect(await lastCopy(page)).toContain("```json");
@@ -1397,11 +1397,11 @@ test.describe("AI interchange reliability", () => {
     }
   });
 
-  test("the Focused Strategic prompt asks for a compact answer", async ({ page }) => {
+  test("the Strategic prompt does not cap variable collections", async ({ page }) => {
     const compact = {
-      en: "two or three items per section",
-      ar: "عنصران أو ثلاثة في كل قسم",
-      fr: "deux ou trois éléments par section",
+      en: "at most 2 records per variable collection",
+      ar: "بحد أقصى سجلان لكل مجموعة متغيرة",
+      fr: "au plus 2 fiches par collection variable",
     };
     await page.goto("./");
     await page.locator("#langEn").click();
@@ -1422,8 +1422,7 @@ test.describe("AI interchange reliability", () => {
       await page.locator("#previewPromptBtn").click();
       const prompt = await page.locator("#modalContent").textContent();
       await page.keyboard.press("Escape");
-      if (mode === "simple") expect.soft(prompt, language).toContain(compact[language]);
-      else expect.soft(prompt, mode).not.toContain(compact[language]);
+      expect.soft(prompt, `${mode}/${language}`).not.toContain(compact[language]);
     }
   });
 
@@ -1615,7 +1614,7 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "settings");
     await page.locator("#evidenceAccess").selectOption("provided");
     // Files attached in the assistant's chat count too: the field says so.
-    await expect(page.locator("#sourcesInput")).toHaveAccessibleDescription(/names of files you will attach/);
+    await expect(page.locator("#sourcesInput")).toHaveAccessibleDescription(/attach it to your AI chat yourself/);
     await page.locator("#sourcesInput").fill(source);
     for (const lens of ["strategic", "biopolitical"]) {
       await openStep(page, "lens");
@@ -1650,5 +1649,18 @@ test.describe("AI interchange reliability", () => {
     await openStep(page, "prompt");
     await page.locator("#previewPromptBtn").click();
     await expect(page.locator("#modalContent")).not.toContainText(source);
+  });
+  test('plain-text repair guidance stays concise and actionable in every language', async ({ page }) => {
+    for (const lang of ['En', 'Ar', 'Fr']) {
+      await page.goto('./');
+      await page.locator(`#lang${lang}`).click();
+      await openStep(page, 'answer');
+      await page.locator('#jsonInput').fill('An ordinary prose answer.');
+      const status = page.locator('#jsonStatus');
+      await expect(status).toContainText(/JSON/);
+      await expect(status).toContainText(/repair prompt|موجِّه الإصلاح|prompt de réparation/);
+      await expect(status).toContainText(/paste.*here|والصقها هنا|collez-la ici/i);
+      await expect.poll(async () => (await status.textContent()).length).toBeLessThan(180);
+    }
   });
 });

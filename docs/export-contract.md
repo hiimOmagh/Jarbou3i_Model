@@ -15,6 +15,8 @@ Every HTML report carries app and lens metadata, and every analysis can also be 
 
 Arabic analyses use `lang="ar" dir="rtl"`; English and French analyses use `dir="ltr"`. Machine contract values remain locale-independent.
 
+Every report footer (`footer[data-report-provenance]`, built by `provenanceHtml` in `src/report-theme.js`) opens with one `p[data-report-note]` in the report’s language, explaining that the report helps examine a question using the analyst’s inputs, is neither a verdict nor proof, and does not predict what will happen. It is plain text: no script is added, and the report’s Content-Security-Policy meta is unchanged.
+
 ## Biopolitical report
 
 ```html

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { PRODUCT_VERSION as EXPECTED_VERSION } from './helpers/product-version.mjs';
 import { openStep } from "./helpers/guided-flow.js";
@@ -49,6 +50,50 @@ function expectAll(html, tokens) {
 
 function expectNone(html, tokens) {
   for (const token of tokens) expect(html).not.toContain(token);
+}
+
+for (const lang of ['en', 'ar', 'fr']) {
+  test(`Strategic executive brief and appendix: ${lang}, phone and print`, async ({ page }, testInfo) => {
+    const html = await exportSampleReport(page, testInfo, 'strategic', lang);
+    await page.goto(pathToFileURL(testInfo.outputPath(`${lang}-strategic-export.html`)).href);
+    const outline = () => page.locator('main h1, main h2').allTextContents();
+    const brief = page.locator('[data-executive-brief]');
+    const appendix = page.locator('[data-report-appendix]');
+    await expect(brief).toBeVisible();
+    await expect(appendix).toBeVisible();
+    await expect(brief.locator('.thesis')).toContainText(/\S/);
+    await expect(brief.locator('.overall .gate')).toBeVisible();
+    await expect(brief.locator('.metric, .formula, .item, table')).toHaveCount(0);
+    await expect(appendix.locator('.metric')).toHaveCount(6);
+    await expect(appendix.locator('.layer')).toHaveCount(6);
+    const golden = JSON.parse(await fs.readFile(`tests/goldens/strategic-after-${lang}.json`, 'utf8'));
+    expect(await outline()).toEqual(golden.headings);
+    expect(await appendix.locator('.layer > header > span').allTextContents()).toEqual(golden.recordCounts);
+    const visibleCopy = await page.locator('main').innerText();
+    expect(visibleCopy).not.toMatch({ en: /\bitems?\b/i, ar: /عناصر|عنصر/, fr: /éléments?/i }[lang]);
+    const canonical = JSON.parse(await page.locator('#canonical-analysis').textContent());
+    await expect(appendix).toContainText(canonical.subject.executive_thesis);
+    await expect(appendix).toContainText(canonical.subject.context);
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+    await page.screenshot({ path: testInfo.outputPath(`strategic-after-${lang}.png`), fullPage: true });
+    await page.emulateMedia({ media: 'print' });
+    await page.setViewportSize({ width: 688, height: 1000 });
+    expect(await appendix.evaluate((el) => getComputedStyle(el).breakBefore)).toBe('page');
+    // A4 printable height after the report's 16mm top/bottom margins.
+    expect(await brief.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(1001);
+    if (testInfo.project.name === 'chromium') {
+      // Print the opening section itself: no hidden overflow or extra page.
+      await page.addStyleTag({ content: '@media print{.j-report-appendix{display:none!important}}' });
+      const pdf = await page.pdf({ format: 'A4', preferCSSPageSize: true });
+      expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+      await testInfo.attach(`brief-${lang}.pdf`, { body: pdf, contentType: 'application/pdf' });
+    }
+    expect(html).toContain(`dir="${lang === 'ar' ? 'rtl' : 'ltr'}"`);
+    if (lang !== 'en') await expect(brief).toHaveAttribute('data-copy-review', 'needs-native-check');
+  });
 }
 
 test.describe('HTML export lens contract', () => {
@@ -118,6 +163,9 @@ test.describe('HTML export lens contract', () => {
       'Analytical coverage',
       'data-canonical-contract="complete"'
     ]);
+    const counts = [...html.matchAll(/<summary><span class="sectionNumber">0[1-9]<\/span>(?:(?!<\/summary>)[\s\S])*?class="recordCount">([^<]+)<\/span>/g)].map((match) => match[1]);
+    expect(counts.length).toBeGreaterThan(0);
+    for (const count of counts) expect(count).toMatch(/^\d+ records?$/);
     // Readiness takes the app's score bands: the sample's 40% is a warning.
     expect(html).toContain('<strong>40%</strong><span class="metricBar" data-tone="warn" style="--pct:40%" aria-hidden="true">');
     expect(html).not.toMatch(/[\uE000-\uF8FF]/);
@@ -163,6 +211,10 @@ test.describe('Localized HTML export contract', () => {
           ...locale[lens],
         ]);
         if (lens === 'biopolitical') {
+          const counts = [...html.matchAll(/<summary><span class="sectionNumber">0[1-9]<\/span>(?:(?!<\/summary>)[\s\S])*?class="recordCount">([^<]+)<\/span>/g)].map((match) => match[1]);
+          expect(counts.length).toBeGreaterThan(0);
+          const wording = lang === 'fr' ? /^\d+ fiches?$/ : /^(?:لا سجلات|سجل واحد|سجلان|\d+ (?:سجلات|سجلًا|سجل))$/;
+          for (const count of counts) expect(count).toMatch(wording);
           expectAll(html, ['name="analysis-contract" content="biopolitical-training-map-v2"', 'name="schema-version" content="2.1.0"']);
         }
         expectNone(html, ENGLISH_TITLES[lens]);
@@ -191,6 +243,22 @@ test('Arabic reports keep figures and letter joins', async ({ page }, testInfo) 
   }
 });
 
+// Every report says what it is and is not, in the report’s own language.
+const REPORT_NOTES = {
+  "en": "This report helps you examine a question using the analyst’s inputs. It is not a verdict or proof. It does not predict what will happen.",
+  "ar": "يساعدك هذا التقرير على النظر في سؤال باستخدام ما أدخله المحلل. ليس حكمًا نهائيًا أو دليلًا قاطعًا. ولا يتنبأ بما سيحدث.",
+  "fr": "Ce rapport aide à examiner une question à partir des informations fournies par l’analyste. Ce n’est ni un verdict ni une preuve. Il ne prédit pas ce qui va se passer."
+};
+test('both reports carry the what-this-report-is note in their language', async ({ page }, testInfo) => {
+  for (const lang of ['en', 'ar', 'fr']) {
+    for (const lens of ['strategic', 'biopolitical']) {
+      await exportSampleReport(page, testInfo, lens, lang);
+      await page.goto(pathToFileURL(testInfo.outputPath(`${lang}-${lens}-export.html`)).href);
+      await expect(page.locator('footer[data-report-provenance] [data-report-note]'), `${lang} ${lens}`).toHaveText(REPORT_NOTES[lang]);
+    }
+  }
+});
+
 async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
   await page.goto('./');
   await expect(page.locator('#loadSampleBtn')).toBeVisible();
@@ -214,6 +282,50 @@ async function exportImportedStrategic(page, testInfo, data, name, ui = 'En') {
 
 const strategicFixture = async (name) =>
   JSON.parse(await fs.readFile(`${process.cwd()}/fixtures/${name}`, 'utf8'));
+
+// Catch a regression to generic item counts or empty-section wording in exports.
+for (const [lang, recordCounts, empty] of [
+  ['en', ['1 record', '2 records', '3 records', '11 records', '100 records', '1 record'], 'No authored records.'],
+  ['ar', ['سجل واحد', 'سجلان', '3 سجلات', '11 سجلًا', '100 سجل', 'سجل واحد'], 'لا توجد سجلات مؤلفة.'],
+  ['fr', ['1 fiche', '2 fiches', '3 fiches', '11 fiches', '100 fiches', '1 fiche'], 'Aucune fiche rédigée.'],
+]) {
+  test(`Strategic record counts and empty sections: ${lang}`, async ({ page }, testInfo) => {
+    const data = await strategicFixture(`sample-analysis-${lang}.json`);
+    ['interests', 'actors', 'tools', 'narrative', 'results', 'feedback'].forEach((key, index) => {
+      const first = data[key][0];
+      data[key] = Array.from({ length: [1, 2, 3, 11, 100, 1][index] }, (_, i) => ({ ...first, id: `${first.id.replace(/\d+$/, '')}${i + 1}` }));
+    });
+    data.assumptions.items = [];
+    const html = await exportImportedStrategic(page, testInfo, data, `record-counts-${lang}`, lang[0].toUpperCase() + lang[1]);
+    await page.goto(pathToFileURL(testInfo.outputPath(`record-counts-${lang}.html`)).href);
+    expect(await page.locator('.layer > header > span').allTextContents()).toEqual(recordCounts);
+    await expect(page.locator('[data-report-appendix] > .block').last()).toContainText(empty);
+    expect(html).not.toContain({ en: 'No items.', ar: 'لا توجد عناصر.', fr: 'Aucun élément.' }[lang]);
+  });
+}
+
+test('a long Strategic brief keeps the full authored text and next action in its appendix', async ({ page }, testInfo) => {
+  const data = await strategicFixture('sample-analysis-en.json');
+  data.subject.title = 'A lengthy subject '.repeat(30);
+  data.subject.question = 'Which claims can the available sources support? '.repeat(30);
+  data.subject.executive_thesis = 'The sources support a qualified finding. '.repeat(80);
+  data.quality_gate.next_improvement = 'Check the primary sources and record uncertainty. '.repeat(40);
+  await exportImportedStrategic(page, testInfo, data, 'long-brief');
+  await page.goto(pathToFileURL(testInfo.outputPath('long-brief.html')).href);
+  const appendix = page.locator('[data-report-appendix]');
+  for (const text of [data.subject.title, data.subject.question, data.subject.executive_thesis, data.quality_gate.next_improvement]) {
+    await expect(appendix).toContainText(text);
+  }
+  await expect(page.locator('[data-executive-brief] .thesis')).toContainText('…');
+  await page.emulateMedia({ media: 'print' });
+  await page.setViewportSize({ width: 688, height: 1000 });
+  expect(await page.locator('[data-executive-brief]').evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(1001);
+  if (testInfo.project.name === 'chromium') {
+    await page.addStyleTag({ content: '@media print{.j-report-appendix{display:none!important}}' });
+    const pdf = await page.pdf({ format: 'A4', preferCSSPageSize: true });
+    expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+  }
+});
 
 test.describe('Strategic HTML report content', () => {
   test('the hero states capped decision readiness, coverage and the quality gate', async ({ page }, testInfo) => {
@@ -502,7 +614,8 @@ test.describe('Report provenance and print', () => {
     for (const lens of ['biopolitical', 'strategic']) {
       const html = await exportSampleReport(page, testInfo, lens);
       // The report on the app's origin, so the kernel's contract check can load.
-      await page.setContent(html);
+      // The report's own CSP would block that check's module import; it is covered by its own tests.
+      await page.setContent(html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, ''));
       const lists = await page.evaluate(async () => {
         const { checkContracts } = await import('./src/ui/contracts.js');
         return checkContracts(document).filter((entry) => entry.contract === 'list');
@@ -562,5 +675,50 @@ test.describe('Report provenance and print', () => {
     expect(look.layerNames).toHaveLength(6);
     expect(look.ring.radius).toBe('50%');
     expect(look.ring.colour).toBe(look.ring.lineTwo);
+  });
+});
+
+test.describe('Exported report Content-Security-Policy', () => {
+  const POLICY_BASE = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'";
+
+  async function openFromDisk(page, testInfo, lens) {
+    const html = await exportSampleReport(page, testInfo, lens);
+    await page.addInitScript(() => {
+      window.__csp = [];
+      document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(e.violatedDirective));
+    });
+    await page.goto(pathToFileURL(testInfo.outputPath(`en-${lens}-export.html`)).href);
+    return html;
+  }
+
+  test('strategic export carries a script-free policy and no executable script', async ({ page }, testInfo) => {
+    const html = await openFromDisk(page, testInfo, 'strategic');
+    const meta = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]*)">/);
+    expect(meta).not.toBeNull();
+    expect(meta[1]).toBe(POLICY_BASE);
+    expect(meta[1]).not.toContain('script-src');
+    const executable = [...html.matchAll(/<script\b([^>]*)>/g)].filter((m) => !/type="application\/json"/.test(m[1]));
+    expect(executable).toHaveLength(0);
+    await expect(page.locator('main.shell')).toBeVisible();
+    expect(await page.evaluate(() => window.__csp)).toEqual([]);
+  });
+
+  test('biopolitical export allows only its own inline script by hash', async ({ page }, testInfo) => {
+    const html = await openFromDisk(page, testInfo, 'biopolitical');
+    const meta = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]*)">/);
+    expect(meta).not.toBeNull();
+    const hash = meta[1].match(/script-src 'sha256-([A-Za-z0-9+/=]+)'/);
+    expect(hash).not.toBeNull();
+    expect(meta[1]).toBe(`${POLICY_BASE}; script-src 'sha256-${hash[1]}'`);
+    const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+    expect(inline).toHaveLength(1);
+    expect(hash[1]).toBe(createHash('sha256').update(inline[0][1], 'utf8').digest('base64'));
+
+    const sections = page.locator('.reportSection');
+    await page.locator('[data-expand-all]').click();
+    await expect.poll(() => sections.evaluateAll((els) => els.every((d) => d.open))).toBe(true);
+    await page.locator('[data-collapse-all]').click();
+    await expect.poll(() => sections.evaluateAll((els) => els.every((d) => !d.open))).toBe(true);
+    expect(await page.evaluate(() => window.__csp)).toEqual([]);
   });
 });

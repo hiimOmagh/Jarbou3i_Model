@@ -111,16 +111,22 @@
     + `.draftBanner[data-tone="crit"]{border-color:var(--j-crit);background:linear-gradient(var(--j-crit-wash),var(--j-crit-wash)),var(--j-panel)}.draftBanner[data-tone="crit"] strong{color:var(--j-crit)}`
     + `.provenance{margin-top:var(--j-s-6);padding:var(--j-s-4) var(--j-s-4) 0;border-top:1px solid var(--j-line);color:var(--j-fg-muted);font-size:var(--j-t-13)}`
     + `.provenance h2{margin:0 0 var(--j-s-3);color:var(--j-fg);font:700 var(--j-t-16)/1.3 var(--j-font-display)}`
+    + `.provenance .reportNote{margin:0 0 var(--j-s-3);color:var(--j-fg)}`
     + `.provenance dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--j-s-2) var(--j-s-4);margin:0}`
     + `.provenance dl div{min-width:0;padding:0;border:0;background:none}`
     + `.provenance dt{color:var(--j-fg-muted);font:600 var(--j-t-12)/1.4 var(--j-font-ui);letter-spacing:0;text-transform:none}`
     + `.provenance dd{margin:2px 0 0;color:var(--j-fg);overflow-wrap:anywhere}`
-    + `@media print{.provenance{break-inside:avoid-page}}`;
+    + `.j-executive-brief,.j-report-appendix{overflow-wrap:anywhere;min-width:0}`
+    + `.j-executive-brief .j-brief-title{margin:0 0 1rem;font:700 var(--j-t-16)/1.3 var(--j-font-ui)}`
+    + `.j-report-appendix{margin-block-start:3rem;border-block-start:3px solid var(--j-ink);padding-block-start:1rem}`
+    + `.j-executive-brief .thesis{margin-block-start:1rem;padding-block-start:1rem}`
+    + `.j-executive-brief .thesis p{margin-block:.5rem}.j-appendix-link{display:inline-block;margin-block-start:.5rem}`
+    + `@media print{.provenance{break-inside:avoid-page}.j-report-appendix{break-before:page;margin-block-start:0}.j-executive-brief{font-size:10pt;line-height:1.4}.j-executive-brief .hero{padding-block-start:1rem}.j-executive-brief .hero h1{font-size:23pt}.j-executive-brief .heroGrid{grid-template-columns:minmax(0,1fr) 180px;gap:1rem}.j-executive-brief .draftBanner{margin-block-end:1rem;padding:.5rem}.j-executive-brief .overall{padding-block-start:.5rem;gap:.35rem}}`;
 
   const COPY = Object.freeze({
-    en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Format version", version: "App version" },
-    ar: { draft: "مسودة", exportedOn: "صُدِّر في {date}", about: "عن هذا التقرير", exported: "تاريخ التصدير", answerDated: "تاريخ الإجابة", analysisId: "معرّف التحليل", schema: "إصدار الصيغة", version: "إصدار التطبيق" },
-    fr: { draft: "Brouillon", exportedOn: "Exporté le {date}", about: "À propos de ce rapport", exported: "Exporté le", answerDated: "Date de la réponse", analysisId: "Identifiant de l’analyse", schema: "Version du format", version: "Version de l’application" },
+    en: { draft: "Draft", exportedOn: "Exported {date}", about: "About this report", exported: "Exported", answerDated: "Answer dated", analysisId: "Analysis ID", schema: "Format version", version: "App version", note: "This report helps you examine a question using the analyst’s inputs. It is not a verdict or proof. It does not predict what will happen." },
+    ar: { draft: "مسودة", exportedOn: "صُدِّر في {date}", about: "عن هذا التقرير", exported: "تاريخ التصدير", answerDated: "تاريخ الإجابة", analysisId: "معرّف التحليل", schema: "إصدار الصيغة", version: "إصدار التطبيق", note: "يساعدك هذا التقرير على النظر في سؤال باستخدام ما أدخله المحلل. ليس حكمًا نهائيًا أو دليلًا قاطعًا. ولا يتنبأ بما سيحدث." },
+    fr: { draft: "Brouillon", exportedOn: "Exporté le {date}", about: "À propos de ce rapport", exported: "Exporté le", answerDated: "Date de la réponse", analysisId: "Identifiant de l’analyse", schema: "Version du format", version: "Version de l’application", note: "Ce rapport aide à examiner une question à partir des informations fournies par l’analyste. Ce n’est ni un verdict ni une preuve. Il ne prédit pas ce qui va se passer." },
   });
   const copy = (lang) => COPY[lang] || COPY.en;
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
@@ -163,8 +169,62 @@
       [c.schema, schemaVersion],
       [c.version, version],
     ].filter(([, value]) => String(value ?? "").trim());
-    return `<footer class="provenance" data-report-provenance><h2>${escapeHtml(c.about)}</h2><dl>${rows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl></footer>`;
+    return `<footer class="provenance" data-report-provenance><h2>${escapeHtml(c.about)}</h2><p class="reportNote" data-report-note>${escapeHtml(c.note)}</p><dl>${rows.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd><bdi>${escapeHtml(value)}</bdi></dd></div>`).join("")}</dl></footer>`;
   }
 
-  root.Jarbou3iReportTheme = Object.freeze({ css, dateText, printCss, exportedHtml, draftHtml, provenanceHtml, tokens: Object.freeze({ light: LIGHT, dark: DARK, shared: SHARED }) });
+  // Content-Security-Policy meta for an exported report. Reports run no network, so
+  // everything is closed except inline styles (and, when given, one inline script by hash).
+  const K256 = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  function sha256Base64(text) {
+    const data = [];
+    for (const ch of String(text)) {
+      const cp = ch.codePointAt(0);
+      if (cp < 0x80) data.push(cp);
+      else if (cp < 0x800) data.push(0xc0 | (cp >> 6), 0x80 | (cp & 63));
+      else if (cp < 0x10000) data.push(0xe0 | (cp >> 12), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+      else data.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+    }
+    const bits = data.length * 8;
+    const padded = new Uint8Array(((data.length + 9 + 63) >> 6) << 6);
+    padded.set(data);
+    padded[data.length] = 0x80;
+    const view = new DataView(padded.buffer);
+    view.setUint32(padded.length - 8, Math.floor(bits / 4294967296));
+    view.setUint32(padded.length - 4, bits >>> 0);
+    const h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    const w = new Uint32Array(64);
+    const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let off = 0; off < padded.length; off += 64) {
+      for (let i = 0; i < 16; i++) w[i] = view.getUint32(off + i * 4);
+      for (let i = 16; i < 64; i++) {
+        const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+        const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
+      }
+      let [a, b, c, d, e, f, g, hh] = h;
+      for (let i = 0; i < 64; i++) {
+        const t1 = (hh + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K256[i] + w[i]) >>> 0;
+        const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+        hh = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+      }
+      [a, b, c, d, e, f, g, hh].forEach((v, i) => { h[i] = (h[i] + v) >>> 0; });
+    }
+    const out = new Uint8Array(32);
+    const ov = new DataView(out.buffer);
+    h.forEach((v, i) => ov.setUint32(i * 4, v));
+    const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let b64 = "";
+    for (let i = 0; i < 30; i += 3) {
+      const n = (out[i] << 16) | (out[i + 1] << 8) | out[i + 2];
+      b64 += B64[(n >> 18) & 63] + B64[(n >> 12) & 63] + B64[(n >> 6) & 63] + B64[n & 63];
+    }
+    const n = (out[30] << 16) | (out[31] << 8);
+    return b64 + B64[(n >> 18) & 63] + B64[(n >> 12) & 63] + B64[(n >> 6) & 63] + "=";
+  }
+  function cspMeta(inlineScript) {
+    const script = inlineScript ? `; script-src 'sha256-${sha256Base64(inlineScript)}'` : "";
+    return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; base-uri 'none'; form-action 'none'${script}">`;
+  }
+
+  root.Jarbou3iReportTheme = Object.freeze({ cspMeta, sha256Base64, css, dateText, printCss, exportedHtml, draftHtml, provenanceHtml, tokens: Object.freeze({ light: LIGHT, dark: DARK, shared: SHARED }) });
 })(window);

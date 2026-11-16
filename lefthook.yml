@@ -1,0 +1,6 @@
+# Fast local gate before a push. scripts/ship.sh already runs the full gate;
+# set LEFTHOOK=0 to skip this hook (lefthook's own switch).
+pre-push:
+  jobs:
+    - name: kernel gate
+      run: npm run test:ci:no-browser
