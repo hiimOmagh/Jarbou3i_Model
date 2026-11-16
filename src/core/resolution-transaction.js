@@ -1,10 +1,8 @@
 /* Commit-grade resolution transactions for immutable canonical revisions. */
 
+import { canonicalStringify, sha256, WorkspaceContractError } from "./canonical-json.js";
 import {
-  canonicalStringify,
-  sha256,
   verifyWorkspace,
-  WorkspaceContractError,
 } from "./workspace-contract.js";
 
 export const RESOLUTION_PROPOSAL_FORMAT = "jarbou3i-resolution-proposal";
