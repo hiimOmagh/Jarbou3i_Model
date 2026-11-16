@@ -10387,7 +10387,7 @@ const PASSED_CHECK_COUNT = {
 };
 const GAP_COUNT = {
   en: { one: "{count} part is missing or invalid, listed below", other: "{count} parts are missing or invalid, listed below" },
-  ar: { one: "جزء واحد ناقص أو غير صالح، مدرج أدناه", two: "جزءان ناقصان أو غير صالحين، مدرجان أدناه", few: "{count} أجزاء ناقصة أو غير صالحة، مدرجة أدناه", many: "{count} جزءًا ناقصًا أو غير صالح، مدرجة أدناه", other: "{count} جزء ناقص أو غير صالح، مدرجة أدناه" },
+  ar: { one: "جزء واحد ناقص أو غير صالح، مدرج أدناه", two: "جزءان ناقصان أو غير صالحين، مدرجان أدناه", few: "{count} أجزاء ناقصة أو غير صالحة، مدرجة أدناه", many: "{count} جزءًا ناقصًا أو غير صالح، مدرج أدناه", other: "{count} جزء ناقص أو غير صالح، مدرج أدناه" },
   fr: { one: "{count} partie manque ou est invalide, listée ci-dessous", other: "{count} parties manquent ou sont invalides, listées ci-dessous" },
 };
 const UNREFERENCED_COUNT = {
