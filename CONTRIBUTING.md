@@ -64,3 +64,9 @@ For major UI changes, also complete the [manual release review](docs/operations/
 ## Release boundary
 
 Ordinary commits do not receive product versions or tags. Changes accumulate under `Unreleased` until a release boundary is intentionally accepted. Follow [Deployment and Release Operations](docs/operations/deployment.md) and the [Versioning Policy](docs/VERSIONING.md) before creating any release tag.
+
+## Git flow
+
+Start work from an intake row on `feature/<row>-<slug>` and open a pull request into `ux0-preview`. Do not push directly to `main` or `ux0-preview`. Keep changes within the row’s scope, update the relevant documentation and wait for both required CI checks before merging. Obtain a different-model review covering bugs, specification compliance, security and money risks; this is project policy, not a GitHub approval requirement.
+
+Cut `release/<version>` from `ux0-preview` for a release pull request into `main`. The owner merges the release after the gates and review pass. Use `hotfix/<slug>` from `main` for urgent fixes and back-merge released changes into `ux0-preview`. Follow the [release process](docs/operations/release-process.md) for validation, tagging and rollback.
