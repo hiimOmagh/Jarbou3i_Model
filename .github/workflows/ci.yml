@@ -18,9 +18,34 @@ jobs:
   no-browser:
     name: No-browser gates
     runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: classify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          result=false
+          if [ "$EVENT_NAME" = pull_request ] && git diff --no-renames --name-only -z "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/changed-files"; then
+            result=true
+            count=0
+            while IFS= read -r -d '' file; do
+              count=$((count + 1))
+              case "$file" in
+                src/*|tests/*|scripts/*|.github/workflows/*|package*.json|index.html|*.css) result=false ;;
+                docs/*|*.md) ;;
+                *) result=false ;;
+              esac
+            done < "$RUNNER_TEMP/changed-files"
+            [ "$count" -gt 0 ] || result=false
+          fi
+          echo "docs_only=$result" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
         with:
@@ -49,6 +74,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
     needs: no-browser
+    if: ${{ needs.no-browser.outputs.docs_only != 'true' }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -158,6 +184,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
     needs: no-browser
+    if: ${{ needs.no-browser.outputs.docs_only != 'true' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -213,14 +240,16 @@ jobs:
 
   browser:
     name: Browser gates
-    if: ${{ always() }}
+    if: ${{ always() && needs.no-browser.outputs.docs_only != 'true' }}
     needs:
+      - no-browser
       - browser-core
       - browser-evidence
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Verify all browser gates
+        if: ${{ always() }}
         env:
           CORE_RESULT: ${{ needs.browser-core.result }}
           EVIDENCE_RESULT: ${{ needs.browser-evidence.result }}
