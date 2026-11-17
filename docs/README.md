@@ -7,8 +7,13 @@
 ## Product and features
 
 - [Architecture](architecture.md)
-- [Results and evidence](features/results-and-evidence.md)
-- [Workspace](features/workspace.md)
+- [Design-System Kernel (UIX-1)](features/design-system-kernel.md)
+- [Reading a file for its passages (RESEARCH-1D)](features/research-attachments.md)
+- [Research dossier (RESEARCH-1)](features/research-dossier.md)
+- [From your sources to the evidence (RESEARCH-1C)](features/research-promotion.md)
+- [Sources and excerpts (RESEARCH-1B)](features/research-sources.md)
+- [Results, Connections, and Evidence Intelligence](features/results-and-evidence.md)
+- [Local Workspace](features/workspace.md)
 
 ## Contracts
 

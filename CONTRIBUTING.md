@@ -22,21 +22,21 @@ Keep contributions disciplined. This is a focused analytical tool, not a general
 
 ## Protected contribution workflow
 
-`main` is governed by an active repository ruleset. Do not work directly on `main` and do not attempt to bypass required checks.
+`ux0-preview` is the integration branch: start contribution branches from it and target it with pull requests. Never target `main` for contributions; it is the owner-only production branch. Do not bypass required checks.
 
-1. Start from an up-to-date `main`.
+1. Start from an up-to-date `ux0-preview`.
 2. Create a focused branch.
 3. Make and validate one bounded change.
-4. Push the branch and open a pull request.
+4. Push the branch and open a pull request targeting `ux0-preview`.
 5. Resolve review conversations.
-6. Keep the branch current with `main`.
+6. Keep the branch current with `ux0-preview`.
 7. Merge only after `No-browser gates` and `Browser gates` pass naturally.
 
 Example:
 
 ```bash
-git switch main
-git pull --ff-only origin main
+git switch ux0-preview
+git pull --ff-only origin ux0-preview
 git switch -c <type>/<short-scope>
 ```
 
