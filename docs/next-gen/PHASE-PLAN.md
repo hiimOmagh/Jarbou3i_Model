@@ -65,10 +65,10 @@ with availability **unverified**. No review is claimed by this document.
 
 | Phase | Goal and scope | Entry → exit gate | Command-provable done-check | Dependencies | Size / owner team | Builder → independent reviewer |
 |---|---|---|---|---|---|---|
-| 1 — Discover and prototype | Agent persona/heuristic walkthroughs of the real app and 2–3 distinct static prototypes outside `src/`; core happy path plus blocked/invalid framing and intake, AR RTL + EN only. Compare and recommend one. | Entry: scope admitted; safe cases ready. Exit: agent baselines, comparison and recommendation; ONE owner walkthrough of the package, looks and says approve/decline only, no questionnaire. Exact prototype approval closes phase; decline keeps it open. Human usability remains unverified. | NEW `node scripts/next-gen/check-prototype.mjs --strict` plus NEW `node scripts/next-gen/check-owner-decision.mjs --prototype` | None; no recruitment or MAN evidence gate; reuse benchmark kit, not its waiver. | L / Design + Product + Language | sol design synthesis → astra critique |
+| 1 — Discover and prototype | Agent persona/heuristic walkthroughs of the real app and 2–3 distinct single-file HTML prototypes outside `src/`, registered in Factory Prototypes; core happy path plus blocked/invalid framing and intake, AR RTL + EN only. Compare and recommend one. | Entry: scope admitted; safe cases ready. Exit: agent baselines, comparison and recommendation; ONE owner walkthrough of the package, looks and says approve/decline only, no questionnaire. Exact prototype approval closes phase; decline keeps it open. Human usability remains unverified. | NEW `node scripts/next-gen/check-prototype.mjs --strict` plus NEW `node scripts/next-gen/check-owner-decision.mjs --prototype` | None; no recruitment or MAN evidence gate; reuse benchmark kit, not its waiver. | L / Design + Product + Language | sol design synthesis → astra critique |
 | 2 — Make delivery and migration safe | Revalidate Phase 0 findings; close applicable PM104 safety prerequisites; baseline performance/dependency seams, format inventory, recovery/export fixtures and enforceable approval records. Record architecture and migration decisions. | Entry: Phase 1 approval. Exit: exact-SHA checks, documented authority map, tested negative release/approval paths, no open data-loss/release-authorization blockers. | `npm run test:ci:contract`; NEW `node tests/next-gen-readiness-check.mjs --self-test`; `npm run test:workspace`; `npm run test:dossier`; `npm run test:ai-interchange` | 1; reconcile PM104 A–J and K/L/R admission requirements. | M / Architecture + DevOps + Security/Data + QA | sol implementation → astra security/architecture review |
-| 3 — Establish the approved foundation | Implement tokens, components and shell; extract necessary controller/localization seams; migrate intake → copy → import. Expand intake failure/locale/print/viewport matrix below; add tested `?ui=legacy` fallback. | Entry: prototype scope matches; Phase 2 passes. Exit: task parity, truthful status, keyboard/RTL and compatible import/export bytes; fallback works; owner opens preview link/static build and approves/declines only. | `npm run test:static`; `npm run test:platform:runtime`; `npm run test:locale:inventory`; NEW `node scripts/run-playwright.mjs tests/next-gen-intake.spec.js tests/next-gen-foundation.spec.js` | 1–2; relevant PM104 M/N seams. | L / Frontend + Architecture + Language + QA | sol implementation → astra UX/a11y and authority review |
-| 4 — Migrate complete analytical journeys | Move framing/sources/excerpts, results, evidence, review/resolution, saved work/history, recovery and exports in bounded slices. Complete full failure/locale/print/viewport matrix below, paired restore and partial-failure handling. | Entry: 3 parity. Exit: every old task accounted for, both-lens/locale parity, restore/conflict/reload evidence, no duplicate authority; owner opens preview link/static build and approves/declines only. Keep legacy entry until Phase 5 exit. | `npm run test:workspace`; `npm run test:dossier`; `npm run test:promotion`; NEW `node scripts/run-playwright.mjs tests/next-gen-journeys.spec.js tests/paired-backup.spec.js tests/promotion-recovery.spec.js`; `node scripts/run-playwright.mjs tests/export-contract.spec.js tests/export-completeness.spec.js` | 3; applicable PM104 S/T/U; storage or authority changes require their own reviewed slices. | L / Frontend + Security/Data + Architecture + Language + QA | sol implementation → astra data/UX review; terra language drafting → sol independent review |
+| 3 — Establish the approved foundation | Implement tokens, components and shell; extract necessary controller/localization seams; migrate intake → copy → import. Expand intake failure/locale/print/viewport matrix below; add tested `?ui=legacy` fallback. | Entry: prototype scope matches; Phase 2 passes. Exit: task parity, truthful status, keyboard/RTL and compatible import/export bytes; fallback works; owner reviews the preview in Factory Prototypes and approves/declines only. | `npm run test:static`; `npm run test:platform:runtime`; `npm run test:locale:inventory`; NEW `node scripts/run-playwright.mjs tests/next-gen-intake.spec.js tests/next-gen-foundation.spec.js` | 1–2; relevant PM104 M/N seams. | L / Frontend + Architecture + Language + QA | sol implementation → astra UX/a11y and authority review |
+| 4 — Migrate complete analytical journeys | Move framing/sources/excerpts, results, evidence, review/resolution, saved work/history, recovery and exports in bounded slices. Complete full failure/locale/print/viewport matrix below, paired restore and partial-failure handling. | Entry: 3 parity. Exit: every old task accounted for, both-lens/locale parity, restore/conflict/reload evidence, no duplicate authority; owner reviews the preview in Factory Prototypes and approves/declines only. Keep legacy entry until Phase 5 exit. | `npm run test:workspace`; `npm run test:dossier`; `npm run test:promotion`; NEW `node scripts/run-playwright.mjs tests/next-gen-journeys.spec.js tests/paired-backup.spec.js tests/promotion-recovery.spec.js`; `node scripts/run-playwright.mjs tests/export-contract.spec.js tests/export-completeness.spec.js` | 3; applicable PM104 S/T/U; storage or authority changes require their own reviewed slices. | L / Frontend + Security/Data + Architecture + Language + QA | sol implementation → astra data/UX review; terra language drafting → sol independent review |
 | 5 — Validate and release | External analyst panel measures matched legacy/new tasks; close MAN-001–004 native-language/AT/touch/zoom/print evidence; verify performance/privacy/deployment; prepare release PR and rollback rehearsal. | Entry: 4 complete. Exit: human outcomes and MAN-001–004 dispositions at release SHA, exact-head CI green; owner approves release; agents deploy/tag/verify/back-merge. Missing humans holds release; no agent substitution. Retire legacy only after exit. | `npm ci`; `npm run test:ci:no-browser`; `npm run test:ci:browser`; NEW `node scripts/next-gen/check-release-evidence.mjs --strict`; `npm run test:browser:deployed` with explicit deployed base URL | 1–4; externally supplied panel; supported-origin and approval enforcement resolved; MAN-001–004. | M / QA + Language + DevOps + Product + human reviewers | sol release preparation → astra independent release review |
 | 6 — Evaluate next capabilities | Use observed demand to consider compare/challenge/decision/calibration, onboarding refinements and further analytical support. Prepare one falsifiable capability brief at a time, keeping offline dual-lens boundaries. | Entry: verified release and follow-up research. Exit: ranked go/no-go evidence and bounded next scope; new UI behavior returns to prototype approval. No automatic feature implementation. | NEW `node scripts/next-gen/check-capability-briefs.mjs --strict` validates evidence, alternatives, contract impact, reviewer findings and go/no-go records. | 5; research access and measured unmet jobs. | S per brief / Product + Design + Domain + Architecture | sol synthesis → astra challenge |
 
@@ -92,7 +92,7 @@ Runtime coexistence and deferred matrix:
   Phase 4 covers corrupt files, quota/conflict, restore, resolution confirmation and blocked publication across complete journeys.
   Each applies both lenses × AR/EN/FR, RTL/mixed IDs, light/dark, desktop/tablet/phone, 320px/400% reflow,
   forced colors, reduced motion, keyboard/AT automation and print; native/AT/device human evidence remains Phase 5.
-- At Phase 3 and Phase 4 exits agents supply a revision-bound preview link or runnable static build the owner can open,
+- At Phase 3 and Phase 4 exits agents register a revision-bound preview in Factory Prototypes and supply a runnable static build the owner can open,
   with changes, limits and fallback link visible. Record approve/decline only; decline holds the milestone. No owner commands or questionnaires.
 
 Per-phase resource placeholders (agent turns / total tokens, including builder, review and repairs):
@@ -106,9 +106,11 @@ Phase 1 research and prototype contract:
 - Agents walk the real app and prototypes as first-use and returning analyst personas, covering both lenses.
   Record heuristic friction, orientation and blocker comprehension using fixed fictitious cases; no simulated participant counts/times.
   Phase 1 needs no external analysts, recruitment, questionnaires or MAN-001–004 evidence; human usability remains **unverified**.
-- Put self-contained HTML/CSS/native-ESM assets in `prototypes/next-gen/<direction>/`, using fictitious data
-  and isolated memory only. No production imports, shared localStorage/IndexedDB writes, network calls or `src/` edits.
-  Each must run from a local static server with network access blocked after assets load.
+- Each direction ships as ONE self-contained `.html` with inline CSS/JS, fictitious data and isolated memory,
+  optionally alongside a folder in `prototypes/next-gen/<direction>/`. No production imports, shared
+  localStorage/IndexedDB writes, network calls or `src/` edits. Register each with `factory proto add --product jarbou3i-app --feature "<what>" --file <single self-contained .html> --note "<what to check>" --look-at "<one thing>"`
+  (optional `--project <row>` and `--thread <id>`); the same feature id creates a new version.
+  A prototype absent from the Factory Prototypes tab is not done.
 - Candidate A: **guided analysis desk**, one next task with a visible progress map; simple first use, potentially slower expert switching.
   Candidate B: **research notebook**, case framing and linked answers in a readable document; strong continuity, possible long-scroll cost.
   Candidate C (optional): **evidence workbench**, task queue plus inspector; faster expert review, greater orientation burden.
@@ -130,18 +132,18 @@ record **unverified** and hold Phase 5; do not backdate human data or block Phas
 
 ## 4. PROTOTYPE GATE — owner final approval
 
-**No production UI work starts until the owner finally approves one prototype through Factory ask.**
+**No production UI work starts until the owner validates one prototype in the Factory Prototypes tab and the final decision record exists.**
 This includes tokens, shell, components, navigation, copy integration and runtime UI refactors.
 Documentation/research and isolated prototypes may proceed within their admitted scope.
 Existing incident maintenance is separate work; it cannot be used to smuggle in the redesign.
 
-Agents first finish the reviewable package: runnable prototypes, evidence comparison, recommendation,
+The owner validates or sends back the prototype in the Factory Prototypes tab. Agents first finish the reviewable package: runnable prototypes, evidence comparison, recommendation,
 known limitations, contract impact and proposed migration scope. Ask only:
 “Approve prototype <direction>, revision <commit/hash>, for <scope>?” with **approve / decline** only.
 The owner does not run commands, fill research questionnaires or choose implementation mechanics.
 Agents resolve the open options into a concrete recommendation before asking.
 
-Record the Factory ask request/response identifier, owner identity, timestamp, exact artifact commit/content hash,
+Record the tab validation and final Factory ask request/response identifier, owner identity, timestamp, exact artifact commit/content hash,
 selected direction, scope, evidence links and literal approve/decline in a tracked future decision record
 under `docs/next-gen/decisions/`. Attach the authoritative Factory response reference; an agent-written
 `approved: true` alone is invalid. Bind implementation admission to this immutable artifact identity.
@@ -149,7 +151,9 @@ Factory ask availability and its machine-verifiable response mechanism are **unv
 Phase 2 must validate the adapter and rejection behavior before production admission. If unavailable, hold the gate;
 do not substitute chat consent, historical approval, silence or a default.
 
-On decline: record it, keep Phase 1 open, examine evidence, revise or replace directions, repeat comparison
+Nothing is published or merged into `src/` until validation and the decision record exist. After implementation, run `factory proto built` to mark the latest validated version built.
+
+On decline or send back: record it, keep Phase 1 open, examine evidence, revise or replace directions, repeat comparison
 and different-model review, then submit a fresh approve/decline ask. No code migration begins.
 An unapproved change to the approved direction/scope invalidates admission; present the revised prototype for a new final decision.
 Historical Gate 0 waiver and case-file approval apply to their earlier program only.
