@@ -33,7 +33,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           result=false
-          if [ "$EVENT_NAME" = pull_request ] && git diff --no-renames --name-only -z "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/changed-files"; then
+          if [ "$EVENT_NAME" = pull_request ] && git diff --no-renames --name-only -z "$BASE_SHA...$HEAD_SHA" > "$RUNNER_TEMP/changed-files"; then
             result=true
             count=0
             while IFS= read -r -d '' file; do
@@ -293,6 +293,19 @@ jobs:
         with:
           path: build/pages
 
+      - name: Check accepted commit is still main tip
+        id: main-tip
+        run: |
+          main_tip=$(git ls-remote --exit-code origin refs/heads/main | cut -f1)
+          test -n "$main_tip"
+          if [ "$GITHUB_SHA" = "$main_tip" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Skipping Pages publishing: tested $GITHUB_SHA is no longer main tip ($main_tip)."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy accepted commit
+        if: ${{ steps.main-tip.outputs.publish == 'true' }}
         id: deployment
         uses: actions/deploy-pages@v5

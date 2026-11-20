@@ -12,14 +12,17 @@ function flatten(value, path = '', result = {}) {
   } else throw new Error(`Unknown copy construction: ${path}`);
   return result;
 }
-function validate(catalog) {
+const approvedFallbacks = new Set(); // Exact locale.key entries only; no current exceptions.
+const placeholders = text => JSON.stringify([...String(text).matchAll(/\{([\w]+)\}/g)].map(match => match[1]).sort());
+function validate(catalog, approved = approvedFallbacks) {
   const maps = Object.fromEntries(locales.map(locale => [locale, flatten(catalog[locale])]));
   const keys = [...new Set(Object.values(maps).flatMap(Object.keys))].sort();
   const service = createLocalizationService({ catalogs: catalog, supportedLanguages: locales });
   const errors = [];
   for (const locale of locales) for (const key of keys) {
-    if (!Object.hasOwn(maps[locale], key)) errors.push(`missing key: ${locale}.${key}`);
-    if (service.raw(locale, key) == null && service.translate(locale, key) !== undefined) errors.push(`unapproved fallback: ${locale}.${key}`);
+    if (!Object.hasOwn(maps[locale], key) && !approved.has(`${locale}.${key}`)) errors.push(`missing key: ${locale}.${key}`);
+    if (service.raw(locale, key) == null && service.translate(locale, key) !== undefined && !approved.has(`${locale}.${key}`)) errors.push(`unapproved fallback: ${locale}.${key}`);
+    if (maps[locale][key] !== undefined && maps.ar[key] !== undefined && placeholders(maps[locale][key]) !== placeholders(maps.ar[key])) errors.push(`placeholder mismatch: ${locale}.${key}`);
     if (maps[locale][key] === '') errors.push(`empty copy: ${locale}.${key}`);
   }
   return { errors, maps, keys };
@@ -37,10 +40,16 @@ if (process.argv.includes('--self-test')) {
   delete missing.en.title;
   assert.ok(validate(missing).errors.includes('missing key: en.title'));
   console.log('PASS injected missing key rejected');
+  const mismatch = structuredClone(fixture);
+  mismatch.en.title = 'Title {name}';
+  assert.ok(validate(mismatch).errors.includes('placeholder mismatch: en.title'));
+  console.log('PASS injected placeholder mismatch rejected');
   const fallback = structuredClone(fixture);
   delete fallback.fr.title;
   assert.ok(validate(fallback).errors.includes('unapproved fallback: fr.title'));
   console.log('PASS injected unapproved fallback rejected');
+  assert.deepEqual(validate(fallback, new Set(['fr.title'])).errors, []);
+  console.log('PASS approved fallback accepted');
 } else {
   for (const [file, name] of [['src/app.js', 'I18N'], ['src/biopolitics.js', 'UI']]) {
     const { errors, maps, keys } = validate(load(file, name));
@@ -49,4 +58,3 @@ if (process.argv.includes('--self-test')) {
   }
   console.log('Locale inventory check passed');
 }
-
