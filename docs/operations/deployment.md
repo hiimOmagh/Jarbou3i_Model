@@ -10,11 +10,13 @@ The tracked `_headers` file is enforced by Cloudflare Pages. GitHub Pages ignore
 
 ## Required repository settings
 
-Protect `main` with an active branch ruleset that has no bypass actors:
+Integrate feature pull requests into `ux0-preview`, then open a release pull request into `main`, following the [release process](release-process.md). The owner only approves or declines merges to `main`; an agent executes an approved merge.
+
+Protect `main` and the `ux0-preview` integration branch with no bypass actors:
 
 1. Require a pull request before merging.
 2. Require the `No-browser gates` and `Browser gates` status checks.
-3. Require branches to be up to date before merging.
+3. Keep required checks at `strict: false`; branches need not be up to date before merging.
 4. Require review conversations to be resolved.
 5. Block force pushes and branch deletion.
 6. Keep GitHub Pages configured for **GitHub Actions**, not **Deploy from a branch**.
@@ -27,7 +29,7 @@ Verify the effective rules rather than relying on the legacy branch-protection e
 gh ruleset check main --repo hiimOmagh/Jarbou3i_Model
 ```
 
-The expected effective rules are `deletion`, `non_fast_forward`, `pull_request`, and `required_status_checks`. The required status-check contexts are exactly `No-browser gates` and `Browser gates`, with strict/up-to-date enforcement enabled.
+The expected effective rules are `deletion`, `non_fast_forward`, `pull_request`, and `required_status_checks`. The required status-check contexts are exactly `No-browser gates` and `Browser gates`, with `strict: false`, as recorded in the release process. Check `ux0-preview` with the same command as `main`.
 
 ## Required Cloudflare settings and trust boundary
 
@@ -35,7 +37,7 @@ Cloudflare Pages uses Git integration with automatic production deployments from
 
 1. The production branch is exactly `main`.
 2. The active GitHub ruleset prevents direct pushes, force pushes, deletion, and bypass actors.
-3. A commit can enter `main` only through a pull request after `No-browser gates` and `Browser gates` pass on a branch that is current with `main`.
+3. A commit can enter `main` only through an owner-approved pull request after `No-browser gates` and `Browser gates` pass; an agent executes the merge. Required checks use `strict: false`.
 4. The Cloudflare production deployment identifies the same accepted commit that entered `main`.
 
 Cloudflare must publish the same curated artifact as GitHub Pages, not the repository root:
