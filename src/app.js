@@ -11563,8 +11563,24 @@ function arriveAtReview() {
 }
 const customDialogNames = ["modal", "workspace", "editor", "ledger", "revision", "resolution"];
 const dialogOpeners = new Map();
+const dialogInertStates = new Map();
 function syncDialogInert() {
-  $("appShell").inert = customDialogNames.some(name => $(`${name}Backdrop`).classList.contains("show"));
+  for (const [element, inert] of dialogInertStates) element.inert = inert;
+  dialogInertStates.clear();
+  const backdrop = [...dialogOpeners.keys()].reverse().find(el => el.classList.contains("show"));
+  if (!backdrop) return;
+  // Inert every branch outside the visible dialog, including the main form.
+  // A showModal() palette still escapes inherited inertness in the top layer.
+  for (let branch = backdrop; branch !== document.body; branch = branch.parentElement) {
+    for (const sibling of branch.parentElement.children) {
+      // The toast is a live region: keep it announceable over a dialog.
+      if (sibling === branch || sibling.id === "toast") continue;
+      dialogInertStates.set(sibling, sibling.inert);
+      sibling.inert = true;
+    }
+  }
+  dialogInertStates.set($("appShell"), $("appShell").inert);
+  $("appShell").inert = true;
 }
 function openDialogBoundary(backdrop) {
   dialogOpeners.set(backdrop, document.activeElement);
@@ -11580,7 +11596,7 @@ function closeDialogBoundary(backdrop) {
 }
 function trapModalFocus(event) {
   if (event.key !== "Tab") return;
-  const name = customDialogNames.find(name => $(`${name}Backdrop`).classList.contains("show"));
+  const name = customDialogNames.find(name => $(`${name}Backdrop`).classList.contains("show") && !$(`${name}Backdrop`).inert);
   if (!name) return;
   const dialog = $(`${name}Dialog`);
   const controls = [...dialog.querySelectorAll('button,input,textarea,select,[href],[tabindex]')]

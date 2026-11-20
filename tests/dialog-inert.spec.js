@@ -5,6 +5,13 @@ test('dialog makes shell inert and restores opener', async ({ page }) => {
   const opener = page.locator('#workspaceSaveState');
   await opener.click();
   await expect(page.locator('#appShell')).toHaveAttribute('inert', '');
+  await expect(page.locator('#toast')).not.toHaveAttribute('inert', '');
+  const topic = page.locator('#topicInput');
+  const before = await topic.inputValue();
+  await topic.evaluate(el => el.focus());
+  await page.keyboard.type('background typing');
+  await expect(topic).toHaveValue(before);
+  await expect.poll(() => page.locator('#workspaceDialog').evaluate(el => el.contains(document.activeElement))).toBe(true);
   await page.keyboard.press('Shift+Tab');
   await expect.poll(() => page.locator('#workspaceDialog').evaluate(el => el.contains(document.activeElement))).toBe(true);
   await expect(page.locator('#caseRestore')).toBeFocused();
@@ -14,6 +21,8 @@ test('dialog makes shell inert and restores opener', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.locator('#appShell')).not.toHaveAttribute('inert', '');
   await expect(opener).toBeFocused();
+  await topic.focus();
+  await expect(topic).toBeFocused();
 });
 
 test('native palette owns Tab and Escape when a preview opens behind it', async ({ page }) => {
@@ -41,4 +50,30 @@ test('native palette owns Tab and Escape when a preview opens behind it', async 
   await page.keyboard.press('Escape');
   await expect(page.locator('#commandPalette')).not.toHaveAttribute('open', '');
   await expect(page.locator('#modalBackdrop')).toHaveClass(/show/);
+  await expect.poll(() => page.locator('#modalDialog').evaluate(el => el.contains(document.activeElement))).toBe(true);
+});
+
+test('failed copy preview takes focus after the palette closes', async ({ page }) => {
+  await page.goto('./');
+  await page.locator('#loadSampleBtn').click();
+  await openStep(page, 'prompt');
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+      writeText: () => new Promise((resolve, reject) => { window.rejectCopy = reject; }),
+    } });
+    document.execCommand = () => false;
+  });
+  await page.locator('#copyPromptBtn').click();
+  await expect.poll(() => page.evaluate(() => typeof window.rejectCopy)).toBe('function');
+  await page.keyboard.press('Control+k');
+  await expect(page.locator('#commandPaletteInput')).toBeFocused();
+  await page.evaluate(() => window.rejectCopy(new Error('Clipboard denied')));
+  await expect(page.locator('#modalBackdrop')).toHaveClass(/show/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#commandPalette')).not.toHaveAttribute('open', '');
+  await expect.poll(() => page.locator('#modalDialog').evaluate(el => el.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#modalBackdrop')).not.toHaveClass(/show/);
+  await expect(page.locator('#copyPromptBtn')).toBeFocused();
+  await expect(page.locator('#appShell')).not.toHaveAttribute('inert', '');
 });

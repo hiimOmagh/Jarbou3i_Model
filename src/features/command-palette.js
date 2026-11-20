@@ -163,6 +163,12 @@ export function createCommandPalette({ document, translate }) {
       open(byId("displayMenuBtn"));
     });
     byId("commandPalette").addEventListener("close", () => {
+      const dialog = [...document.querySelectorAll('[aria-modal="true"]')]
+        .find(el => el.getClientRects().length && !el.closest('[inert]'));
+      if (dialog) {
+        dialog.focus();
+        return;
+      }
       if (!ran && returnTo?.isConnected) returnTo.focus();
     });
     byId("commandPaletteInput").addEventListener("keydown", (event) => {
