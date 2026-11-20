@@ -11584,7 +11584,7 @@ function trapModalFocus(event) {
   if (!name) return;
   const dialog = $(`${name}Dialog`);
   const controls = [...dialog.querySelectorAll('button,input,textarea,select,[href],[tabindex]')]
-    .filter(el => !el.disabled && el.tabIndex >= 0 && el.getClientRects().length && !el.classList.contains("srOnly") && !el.closest('[hidden], [inert]'));
+    .filter(el => !el.disabled && el.tabIndex >= 0 && el.getClientRects().length && !el.matches('.srOnly, .j-sr-only') && !el.closest('[hidden], [inert]'));
   const first = controls[0] || dialog;
   const last = controls.at(-1) || dialog;
   if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog || !dialog.contains(document.activeElement))) {
@@ -12156,6 +12156,8 @@ $("modalBackdrop").addEventListener("click", (e) => {
   if (e.target === $("modalBackdrop")) closeModal();
 });
 document.addEventListener("keydown", (e) => {
+  // The native palette is above any custom preview that opens behind it.
+  if ($("commandPalette").open) return;
   trapModalFocus(e);
   if (e.key === "Escape") {
     closeModal();
