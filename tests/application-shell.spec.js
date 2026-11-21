@@ -122,6 +122,8 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Copy the prompt");
   await runNext("#copyPromptBtn");
   await page.locator("#copyPromptBtn").click();
+  // Copy completion can follow the click while the clipboard promise settles.
+  await expect(nextAction).toHaveAttribute("data-shell-command", "import");
   if (await page.locator("#modalBackdrop.show").isVisible()) {
     await page.locator("#modalClose").click();
   }
@@ -129,7 +131,12 @@ test("responsive commands and workspace navigation preserve keyboard continuity"
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Continue to import");
   await runNext("#jsonInput", "answer");
 
-  await page.locator("#loadSampleBtn").click();
+  // Navigation focuses before its smooth scroll ends. Activate by keyboard
+  // after focus settles so a moving pointer target cannot swallow the click.
+  const sample = page.locator("#loadSampleBtn");
+  await sample.focus();
+  await expect(sample).toBeFocused();
+  await sample.press("Enter");
   await expect(nextAction).toHaveAttribute("data-shell-command", "review");
   await expect(page.locator("#shellNextActionLabel")).toHaveText("Review analysis");
   await nextAction.click();
