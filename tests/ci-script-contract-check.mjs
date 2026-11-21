@@ -8,6 +8,19 @@ const read = (file) => fs.readFileSync(file, "utf8");
 const pkg = JSON.parse(read("package.json"));
 const workflow = read(".github/workflows/ci.yml");
 const playwright = read("playwright.config.js");
+for (const ci of [undefined, "1"]) {
+  const previousCI = process.env.CI;
+  try {
+    if (ci === undefined) delete process.env.CI;
+    else process.env.CI = ci;
+    const { default: config } = await import(`../playwright.config.js?ci-contract=${ci}`);
+    if (config.forbidOnly !== Boolean(ci)) fail("Playwright must forbid focused tests in CI only");
+    if (config.use?.trace !== "retain-on-failure") fail("Playwright must retain traces from the first failure");
+  } finally {
+    if (previousCI === undefined) delete process.env.CI;
+    else process.env.CI = previousCI;
+  }
+}
 
 const noBrowser = pkg.scripts?.["test:ci:no-browser"] || "";
 for (const gate of [
