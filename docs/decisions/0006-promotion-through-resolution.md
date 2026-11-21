@@ -1,6 +1,6 @@
 # ADR-0006 — An Excerpt Becomes Evidence Only Through a Committed Resolution
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-03
 - **Decision owners:** Product owner
 - **Builds on:** [ADR-0005](0005-sources-in-the-dossier-record.md) (sources and excerpts in the case record)
