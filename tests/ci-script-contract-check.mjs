@@ -182,17 +182,19 @@ for (const token of [
   "- label: chromium shard 2 of 4\n            project: chromium\n            shard: \"2/4\"\n            artifact: chromium-2-of-4",
   "- label: chromium shard 3 of 4\n            project: chromium\n            shard: \"3/4\"\n            artifact: chromium-3-of-4",
   "- label: chromium shard 4 of 4\n            project: chromium\n            shard: \"4/4\"\n            artifact: chromium-4-of-4",
-  "- label: firefox shard 1 of 3\n            project: firefox\n            shard: \"1/3\"\n            artifact: firefox-1-of-3",
-  "- label: firefox shard 2 of 3\n            project: firefox\n            shard: \"2/3\"\n            artifact: firefox-2-of-3",
-  "- label: firefox shard 3 of 3\n            project: firefox\n            shard: \"3/3\"\n            artifact: firefox-3-of-3",
+  "- label: firefox shard 1 of 4\n            project: firefox\n            shard: \"1/4\"\n            artifact: firefox-1-of-4",
+  "- label: firefox shard 2 of 4\n            project: firefox\n            shard: \"2/4\"\n            artifact: firefox-2-of-4",
+  "- label: firefox shard 3 of 4\n            project: firefox\n            shard: \"3/4\"\n            artifact: firefox-3-of-4",
+  "- label: firefox shard 4 of 4\n            project: firefox\n            shard: \"4/4\"\n            artifact: firefox-4-of-4",
   "- label: webkit shard 1 of 5\n            project: webkit\n            shard: \"1/5\"\n            artifact: webkit-1-of-5",
   "- label: webkit shard 2 of 5\n            project: webkit\n            shard: \"2/5\"\n            artifact: webkit-2-of-5",
   "- label: webkit shard 3 of 5\n            project: webkit\n            shard: \"3/5\"\n            artifact: webkit-3-of-5",
   "- label: webkit shard 4 of 5\n            project: webkit\n            shard: \"4/5\"\n            artifact: webkit-4-of-5",
   "- label: webkit shard 5 of 5\n            project: webkit\n            shard: \"5/5\"\n            artifact: webkit-5-of-5",
-  "- label: mobile-chrome shard 1 of 3\n            project: mobile-chrome\n            shard: \"1/3\"\n            artifact: mobile-chrome-1-of-3",
-  "- label: mobile-chrome shard 2 of 3\n            project: mobile-chrome\n            shard: \"2/3\"\n            artifact: mobile-chrome-2-of-3",
-  "- label: mobile-chrome shard 3 of 3\n            project: mobile-chrome\n            shard: \"3/3\"\n            artifact: mobile-chrome-3-of-3",
+  "- label: mobile-chrome shard 1 of 4\n            project: mobile-chrome\n            shard: \"1/4\"\n            artifact: mobile-chrome-1-of-4",
+  "- label: mobile-chrome shard 2 of 4\n            project: mobile-chrome\n            shard: \"2/4\"\n            artifact: mobile-chrome-2-of-4",
+  "- label: mobile-chrome shard 3 of 4\n            project: mobile-chrome\n            shard: \"3/4\"\n            artifact: mobile-chrome-3-of-4",
+  "- label: mobile-chrome shard 4 of 4\n            project: mobile-chrome\n            shard: \"4/4\"\n            artifact: mobile-chrome-4-of-4",
   "actions/checkout@v7",
   "actions/setup-node@v7",
   "node-version: 24",
@@ -265,11 +267,11 @@ if ((workflow.match(/project: webkit/g) || []).length !== 5) {
 if ((workflow.match(/project: chromium/g) || []).length !== 4) {
   fail("desktop Chromium must be represented by exactly four core shards");
 }
-if ((workflow.match(/project: firefox/g) || []).length !== 3) {
-  fail("Firefox must be represented by exactly three core shards");
+if ((workflow.match(/project: firefox/g) || []).length !== 4) {
+  fail("Firefox must be represented by exactly four core shards");
 }
-if ((workflow.match(/project: mobile-chrome/g) || []).length !== 3) {
-  fail("mobile Chromium must be represented by exactly three core shards");
+if ((workflow.match(/project: mobile-chrome/g) || []).length !== 4) {
+  fail("mobile Chromium must be represented by exactly four core shards");
 }
 for (const forbidden of [
   "run: npm run test:ci:browser",
