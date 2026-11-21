@@ -25,7 +25,7 @@ Sources: [main protection](https://api.github.com/repos/hiimOmagh/Jarbou3i_Model
 
 ## CI coverage
 
-The [workflow](../../.github/workflows/ci.yml) runs on `pull_request` and pushes to `main` and `ux0-preview`. No-browser gates generate validators and run the static, schema, contract, security, persistence, language and architecture checks selected by `test:ci:no-browser` in package.json. Fifteen core browser shards cover Chromium, Firefox, WebKit and mobile Chromium after that job succeeds. Browser evidence captures hosted and visual-audit evidence. Browser gates requires the whole core matrix and evidence job to succeed. Pages deploys only on a successful main push. See [CI operations](ci.md) for commands and artifacts.
+The [workflow](../../.github/workflows/ci.yml) runs on `pull_request` and pushes to `main` and `ux0-preview`. No-browser gates generate validators and run the static, schema, contract, security, persistence, language and architecture checks selected by `test:ci:no-browser` in package.json. Seventeen core browser shards cover Chromium, Firefox, WebKit and mobile Chromium after that job succeeds. Browser evidence captures hosted and visual-audit evidence. Browser gates requires the whole core matrix and evidence job to succeed. Pages deploys only on a successful main push. See [CI operations](ci.md) for commands and artifacts.
 
 ## Hotfix and rollback
 

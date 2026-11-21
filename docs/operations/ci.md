@@ -22,15 +22,15 @@ only; it does not replace either complete command.
 
 ## Runner topology
 
-After `No-browser gates` succeeds, sixteen browser runners execute concurrently:
-fifteen core shards and one evidence runner.
+After `No-browser gates` succeeds, eighteen browser runners execute concurrently:
+seventeen core shards and one evidence runner.
 
 | Runner | Scope | Browser |
 | --- | --- | --- |
 | `Browser core (chromium shard N of 4)` | One quarter of the Chromium core suite | Chromium |
-| `Browser core (firefox shard N of 3)` | One third of the Firefox core suite | Firefox |
+| `Browser core (firefox shard N of 4)` | One quarter of the Firefox core suite | Firefox |
 | `Browser core (webkit shard N of 5)` | One fifth of the WebKit core suite | WebKit |
-| `Browser core (mobile-chrome shard N of 3)` | One third of the mobile Chromium core suite | Chromium |
+| `Browser core (mobile-chrome shard N of 4)` | One quarter of the mobile Chromium core suite | Chromium |
 | `Browser evidence` | Hosted evidence and visual-audit evidence | Chromium |
 
 Browser runners run inside Playwright's image
@@ -43,8 +43,8 @@ version in `package-lock.json`; `tests/ci-script-contract-check.mjs` fails
 otherwise, so upgrade both together.
 
 Each core runner uses two Playwright workers. Every project is split with
-Playwright's native `--shard` option (Chromium 4, Firefox 3, WebKit 5, mobile
-Chromium 3) so that no job sets the wall clock: before the split, the single
+Playwright's native `--shard` option (Chromium 4, Firefox 4, WebKit 5, mobile
+Chromium 4) so that no job sets the wall clock: before the split, the single
 Chromium job ran about 13 minutes while WebKit shards finished in 3 to 6. Together
 the shards of a project run its complete core suite. The suite is
 `fullyParallel`, so shards are balanced by test count, not duration; a
@@ -65,7 +65,7 @@ deployment dependency, together with `No-browser gates`.
   the other engines.
 - Every failed core leg uploads a uniquely named debug artifact
   (`browser-debug-<leg>`), one per shard for every browser: for example
-  `chromium-1-of-4`, `firefox-1-of-3`, `webkit-1-of-5`, `mobile-chrome-1-of-3`.
+  `chromium-1-of-4`, `firefox-1-of-4`, `webkit-1-of-5`, `mobile-chrome-1-of-4`.
 - Evidence artifacts upload even when their producing step fails, provided files
   exist.
 - Debug artifacts are kept for 7 days; release evidence for 14 days.
