@@ -126,7 +126,9 @@
     "tests/topic-status-line.spec.js": 1.425,
     "tests/ui-kernel.spec.js": 21.349,
     "tests/work-panel.spec.js": 53.15,
-    "tests/workspace-foundation.spec.js": 131.267
+    "tests/workspace-foundation.spec.js": 131.267,
+    "tests/golden-prompts.spec.js": 0,
+    "tests/prompt-sources.spec.js": 0
   },
   "mobile-chrome": {
     "tests/a11y-axe.spec.js": 13.825,
@@ -184,7 +186,9 @@
     "tests/topic-status-line.spec.js": 1.507,
     "tests/ui-kernel.spec.js": 19.969,
     "tests/work-panel.spec.js": 38.072,
-    "tests/workspace-foundation.spec.js": 101.587
+    "tests/workspace-foundation.spec.js": 101.587,
+    "tests/golden-prompts.spec.js": 0,
+    "tests/prompt-sources.spec.js": 0
   },
   "webkit": {
     "tests/a11y-axe.spec.js": 17.95,
@@ -242,6 +246,8 @@
     "tests/topic-status-line.spec.js": 1.888,
     "tests/ui-kernel.spec.js": 19.585,
     "tests/work-panel.spec.js": 70.725,
-    "tests/workspace-foundation.spec.js": 176.425
+    "tests/workspace-foundation.spec.js": 176.425,
+    "tests/golden-prompts.spec.js": 0,
+    "tests/prompt-sources.spec.js": 0
   }
 }

@@ -15,7 +15,7 @@ export function plan(project, count, files = coreFiles(), data = timings[project
   const known = files.map(file => data?.[file]).filter(value => Number.isFinite(value) && value > 0).sort((a, b) => a - b);
   const middle = Math.floor(known.length / 2);
   const median = known.length ? (known.length % 2 ? known[middle] : (known[middle - 1] + known[middle]) / 2) : 1;
-  const weights = Object.fromEntries(files.map(file => [file, Number.isFinite(data?.[file]) && data[file] > 0 ? data[file] : median]));
+  const weights = Object.fromEntries(files.map(file => [file, Number.isFinite(data?.[file]) && data[file] >= 0 ? data[file] : median]));
   const shards = Array.from({ length: count }, () => ({ files: [], seconds: 0 }));
   for (const file of [...files].sort((a, b) => weights[b] - weights[a] || compare(a, b))) {
     const shard = shards.reduce((best, candidate) => candidate.seconds < best.seconds ? candidate : best);
