@@ -15,6 +15,7 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
+  forbidOnly: Boolean(process.env.CI),
   workers: workerCount,
   retries: process.env.CI ? 1 : 0,
   failOnFlakyTests: Boolean(process.env.CI),
@@ -31,7 +32,7 @@ export default defineConfig({
     baseURL: externalBaseURL || managedBaseURL || localBaseURL,
     // The app follows the browser language on a first visit; the suite pins Arabic, the old default.
     locale: 'ar',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     // Every test starts past the first visit's route map, as a returning
     // visitor; tests/first-ride.spec.js covers the first visit itself.
     storageState: {
