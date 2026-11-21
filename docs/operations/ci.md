@@ -42,18 +42,31 @@ limit before a test ran. The image tag must equal the `@playwright/test`
 version in `package-lock.json`; `tests/ci-script-contract-check.mjs` fails
 otherwise, so upgrade both together.
 
-Each core runner uses two Playwright workers. Every project is split with
-Playwright's native `--shard` option (Chromium 4, Firefox 3, WebKit 5, mobile
-Chromium 3) so that no job sets the wall clock: before the split, the single
-Chromium job ran about 13 minutes while WebKit shards finished in 3 to 6. Together
-the shards of a project run its complete core suite. The suite is
-`fullyParallel`, so shards are balanced by test count, not duration; a
-`serial` describe (for example `tests/golden-prompts.spec.js`, Chromium only)
-stays whole in one shard, so watch that shard's duration as the suite grows. More
-shards rather than more workers: a runner has four cores, and more workers per
-runner made clicks stall under load. Evidence
-generation keeps the single-worker limits encoded in the npm scripts so
-screenshots and metadata remain deterministic.
+Each core runner uses two Playwright workers. `scripts/ci-shard-plan.mjs`
+assigns the complete `test:browser:core` file list using longest-processing-time
+packing from `scripts/ci-shard-timings.json` (Chromium 4, Firefox 3, WebKit 5,
+mobile Chromium 3). Ties use filename then shard number; unmeasured specs receive
+the project median (1 second if no measurements exist). CI passes these files to
+the managed runner with `--project` and `--workers=2`. Files stay whole, preserving
+serial groups; an oversized file is reported instead of being split unsafely.
+Retries, flaky-test enforcement, and evidence coverage are unchanged.
+
+Regenerate timings with `node scripts/collect-shard-timings.mjs RUN_ID[:ATTEMPT] ...`
+(using the run attempts in the JSON's `generatedFrom`). The extractor reads
+`gh run view --log` core list-reporter results, sums each file's test durations
+including observed retries, and averages available file observations across runs.
+Skipped tests have no measured cost; absent files use the median. Failed or
+cancelled runs may have incomplete observations, so prefer completed core jobs.
+
+Run `node scripts/ci-shard-plan.mjs --summary` for per-shard predictions and
+coverage. Predictions are summed test seconds, not elapsed time: two-worker
+scheduling, startup, and contention can change actual results. The old native
+split is discovered with `--list --shard`; its file costs are apportioned by test
+count because individual historical test durations are not stored. This estimate
+cannot establish a wall-time improvement. `npm run test:ci:contract` checks every
+project's file union and actual selected Playwright test identities/counts,
+rejecting drops and duplicates while accepting unmeasured specs. Evidence
+specs remain in their separate runner; core discovery uses the npm core file list.
 
 The lightweight `Browser gates` job succeeds only when the complete core matrix
 and the evidence job succeed. Its stable name is a branch-protection and

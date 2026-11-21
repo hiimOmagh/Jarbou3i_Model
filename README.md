@@ -153,7 +153,9 @@ Arabic/English/French exports, RTL and mobile layout, strict imports, and
 lossless HTML/JSON export. The local matrix uses four Playwright workers; on a
 constrained machine set `PLAYWRIGHT_WORKERS=2`. See
 [Continuous integration](docs/operations/ci.md) for the CI topology and test
-budgets.
+budgets. Regenerate core shard timings with
+`node scripts/collect-shard-timings.mjs RUN_ID[:ATTEMPT] ...`; the committed JSON
+records the source attempts.
 
 ## Repository layout
 

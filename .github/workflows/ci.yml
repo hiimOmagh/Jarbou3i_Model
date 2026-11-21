@@ -158,11 +158,12 @@ jobs:
         run: npm ci
 
       - name: Run core suite for ${{ matrix.project }}
-        run: >
-          npm run test:browser:core --
-          --project=${{ matrix.project }}
-          --shard=${{ matrix.shard }}
-          --workers=2
+        shell: bash
+        run: |
+          node scripts/ci-shard-plan.mjs '${{ matrix.project }}' '${{ matrix.shard }}' > "$RUNNER_TEMP/core-specs"
+          mapfile -t specs < "$RUNNER_TEMP/core-specs"
+          test "${#specs[@]}" -gt 0
+          node scripts/run-playwright.mjs "${specs[@]}" --project=${{ matrix.project }} --workers=2
 
       - uses: actions/upload-artifact@v7
         if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}

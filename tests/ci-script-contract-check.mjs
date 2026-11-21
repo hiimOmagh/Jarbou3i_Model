@@ -200,9 +200,11 @@ for (const token of [
   "npm ci",
   "npm run test:ci:no-browser",
   "options: --user 1001",
-  "npm run test:browser:core --",
+  "node scripts/ci-shard-plan.mjs",
+  'mapfile -t specs < "$RUNNER_TEMP/core-specs"',
+  'node scripts/run-playwright.mjs "${specs[@]}"',
   "--project=${{ matrix.project }}",
-  "--shard=${{ matrix.shard }}",
+  "'${{ matrix.shard }}'",
   "--workers=2",
   "npm run test:browser:hosted",
   "npm run test:browser:visual-audit",
@@ -303,4 +305,5 @@ if (pkg.devDependencies?.["@playwright/test"] !== playwrightVersion || !/^\d+\.\
   fail(`@playwright/test must be pinned to the exact version the lockfile installs (${playwrightVersion})`);
 }
 
+await import("./ci-shard-plan-check.mjs");
 console.log("CI script contract check passed.");
