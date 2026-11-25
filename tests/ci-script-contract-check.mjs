@@ -46,6 +46,7 @@ for (const gate of [
   "test:bio:v2",
   "test:bio:integrity",
   "test:bio:report",
+  "test:bio:sample-honesty",
   "test:schema",
   "test:fixtures",
   "test:parser",

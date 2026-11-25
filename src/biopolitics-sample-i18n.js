@@ -79,7 +79,7 @@
     ["Partial: participation and alternatives varied.", "جزئية: اختلفت المشاركة والبدائل.", "Partiel : participation et alternatives variaient."],
     ["Stronger where sunset clauses and non-digital alternatives existed.", "أقوى حيث وُجدت بنود انتهاء وبدائل غير رقمية.", "Plus solide là où existaient des clauses d’extinction et des alternatives non numériques."],
     ["Varied by appeal and correction mechanisms.", "اختلفت باختلاف آليات الطعن والتصحيح.", "Variable selon les mécanismes de recours et de correction."],
-    ["The intervention combined protection with conditional access. A capture finding depends on duration, alternatives, purpose limitation, reuse, and contestability.", "جمع التدخل بين الحماية والوصول المشروط. ويتوقف حكم الاستحواذ على المدة والبدائل وتقييد الغرض وإعادة الاستخدام وقابلية الطعن.", "L’intervention combinait protection et accès conditionnel. Le constat de capture dépend de la durée, des alternatives, de la limitation de finalité, de la réutilisation et de la contestabilité."],
+    ["Illustrative intervention hypothesis only; unverified placeholder sources provide no evidentiary support.", "فرضية تدخل توضيحية فقط؛ لا توفر المصادر النائبة غير المتحققة أي دعم إثباتي.", "Hypothèse d’intervention illustrative uniquement ; les sources provisoires non vérifiées ne fournissent aucun appui probant."],
     ["Collective protection", "الحماية الجماعية", "Protection collective"],
     ["Conditional access", "الوصول المشروط", "Accès conditionnel"],
     ["Status verification", "التحقق من الحالة", "Vérification du statut"],

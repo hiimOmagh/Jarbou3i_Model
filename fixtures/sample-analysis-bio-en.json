@@ -11,7 +11,7 @@
     "title": "Digital health passes and conditional mobility",
     "context": "2020–2022, selected European jurisdictions",
     "research_question": "Under what conditions did digital health passes protect public health, and under what conditions did they create durable systems of classification and conditional mobility?",
-    "executive_finding": "Digital passes combined a legitimate public-health function with a new access-control infrastructure. Evidence supports a mixed intervention: protection and administrative coordination were real, while proportionality, reuse, unequal burdens, and practical exit varied by jurisdiction."
+    "executive_finding": "Illustrative example only. Sources are unverified placeholders with empty URLs. This sample provides no evidentiary support for any intervention; all substantive claims require independent verification."
   },
   "framing": {
     "contested_terms": [
@@ -495,7 +495,7 @@
       "legitimate_benefits": [
         "Lower-friction verification during an acute health emergency."
       ],
-      "conclusion": "The intervention combined protection with conditional access. A capture finding depends on duration, alternatives, purpose limitation, reuse, and contestability.",
+      "conclusion": "Illustrative intervention hypothesis only; unverified placeholder sources provide no evidentiary support.",
       "confidence": "medium"
     },
     "care_control_tensions": [
@@ -804,7 +804,7 @@
       {
         "id": "E1",
         "claim": "Rules linked defined health credentials to access in specified settings.",
-        "epistemic_type": "verified_fact",
+        "epistemic_type": "institutional_claim",
         "source_tier": "primary_legal_policy",
         "source_title": "Jurisdiction-specific health-pass law or regulation — replace with verified source",
         "source_url": "",
@@ -920,7 +920,7 @@
   },
   "calibrated_conclusion": {
     "strongly_supported": [
-      "The credential converted health information into an access-control signal."
+      "Illustrative example only. Sources are unverified placeholders with empty URLs. This sample provides no evidentiary support for any intervention; all substantive claims require independent verification."
     ],
     "plausible_unconfirmed": [
       "Reusable infrastructure can outlast the emergency that justified it."
