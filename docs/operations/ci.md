@@ -57,7 +57,7 @@ screenshots and metadata remain deterministic.
 
 The lightweight `Browser gates` job succeeds only when the complete core matrix
 and the evidence job succeed. Its stable name is a branch-protection and
-deployment dependency, together with `No-browser gates`.
+release admission requirement, together with `No-browser gates`.
 
 ## Failure and artifact behavior
 
@@ -71,14 +71,13 @@ deployment dependency, together with `No-browser gates`.
 - Debug artifacts are kept for 7 days; release evidence for 14 days.
 - A failed, cancelled, or skipped matrix or evidence dependency makes
   `Browser gates` fail.
-- GitHub Pages deploys only from a successful push to `main`, after
-  `Browser gates`.
+- Cloudflare Pages is the only production origin and deploys accepted `main`
+  commits through Git integration. GitHub Pages deployment is retired.
 
-Artifact and Pages actions use their Node.js 24 release lines
-(`actions/upload-artifact@v7`, `actions/configure-pages@v6`,
-`actions/upload-pages-artifact@v5`, `actions/deploy-pages@v5`). The CI contract
-check rejects the retired Node.js 20 action lines and requires exactly four
-general artifact-upload steps.
+Artifact uploads use the Node.js 24 release line (`actions/upload-artifact@v7`).
+The CI contract check rejects retired Node.js 20 action lines, rejects GitHub
+Pages deployment jobs and actions, and requires exactly four general
+artifact-upload steps.
 
 ## Test budgets
 

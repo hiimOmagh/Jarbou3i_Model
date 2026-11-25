@@ -222,14 +222,6 @@ for (const token of [
   "contents: read",
   "concurrency:",
   "timeout-minutes:",
-  "name: Deploy accepted GitHub Pages build",
-  "needs: browser",
-  "pages: write",
-  "id-token: write",
-  "node scripts/build-pages-artifact.mjs",
-  "actions/configure-pages@v6",
-  "actions/upload-pages-artifact@v5",
-  "actions/deploy-pages@v5",
 ]) {
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
 }
@@ -247,6 +239,16 @@ for (const retiredAction of [
   if (workflow.includes(retiredAction)) {
     fail(`workflow retains a retired action runtime: ${retiredAction}`);
   }
+}
+// Cloudflare Pages owns production; CI must not publish a GitHub Pages mirror.
+for (const forbidden of [
+  /^  deploy-pages:/m,
+  /name:\s*Deploy accepted GitHub Pages build/,
+  /actions\/(?:configure-pages|upload-pages-artifact|deploy-pages)@/,
+  /pages:\s*write/,
+  /name:\s*github-pages/,
+]) {
+  if (forbidden.test(workflow)) fail(`workflow must not deploy GitHub Pages: ${forbidden}`);
 }
 // Browser jobs run in Playwright's image, whose browsers must match the
 // installed Playwright; no job installs browsers from the package mirror.
