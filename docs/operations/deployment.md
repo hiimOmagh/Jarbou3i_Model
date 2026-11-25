@@ -2,11 +2,10 @@
 
 ## Deployment authorities
 
-- Canonical production: `https://jarbou3i-model.pages.dev/`
-- GitHub Pages: compatibility mirror under the repository subpath
+- Only production origin (Cloudflare Pages): `https://jarbou3i-model.pages.dev/`
 - Accepted source: the exact commit admitted to `main` by the active repository ruleset after required CI succeeds
 
-The tracked `_headers` file is enforced by Cloudflare Pages. GitHub Pages ignores it and must not be cited as proof of the declared response-header policy.
+The tracked `_headers` file is enforced by Cloudflare Pages. GitHub Pages deployment is retired; it is not a production origin.
 
 ## Required repository settings
 
@@ -19,9 +18,8 @@ Protect `main` and the `ux0-preview` integration branch with no bypass actors:
 3. Keep required checks at `strict: false`; branches need not be up to date before merging.
 4. Require review conversations to be resolved.
 5. Block force pushes and branch deletion.
-6. Keep GitHub Pages configured for **GitHub Actions**, not **Deploy from a branch**.
 
-The CI workflow deploys the GitHub Pages mirror only after both required jobs succeed. A failed or flaky browser test blocks that deployment.
+CI validates commits before admission to `main`; Cloudflare Pages deploys production through its Git integration. CI does not deploy GitHub Pages.
 
 Verify the effective rules rather than relying on the legacy branch-protection endpoint:
 
@@ -40,7 +38,7 @@ Cloudflare Pages uses Git integration with automatic production deployments from
 3. A commit can enter `main` only through an owner-approved pull request after `No-browser gates` and `Browser gates` pass; an agent executes the merge. Required checks use `strict: false`.
 4. The Cloudflare production deployment identifies the same accepted commit that entered `main`.
 
-Cloudflare must publish the same curated artifact as GitHub Pages, not the repository root:
+Cloudflare must publish the curated artifact built by the retained deployment-artifact script:
 
 - Build command: `node scripts/build-pages-artifact.mjs`
 - Build output directory: `build/pages`
@@ -81,7 +79,7 @@ Do not rerun a failed workflow merely to obtain a green result. Diagnose and cor
 
 ## Deployed acceptance
 
-Validate both production surfaces against their deployed URLs.
+Validate the Cloudflare production origin against its deployed URL.
 
 Cloudflare canonical production:
 
@@ -91,37 +89,11 @@ npm run test:browser:deployed
 Remove-Item Env:PLAYWRIGHT_BASE_URL
 ```
 
-GitHub Pages compatibility mirror:
-
-```powershell
-$env:PLAYWRIGHT_BASE_URL="https://hiimomagh.github.io/Jarbou3i_Model/"
-npm run test:browser:deployed
-Remove-Item Env:PLAYWRIGHT_BASE_URL
-```
-
-The evidence metadata must identify `capture_target` as `deployed`. Confirm that GitHub Pages and Cloudflare both serve the exact accepted commit before tagging. A responsive URL or passing deployed test proves functionality, not commit identity by itself.
-
-For GitHub Pages, inspect the deployment and its terminal status:
-
-```powershell
-gh api `
-  "repos/hiimOmagh/Jarbou3i_Model/deployments?environment=github-pages&per_page=5" `
-  --jq '.[] | {id, sha, ref, environment, created_at}'
-```
-
-Then query the newest matching deployment ID:
-
-```powershell
-gh api `
-  "repos/hiimOmagh/Jarbou3i_Model/deployments/<DEPLOYMENT_ID>/statuses" `
-  --jq '.[] | {state, environment_url, created_at, description}'
-```
-
-Replace `<DEPLOYMENT_ID>` with the numeric ID returned by the first command; do not include angle brackets in a PowerShell variable assignment.
+The evidence metadata must identify `capture_target` as `deployed`. Confirm in Cloudflare that production serves the exact accepted commit before tagging. A responsive URL or passing deployed test proves functionality, not commit identity by itself.
 
 ## Release freeze
 
-Only after local acceptance, exact-commit CI, both deployed-site suites, deployment parity, and governance checks pass:
+Only after local acceptance, exact-commit CI, the deployed-site suite, Cloudflare deployment identity, and governance checks pass:
 
 ```powershell
 $releaseCommit = git rev-parse HEAD
