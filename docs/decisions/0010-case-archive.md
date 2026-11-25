@@ -278,3 +278,45 @@ run the selected browser tests before enabling restore. Pure transport checks do
 4. What measured total byte, nesting and workspace-count bounds fit supported
    devices without excluding valid cases? What extension/fallback UX should
    distinguish this file from the existing standalone exports?
+
+### Slice 4: measured bounds and proposed archive limits (Proposed, not accepted)
+
+`npm run test:case-archive` prints a measured **21,695,444 UTF-8 bytes**,
+**12 container levels** and **50 workspaces**. Bytes include the complete
+archive, manifest, checksums, two-space JSON indentation and a trailing newline.
+Depth counts the root object as one, each nested object/array as another,
+and primitives as zero. The test validates the complete serialized fixture
+through the real parser and compares the returned members without truncation.
+
+The fixture reuses `tests/fixtures/research-dossier-maximal.mjs`: six-byte
+JSON escapes saturate bounded free text. Assertions use the exported limits
+in `src/core/research-dossier.js`: 4,000 text units, 50 framing/list/completion
+and analysis entries, 50 sources, 200 excerpts, 50 excerpts per source,
+10 promotions per excerpt, 500 source/locator text units, 2,000 excerpt text
+units and 1,000 check-reason units. The sealed dossier also fits its existing
+28 MiB file budget. References replace the standalone fixture's artificial
+pointers with real targets; checksums are real SHA-256 values. Consequently
+reference IDs do not saturate their permitted text lengths (promotion IDs
+have a 200-unit cap). This is maximal in bounded dossier cardinalities and
+free text, conditional on the workspace assumptions below, not a proof of
+a largest possible valid archive.
+
+Core workspace contracts provide no maximum revision count, audit/ledger
+count, payload byte size or nesting depth. Fixture assumptions are 50 distinct
+workspaces alternating the existing English Strategic and Biopolitical samples,
+two immutable revisions and one dirty draft each, empty operational ledgers,
+and promotions targeting ten of those workspaces. No workspace file-size
+limit is invented in core. Changing these assumptions changes the measurement.
+The fixture does not measure peak memory or supported-device performance.
+
+Proposed numeric budgets, printed and compared against the measured fixture
+by the test only: **67,108,864 bytes (64 MiB)**, **32 container levels**, and
+**2,050 workspaces**. The latter is the reference-closure ceiling derived from
+50 analysis references plus 200 excerpts times 10 promotion pointers, assuming
+every pointer targets a distinct workspace. The fixture measures 50, not that
+ceiling. Byte and depth budgets are provisional headroom above this fixture;
+existing unbounded workspace histories/payloads can exceed them, and a case
+at the closure ceiling has not been measured here. These proposals require
+owner review and further device/memory measurements; they do not guarantee
+all standalone-valid cases fit. No archive limit is accepted or enforced by
+this slice; transport, persistence, restore and export formats are unchanged.

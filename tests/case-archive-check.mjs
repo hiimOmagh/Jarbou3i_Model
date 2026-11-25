@@ -100,3 +100,72 @@ await assert.rejects(() => parseCaseArchive(archive), { code: "ARCHIVE_VALIDATOR
 console.log(`Case archive check passed: deterministic two-lens roundtrip, framing-only case, ${negatives} negative integrity cases.`);
 
 
+
+// Slice 4 measures bounded dossier fields; workspace histories/payload sizes and
+// nesting have no standalone core maximum. This is a maximal-dossier fixture
+// under the explicit sample-workspace assumptions below, not a global maximum.
+const {
+  DOSSIER_LIST_LIMIT, DOSSIER_SOURCE_LIMIT, DOSSIER_EXCERPT_LIMIT,
+  DOSSIER_PROMOTION_LIMIT, DOSSIER_EXCERPTS_PER_SOURCE_LIMIT,
+  DOSSIER_TEXT_LIMIT, DOSSIER_SOURCE_TEXT_LIMIT, DOSSIER_EXCERPT_TEXT_LIMIT,
+  DOSSIER_CHECK_REASON_LIMIT, DOSSIER_FILE_LIMIT,
+} = await import("../src/core/research-dossier.js");
+const { maximalDossierBody } = await import("./fixtures/research-dossier-maximal.mjs");
+const maximalBody = maximalDossierBody();
+const maximalBundles = [];
+for (let index = 0; index < DOSSIER_LIST_LIMIT; index++) {
+  const workspace = clone(bundles[index % bundles.length].workspace);
+  workspace.workspace_id = `measured_workspace_${String(index).padStart(3, "0")}`;
+  const oldImported = workspace.imported_revision_id;
+  for (const revision of workspace.revisions) {
+    const oldId = revision.revision_id;
+    revision.revision_id = `${oldId}_${index}`;
+    if (revision.parent_revision_id) revision.parent_revision_id += `_${index}`;
+  }
+  workspace.imported_revision_id = `${oldImported}_${index}`;
+  workspace.head_revision_id += `_${index}`;
+  workspace.working_draft.base_revision_id += `_${index}`;
+  // Empty operational ledgers and two revisions are fixture assumptions.
+  maximalBundles.push(await createWorkspaceBundle(workspace, options));
+}
+maximalBody.analyses = maximalBundles.map(({ workspace }, index) => ({
+  workspace_id: workspace.workspace_id,
+  revision_id: workspace.imported_revision_id,
+  payload_checksum: workspace.revisions[0].payload_checksum,
+  linked_at: "\u0000".repeat(DOSSIER_TEXT_LIMIT),
+}));
+for (const excerpt of maximalBody.excerpts) {
+  excerpt.promotions = Array.from({ length: DOSSIER_PROMOTION_LIMIT }, (_, index) => {
+    const workspace = maximalBundles[index].workspace;
+    return { workspace_id: workspace.workspace_id, revision_id: workspace.head_revision_id,
+      evidence_id: workspace.revisions.at(-1).canonical_payload.evidence.items[0].id,
+      promoted_at: clock(), kind: "fill", changed_since: false };
+  });
+}
+assert.equal(maximalBody.sources.length, DOSSIER_SOURCE_LIMIT);
+assert.equal(maximalBody.excerpts.length, DOSSIER_EXCERPT_LIMIT);
+assert.equal(maximalBody.completion.length, DOSSIER_LIST_LIMIT);
+for (const field of ["scope_in", "scope_out", "contested_terms", "limits"]) assert.equal(maximalBody.framing[field].length, DOSSIER_LIST_LIMIT);
+assert.equal(maximalBody.framing.question.length, DOSSIER_TEXT_LIMIT);
+assert.ok(maximalBody.sources.every((source) => source.title.length === DOSSIER_SOURCE_TEXT_LIMIT));
+assert.ok(maximalBody.excerpts.every((excerpt) => excerpt.text.length === DOSSIER_EXCERPT_TEXT_LIMIT && excerpt.check.reason.length === DOSSIER_CHECK_REASON_LIMIT && excerpt.promotions.length === DOSSIER_PROMOTION_LIMIT));
+assert.equal(Math.max(...maximalBody.sources.map((source) => maximalBody.excerpts.filter((excerpt) => excerpt.source_id === source.source_id).length)), DOSSIER_EXCERPTS_PER_SOURCE_LIMIT);
+const maximalDossier = sealDossier({ ...maximalBody, checksum: { algorithm: "SHA-256", value: "" } });
+assert.ok(Buffer.byteLength(JSON.stringify(maximalDossier, null, 2) + "\n", "utf8") <= DOSSIER_FILE_LIMIT);
+const maximalArchive = await createCaseArchive({ dossier: maximalDossier, workspaces: maximalBundles }, options);
+const serializedMaximal = JSON.stringify(maximalArchive, null, 2) + "\n";
+// Count object/array containers: root = 1, primitive = 0.
+const nestingDepth = (value) => value !== null && typeof value === "object"
+  ? 1 + Math.max(0, ...Object.values(value).map(nestingDepth)) : 0;
+assert.equal(nestingDepth({ a: [{ b: 1 }] }), 3);
+const measuredBounds = { bytes: Buffer.byteLength(serializedMaximal, "utf8"),
+  nestingDepth: nestingDepth(maximalArchive), workspaceCount: maximalArchive.workspaces.length };
+assert.equal(measuredBounds.workspaceCount, DOSSIER_LIST_LIMIT);
+// Detect loss/truncation of saturated members through the real parser.
+assert.deepEqual(await parseCaseArchive(serializedMaximal, options), maximalArchive);
+// Proposals are test-only comparison budgets, never transport enforcement.
+const proposedBounds = { bytes: 64 * 1024 * 1024, nestingDepth: 32,
+  workspaceCount: DOSSIER_LIST_LIMIT + DOSSIER_EXCERPT_LIMIT * DOSSIER_PROMOTION_LIMIT };
+for (const key of Object.keys(measuredBounds)) assert.ok(measuredBounds[key] <= proposedBounds[key], `measured ${key} exceeds proposal`);
+console.log(`Slice 4 measured fixture: ${JSON.stringify(measuredBounds)}`);
+console.log(`Slice 4 proposed limits (not accepted): ${JSON.stringify(proposedBounds)}`);
