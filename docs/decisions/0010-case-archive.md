@@ -48,8 +48,15 @@ available (`src/core/workspace-storage.js:87`,
 **Recommendation for owner review:** add an independent JSON archive
 envelope that embeds existing verified exports unchanged. Retain separate
 database owners and the existing standalone export/import paths. The
-proposed rules below are not accepted product decisions; unresolved choices
-are listed at the end.
+rules below remain proposed except for the bounded owner decision recorded
+below; unresolved choices are listed at the end.
+
+**Owner decision a282 (2026-11-25):** v1 exports complete cases only, with
+full reference closure and no partial archives. One dossier owns the case,
+with zero or more required workspaces. Restore never overwrites: create-only
+refusal applies to any existing dossier or workspace ID, including identical
+records. This closes questions 1 and 3. Status remains Proposed; atomic
+restore remains blocked on its separate coordination design.
 
 ### Envelope schema and mutual integrity
 
@@ -78,7 +85,7 @@ than silently selecting only the active answer. Proposed complete archives
 include the union of workspace IDs referenced by `analyses` and excerpt
 promotion pointers. A framing-only dossier can have an empty workspace
 list. Do not include unrelated workspaces. Missing targets block a complete
-export; partial archives remain an open product question.
+export; owner decision a282 rules out partial archives in v1.
 
 `dossier.excerpts` is the sole excerpt copy. There is no parallel top-level
 excerpt list, attachment body or second source of truth. Preserve source,
@@ -127,7 +134,7 @@ coordination decision as restore.
    member and existing inner checksums, then resolve every reference. No
    persistent writes or active-case changes during preview or cancellation.
 2. Prepare a restore plan containing every target ID, verified member hash
-   and observed local state. Proposed initial policy is create-only for the
+   and observed local state. Owner decision a282 requires create-only for the
    whole archive: any existing workspace or dossier ID rejects it, including
    identical records. Do not merge, overwrite, remap IDs or skip members.
 3. At commit, recheck absence under coordinated write protection. A race,
@@ -201,7 +208,17 @@ claim follows from choosing JSON.
 
 ## Action Items
 
-### Failing-first roundtrip test plan (future implementation)
+### Failing-first roundtrip test plan
+
+Slices 1–3 add only `src/core/case-archive.js` and its deterministic
+`tests/case-archive-check.mjs` transport checks. The pure API snapshots its
+inputs, preserves original members, verifies existing inner contracts and
+requires an injected `validatePayload(payload, identity)` returning
+`{ valid: true }` from the existing appropriate lens validator. Missing
+validation fails closed for nonempty archives. No repository reads or writes
+occur here; consistency rereads, aggregate limits and restore tests below
+remain work for later slices. Run `npm run test:case-archive` directly or
+through `npm run test:ci:no-browser`.
 
 Begin with an archive test that fails because the archive API is absent;
 do not count the existing dossier-only roundtrip as archive coverage. Use
@@ -245,19 +262,19 @@ unfinished work rather than treating the estimates as a delivery promise.
 | 9 | 60 minutes | Real IndexedDB crash/reload/cross-tab checks and legacy-format regression evidence |
 
 Run `npm run test:ci:no-browser` for each implementation candidate; separately
-run the selected browser tests before enabling restore. This design-only
-patch runs the existing no-browser gate, without creating these future tests.
+run the selected browser tests before enabling restore. Pure transport checks do not establish the later persistence guarantees.
 
 ### Open questions requiring owner or implementation review
 
-1. Does a case archive require complete reference closure, or may the owner
-   explicitly export a partial case with unresolved references? Is one dossier
-   with zero or more workspaces the desired scope?
+1. **Closed — a282, 2026-11-25:** v1 requires complete reference closure;
+   partial archives are excluded. One dossier with zero or more required
+   workspaces is the scope.
 2. Which durable staging/publication protocol, storage location and reset
    behavior can satisfy atomic visibility across tabs and app rollback? Does
    the product require a strict export snapshot as well?
-3. Is create-only refusal, including identical existing IDs, acceptable for
-   v1? Replacement, reuse and copy/remapping policies need a separate choice.
+3. **Closed — a282, 2026-11-25:** v1 restore is create-only and refuses any
+   existing ID, including identical records. Replacement, reuse and
+   copy/remapping remain outside v1.
 4. What measured total byte, nesting and workspace-count bounds fit supported
    devices without excluding valid cases? What extension/fallback UX should
    distinguish this file from the existing standalone exports?
