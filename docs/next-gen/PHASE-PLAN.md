@@ -162,8 +162,8 @@ Historical Gate 0 waiver and case-file approval apply to their earlier program o
 
 1. PM admits one bounded intake row with user job, scope, dependencies, falsification conditions, contracts,
    acceptance commands, migration/rollback and evidence owners. Design gate precedes production UI implementation.
-2. Agents create `feature/<row>-<slug>` from `ux0-preview`, implement, verify and update docs;
-   PR targets `ux0-preview`. No direct protected-branch pushes, force pushes or history rewrites.
+2. Agents create `feature/<row>-<slug>` from `develop`, implement, verify and update docs;
+   PR targets `develop`. No direct protected-branch pushes, force pushes or history rewrites.
 3. Every row, including docs/prototype/release rows, gets a fresh independent reviewer on a different model
    from its builder. Record model IDs, reviewed SHA, findings and dispositions for bugs, spec, security and cost.
    Unavailable review routes remain pending; never silently claim or substitute a same-model review.
@@ -172,11 +172,11 @@ Historical Gate 0 waiver and case-file approval apply to their earlier program o
    approve/decline only; no automatic third repair round or cap reset by renaming a row. Budget exhaustion also stops work.
    Resolve findings; rerun affected checks and full required CI at the final head; merge and verify integration CI.
    Keep failure attempts and diagnostic traces; retry-only green is not acceptance. CI membership must include every required spec.
-5. Release from accepted `ux0-preview` through `release/<version>` → PR → `main`. Agents prepare evidence,
+5. Release from accepted `develop` through `release/<version>` → PR → `main`. Agents prepare evidence,
    compatibility notes and rollback first. Owner **approve/decline only** through Factory ask; approval binds release PR/head.
    Prototype approval never authorizes a main merge. Changed head requires a fresh release decision.
 6. After approval, agents execute merge, verify accepted/deployed SHA parity, publish versioned tag/notes,
-   run deployed smoke/header checks on every supported origin, and back-merge main into `ux0-preview` through a gated PR.
+   run deployed smoke/header checks on every supported origin, and back-merge main into `develop` through a gated PR.
    `hotfix/<slug>` starts at main and follows the same owner approval and back-merge rules.
 7. Recover by checked revert/forward fix and compatible data preservation; never promise format-2 cases work in format-1-only builds.
    Unknown approval, policy, CI or deployment state fails closed. Local untracked harness files cannot be CI authorization.
