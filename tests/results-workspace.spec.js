@@ -35,7 +35,7 @@ test('shared results orientation prioritizes decision context across both lenses
   await page.locator('[data-lens="biopolitical"]').click();
   await page.locator('#loadSampleBtn').click();
   await expect(orientation).toHaveAttribute('data-analysis-lens', 'biopolitical');
-  await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('access-control infrastructure');
+  await expect(orientation.locator('[data-orientation="conclusion"]')).toContainText('Illustrative example only');
   await expect(orientation.locator('[data-orientation="uncertainty"]')).toContainText('Long-term normalization effects');
 
   await page.locator('#langFr').click();
