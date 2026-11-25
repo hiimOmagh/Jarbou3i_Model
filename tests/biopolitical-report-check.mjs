@@ -71,6 +71,9 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
     /: simple\./,
     `${lang}: the prompt prints the depth code`,
   );
+  const relationshipLabel = { en: "Explicit relationships", ar: "العلاقات المصرّح بها في التحليل", fr: "Relations explicites" }[lang];
+  assert.ok(html.includes(relationshipLabel), `${lang}: explicit relationship group label missing`);
+  assert.doesNotMatch(html, /Authored causal connections|العلاقات السببية المؤلَّفة|Connexions causales rédigées/i, `${lang}: relationship group claims causality`);
   assert.ok(html.includes(title), `${lang} report title missing`);
   assert.ok(html.includes('data-publication-gate="blocked"'));
   assert.ok(html.includes('data-canonical-contract="complete"'));
