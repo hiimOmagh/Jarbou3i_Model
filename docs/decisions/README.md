@@ -11,6 +11,7 @@ superseded, but its history is not rewritten.
 | [ADR-0004](0004-research-dossier-store.md) | Accepted | The research dossier lives in its own database, beside the workspaces |
 | [ADR-0005](0005-sources-in-the-dossier-record.md) | Accepted | Sources and excerpts live in the dossier record, format 2 |
 | [ADR-0006](0006-promotion-through-resolution.md) | Accepted | An excerpt becomes evidence only through a committed resolution |
+| [ADR-0010](0010-case-archive.md) | Proposed | A unified case archive preserves separate authorities |
 
 `Proposed` means the decision is part of an unmerged implementation package.
 After the package is accepted, the status becomes `Accepted` in a dedicated
