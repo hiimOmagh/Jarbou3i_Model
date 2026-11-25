@@ -9,9 +9,9 @@ The tracked `_headers` file is enforced by Cloudflare Pages. GitHub Pages deploy
 
 ## Required repository settings
 
-Integrate feature pull requests into `ux0-preview`, then open a release pull request into `main`, following the [release process](release-process.md). The owner only approves or declines merges to `main`; an agent executes an approved merge.
+Integrate feature pull requests into `develop`, then open a release pull request into `main`, following the [release process](release-process.md). The owner only approves or declines merges to `main`; an agent executes an approved merge.
 
-Protect `main` and the `ux0-preview` integration branch with no bypass actors:
+Protect `main` and the `develop` integration branch with no bypass actors:
 
 1. Require a pull request before merging.
 2. Require the `No-browser gates` and `Browser gates` status checks.
@@ -27,7 +27,7 @@ Verify the effective rules rather than relying on the legacy branch-protection e
 gh ruleset check main --repo hiimOmagh/Jarbou3i_Model
 ```
 
-The expected effective rules are `deletion`, `non_fast_forward`, `pull_request`, and `required_status_checks`. The required status-check contexts are exactly `No-browser gates` and `Browser gates`, with `strict: false`, as recorded in the release process. Check `ux0-preview` with the same command as `main`.
+The expected effective rules are `deletion`, `non_fast_forward`, `pull_request`, and `required_status_checks`. The required status-check contexts are exactly `No-browser gates` and `Browser gates`, with `strict: false`, as recorded in the release process. Check `develop` with the same command as `main`.
 
 ## Required Cloudflare settings and trust boundary
 
