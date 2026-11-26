@@ -222,3 +222,19 @@ for (const [lang, label] of Object.entries({ en: 'Checks passed; editorial appro
 }
 
 await import('./publication-wording-check.mjs');
+assert.ok(reportApi.build({ analysis: fixture, lang: "en", version: PRODUCT_VERSION, bio, graphApi }).includes("Authored link confidence"), "authored link confidence label");
+
+for (const lang of ['en', 'ar', 'fr']) {
+  const analysis = bio.sample(lang);
+  analysis.links[0].mechanism = '<img src=x onerror=alert(1)>' + 'longword'.repeat(70);
+  const html = reportApi.build({analysis, lang, version: PRODUCT_VERSION, bio, graphApi});
+  const rows = [...html.matchAll(/<li data-authored-link>(.*?)<\/li>/g)].map(match => match[1]);
+  assert.equal(rows.length, analysis.links.length);
+  analysis.links.forEach((link, index) => {
+    for (const value of [link.from, link.to]) assert.ok(rows[index].includes(value));
+    assert.ok(rows[index].includes(bio.displayToken(lang, link.relation)));
+    assert.ok(rows[index].includes(bio.displayToken(lang, link.confidence)));
+  });
+  assert.ok(html.includes('&lt;img src=x onerror=alert(1)&gt;'));
+  assert.ok(!html.includes('<img src=x'));
+}

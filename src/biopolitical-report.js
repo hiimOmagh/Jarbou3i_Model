@@ -61,6 +61,7 @@
       evidenceRecord: "Evidence record",
       sourceUnavailable: "No portable source link supplied",
       authored: "Explicit relationships",
+      linkConfidence: "Authored link confidence", mechanism: "Mechanism",
       evidence: "Evidence connections",
       structural: "Structural references",
       time: "Time signals",
@@ -77,6 +78,7 @@
       future: "Future and intergenerational signals",
     },
     ar: {
+      linkConfidence: "الثقة المؤلفة للرابط", mechanism: "الآلية",
       skip: "انتقل إلى محتوى التقرير",
       title: "تقرير تحليل السياسة الحيوية — خريطة التدريب 2",
       chain: "السؤال ← الوظيفة الإنسانية ← منظومة القوة ← الآلية ← المعنى/التصنيف ← اختبار التدخل ← التوزيع ← الأدلة ← الفاعلية/البدائل.",
@@ -134,6 +136,7 @@
       future: "إشارات المستقبل وبين الأجيال",
     },
     fr: {
+      linkConfidence: "Confiance rédigée du lien", mechanism: "Mécanisme",
       skip: "Aller au contenu du rapport",
       title: "Rapport d’analyse biopolitique — Carte d’entraînement v2",
       chain: "Question → Fonction humaine → Système de pouvoir → Mécanisme → Sens/classification → Test d’intervention → Distribution → Preuves → Agentivité/alternatives.",
@@ -311,7 +314,8 @@
     // Every connection is listed on its records; the atlas says how many
     // records have one, and how many connections each family holds.
     const connected = graph.nodes.filter((node) => graph.incoming(node.id).length || graph.outgoing(node.id).length).length;
-    const relationshipSummary = `<p>${escapeHtml(c.connected.replace("{connected}", connected).replace("{records}", graph.nodes.length))}</p><div class="tags">${["explicit", "evidence", "structural"].map((family) => `<span data-relationship-family="${family}">${escapeHtml(familyLabels[family])} · ${graph.edges.filter((edge) => edge.family === family).length}</span>`).join("")}</div>`;
+    const authoredLinks = `<h3>${escapeHtml(c.authored)}</h3><ul class="authoredLinks">${arr(a.links).map(link => `<li data-authored-link>${renderValue(link.from)} ${locale === "ar" ? "←" : "→"} ${renderValue(link.to)} · ${display(link.relation)}${link.confidence ? ` · ${escapeHtml(c.linkConfidence)}${locale === "fr" ? " :" : ":"} ${display(link.confidence)}` : ""}${link.mechanism ? ` · ${escapeHtml(c.mechanism)}${locale === "fr" ? " :" : ":"} ${escapeHtml(link.mechanism)}` : ""}</li>`).join("")}</ul>`;
+    const relationshipSummary = `${authoredLinks}<p>${escapeHtml(c.connected.replace("{connected}", connected).replace("{records}", graph.nodes.length))}</p><div class="tags">${["explicit", "evidence", "structural"].map((family) => `<span data-relationship-family="${family}">${escapeHtml(familyLabels[family])} · ${graph.edges.filter((edge) => edge.family === family).length}</span>`).join("")}</div>`;
     const temporal = graphApi.temporalProjection(a);
     const temporalLabels = { historical: c.historical, dated: c.dated, immediate: c.immediate, medium: c.medium, future: c.future };
     const temporalHtml = `<section data-temporal-projection="canonical"><h3>${escapeHtml(c.time)}</h3><p class="caution">${escapeHtml(c.timeCaution)}</p><div class="projectionGrid">${temporal.map((band) => `<article><h4>${escapeHtml(temporalLabels[band.key])} <span>${band.items.length}</span></h4>${band.items.length ? `<ul>${band.items.map((item) => `<li>${renderValue(item.label)}${item.detail ? ` — ${renderValue(item.detail)}` : ""}${item.id ? ` <small>[${escapeHtml(item.id)}]</small>` : ""}</li>`).join("")}</ul>` : `<p class="empty">—</p>`}</article>`).join("")}</div></section>`;
@@ -403,6 +407,7 @@
       .auditList{padding:0;list-style:none}.auditList li{display:flex;justify-content:space-between;gap:1rem;padding:.65rem;border-bottom:1px solid var(--j-line)}
       [data-audit-state="concern"]{color:var(--j-warn)}
       .caution,.empty{color:var(--j-fg-muted)}
+      .authoredLinks{min-width:0;overflow-wrap:anywhere}.authoredLinks li{min-width:0}.authoredLinks .referenceChip{max-width:100%;white-space:normal}.authoredLinks small{unicode-bidi:isolate}
       .jsonInspector pre{max-height:40rem;overflow:auto;padding:1rem;border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2);color:var(--j-fg);font:var(--j-t-13)/1.55 var(--j-font-code);direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
       .jsonInspector summary{cursor:pointer;padding:.8rem}
       .canonicalAppendix{border-style:dashed}
