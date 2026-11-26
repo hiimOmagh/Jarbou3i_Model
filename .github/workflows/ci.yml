@@ -165,12 +165,13 @@ jobs:
           --workers=2
 
       - uses: actions/upload-artifact@v7
-        if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
+        if: ${{ (failure() && hashFiles('test-results/**', 'playwright-report/**') != '') || (always() && hashFiles('attempt-results/**') != '') }}
         with:
-          name: browser-debug-${{ matrix.artifact }}
+          name: browser-debug-${{ matrix.artifact }}-attempt-${{ github.run_attempt }}
           path: |
             test-results
             playwright-report
+            attempt-results
           if-no-files-found: ignore
           retention-days: 7
 
@@ -203,15 +204,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify CI diagnostics
+        run: node tests/ci-diagnostics-check.mjs
+
       - name: Capture and review hosted evidence
         run: npm run test:browser:hosted
         env:
           HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence
+          PLAYWRIGHT_JSON_OUTPUT_NAME: attempt-results/hosted.json
 
       - name: Capture and review visual-audit evidence
         run: npm run test:browser:visual-audit
         env:
           VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence
+          PLAYWRIGHT_JSON_OUTPUT_NAME: attempt-results/visual-audit.json
 
       - uses: actions/upload-artifact@v7
         if: ${{ always() && hashFiles('hosted-demo-evidence/**') != '' }}
@@ -230,12 +236,13 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@v7
-        if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
+        if: ${{ (failure() && hashFiles('test-results/**', 'playwright-report/**') != '') || (always() && hashFiles('attempt-results/**') != '') }}
         with:
-          name: browser-evidence-debug
+          name: browser-evidence-debug-attempt-${{ github.run_attempt }}
           path: |
             test-results
             playwright-report
+            attempt-results
           if-no-files-found: ignore
           retention-days: 7
 

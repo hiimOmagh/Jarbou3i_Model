@@ -63,8 +63,8 @@ release admission requirement, together with `No-browser gates`.
 
 - Matrix fail-fast is disabled, so one browser failure does not hide results from
   the other engines.
-- Every failed core leg uploads a uniquely named debug artifact
-  (`browser-debug-<leg>`), one per shard for every browser: for example
+- Every core leg uploads a uniquely named debug artifact
+  (`browser-debug-<leg>-attempt-<run_attempt>`), one per shard for every browser: for example
   `chromium-1-of-4`, `firefox-1-of-3`, `webkit-1-of-5`, `mobile-chrome-1-of-3`.
 - Evidence artifacts upload even when their producing step fails, provided files
   exist.
@@ -113,3 +113,39 @@ abort, and completion paths explicitly. A failure names the storage phase that
 failed instead of consuming the whole test budget. The helper clears stores
 rather than deleting the live database, avoiding a blocked deletion race with
 the application's open connection. Test specs may not call `indexedDB` directly.
+
+## Rerun and quarantine rule
+
+One diagnostic retry is allowed per failed test in CI; then stop. A retry pass
+is flaky and remains red (`failOnFlakyTests`). One failed-job workflow rerun may
+be used only to diagnose a recorded failure, never to replace failed acceptance
+with green. Record the run URL, SHA, original attempt and rerun outcome in the
+tracking issue; require a corrective commit and a naturally passing complete
+required run before acceptance. Do not repeatedly rerun for green.
+
+This rule governs deployment and supersedes the acceptance implication of the
+historical failed-job-rerun advice in `.claude/harness/LESSONS.md` and the
+automatic `gh run rerun --failed` path in `.claude/harness/ship.sh`. That harness
+path still needs reconciliation: its successful rerun cannot authorize acceptance.
+
+The JSON reporter records every test attempt (retry index, status, duration,
+errors and attachments), including retry-recovered failures. `retain-on-failure`
+keeps the original failed attempt's trace. Core and evidence debug uploads run
+on success and failure, include `attempt-results`, and expire after 7 days.
+Artifact names include the workflow run attempt so a diagnostic workflow rerun
+cannot overwrite original debug evidence. Hosted and visual audit runs use
+separate JSON files to preserve both invocations. Existing release evidence
+expires after 14 days. These retention limits bound diagnostic storage.
+
+Quarantine defaults to none. Any diagnostic quarantine must have a tracking
+issue URL, a named owner and an explicit expiry date in that issue before use;
+expired entries must be removed or renewed with evidence. It may add an
+independently running diagnostic lane, but cannot skip, exclude, weaken or
+remove required acceptance coverage, projects, assertions or gates. A failing
+required test still blocks acceptance while its diagnostic copy is quarantined.
+
+`node tests/ci-diagnostics-check.mjs` runs a controlled Chromium fail-then-pass
+probe using the repository config and checks both attempt records, the first
+trace and a nonzero flaky CI exit. It runs in Browser evidence's browser image,
+not the no-browser job. Its temporary probe artifacts are removed afterward;
+normal suite artifacts are uploaded as described above.

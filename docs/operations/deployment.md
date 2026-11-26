@@ -75,7 +75,7 @@ gh run list `
   --json databaseId,workflowName,status,conclusion,headSha,url
 ```
 
-Do not rerun a failed workflow merely to obtain a green result. Diagnose and correct the defect in a new pull request. The accepted run must naturally succeed for the exact candidate SHA.
+Follow the canonical [CI rerun and quarantine rule](ci.md#rerun-and-quarantine-rule). Diagnose and correct the defect in a new pull request. The accepted run must naturally succeed for the exact candidate SHA.
 
 ## Deployed acceptance
 
