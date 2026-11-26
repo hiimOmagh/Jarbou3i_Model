@@ -238,8 +238,9 @@
     const a = object(analysis);
     const scale = object(a.scale_time);
     const evidence = arr(object(a.evidence).items)
-      .filter((item) => text(item?.source_date))
-      .map((item, index) => Object.freeze({
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => text(item?.source_date))
+      .map(({ item, index }) => Object.freeze({
         id: text(item.id), label: text(item.source_title) || text(item.claim),
         detail: text(item.source_date), confidence: text(item.confidence),
         path: `/evidence/items/${index}/source_date`, kind: "dated_evidence",
