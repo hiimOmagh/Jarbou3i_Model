@@ -213,3 +213,12 @@ for (const [lang, words] of [["ar", ["نزع الملكية", "الأرشيف"]]
 }
 
 console.log("Biopolitical standalone report checks passed.");
+
+// Exercise the renderer's passing branch without changing gate eligibility rules.
+for (const [lang, label] of Object.entries({ en: 'Checks passed; editorial approval pending', ar: 'اجتاز الفحوص؛ الاعتماد التحريري قيد الانتظار', fr: 'Contrôles réussis ; approbation éditoriale en attente' })) {
+  const passingBio = { ...bio, health: (...args) => ({ ...bio.health(...args), publishable: true, missing: [] }) };
+  const output = reportApi.build({ analysis: bio.sample(lang), lang, version: PRODUCT_VERSION, bio: passingBio, graphApi });
+  assert.ok(output.includes(label), `${lang}: passing export retains pending editorial approval`);
+}
+
+await import('./publication-wording-check.mjs');

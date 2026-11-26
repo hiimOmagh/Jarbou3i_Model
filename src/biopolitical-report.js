@@ -29,7 +29,7 @@
       sourceTraceability: "Source traceability",
       humanReview: "Independent human review",
       publication: "Publication gate",
-      publishReady: "Publish-ready",
+      publishReady: "Checks passed; editorial approval pending",
       reviewNeeded: "Review needed",
       doNotPublish: "Do not publish yet",
       blockedNote: "Not publication-ready",
@@ -86,7 +86,7 @@
       sourceTraceability: "قابلية تتبع المصادر",
       humanReview: "المراجعة البشرية المستقلة",
       publication: "بوابة النشر",
-      publishReady: "جاهز للنشر",
+      publishReady: "اجتاز الفحوص؛ الاعتماد التحريري قيد الانتظار",
       reviewNeeded: "يحتاج مراجعة",
       doNotPublish: "لا تنشر بعد",
       blockedNote: "غير جاهز للنشر",
@@ -143,7 +143,7 @@
       sourceTraceability: "Traçabilité des sources",
       humanReview: "Revue humaine indépendante",
       publication: "Contrôle de publication",
-      publishReady: "Prêt à publier",
+      publishReady: "Contrôles réussis ; approbation éditoriale en attente",
       reviewNeeded: "Révision nécessaire",
       doNotPublish: "Ne pas publier",
       blockedNote: "Non prêt pour publication",
@@ -350,7 +350,7 @@
       .metricCard span,.metricCard small{display:block;margin-top:.35rem}.metricCard small{color:var(--j-fg-muted)}
       .metricBar{height:6px;margin-top:.6rem!important;overflow:hidden;border-radius:3px;background:var(--j-line)}.metricBar::before{content:"";display:block;width:var(--pct);height:100%;border-radius:inherit;background:var(--j-ink)}
       .metricBar[data-tone="warn"]::before{background:var(--j-warn)}.metricBar[data-tone="crit"]::before{background:var(--j-crit)}
-      .gateBadge{display:inline-flex!important;align-items:center;gap:6px;width:max-content;max-width:100%;padding:.3rem .65rem;border:1px solid currentColor;border-radius:999px;font:600 var(--j-t-12)/1.2 var(--j-font-data);}
+      .gateBadge{display:inline-flex!important;align-items:center;gap:6px;max-width:100%;padding:.3rem .65rem;border:1px solid currentColor;border-radius:999px;font:600 var(--j-t-12)/1.2 var(--j-font-data);}
       .gateBadge::before{content:"";flex:none;width:8px;height:8px}
       .gateBadge[data-tone="ok"]{color:var(--j-ok);background:var(--j-ok-wash)}.gateBadge[data-tone="ok"]::before{border-radius:50%;background:var(--j-ok)}
       .gateBadge[data-tone="warn"]{color:var(--j-warn);background:var(--j-warn-wash)}.gateBadge[data-tone="warn"]::before{width:0;height:0;border-inline:5px solid transparent;border-bottom:9px solid var(--j-warn)}
