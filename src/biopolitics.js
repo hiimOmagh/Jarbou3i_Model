@@ -1982,8 +1982,6 @@ ${schema}${interchangeGuide}`;
           "Litigation, protest, technical workarounds, and demands for sunset clauses changed implementation.",
         alternative:
           "Narrow, time-limited rules with free alternatives, strict purpose limitation, independent audit, and accessible appeal.",
-        strong:
-          "The credential converted health information into an access-control signal.",
         plausible:
           "Reusable infrastructure can outlast the emergency that justified it.",
         disputed:
@@ -2026,7 +2024,6 @@ ${schema}${interchangeGuide}`;
           "غيّرت الدعاوى والاحتجاجات والحلول التقنية والمطالبة ببنود الانتهاء طريقة التنفيذ.",
         alternative:
           "قواعد ضيقة ومحددة زمنيًا مع بدائل مجانية وتقييد صارم للغرض وتدقيق مستقل وطعن ميسّر.",
-        strong: "حوّلت الوثيقة المعلومة الصحية إلى إشارة لضبط الوصول.",
         plausible:
           "قد تعيش البنية القابلة لإعادة الاستخدام أطول من الطارئ الذي بررها.",
         disputed:
@@ -2074,8 +2071,6 @@ ${schema}${interchangeGuide}`;
           "Contentieux, protestations, contournements techniques et demandes de clauses d’extinction ont modifié la mise en œuvre.",
         alternative:
           "Règles étroites et limitées dans le temps, alternatives gratuites, finalité stricte, audit indépendant et recours accessible.",
-        strong:
-          "Le justificatif a transformé l’information sanitaire en signal de contrôle d’accès.",
         plausible:
           "Une infrastructure réutilisable peut survivre à l’urgence qui l’a justifiée.",
         disputed:
