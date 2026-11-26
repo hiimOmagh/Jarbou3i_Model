@@ -1354,11 +1354,11 @@ test.describe("AI interchange reliability", () => {
     // placeholder four different ways, and translated source titles.
     const sourceRule = /^(Source access:|Accès aux sources :|الوصول إلى المصادر:)/;
     const modeLine = /^(Mode:|Mode :|النمط:)/;
-    const languageRule = /^- (Write all analysis content|Rédige tout le contenu|اكتب كل محتوى التحليل)/;
+    const languageRule = /^- (Write all analysis content|Rédigez tout le contenu|اكتب كل محتوى التحليل)/;
     const copyAsWritten = { en: "word for word", fr: "mot pour mot", ar: "حرفيًا" };
     const followSourceRule = {
       en: "follow the source-access rule",
-      fr: "suis la règle d’accès aux sources",
+      fr: "suivez la règle d’accès aux sources",
       ar: "قاعدة الوصول إلى المصادر",
     };
     await page.goto("./");

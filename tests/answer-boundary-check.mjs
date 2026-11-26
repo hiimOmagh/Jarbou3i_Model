@@ -51,3 +51,19 @@ assert.equal(vm.runInContext('followUpBoundary().access',context),'provided');
 context.replyFor='improve';
 assert.equal(vm.runInContext('followUpBoundary().access',context),context.state.evidenceAccess);
 console.log('PASS accepted completion retains pending boundary; a different reply kind cannot inherit it');
+
+const promptContext = vm.createContext({ console });
+promptContext.window = promptContext;
+vm.runInContext(readFileSync('src/ai-interchange.js', 'utf8'), promptContext);
+vm.runInContext(src.slice(src.indexOf('function buildSchema('), src.indexOf('function sentPromptSources(')), promptContext);
+promptContext.AI_INTERCHANGE = promptContext.Jarbou3iAiInterchange;
+const informal = /(?<![\p{L}])(?:tu|te|ton|ta|tes|toi|ajoute|suis|priorise|rédige|garde|retourne|utilise|sépare|écris|nomme|dis|invente|conserve|inclue|audite|montre|cherche|marque)(?![\p{L}])|\. Analyse |(?<![\p{L}])place-le(?![\p{L}])/iu;
+for (const mode of ['focused', 'expert', 'research']) {
+  for (const evidenceAccess of ['none', 'provided', 'web']) {
+    for (const hasCaseSources of [false, true]) {
+      const prompt = promptContext.buildStrategicPrompt({ lang: 'fr', mode, evidenceAccess, hasCaseSources, topic: '', context: '' });
+      assert.doesNotMatch(prompt.replaceAll("à la place du contenu", ""), informal, `${mode}/${evidenceAccess}/${hasCaseSources}`);
+    }
+  }
+}
+console.log('PASS French Strategic prompts consistently use vous');
