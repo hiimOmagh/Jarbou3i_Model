@@ -6262,7 +6262,7 @@ function buildLosslessStrategicReport() {
     collect(analysis);
     const endpoint = id => `${escapeHtml(names.get(id) || id)} (<bdi>${escapeHtml(id)}</bdi>)`;
     const relationships = `<section class="block authoredRelationships" data-authored-relationships style="min-width:0;overflow-wrap:anywhere"><h2>${copy[0]}</h2><ul>${(analysis.links || []).map(link => `<li data-authored-link>${endpoint(link.from)} ${reportLang === "ar" ? "←" : "→"} ${endpoint(link.to)} · ${escapeHtml(reportLang === "en" ? link.relation : REFERENCE_UI.codeLabel(link.relation, reportLang))}${link.strength == null ? "" : ` · ${copy[1]}${colonMark()} ${escapeHtml(link.strength)}`}</li>`).join("")}</ul></section>`;
-    const inspector = `<details class="block jsonInspector"><summary>${copy[2]}</summary><pre tabindex="0" dir="ltr" style="white-space:pre-wrap;overflow-wrap:anywhere;min-width:0">${escapeHtml(JSON.stringify(analysis, null, 2))}</pre></details>`;
+    const inspector = `<details class="block jsonInspector"><summary>${copy[2]}</summary><pre tabindex="0" dir="ltr" style="white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;min-width:0">${escapeHtml(JSON.stringify(analysis, null, 2))}</pre></details>`;
 
     return report.replace(
       "</main></body></html>",
