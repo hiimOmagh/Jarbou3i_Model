@@ -133,7 +133,7 @@ for (const [lang, fixture] of Object.entries(fixtures)) {
   }
 }
 
-const app = fs.readFileSync("src/app.js", "utf8");
+const app = fs.readFileSync("src/app.js", "utf8") + ["ar", "en", "fr"].map(locale => fs.readFileSync(new URL(`../src/locales/${locale}.js`, import.meta.url), "utf8")).join("\n");
 for (const token of [
   'appTitle: "التحليل الاستراتيجي وتحليل السياسة الحيوية"',
   "رابط المصدر ليس رابط HTTP(S) مطلقًا",
@@ -144,7 +144,7 @@ for (const token of [
 ]) {
   if (!app.includes(token)) fail(`localized import-audit contract missing: ${token}`);
 }
-for (const file of ["index.html", "src/app.js", "src/biopolitics.js"]) {
+for (const file of ["index.html", "src/app.js", "src/biopolitics.js", ...["ar", "en", "fr"].map(locale => `src/locales/${locale}.js`)]) {
   const source = fs.readFileSync(file, "utf8");
   if (source.includes("مِشرَحة")) {
     fail(`${file} uses a morgue/dissection-room term for the Arabic workbench title`);

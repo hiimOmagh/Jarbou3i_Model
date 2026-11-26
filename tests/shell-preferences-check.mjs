@@ -32,7 +32,7 @@ assert(preferences.toggle() === "comfortable", "density toggle did not return to
 assert(updates.at(-1)?.density === "comfortable", "density toggle was not persisted");
 assert(Object.isFrozen(preferences.snapshot()), "preference snapshot must be immutable");
 
-const app = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf8");
+const app = fs.readFileSync(new URL("../src/app.js", import.meta.url), "utf8") + ["ar", "en", "fr"].map(locale => fs.readFileSync(new URL(`../src/locales/${locale}.js`, import.meta.url), "utf8")).join("\n");
 const feature = fs.readFileSync(
   new URL("../src/features/application-shell.js", import.meta.url),
   "utf8",
