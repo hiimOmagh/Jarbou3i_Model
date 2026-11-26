@@ -200,6 +200,39 @@ brevity caps create no new obligation; review current shipped wording in context
 Attach real locale/surface evidence to MAN-002, including the owed-copy scope,
 when it exists. Until then its disposition remains Pending.
 
+### Delegated machine language review (not native, closes nothing)
+
+The owner delegated the language review to language-review agents using a model
+other than the drafters (Codex and Claude). This record is machine evidence.
+It is not a native-speaker review and not a waiver: MAN-002 stays Pending, and
+the release-evidence block stays empty, until the owner gives an explicit waiver
+at release time or a native review is recorded.
+
+| Locale | Reviewed SHA | Reviewer identity | Reviewer type | Date | Advisory verdict and unresolved findings |
+| --- | --- | --- | --- | --- | --- |
+| ar | `9655ab03a93bdcfe5450ffbe102578f4714534b2` | Antigravity, Gemini 3.8 Flash (High) | machine | 2026-11-26 | Pass (advisory); L1, L2, L4, L5, L6; L4 and L5 need a native check |
+| en | `9655ab03a93bdcfe5450ffbe102578f4714534b2` | Antigravity, Gemini 3.8 Flash (High) | machine | 2026-11-26 | Pass (advisory); L1, L2, L6 |
+| fr | `9655ab03a93bdcfe5450ffbe102578f4714534b2` | Antigravity, Gemini 3.8 Flash (High) | machine | 2026-11-26 | Pass (advisory); L1, L2, L3, L6 |
+
+The reviewer reported reading the locale catalogs, the application, report,
+graph, reference and AI-interchange sources, and the Biopolitical sample
+fixtures. It is a source reading, not a rendered review in both themes, and it
+does not record the authored-relationship trace review. Screen reader output and
+physical touch zoom were not checked. The CEO session re-ran the locale
+inventory and Biopolitical sample honesty checks (both passed). Severity below
+is the reviewer's own scale, not the table under Severity.
+
+| Finding | Reviewer severity | Unresolved at the reviewed SHA |
+| --- | --- | --- |
+| L1 | High | The Strategic standalone export embeds the canonical JSON but has no in-page disclosure to read it (`src/app.js`, near line 6220). |
+| L2 | High | Biopolitical export connection rows show relation and endpoint but omit link confidence and mechanism text (`src/biopolitical-report.js`, near line 285). |
+| L3 | Low | The French Strategic prompt mixes informal and formal address (`src/app.js`, lines 3163 and 3200). Prompt wording is an owner decision. |
+| L4 | Low | The Arabic Biopolitical sample may render "jurisdictions" with a word meaning "states" (`fixtures/sample-analysis-bio-ar.json`). Judgement; needs a native check. |
+| L5 | Low | Arabic `fileReadDone` verb agreement with the counted noun (`src/locales/ar.js`, line 117). Judgement; needs a native check. |
+| L6 | Low | `temporalProjection` filters undated evidence before numbering, so a dated item's source path can point to the wrong index (`src/biopolitics-graph.js`, near line 241). |
+
+Any later copy or surface change makes this record stale for that surface.
+
 ## Data handling evidence required before release
 
 - **Separate backups:** Workspace history/drafts and dossier cases/sources use
