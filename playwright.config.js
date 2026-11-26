@@ -19,7 +19,8 @@ export default defineConfig({
   workers: workerCount,
   retries: process.env.CI ? 1 : 0,
   failOnFlakyTests: Boolean(process.env.CI),
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [['list'], ['html', { open: 'never' }],
+    ['json', { outputFile: process.env.PLAYWRIGHT_JSON_OUTPUT_NAME || 'attempt-results/attempts.json' }]],
   webServer: externalBaseURL || managedBaseURL
     ? undefined
     : {
