@@ -411,3 +411,51 @@ export async function holdStartupRestore(page) {
     },
   };
 }
+
+// Version-fence research (ADR-0010): native requests, one-shot ones bounded.
+export async function installObservedIndexedDb(page) {
+  await page.evaluate(() => {
+    window.events = [];
+    window.connections = [];
+    window.observedIndexedDb = () => ({ open(...args) {
+      const request = window.indexedDB.open(...args);
+      request.addEventListener("success", () => {
+        const db = request.result;
+        window.connections.push(db);
+        db.addEventListener("versionchange", (event) => {
+          window.events.push([event.oldVersion, event.newVersion]);
+        });
+      });
+      return request;
+    } });
+  });
+}
+
+// Leaves window.state as "pending", "blocked" or "upgraded" for the caller to poll.
+export async function startUpgrade(page, databaseName, version) {
+  await page.evaluate(({ databaseName, version }) => {
+    window.state = "pending";
+    const request = window.indexedDB.open(databaseName, version + 1);
+    request.onblocked = () => { window.state = "blocked"; };
+    request.onerror = () => { window.state = `error: ${request.error?.name}`; };
+    request.onsuccess = () => { request.result.close(); window.state = "upgraded"; };
+  }, { databaseName, version });
+}
+
+async function boundedRequest(page, input) {
+  await page.evaluate(({ databaseName, version, timeoutMs }) => new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`IndexedDB request timed out: ${databaseName}`)), timeoutMs);
+    const request = version === undefined
+      ? window.indexedDB.deleteDatabase(databaseName)
+      : window.indexedDB.open(databaseName, version + 1);
+    request.onerror = () => { clearTimeout(timer); reject(request.error); };
+    request.onsuccess = () => {
+      clearTimeout(timer);
+      if (version !== undefined) request.result.close();
+      resolve();
+    };
+  }), { ...input, timeoutMs: INDEXED_DB_OPERATION_TIMEOUT_MS });
+}
+
+export const upgradeDatabase = (page, databaseName, version) => boundedRequest(page, { databaseName, version });
+export const deleteDatabase = (page, databaseName) => boundedRequest(page, { databaseName });

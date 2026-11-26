@@ -58,6 +58,79 @@ refusal applies to any existing dossier or workspace ID, including identical
 records. This closes questions 1 and 3. Status remains Proposed; atomic
 restore remains blocked on its separate coordination design.
 
+### Owner decision a304: restore stays OFF (2026-11-26, rows 112/192)
+
+The owner chose **option A**, meaning: **"keep restore switched OFF for now
+and first spend one bounded research slice proving whether older app versions
+can be locked out; build restore only if that proof exists"**. This lettering
+differs from slice 5 below: its A means staging plus a publication marker,
+and its C means refuse restore. Owner option A does **not** accept slice 5's
+staging design. Restore remains unavailable; consolidation (slice 5 B) is not
+authorized. No production code, schema, format or export changes accompany
+this decision.
+
+#### Bounded lockout research at 66c04668bf2d6bde697c06a4d85ededb5b94c077
+
+**Result: partial mechanism proof; universal old-app lockout is disproven.**
+`tests/case-archive-lockout.spec.js` exercises the real workspace, recovery
+journal and dossier backends against native browser IndexedDB. The test opens
+the newer version; current production code acts as the old version. Both live
+databases are covered (workspace and recovery share one). No restore is built.
+
+- Cooperative, already-open connections receive `versionchange` and close.
+  Subsequent reads, puts, deletes and clear operations refuse with native
+  `VersionError` (wrapped as `STORAGE_FAILURE` by workspace/dossier code).
+  Fresh old tabs also refuse. This establishes a database-version fence only
+  while that higher-version database exists and the upgrade completes.
+- Counterexample: an old connection that ignores `versionchange` blocks the
+  upgrade; it can still write and read its record before releasing the
+  connection. The test observes native `blocked`, checks the old write, then
+  closes the connection and observes upgrade completion. Sending the event
+  alone does not establish exclusion. This models an uncooperative tab by
+  removing its close handler; it does not claim released handlers do so.
+- Counterexample: native `deleteDatabase` removes the version fence. The
+  real old backend then recreates its old schema, writes and clears it.
+  This is a native deletion experiment, not a claim that the current UI
+  calls `deleteDatabase`. Browser data deletion similarly cannot preserve
+  an IndexedDB-only version marker.
+- Counterexample: after both databases have been upgraded, the current old
+  UI still loads a sample into the review panel in memory. Its durable save
+  reports an error, but analysis remains usable: the app is not locked out.
+  Full reset reports failure on the workspace clear, before reaching the
+  later recovery/dossier clears. Backend clear/delete refusal is separately
+  covered for all three backends. This UI experiment uses a fresh page after
+  upgrade; an already-loaded UI and every historical UI are not proved here.
+
+Historical open-path inventory (all module-changing commits reachable from
+the base, including releases, tested as original module source):
+
+| Module | Commits |
+|---|---|
+| workspace-storage | `ac6fc20`, `c15b56c`, `0148dfa`, `9470dfd`, `949a23a`, `f33eeb5`, `eb25b28` |
+| recovery-journal | `949a23a`, `f33eeb5`, `7e2ddc5`, `58b8ffe` |
+| research-dossier | `eb25b28`, `5798ce9`, `38ce9da`, `986eef0`, `40567ff`, `a928caf` |
+
+The three open-path introductions/changes are
+`ac6fc207cc6382825a0b08b7589247356000fec2` (workspace v1),
+`949a23a2e1577fda68025ab91df946a664b64d1f` (workspace v2 and recovery),
+and `eb25b283c4c3a4b0ef1cdaad86a0aeb0ed7a97eb` (separate dossier v1).
+The historical test dynamically enumerates all 17 module revisions from git,
+imports each original source and checks read/write/delete refusal after an
+upgrade; clear is checked when that historical API exists. Dependencies are
+the base's modules, not a reconstructed release deployment. Hence historical
+whole-app compatibility, versions predating these modules, localStorage
+fallback behavior in those applications, and cached/service-worker deployment
+paths remain **unverified**. The observed UI counterexample is in-memory
+continuation with an explicit save error, not evidence of silent durable or
+localStorage fallback. These limits preclude calling old-version exclusion
+proven. Keep restore OFF; no implementation gate has been satisfied.
+
+Verification commands and final observed results are recorded with the patch
+report: the four-project browser spec, `npm run test:static`, and
+`npm run test:ci:contract`. The spec's native upgrade and deletion instrumentation lives in the
+bounded browser persistence helper. No policy exemption or production
+change is included.
+
 ### Envelope schema and mutual integrity
 
 Proposed v1 shape (type notation, not a literal example file):
