@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import { createLocalizationService } from '../src/core/localization.js';
 
+for (const locale of ['ar', 'en', 'fr']) assert.ok(fs.existsSync(new URL(`../src/locales/${locale}.js`, import.meta.url)), `Missing standalone ${locale} catalog`);
+const appCatalog = Object.fromEntries(await Promise.all(['ar', 'en', 'fr'].map(async locale => [locale, (await import(`../src/locales/${locale}.js`)).default])));
+
 const locales = ['ar', 'en', 'fr'];
 // Catalog-specific exceptions document existing runtime fallback behavior.
 function flatten(value, path = '', result = {}) {
@@ -108,7 +111,7 @@ if (process.argv.includes('--self-test')) {
   ]) {
     const scope = `${file}:${name}:`;
     const approved = new Set([...approvedFallbacks].filter(key => key.startsWith(scope)).map(key => key.slice(scope.length)));
-    const { errors, maps, keys } = validate(load(file, name), approved);
+    const { errors, maps, keys } = validate(file === 'src/app.js' ? appCatalog : load(file, name), approved);
     for (const locale of locales) console.log(`${file}:${name} ${locale} ${Object.keys(maps[locale]).length}/${keys.length} keys`);
     allErrors.push(...errors.map(error => `${file}:${name} ${error}`));
   }
