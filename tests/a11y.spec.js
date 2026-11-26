@@ -183,3 +183,14 @@ test("a newer toast is not dismissed by an older toast's timer, and duplicated s
   await page.waitForTimeout(900);
   await expect(page.locator("#toast")).toHaveAttribute("data-open", "true");
 });
+
+test("workspace navigation has no duplicate enclosing landmark", async ({ page }) => {
+  await page.goto("./");
+  const nav = page.locator("#workspaceNav");
+  await expect(nav).toHaveRole("navigation");
+  const name = await nav.getAttribute("aria-label");
+  expect(name).toBeTruthy();
+  await expect(page.getByRole("region", { name, exact: true })).toHaveCount(0);
+  // The wrapper is a plain div: a name on it is a prohibited ARIA attribute.
+  await expect(page.locator("#workspaceBar")).not.toHaveAttribute("aria-label");
+});

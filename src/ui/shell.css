@@ -131,3 +131,10 @@
   .j-shell-phase[aria-current="step"] :is(.j-shell-phase-copy small, .j-shell-phase-index) { color: HighlightText; }
   .j-shell-phase[aria-current="step"] .j-shell-phase-index { background: HighlightText; }
 }
+
+@media print {
+  .j-shell-top,
+  .j-shell-bar {
+    display: none !important;
+  }
+}

@@ -118,3 +118,13 @@ const french = api.build(
 assert.equal(french.resolve("RES1")?.label, "Travailleurs et résidents soumis aux contrôles d’accès");
 
 console.log("Biopolitical relationship graph checks passed.");
+
+// An undated item must not shift the source pointer of later dated evidence.
+const mixedDates = { evidence: { items: [
+  { id: "E1", claim: "Undated" },
+  { id: "E2", source_title: "Dated", source_date: "2026-01-02" },
+] } };
+const dated = api.temporalProjection(mixedDates).find((band) => band.key === "dated").items;
+assert.equal(dated.length, 1);
+assert.equal(dated[0].id, "E2");
+assert.equal(dated[0].path, "/evidence/items/1/source_date");

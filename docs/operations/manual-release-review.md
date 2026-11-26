@@ -48,12 +48,12 @@ mixed-direction IDs, dates, percentages, and citations must remain readable.
 | --- | --- |
 | NVDA + Firefox or Chrome | Change language and lens; import; traverse review; inspect evidence; export |
 | JAWS + Chrome or Edge | Same core journey |
-| VoiceOver + Safari | Same core journey, including the Spatial fallback |
+| VoiceOver + Safari | Same core journey, including Connections |
 | TalkBack + Android Chrome | Mobile list, inspector sheet, filters, and export |
 
 Confirm headings and landmarks, radio groups, tabs, accordions, status messages,
 modal focus, inspector focus return, relationship names, edge explanations, and
-the disabled-Spatial explanation.
+Connections navigation.
 
 ## Visual review
 
@@ -71,8 +71,8 @@ Run `npm run test:browser:visual-audit` and inspect the screenshots in
 
 The automated 320 px / 640 px matrix is a proxy. Confirm with native browser
 zoom at 200% and 400% in at least Chrome and Firefox. On a physical touch device,
-check target comfort, scroll containment, inspector dismissal, focus mode, the
-Spatial fallback, and the absence of accidental drag or page lock.
+check target comfort, scroll containment, inspector dismissal, focus mode,
+Connections, and the absence of accidental drag or page lock.
 
 ## Print and export
 
