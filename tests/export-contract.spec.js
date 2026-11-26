@@ -722,3 +722,39 @@ test.describe('Exported report Content-Security-Policy', () => {
     expect(await page.evaluate(() => window.__csp)).toEqual([]);
   });
 });
+
+const passingLabels = { en: 'Checks passed; editorial approval pending', ar: 'اجتاز الفحوص؛ الاعتماد التحريري قيد الانتظار', fr: 'Contrôles réussis ; approbation éditoriale en attente' };
+for (const [lang, label] of Object.entries(passingLabels)) {
+  test(`passing wording stays editorially pending: ${lang}`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.route('**/src/app.js*', async route => {
+      const response = await route.fetch();
+      await route.fulfill({ response, body: (await response.text()) + '\nwindow.publicationWordingTest = () => { const original = qualityGate; qualityGate = () => ({ status: t("publishReady"), tone: "ok", why: "", blockers: [] }); try { return { label: t("publishReady"), strategic: htmlReport() }; } finally { qualityGate = original; } };' });
+    });
+    await page.goto('./');
+    await page.locator(`#lang${lang[0].toUpperCase()}${lang[1]}`).click();
+    await page.locator("#loadSampleBtn").click();
+    await expect(page.locator("#reviewPanel")).toBeVisible();
+    const output = await page.evaluate(() => window.publicationWordingTest());
+    expect(output.label).toBe(label);
+    expect(output.strategic).toContain(label);
+    await page.addScriptTag({ url: './src/biopolitics-graph.js', type: 'module' });
+    await page.addScriptTag({ url: './src/biopolitical-report.js', type: 'module' });
+    const biopolitical = await page.evaluate(({ lang, label }) => {
+      const bio = window.Jarbou3iBiopolitics;
+      const passing = { ...bio, health: (...args) => ({ ...bio.health(...args), publishable: true, missing: [] }) };
+      const html = window.Jarbou3iBiopoliticalReport.build({ analysis: bio.sample(lang), lang, version: 'test', bio: passing, graphApi: window.Jarbou3iBiopoliticsGraph });
+      return { html: typeof html === 'string' ? html : html.html, label };
+    }, { lang, label });
+    expect(biopolitical.html).toContain(label);
+    // Measure the exported documents themselves at phone width, not the app page.
+    await page.unroute('**/src/app.js*');
+    for (const [name, html] of [['strategic', output.strategic], ['biopolitical', biopolitical.html]]) {
+      const report = await page.context().newPage();
+      await report.setViewportSize({ width: 320, height: 720 });
+      await report.setContent(html);
+      expect(await report.evaluate(() => document.documentElement.scrollWidth), name).toBeLessThanOrEqual(320);
+      await report.close();
+    }
+  });
+}
