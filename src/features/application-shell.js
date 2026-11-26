@@ -88,9 +88,7 @@ export function createApplicationShell({
           : "lensContextStrategic",
       );
     }
-    for (const id of ["workspaceBar", "workspaceNav"]) {
-      byId(id)?.setAttribute("aria-label", translate("workspaceNavigation"));
-    }
+    byId("workspaceNav")?.setAttribute("aria-label", translate("workspaceNavigation"));
 
     const reviewAvailable = Boolean(state.analysis);
     const reviewShortcut = byId("reviewNavShortcut");

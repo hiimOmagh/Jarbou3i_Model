@@ -117,3 +117,12 @@ test.describe("Release Candidate 200% and 400% equivalent reflow audit", () => {
     }
   }
 });
+
+test("printing hides app navigation chrome", async ({ page }) => {
+  await page.goto("./");
+  await expect(page.locator("#appHeader")).toBeVisible();
+  await expect(page.locator("#workspaceBar")).toBeVisible();
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator("#appHeader")).toBeHidden();
+  await expect(page.locator("#workspaceBar")).toBeHidden();
+});
