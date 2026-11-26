@@ -133,13 +133,13 @@
   };
   // A coded value in the drawer's language: a Biopolitical pillar's name, the
   // drawer's own names, then the Biopolitical lens's names for its codes.
-  const codeLabel = (value) => {
+  const codeLabel = (value, locale = lang) => {
     const token = String(value || "");
     const bio = root.Jarbou3iBiopolitics;
-    const pillar = token && bio?.ui?.(lang, `pillars.${token}`);
+    const pillar = token && bio?.ui?.(locale, `pillars.${token}`);
     if (Array.isArray(pillar)) return pillar[0];
-    if (CODE_LABELS[lang]?.[token]) return CODE_LABELS[lang][token];
-    if (lang !== "en" && token && bio?.displayToken) return bio.displayToken(lang, token);
+    if (CODE_LABELS[locale]?.[token]) return CODE_LABELS[locale][token];
+    if (locale !== "en" && token && bio?.displayToken) return bio.displayToken(locale, token);
     // English reads a code in sentence case: "Internal sample", not "internal_sample".
     const text = humanize(token);
     return text.charAt(0).toUpperCase() + text.slice(1);
@@ -451,5 +451,5 @@
     });
   }
 
-  root.Jarbou3iReferenceUi = Object.freeze({ bind, renderText, open, close });
+  root.Jarbou3iReferenceUi = Object.freeze({ bind, renderText, open, close, codeLabel });
 })(typeof window !== "undefined" ? window : globalThis);

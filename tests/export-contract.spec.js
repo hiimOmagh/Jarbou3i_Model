@@ -74,7 +74,7 @@ for (const lang of ['en', 'ar', 'fr']) {
     const canonical = JSON.parse(await page.locator('#canonical-analysis').textContent());
     await expect(appendix).toContainText(canonical.subject.executive_thesis);
     await expect(appendix).toContainText(canonical.subject.context);
-    for (const width of [390, 1280]) {
+    for (const width of [320, 390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
@@ -505,7 +505,7 @@ test.describe('Strategic HTML report content', () => {
     first.source_type = 'internal_sample';
     data.evidence.items.push({ ...structuredClone(first), id: 'E2', source_type: 'none' });
     const html = await exportImportedStrategic(page, testInfo, data, 'ar-source-type');
-    const body = html.replace(/<script type="application\/json" id="canonical-analysis">[\s\S]*?<\/script>/, '');
+    const body = html.replace(/<details class="block jsonInspector">[\s\S]*?<\/details>/, '').replace(/<script type="application\/json" id="canonical-analysis">[\s\S]*?<\/script>/, '');
     expect(body).not.toContain('internal_sample');
     expect(body).not.toMatch(/ · none\b/);
 
@@ -549,7 +549,7 @@ test.describe('Report provenance and print', () => {
     data.quality_gate.weakest_layer = 'results';
     delete data.assumptions.items[0].implication_if_wrong;
     const html = await exportImportedStrategic(page, testInfo, data, 'provenance');
-    const body = html.replace(/<script[\s\S]*?<\/script>/g, '');
+    const body = html.replace(/<details class="block jsonInspector">[\s\S]*?<\/details>/, '').replace(/<script[\s\S]*?<\/script>/g, '');
     expect(body).toContain(`<title>${data.subject.title} — Strategic Analysis Report</title>`);
     const at = (needle) => body.indexOf(needle);
     expect(at('class="draftBanner"')).toBeGreaterThan(-1);
@@ -758,3 +758,40 @@ for (const [lang, label] of Object.entries(passingLabels)) {
     }
   });
 }
+
+for (const lang of ['en', 'ar', 'fr']) {
+  test(`authored strategic relationships and keyboard JSON: ${lang}`, async ({ page }, testInfo) => {
+    await exportSampleReport(page, testInfo, 'strategic', lang);
+    await page.goto(pathToFileURL(testInfo.outputPath(`${lang}-strategic-export.html`)).href);
+    const canonical = JSON.parse(await page.locator('#canonical-analysis').textContent());
+    const rows = page.locator('[data-authored-link]');
+    await expect(rows).toHaveCount(canonical.links.length);
+    for (const [i, link] of canonical.links.entries()) {
+      const relation = { en: {}, ar: { motivates: 'يحفّز', uses: 'يستخدم', produces: 'ينتج' }, fr: { motivates: 'Motive', uses: 'Utilise', produces: 'Produit' } }[lang][link.relation] || link.relation;
+      for (const value of [link.from, link.to, relation, link.strength]) await expect(rows.nth(i)).toContainText(String(value));
+    }
+    const summary = page.locator('.jsonInspector summary');
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.jsonInspector')).toHaveAttribute('open', '');
+    expect(JSON.parse(await page.locator('.jsonInspector pre').textContent())).toEqual(canonical);
+    await page.setViewportSize({width:320,height:900});
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+}
+
+test('relationship values escape markup and wrap long identifiers in the Strategic export', async ({page}, testInfo) => {
+  const data = await strategicFixture('sample-analysis-en.json');
+  const longId = 'I' + 'longidentifier'.repeat(60);
+
+  data.interests[0].id = longId;
+  data.links[0].from = longId;
+  data.links[0].relation = '<img src=x onerror=alert(1)>' + 'word'.repeat(80);
+  const html = await exportImportedStrategic(page, testInfo, data, 'relationship-escaping');
+  expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  await page.setContent(html);
+  await expect(page.locator('[data-authored-link]').first()).toContainText(data.interests[0].name);
+  await expect(page.locator('[data-authored-link] img')).toHaveCount(0);
+  await page.setViewportSize({width:320,height:900});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
