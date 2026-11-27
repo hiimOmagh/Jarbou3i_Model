@@ -25,6 +25,9 @@ for (const ci of [undefined, "1"]) {
 const noBrowser = pkg.scripts?.["test:ci:no-browser"] || "";
 for (const gate of [
   "build:validator",
+  "test:case-archive",
+  "test:locale:inventory",
+  "test:release-evidence:self-test",
   "test:version-authority",
   "test:gate0:kit",
   "test:qa",
@@ -61,6 +64,9 @@ for (const gate of [
   if (!noBrowser.includes(`npm run ${gate}`)) {
     fail(`test:ci:no-browser is missing ${gate}`);
   }
+}
+if (pkg.scripts?.["test:release-evidence:self-test"] !== "node tests/release-evidence-check.mjs --self-test") {
+  fail("test:release-evidence:self-test must run the release evidence self-test only");
 }
 if (pkg.scripts?.["build:pages"] !== "node scripts/build-pages-artifact.mjs") {
   fail("build:pages must execute the explicit deployment-artifact builder");
