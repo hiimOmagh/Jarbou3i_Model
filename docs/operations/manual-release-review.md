@@ -48,12 +48,12 @@ mixed-direction IDs, dates, percentages, and citations must remain readable.
 | --- | --- |
 | NVDA + Firefox or Chrome | Change language and lens; import; traverse review; inspect evidence; export |
 | JAWS + Chrome or Edge | Same core journey |
-| VoiceOver + Safari | Same core journey, including the Spatial fallback |
+| VoiceOver + Safari | Same core journey, including Connections |
 | TalkBack + Android Chrome | Mobile list, inspector sheet, filters, and export |
 
 Confirm headings and landmarks, radio groups, tabs, accordions, status messages,
 modal focus, inspector focus return, relationship names, edge explanations, and
-the disabled-Spatial explanation.
+Connections navigation.
 
 ## Visual review
 
@@ -71,8 +71,8 @@ Run `npm run test:browser:visual-audit` and inspect the screenshots in
 
 The automated 320 px / 640 px matrix is a proxy. Confirm with native browser
 zoom at 200% and 400% in at least Chrome and Firefox. On a physical touch device,
-check target comfort, scroll containment, inspector dismissal, focus mode, the
-Spatial fallback, and the absence of accidental drag or page lock.
+check target comfort, scroll containment, inspector dismissal, focus mode,
+Connections, and the absence of accidental drag or page lock.
 
 ## Print and export
 
@@ -114,3 +114,142 @@ row has one of those dispositions.
 | MAN-002 | Linguistic and epistemic nuance | Major | Native Arabic, French, and English terminology review and the authored-relationship trace review are not yet recorded. | Linguistic and epistemic sections above | Human domain reviewer | Pending |
 | MAN-003 | Physical zoom, print, and touch | Major | Native 200%/400% zoom, print/PDF preview, and physical touch-device review are not yet recorded. | Reflow, print, and interaction sections above | Human QA | Pending |
 | MAN-004 | Long-form report / all locales | Major | Progressive disclosure, source navigation, portable citations, truthful publication status, and long-report print output need human review in Chromium and Safari/WebKit. | Print and export section above | Human QA + domain reviewer | Pending |
+
+## Release evidence records (PM104-I)
+
+The finding register above remains authoritative for MAN-001–004. The block
+below attaches metadata to those same findings; it does not close any finding.
+Null fields mean no review has been recorded. Do not infer a reviewer, date,
+reviewed SHA, native completion, or waiver from machine checks or release tags.
+
+For an actual review, record the full reviewed commit SHA, reviewer identity,
+reviewer type (`machine`, `native`, or `waiver`), ISO date, evidence location,
+and disposition. Each locale/surface entry also needs its reviewed SHA and
+evidence location. Native evidence must include a traceable human attestation
+in `authorization`; a scoped waiver must cite the explicit approved release
+exception there and use `Accepted` with `impact` and `rationale`. A waiver
+accepts outstanding risk; it does not certify native review. Machine evidence
+belongs in automated gate reports and cannot close these human obligations.
+The checker validates recorded claims, not the authenticity of a person's
+identity: the release reviewer must inspect the linked attestation and scope.
+
+Run `node tests/release-evidence-check.mjs --self-test` for structural and
+negative-fixture checks. Run `node tests/release-evidence-check.mjs --strict`
+at the release candidate SHA. The record commit itself is expected: a reviewed
+SHA stays current only while this file is the sole change since that commit.
+Pending, missing dispositions, stale coverage,
+and machine-only closure block release. Any relevant copy or surface change
+requires review at the new SHA; never carry an old pass forward automatically.
+
+```release-evidence
+[
+  {
+    "id": "MAN-001", "reviewedSha": null, "reviewerType": null,
+    "reviewer": null, "date": null, "disposition": "Pending",
+    "evidence": null, "authorization": null,
+    "coverage": [
+      { "locale": "ar", "surface": "Native assistive technology" },
+      { "locale": "en", "surface": "Native assistive technology" },
+      { "locale": "fr", "surface": "Native assistive technology" }
+    ]
+  },
+  {
+    "id": "MAN-002", "reviewedSha": null, "reviewerType": null,
+    "reviewer": null, "date": null, "disposition": "Pending",
+    "evidence": null, "authorization": null,
+    "coverage": [
+      { "locale": "ar", "surface": "Linguistic and epistemic nuance" },
+      { "locale": "en", "surface": "Linguistic and epistemic nuance" },
+      { "locale": "fr", "surface": "Linguistic and epistemic nuance" }
+    ]
+  },
+  {
+    "id": "MAN-003", "reviewedSha": null, "reviewerType": null,
+    "reviewer": null, "date": null, "disposition": "Pending",
+    "evidence": null, "authorization": null,
+    "coverage": [
+      { "locale": "ar", "surface": "Physical zoom, print, and touch" },
+      { "locale": "en", "surface": "Physical zoom, print, and touch" },
+      { "locale": "fr", "surface": "Physical zoom, print, and touch" }
+    ]
+  },
+  {
+    "id": "MAN-004", "reviewedSha": null, "reviewerType": null,
+    "reviewer": null, "date": null, "disposition": "Pending",
+    "evidence": null, "authorization": null,
+    "coverage": [
+      { "locale": "ar", "surface": "Long-form report" },
+      { "locale": "en", "surface": "Long-form report" },
+      { "locale": "fr", "surface": "Long-form report" }
+    ]
+  }
+]
+```
+
+### Owed copy review stays under MAN-002
+
+Reuse the row 60/100 owed-copy record and its existing inventory in
+`.claude/harness/STATUS.md` (the “i18n owed” section), referenced by
+[the language audit](../phase0/language.md). The 2026-11-16 delegated check
+(row 100 / 0797c5a) is machine evidence, explicitly not a native-speaker check.
+The inventory includes rows 100, 97, 92, 87, 81, 82, 43, 79, 66, 75, 59,
+62, 33, 7, 19f, 19e, 19b, 19a, 17b, 49, 19c1, 71, 15, 35, 37, 19,
+and 19d, plus the dated Arabic agreement/JUDGEMENT note. These references
+identify owed work, not additional completed reviews. Row 93's reverted
+brevity caps create no new obligation; review current shipped wording in context.
+Attach real locale/surface evidence to MAN-002, including the owed-copy scope,
+when it exists. Until then its disposition remains Pending.
+
+### Delegated machine language review (not native, closes nothing)
+
+The owner delegated the language review to language-review agents using a model
+other than the drafters (Codex and Claude). This record is machine evidence.
+It is not a native-speaker review and not a waiver: MAN-002 stays Pending, and
+the release-evidence block stays empty, until the owner gives an explicit waiver
+at release time or a native review is recorded.
+
+| Locale | Reviewed SHA | Reviewer identity | Reviewer type | Date | Advisory verdict and unresolved findings |
+| --- | --- | --- | --- | --- | --- |
+| ar | `9655ab03a93bdcfe5450ffbe102578f4714534b2` | Antigravity, Gemini 3.8 Flash (High) | machine | 2026-11-26 | Pass (advisory); L1, L2, L4, L5, L6; L4 and L5 need a native check |
+| en | `9655ab03a93bdcfe5450ffbe102578f4714534b2` | Antigravity, Gemini 3.8 Flash (High) | machine | 2026-11-26 | Pass (advisory); L1, L2, L6 |
+| fr | `9655ab03a93bdcfe5450ffbe102578f4714534b2` | Antigravity, Gemini 3.8 Flash (High) | machine | 2026-11-26 | Pass (advisory); L1, L2, L3, L6 |
+
+The reviewer reported reading the locale catalogs, the application, report,
+graph, reference and AI-interchange sources, and the Biopolitical sample
+fixtures. It is a source reading, not a rendered review in both themes, and it
+does not record the authored-relationship trace review. Screen reader output and
+physical touch zoom were not checked. The CEO session re-ran the locale
+inventory and Biopolitical sample honesty checks (both passed). Severity below
+is the reviewer's own scale, not the table under Severity.
+
+| Finding | Reviewer severity | Unresolved at the reviewed SHA |
+| --- | --- | --- |
+| L1 | High | The Strategic standalone export embeds the canonical JSON but has no in-page disclosure to read it (`src/app.js`, near line 6220). |
+| L2 | High | Biopolitical export connection rows show relation and endpoint but omit link confidence and mechanism text (`src/biopolitical-report.js`, near line 285). |
+| L3 | Low | The French Strategic prompt mixes informal and formal address (`src/app.js`, lines 3163 and 3200). Prompt wording is an owner decision. |
+| L4 | Low | The Arabic Biopolitical sample may render "jurisdictions" with a word meaning "states" (`fixtures/sample-analysis-bio-ar.json`). Judgement; needs a native check. |
+| L5 | Low | Arabic `fileReadDone` verb agreement with the counted noun (`src/locales/ar.js`, line 117). Judgement; needs a native check. |
+| L6 | Low | `temporalProjection` filters undated evidence before numbering, so a dated item's source path can point to the wrong index (`src/biopolitics-graph.js`, near line 241). |
+
+Any later copy or surface change makes this record stale for that surface.
+
+## Data handling evidence required before release
+
+- **Separate backups:** Workspace history/drafts and dossier cases/sources use
+  separate stores and backup formats. Preserve both backups together, including
+  their canonical links; a workspace backup or HTML report alone is not a dossier
+  backup. Promotion writes across stores are not atomic. Verify both artifacts
+  and links after restore, and record any partial failure without claiming a
+  complete recovery. See [workspace](../features/workspace.md) and
+  [research dossier](../features/research-dossier.md).
+- **Import trust:** Schema validation and SHA-256 checksums detect malformed
+  data or corruption; they do not authenticate authorship, provenance, or truth.
+  Treat imported text, source URLs and AI output as untrusted data. Inspect
+  source access, canonical identity, and review status before relying on a claim;
+  importing is not publication approval.
+- **Format-2 rollback limits:** A format-1-only build cannot read or show
+  format-2 dossier cases containing sources/excerpts. It may label them corrupt
+  without deleting them. Preserve the original cases and backups and restore a
+  compatible build; do not promise automatic downgrade or recovery by rollback.
+  Cases without sources may remain format 1. The cap revert did not remove
+  this compatibility limit. See the [rollback warning](../release-notes-draft-format2-rollback.md).

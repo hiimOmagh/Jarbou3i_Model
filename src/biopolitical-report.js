@@ -29,7 +29,7 @@
       sourceTraceability: "Source traceability",
       humanReview: "Independent human review",
       publication: "Publication gate",
-      publishReady: "Publish-ready",
+      publishReady: "Checks passed; editorial approval pending",
       reviewNeeded: "Review needed",
       doNotPublish: "Do not publish yet",
       blockedNote: "Not publication-ready",
@@ -60,7 +60,8 @@
       source: "Open source",
       evidenceRecord: "Evidence record",
       sourceUnavailable: "No portable source link supplied",
-      authored: "Authored causal connections",
+      authored: "Explicit relationships",
+      linkConfidence: "Authored link confidence", mechanism: "Mechanism",
       evidence: "Evidence connections",
       structural: "Structural references",
       time: "Time signals",
@@ -77,6 +78,7 @@
       future: "Future and intergenerational signals",
     },
     ar: {
+      linkConfidence: "الثقة المؤلفة للرابط", mechanism: "الآلية",
       skip: "انتقل إلى محتوى التقرير",
       title: "تقرير تحليل السياسة الحيوية — خريطة التدريب 2",
       chain: "السؤال ← الوظيفة الإنسانية ← منظومة القوة ← الآلية ← المعنى/التصنيف ← اختبار التدخل ← التوزيع ← الأدلة ← الفاعلية/البدائل.",
@@ -86,7 +88,7 @@
       sourceTraceability: "قابلية تتبع المصادر",
       humanReview: "المراجعة البشرية المستقلة",
       publication: "بوابة النشر",
-      publishReady: "جاهز للنشر",
+      publishReady: "اجتاز الفحوص؛ الاعتماد التحريري قيد الانتظار",
       reviewNeeded: "يحتاج مراجعة",
       doNotPublish: "لا تنشر بعد",
       blockedNote: "غير جاهز للنشر",
@@ -117,7 +119,7 @@
       source: "فتح المصدر",
       evidenceRecord: "سجل دليل",
       sourceUnavailable: "لم يُقدَّم رابط مصدر قابل للنقل",
-      authored: "العلاقات السببية المؤلَّفة",
+      authored: "العلاقات المصرّح بها في التحليل",
       evidence: "علاقات الأدلة",
       structural: "المراجع البنيوية",
       time: "الإشارات الزمنية",
@@ -134,6 +136,7 @@
       future: "إشارات المستقبل وبين الأجيال",
     },
     fr: {
+      linkConfidence: "Confiance rédigée du lien", mechanism: "Mécanisme",
       skip: "Aller au contenu du rapport",
       title: "Rapport d’analyse biopolitique — Carte d’entraînement v2",
       chain: "Question → Fonction humaine → Système de pouvoir → Mécanisme → Sens/classification → Test d’intervention → Distribution → Preuves → Agentivité/alternatives.",
@@ -143,7 +146,7 @@
       sourceTraceability: "Traçabilité des sources",
       humanReview: "Revue humaine indépendante",
       publication: "Contrôle de publication",
-      publishReady: "Prêt à publier",
+      publishReady: "Contrôles réussis ; approbation éditoriale en attente",
       reviewNeeded: "Révision nécessaire",
       doNotPublish: "Ne pas publier",
       blockedNote: "Non prêt pour publication",
@@ -174,7 +177,7 @@
       source: "Ouvrir la source",
       evidenceRecord: "Élément de preuve",
       sourceUnavailable: "Aucun lien de source portable fourni",
-      authored: "Connexions causales rédigées",
+      authored: "Relations explicites",
       evidence: "Connexions probatoires",
       structural: "Références structurelles",
       time: "Signaux temporels",
@@ -311,7 +314,8 @@
     // Every connection is listed on its records; the atlas says how many
     // records have one, and how many connections each family holds.
     const connected = graph.nodes.filter((node) => graph.incoming(node.id).length || graph.outgoing(node.id).length).length;
-    const relationshipSummary = `<p>${escapeHtml(c.connected.replace("{connected}", connected).replace("{records}", graph.nodes.length))}</p><div class="tags">${["explicit", "evidence", "structural"].map((family) => `<span data-relationship-family="${family}">${escapeHtml(familyLabels[family])} · ${graph.edges.filter((edge) => edge.family === family).length}</span>`).join("")}</div>`;
+    const authoredLinks = `<h3>${escapeHtml(c.authored)}</h3><ul class="authoredLinks">${arr(a.links).map(link => `<li data-authored-link>${renderValue(link.from)} ${locale === "ar" ? "←" : "→"} ${renderValue(link.to)} · ${display(link.relation)}${link.confidence ? ` · ${escapeHtml(c.linkConfidence)}${locale === "fr" ? " :" : ":"} ${display(link.confidence)}` : ""}${link.mechanism ? ` · ${escapeHtml(c.mechanism)}${locale === "fr" ? " :" : ":"} ${escapeHtml(link.mechanism)}` : ""}</li>`).join("")}</ul>`;
+    const relationshipSummary = `${authoredLinks}<p>${escapeHtml(c.connected.replace("{connected}", connected).replace("{records}", graph.nodes.length))}</p><div class="tags">${["explicit", "evidence", "structural"].map((family) => `<span data-relationship-family="${family}">${escapeHtml(familyLabels[family])} · ${graph.edges.filter((edge) => edge.family === family).length}</span>`).join("")}</div>`;
     const temporal = graphApi.temporalProjection(a);
     const temporalLabels = { historical: c.historical, dated: c.dated, immediate: c.immediate, medium: c.medium, future: c.future };
     const temporalHtml = `<section data-temporal-projection="canonical"><h3>${escapeHtml(c.time)}</h3><p class="caution">${escapeHtml(c.timeCaution)}</p><div class="projectionGrid">${temporal.map((band) => `<article><h4>${escapeHtml(temporalLabels[band.key])} <span>${band.items.length}</span></h4>${band.items.length ? `<ul>${band.items.map((item) => `<li>${renderValue(item.label)}${item.detail ? ` — ${renderValue(item.detail)}` : ""}${item.id ? ` <small>[${escapeHtml(item.id)}]</small>` : ""}</li>`).join("")}</ul>` : `<p class="empty">—</p>`}</article>`).join("")}</div></section>`;
@@ -350,7 +354,7 @@
       .metricCard span,.metricCard small{display:block;margin-top:.35rem}.metricCard small{color:var(--j-fg-muted)}
       .metricBar{height:6px;margin-top:.6rem!important;overflow:hidden;border-radius:3px;background:var(--j-line)}.metricBar::before{content:"";display:block;width:var(--pct);height:100%;border-radius:inherit;background:var(--j-ink)}
       .metricBar[data-tone="warn"]::before{background:var(--j-warn)}.metricBar[data-tone="crit"]::before{background:var(--j-crit)}
-      .gateBadge{display:inline-flex!important;align-items:center;gap:6px;width:max-content;max-width:100%;padding:.3rem .65rem;border:1px solid currentColor;border-radius:999px;font:600 var(--j-t-12)/1.2 var(--j-font-data);}
+      .gateBadge{display:inline-flex!important;align-items:center;gap:6px;max-width:100%;padding:.3rem .65rem;border:1px solid currentColor;border-radius:999px;font:600 var(--j-t-12)/1.2 var(--j-font-data);}
       .gateBadge::before{content:"";flex:none;width:8px;height:8px}
       .gateBadge[data-tone="ok"]{color:var(--j-ok);background:var(--j-ok-wash)}.gateBadge[data-tone="ok"]::before{border-radius:50%;background:var(--j-ok)}
       .gateBadge[data-tone="warn"]{color:var(--j-warn);background:var(--j-warn-wash)}.gateBadge[data-tone="warn"]::before{width:0;height:0;border-inline:5px solid transparent;border-bottom:9px solid var(--j-warn)}
@@ -403,6 +407,7 @@
       .auditList{padding:0;list-style:none}.auditList li{display:flex;justify-content:space-between;gap:1rem;padding:.65rem;border-bottom:1px solid var(--j-line)}
       [data-audit-state="concern"]{color:var(--j-warn)}
       .caution,.empty{color:var(--j-fg-muted)}
+      .authoredLinks{min-width:0;overflow-wrap:anywhere}.authoredLinks li{min-width:0}.authoredLinks .referenceChip{max-width:100%;white-space:normal}.authoredLinks small{unicode-bidi:isolate}
       .jsonInspector pre{max-height:40rem;overflow:auto;padding:1rem;border:1px solid var(--j-line);border-radius:var(--j-r-2);background:var(--j-panel-2);color:var(--j-fg);font:var(--j-t-13)/1.55 var(--j-font-code);direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
       .jsonInspector summary{cursor:pointer;padding:.8rem}
       .canonicalAppendix{border-style:dashed}

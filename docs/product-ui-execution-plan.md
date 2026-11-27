@@ -4,7 +4,7 @@
 
 **Strategic source:** Strategic Product Roadmap v3.0
 
-**Product authority:** `2.1.0-alpha.57`
+**Product authority:** `2.1.0-alpha.58`
 
 **Plan state:** proposed execution authority; no product-version change
 

@@ -1,6 +1,6 @@
 # ADR-0005 — Sources and Excerpts Live in the Dossier Record
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-02
 - **Decision owners:** Product owner
 - **Builds on:** [ADR-0004](0004-research-dossier-store.md) (the dossier's own database); supersedes its reservation of format 2 for a framing history

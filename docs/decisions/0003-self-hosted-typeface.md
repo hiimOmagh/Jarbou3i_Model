@@ -1,6 +1,6 @@
 # ADR-0003 — One Self-Hosted Typeface: Readex Pro
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-21
 - **Decision owners:** Product owner
 - **Amends:** the kernel's "system fonts only" rule (`src/ui/kernel.css`, ADR-0002)

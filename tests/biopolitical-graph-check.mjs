@@ -33,6 +33,15 @@ assert.deepEqual(
 assert.ok(Object.isFrozen(temporal) && temporal.every(Object.isFrozen));
 assert.equal(temporal[2].items[0].path, "/scale_time/immediate_effects/0");
 
+const datedEvidence = api.temporalProjection({ evidence: { items: [
+  { id: "E1", claim: "Undated evidence" },
+  { id: "E2", source_date: "2026-01-01", claim: "Dated evidence" },
+] } }).find((band) => band.key === "dated").items;
+assert.equal(datedEvidence.length, 1);
+assert.equal(datedEvidence[0].id, "E2");
+assert.equal(datedEvidence[0].path, "/evidence/items/1/source_date",
+  "dated evidence must retain its original index after undated items are omitted");
+
 const comparisons = api.comparativeProjection(analysis);
 assert.equal(comparisons.length, 1);
 assert.equal(comparisons[0].id, "CMP1");
@@ -109,3 +118,13 @@ const french = api.build(
 assert.equal(french.resolve("RES1")?.label, "Travailleurs et résidents soumis aux contrôles d’accès");
 
 console.log("Biopolitical relationship graph checks passed.");
+
+// An undated item must not shift the source pointer of later dated evidence.
+const mixedDates = { evidence: { items: [
+  { id: "E1", claim: "Undated" },
+  { id: "E2", source_title: "Dated", source_date: "2026-01-02" },
+] } };
+const dated = api.temporalProjection(mixedDates).find((band) => band.key === "dated").items;
+assert.equal(dated.length, 1);
+assert.equal(dated[0].id, "E2");
+assert.equal(dated[0].path, "/evidence/items/1/source_date");

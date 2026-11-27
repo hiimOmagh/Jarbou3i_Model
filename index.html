@@ -15,7 +15,7 @@
 <meta property="og:description" content="Trace who wants what, and how lives are governed, with your own AI assistant. For anyone who wants to understand a story in the news, in Arabic, English and French." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta name="app-version" content="2.1.0-alpha.57" />
+<meta name="app-version" content="2.1.0-alpha.58" />
 <link rel="stylesheet" href="src/styles.css" />
 <link rel="stylesheet" href="src/ui/kernel.css" />
 <link rel="stylesheet" href="src/ui/shell.css" />
@@ -47,6 +47,9 @@
 <link rel="modulepreload" href="src/core/platform-runtime.js" />
 <link rel="modulepreload" href="src/core/lens-registry.js" />
 <link rel="modulepreload" href="src/core/localization.js" />
+<link rel="modulepreload" href="src/locales/ar.js" />
+<link rel="modulepreload" href="src/locales/en.js" />
+<link rel="modulepreload" href="src/locales/fr.js" />
 <link rel="modulepreload" href="src/core/persistence.js" />
 <link rel="modulepreload" href="src/core/performance.js" />
 <link rel="modulepreload" href="src/core/platform-state.js" />
@@ -69,6 +72,7 @@
 <link rel="modulepreload" href="src/core/evidence-review-plan.js" />
 <link rel="modulepreload" href="src/lenses/strategic/adapter.js" />
 <link rel="modulepreload" href="src/lenses/biopolitical/adapter.js" />
+<link rel="modulepreload" href="src/core/canonical-json.js" />
 <link rel="modulepreload" href="src/core/workspace-contract.js" />
 <link rel="modulepreload" href="src/core/review-ledger.js" />
 <link rel="modulepreload" href="src/core/resolution-transaction.js" />
@@ -86,8 +90,8 @@
 <body>
 <noscript><div style="margin:24px;padding:16px;border:1px solid #c8d4e5;border-radius:16px;background:#fff;color:#122033;font-family:system-ui,sans-serif">Jarbou3i Model requires JavaScript to run locally in your browser.</div></noscript>
 <div class="app">
-  <a class="j-skip" href="#workflowPanel" data-i18n="skipToWorkspace">انتقل إلى مساحة العمل</a>
   <div class="j-root j-shell" id="appShell">
+  <a class="j-skip" href="#workflowPanel" data-i18n="skipToWorkspace">انتقل إلى مساحة العمل</a>
   <header class="j-shell-top" id="appHeader">
     <div class="j-shell-brand">
       <img src="assets/jarbou3i-mascot-192.png" width="40" height="40" decoding="async" alt="">
@@ -123,7 +127,7 @@
     </div>
   </header>
 
-  <div class="j-shell-bar" role="region" aria-label="التنقل في مساحة العمل" id="workspaceBar">
+  <div class="j-shell-bar" id="workspaceBar">
     <nav class="j-shell-nav" id="workspaceNav" aria-label="التنقل في مساحة العمل">
       <button class="j-shell-phase" type="button" data-shell-nav="workflow" aria-current="step">
         <span class="j-shell-phase-index" aria-hidden="true">01</span>
@@ -170,12 +174,12 @@
       <ol class="j-ride-line" role="list">
         <li class="j-ride-stop" style="--j-i:0" aria-current="step"><span class="j-ride-ring" aria-hidden="true">1</span><span class="j-ride-name"><span data-i18n="rideAsk">اسأل</span><span class="j-ride-here" data-i18n="rideHere">أنت هنا</span></span><span class="j-ride-time" data-i18n="rideAskTime">دقيقة</span><p class="j-ride-text" data-i18n="rideAskText">يصبح موضوعك، في جملة واحدة، موجِّهًا دقيقًا.</p></li>
         <li class="j-ride-stop" style="--j-i:1"><span class="j-ride-ring" aria-hidden="true">2</span><span class="j-ride-name" data-i18n="rideWrite">يكتب مساعدك</span><span class="j-ride-time" data-i18n="rideWriteTime">من 2 إلى 5 دقائق</span><p class="j-ride-text" data-i18n="rideWriteText">في ChatGPT أو Claude أو Gemini، بحسابك أنت.</p></li>
-        <li class="j-ride-stop" style="--j-i:2"><span class="j-ride-ring" aria-hidden="true">3</span><span class="j-ride-name" data-i18n="rideCheck">تحقّق</span><span class="j-ride-time" data-i18n="rideCheckTime">من 5 إلى 10 دقائق</span><p class="j-ride-text" data-i18n="rideCheckText">كل ادعاء بجانب أدلته، وحكم على ما إذا كان التحليل قابلًا للنشر.</p></li>
+        <li class="j-ride-stop" style="--j-i:2"><span class="j-ride-ring" aria-hidden="true">3</span><span class="j-ride-name" data-i18n="rideCheck">تحقّق</span><span class="j-ride-time" data-i18n="rideCheckTime">من 5 إلى 10 دقائق</span><p class="j-ride-text" data-i18n="rideCheckText">كل ادعاء بجانب أدلته، مع فحوص التطبيق. ويبقى الاعتماد التحريري مطلوبًا.</p></li>
         <li class="j-ride-stop j-ride-end" style="--j-i:3"><span class="j-ride-ring" aria-hidden="true"></span><span class="j-ride-name" data-i18n="rideEnd">تقرير للمشاركة</span></li>
       </ol>
     </section>
     <button type="button" class="j-btn" id="workflowDisclosure" aria-expanded="true" aria-controls="workflowPanel" data-i18n="setupEdit">تعديل الإعداد</button>
-    <section class="j-root j-flow" id="workflowPanel" aria-labelledby="flowStepTitle">
+    <section class="j-root j-flow" id="workflowPanel" aria-labelledby="flowStepTitle" tabindex="-1">
       <div class="j-flow-guide" id="flowGuide" data-mood="idle">
         <div class="j-flow-mascot">
           <img src="assets/jarbou3i-mascot-192.png" width="72" height="72" decoding="sync" fetchpriority="high" alt="">
@@ -341,7 +345,7 @@
       <ol class="j-engine-map" role="list" id="engineNav"></ol>
     </section>
 
-    <section class="j-card hide" id="reviewPanel" aria-labelledby="reviewTitle">
+    <section class="j-card hide" id="reviewPanel" aria-labelledby="reviewTitle" tabindex="-1">
       <header class="j-card-head">
         <div>
           <h2 id="reviewTitle" data-i18n="reviewTitle" tabindex="-1">مراجعة التحليل الاستراتيجي</h2>
@@ -397,7 +401,7 @@
         <button class="j-btn" id="workspaceExport" type="button" disabled>تصدير مساحة العمل</button>
         <button class="j-btn" id="workspaceImport" type="button">استيراد حزمة</button>
         <button class="j-btn" data-variant="ghost" id="workspaceProtectStorage" type="button">حماية التخزين</button>
-        <input class="j-sr-only" id="workspaceImportFile" type="file" accept="application/json,.json" aria-labelledby="workspaceImport" />
+        <input class="j-sr-only" id="workspaceImportFile" type="file" accept="application/json,.json" aria-labelledby="workspaceImport" tabindex="-1" />
       </div>
       <p class="j-note" data-tone="idle" id="storageHealth" role="status" aria-live="polite"></p>
       <p class="j-note" data-tone="idle" id="workspaceStatus" role="status" aria-live="polite"></p>
@@ -411,7 +415,7 @@
       <h4 class="j-ws-title" id="caseListTitle">القضايا</h4>
       <div class="j-ws-acts">
         <button class="j-btn" id="caseRestore" type="button">استعادة قضية من ملف</button>
-        <input class="j-sr-only" id="caseRestoreFile" type="file" accept="application/json,.json" aria-labelledby="caseRestore" />
+        <input class="j-sr-only" id="caseRestoreFile" type="file" accept="application/json,.json" aria-labelledby="caseRestore" tabindex="-1" />
       </div>
       <p class="j-note" data-tone="idle" id="caseListStatus" role="status" aria-live="polite"></p>
       <div class="j-ws-list" id="caseList"></div>

@@ -4,23 +4,49 @@ on:
   push:
     branches:
       - main
-      - ux0-preview
+      - develop
   pull_request:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # PR updates supersede earlier runs; every push keeps its own pending run.
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   no-browser:
     name: No-browser gates
     runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: classify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          result=false
+          if [ "$EVENT_NAME" = pull_request ] && git diff --no-renames --name-only -z "$BASE_SHA...$HEAD_SHA" > "$RUNNER_TEMP/changed-files"; then
+            result=true
+            count=0
+            while IFS= read -r -d '' file; do
+              count=$((count + 1))
+              case "$file" in
+                src/*|tests/*|scripts/*|.github/workflows/*|package*.json|index.html|*.css) result=false ;;
+                docs/*|*.md) ;;
+                *) result=false ;;
+              esac
+            done < "$RUNNER_TEMP/changed-files"
+            [ "$count" -gt 0 ] || result=false
+          fi
+          echo "docs_only=$result" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
         with:
@@ -49,6 +75,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
     needs: no-browser
+    if: ${{ needs.no-browser.outputs.docs_only != 'true' }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -138,12 +165,13 @@ jobs:
           --workers=2
 
       - uses: actions/upload-artifact@v7
-        if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
+        if: ${{ (failure() && hashFiles('test-results/**', 'playwright-report/**') != '') || (always() && hashFiles('attempt-results/**') != '') }}
         with:
-          name: browser-debug-${{ matrix.artifact }}
+          name: browser-debug-${{ matrix.artifact }}-attempt-${{ github.run_attempt }}
           path: |
             test-results
             playwright-report
+            attempt-results
           if-no-files-found: ignore
           retention-days: 7
 
@@ -158,6 +186,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
     needs: no-browser
+    if: ${{ needs.no-browser.outputs.docs_only != 'true' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -175,15 +204,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify CI diagnostics
+        run: node tests/ci-diagnostics-check.mjs
+
       - name: Capture and review hosted evidence
         run: npm run test:browser:hosted
         env:
           HOSTED_DEMO_EVIDENCE_DIR: hosted-demo-evidence
+          PLAYWRIGHT_JSON_OUTPUT_NAME: attempt-results/hosted.json
 
       - name: Capture and review visual-audit evidence
         run: npm run test:browser:visual-audit
         env:
           VISUAL_AUDIT_EVIDENCE_DIR: visual-audit-evidence
+          PLAYWRIGHT_JSON_OUTPUT_NAME: attempt-results/visual-audit.json
 
       - uses: actions/upload-artifact@v7
         if: ${{ always() && hashFiles('hosted-demo-evidence/**') != '' }}
@@ -202,25 +236,28 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@v7
-        if: ${{ failure() && hashFiles('test-results/**', 'playwright-report/**') != '' }}
+        if: ${{ (failure() && hashFiles('test-results/**', 'playwright-report/**') != '') || (always() && hashFiles('attempt-results/**') != '') }}
         with:
-          name: browser-evidence-debug
+          name: browser-evidence-debug-attempt-${{ github.run_attempt }}
           path: |
             test-results
             playwright-report
+            attempt-results
           if-no-files-found: ignore
           retention-days: 7
 
   browser:
     name: Browser gates
-    if: ${{ always() }}
+    if: ${{ always() && needs.no-browser.outputs.docs_only != 'true' }}
     needs:
+      - no-browser
       - browser-core
       - browser-evidence
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Verify all browser gates
+        if: ${{ always() }}
         env:
           CORE_RESULT: ${{ needs.browser-core.result }}
           EVIDENCE_RESULT: ${{ needs.browser-evidence.result }}
@@ -229,37 +266,3 @@ jobs:
           echo "Browser evidence result: $EVIDENCE_RESULT"
           test "$CORE_RESULT" = "success"
           test "$EVIDENCE_RESULT" = "success"
-
-  deploy-pages:
-    name: Deploy accepted GitHub Pages build
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    needs: browser
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Build explicit static deployment artifact
-        run: node scripts/build-pages-artifact.mjs
-
-      - uses: actions/configure-pages@v6
-
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: build/pages
-
-      - name: Deploy accepted commit
-        id: deployment
-        uses: actions/deploy-pages@v5

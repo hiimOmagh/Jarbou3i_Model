@@ -56,6 +56,7 @@ for (const [name, entry] of Object.entries(lock.packages || {})) {
 
 for (const [file, source] of [
   ["src/app.js", app],
+  ...["ar", "en", "fr"].map(locale => [`src/locales/${locale}.js`, read(`src/locales/${locale}.js`)]),
   ["src/biopolitics.js", bio],
   ["src/biopolitics-integrity.js", integrity],
   ["src/biopolitics-graph.js", graph],

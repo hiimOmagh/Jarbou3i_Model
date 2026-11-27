@@ -17,3 +17,5 @@ build/
 /.agents/
 /tests/evals/
 skills-lock.json
+attempt-results/
+.ci-diagnostics-*/

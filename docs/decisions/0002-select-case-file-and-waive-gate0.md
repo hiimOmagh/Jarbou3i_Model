@@ -1,6 +1,6 @@
 # ADR-0002 — Select the Case File Concept and Waive the Gate 0 Benchmark
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-10
 - **Decision owners:** Product owner
 - **Amends:** [ADR-0001](0001-benchmark-before-runtime-ui-migration.md) (benchmark

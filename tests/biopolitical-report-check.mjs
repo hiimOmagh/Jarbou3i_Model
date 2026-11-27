@@ -71,6 +71,9 @@ for (const [lang, [dir, title]] of Object.entries(localeContracts)) {
     /: simple\./,
     `${lang}: the prompt prints the depth code`,
   );
+  const relationshipLabel = { en: "Explicit relationships", ar: "العلاقات المصرّح بها في التحليل", fr: "Relations explicites" }[lang];
+  assert.ok(html.includes(relationshipLabel), `${lang}: explicit relationship group label missing`);
+  assert.doesNotMatch(html, /Authored causal connections|العلاقات السببية المؤلَّفة|Connexions causales rédigées/i, `${lang}: relationship group claims causality`);
   assert.ok(html.includes(title), `${lang} report title missing`);
   assert.ok(html.includes('data-publication-gate="blocked"'));
   assert.ok(html.includes('data-canonical-contract="complete"'));
@@ -210,3 +213,28 @@ for (const [lang, words] of [["ar", ["نزع الملكية", "الأرشيف"]]
 }
 
 console.log("Biopolitical standalone report checks passed.");
+
+// Exercise the renderer's passing branch without changing gate eligibility rules.
+for (const [lang, label] of Object.entries({ en: 'Checks passed; editorial approval pending', ar: 'اجتاز الفحوص؛ الاعتماد التحريري قيد الانتظار', fr: 'Contrôles réussis ; approbation éditoriale en attente' })) {
+  const passingBio = { ...bio, health: (...args) => ({ ...bio.health(...args), publishable: true, missing: [] }) };
+  const output = reportApi.build({ analysis: bio.sample(lang), lang, version: PRODUCT_VERSION, bio: passingBio, graphApi });
+  assert.ok(output.includes(label), `${lang}: passing export retains pending editorial approval`);
+}
+
+await import('./publication-wording-check.mjs');
+assert.ok(reportApi.build({ analysis: fixture, lang: "en", version: PRODUCT_VERSION, bio, graphApi }).includes("Authored link confidence"), "authored link confidence label");
+
+for (const lang of ['en', 'ar', 'fr']) {
+  const analysis = bio.sample(lang);
+  analysis.links[0].mechanism = '<img src=x onerror=alert(1)>' + 'longword'.repeat(70);
+  const html = reportApi.build({analysis, lang, version: PRODUCT_VERSION, bio, graphApi});
+  const rows = [...html.matchAll(/<li data-authored-link>(.*?)<\/li>/g)].map(match => match[1]);
+  assert.equal(rows.length, analysis.links.length);
+  analysis.links.forEach((link, index) => {
+    for (const value of [link.from, link.to]) assert.ok(rows[index].includes(value));
+    assert.ok(rows[index].includes(bio.displayToken(lang, link.relation)));
+    assert.ok(rows[index].includes(bio.displayToken(lang, link.confidence)));
+  });
+  assert.ok(html.includes('&lt;img src=x onerror=alert(1)&gt;'));
+  assert.ok(!html.includes('<img src=x'));
+}

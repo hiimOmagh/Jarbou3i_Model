@@ -11,7 +11,7 @@
     "title": "Pass sanitaires numériques et mobilité conditionnelle",
     "context": "2020–2022, juridictions européennes sélectionnées",
     "research_question": "Dans quelles conditions les pass sanitaires ont-ils protégé la santé publique, et dans quelles conditions ont-ils créé des systèmes durables de classification et de mobilité conditionnelle ?",
-    "executive_finding": "Les pass ont combiné une fonction sanitaire légitime et une nouvelle infrastructure de contrôle d’accès. Les preuves soutiennent une qualification mixte : protection et coordination étaient réelles, tandis que proportionnalité, réutilisation, charges inégales et possibilité de sortie variaient selon les juridictions."
+    "executive_finding": "Exemple illustratif uniquement. Les sources sont provisoires, non vérifiées et sans URL. Cet exemple ne fournit aucun appui probant à une intervention ; toutes les affirmations de fond nécessitent une vérification indépendante."
   },
   "framing": {
     "contested_terms": [
@@ -495,7 +495,7 @@
       "legitimate_benefits": [
         "Vérification à faible friction pendant une urgence sanitaire aiguë."
       ],
-      "conclusion": "L’intervention combinait protection et accès conditionnel. Le constat de capture dépend de la durée, des alternatives, de la limitation de finalité, de la réutilisation et de la contestabilité.",
+      "conclusion": "Hypothèse d’intervention illustrative uniquement ; les sources provisoires non vérifiées ne fournissent aucun appui probant.",
       "confidence": "medium"
     },
     "care_control_tensions": [
@@ -804,7 +804,7 @@
       {
         "id": "E1",
         "claim": "Des règles ont relié des justificatifs sanitaires définis à l’accès à certains lieux.",
-        "epistemic_type": "verified_fact",
+        "epistemic_type": "institutional_claim",
         "source_tier": "primary_legal_policy",
         "source_title": "Loi ou règlement propre à la juridiction sur le pass sanitaire — à remplacer par une source vérifiée",
         "source_url": "",
@@ -920,7 +920,7 @@
   },
   "calibrated_conclusion": {
     "strongly_supported": [
-      "Le justificatif a transformé l’information sanitaire en signal de contrôle d’accès."
+      "Exemple illustratif uniquement. Les sources sont provisoires, non vérifiées et sans URL. Cet exemple ne fournit aucun appui probant à une intervention ; toutes les affirmations de fond nécessitent une vérification indépendante."
     ],
     "plausible_unconfirmed": [
       "Une infrastructure réutilisable peut survivre à l’urgence qui l’a justifiée."

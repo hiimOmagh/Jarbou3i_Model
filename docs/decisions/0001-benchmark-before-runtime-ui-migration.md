@@ -1,6 +1,6 @@
 # ADR-0001 — Benchmark Before Runtime UI Migration
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-07-28
 - **Decision owners:** Product and engineering
 - **Related work:** `BR-0`, `GATE-0`, `UX-0`, `UIX-1` through `UIX-4`

@@ -43,4 +43,4 @@ for (const name of forbidden) {
   }
 }
 
-console.log(`GitHub Pages artifact built at ${path.relative(root, output)}`);
+console.log(`Pages artifact built at ${path.relative(root, output)}`);

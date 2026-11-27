@@ -8,13 +8,30 @@ const read = (file) => fs.readFileSync(file, "utf8");
 const pkg = JSON.parse(read("package.json"));
 const workflow = read(".github/workflows/ci.yml");
 const playwright = read("playwright.config.js");
+for (const ci of [undefined, "1"]) {
+  const previousCI = process.env.CI;
+  try {
+    if (ci === undefined) delete process.env.CI;
+    else process.env.CI = ci;
+    const { default: config } = await import(`../playwright.config.js?ci-contract=${ci}`);
+    if (config.forbidOnly !== Boolean(ci)) fail("Playwright must forbid focused tests in CI only");
+    if (config.use?.trace !== "retain-on-failure") fail("Playwright must retain traces from the first failure");
+  } finally {
+    if (previousCI === undefined) delete process.env.CI;
+    else process.env.CI = previousCI;
+  }
+}
 
 const noBrowser = pkg.scripts?.["test:ci:no-browser"] || "";
 for (const gate of [
   "build:validator",
+  "test:case-archive",
+  "test:locale:inventory",
+  "test:release-evidence:self-test",
   "test:version-authority",
   "test:gate0:kit",
   "test:qa",
+  "test:dependencies",
   "test:static",
   "test:platform",
   "test:platform:services",
@@ -33,6 +50,7 @@ for (const gate of [
   "test:bio:v2",
   "test:bio:integrity",
   "test:bio:report",
+  "test:bio:sample-honesty",
   "test:schema",
   "test:fixtures",
   "test:parser",
@@ -47,6 +65,9 @@ for (const gate of [
     fail(`test:ci:no-browser is missing ${gate}`);
   }
 }
+if (pkg.scripts?.["test:release-evidence:self-test"] !== "node tests/release-evidence-check.mjs --self-test") {
+  fail("test:release-evidence:self-test must run the release evidence self-test only");
+}
 if (pkg.scripts?.["build:pages"] !== "node scripts/build-pages-artifact.mjs") {
   fail("build:pages must execute the explicit deployment-artifact builder");
 }
@@ -58,6 +79,12 @@ if (pkg.scripts?.["test:gate0:kit"] !== "node tests/gate0-benchmark-kit-check.mj
 }
 if (pkg.scripts?.["benchmark:gate0"] !== "node scripts/gate0-benchmark.mjs") {
   fail("benchmark:gate0 must execute the benchmark preparation and reporting CLI");
+}
+
+const registeredSpecs = new Set(Object.entries(pkg.scripts || {}).filter(([name]) => name.startsWith("test:browser:")).flatMap(([, command]) => command.match(/tests\/[\w./-]+\.spec\.js/g) || []));
+for (const file of fs.readdirSync("tests", { recursive: true }).filter((name) => name.endsWith(".spec.js"))) {
+  const spec = "tests/" + file.replaceAll("\\", "/");
+  if (!registeredSpecs.has(spec)) fail("unregistered browser spec: " + spec);
 }
 
 const core = pkg.scripts?.["test:browser:core"] || "";
@@ -203,14 +230,6 @@ for (const token of [
   "contents: read",
   "concurrency:",
   "timeout-minutes:",
-  "name: Deploy accepted GitHub Pages build",
-  "needs: browser",
-  "pages: write",
-  "id-token: write",
-  "node scripts/build-pages-artifact.mjs",
-  "actions/configure-pages@v6",
-  "actions/upload-pages-artifact@v5",
-  "actions/deploy-pages@v5",
 ]) {
   if (!workflow.includes(token)) fail(`workflow is missing: ${token}`);
 }
@@ -228,6 +247,16 @@ for (const retiredAction of [
   if (workflow.includes(retiredAction)) {
     fail(`workflow retains a retired action runtime: ${retiredAction}`);
   }
+}
+// Cloudflare Pages owns production; CI must not publish a GitHub Pages mirror.
+for (const forbidden of [
+  /^  deploy-pages:/m,
+  /name:\s*Deploy accepted GitHub Pages build/,
+  /actions\/(?:configure-pages|upload-pages-artifact|deploy-pages)@/,
+  /pages:\s*write/,
+  /name:\s*github-pages/,
+]) {
+  if (forbidden.test(workflow)) fail(`workflow must not deploy GitHub Pages: ${forbidden}`);
 }
 // Browser jobs run in Playwright's image, whose browsers must match the
 // installed Playwright; no job installs browsers from the package mirror.

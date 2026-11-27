@@ -1949,7 +1949,7 @@ ${schema}${interchangeGuide}`;
         question:
           "Under what conditions did digital health passes protect public health, and under what conditions did they create durable systems of classification and conditional mobility?",
         finding:
-          "Digital passes combined a legitimate public-health function with a new access-control infrastructure. Evidence supports a mixed intervention: protection and administrative coordination were real, while proportionality, reuse, unequal burdens, and practical exit varied by jurisdiction.",
+          "Illustrative example only. Sources are unverified placeholders with empty URLs. This sample provides no evidentiary support for any intervention; all substantive claims require independent verification.",
         term: "health pass",
         termDef:
           "A verifiable credential linking defined health information to an access decision.",
@@ -1982,8 +1982,6 @@ ${schema}${interchangeGuide}`;
           "Litigation, protest, technical workarounds, and demands for sunset clauses changed implementation.",
         alternative:
           "Narrow, time-limited rules with free alternatives, strict purpose limitation, independent audit, and accessible appeal.",
-        strong:
-          "The credential converted health information into an access-control signal.",
         plausible:
           "Reusable infrastructure can outlast the emergency that justified it.",
         disputed:
@@ -1999,7 +1997,7 @@ ${schema}${interchangeGuide}`;
         question:
           "متى عملت الجوازات الصحية الرقمية كحماية للصحة العامة، ومتى أنشأت أنظمة دائمة للتصنيف والحركة المشروطة؟",
         finding:
-          "جمعت الجوازات الرقمية بين وظيفة صحية عامة مشروعة وبنية جديدة لضبط الوصول. تدعم الأدلة وصفًا مختلطًا: كانت الحماية والتنسيق الإداري حقيقيين، بينما اختلف التناسب وإعادة الاستخدام والأعباء غير المتكافئة وإمكانية الخروج حسب الولاية.",
+          "مثال توضيحي فقط. المصادر عناصر نائبة غير متحققة بروابط فارغة. لا يقدم هذا المثال أي دعم إثباتي لأي تدخل؛ تتطلب جميع الادعاءات الموضوعية تحققًا مستقلًا.",
         term: "الجواز الصحي",
         termDef: "وثيقة قابلة للتحقق تربط معلومة صحية محددة بقرار وصول.",
         history:
@@ -2026,7 +2024,6 @@ ${schema}${interchangeGuide}`;
           "غيّرت الدعاوى والاحتجاجات والحلول التقنية والمطالبة ببنود الانتهاء طريقة التنفيذ.",
         alternative:
           "قواعد ضيقة ومحددة زمنيًا مع بدائل مجانية وتقييد صارم للغرض وتدقيق مستقل وطعن ميسّر.",
-        strong: "حوّلت الوثيقة المعلومة الصحية إلى إشارة لضبط الوصول.",
         plausible:
           "قد تعيش البنية القابلة لإعادة الاستخدام أطول من الطارئ الذي بررها.",
         disputed:
@@ -2041,7 +2038,7 @@ ${schema}${interchangeGuide}`;
         question:
           "Dans quelles conditions les pass sanitaires ont-ils protégé la santé publique, et dans quelles conditions ont-ils créé des systèmes durables de classification et de mobilité conditionnelle ?",
         finding:
-          "Les pass ont combiné une fonction sanitaire légitime et une nouvelle infrastructure de contrôle d’accès. Les preuves soutiennent une qualification mixte : protection et coordination étaient réelles, tandis que proportionnalité, réutilisation, charges inégales et possibilité de sortie variaient selon les juridictions.",
+          "Exemple illustratif uniquement. Les sources sont provisoires, non vérifiées et sans URL. Cet exemple ne fournit aucun appui probant à une intervention ; toutes les affirmations de fond nécessitent une vérification indépendante.",
         term: "pass sanitaire",
         termDef:
           "Justificatif vérifiable reliant une information sanitaire définie à une décision d’accès.",
@@ -2074,8 +2071,6 @@ ${schema}${interchangeGuide}`;
           "Contentieux, protestations, contournements techniques et demandes de clauses d’extinction ont modifié la mise en œuvre.",
         alternative:
           "Règles étroites et limitées dans le temps, alternatives gratuites, finalité stricte, audit indépendant et recours accessible.",
-        strong:
-          "Le justificatif a transformé l’information sanitaire en signal de contrôle d’accès.",
         plausible:
           "Une infrastructure réutilisable peut survivre à l’urgence qui l’a justifiée.",
         disputed:
@@ -2663,7 +2658,7 @@ ${schema}${interchangeGuide}`;
           counter_evidence: [copy.counter],
           legitimate_benefits: [copy.benefit],
           conclusion:
-            "The intervention combined protection with conditional access. A capture finding depends on duration, alternatives, purpose limitation, reuse, and contestability.",
+            "Illustrative intervention hypothesis only; unverified placeholder sources provide no evidentiary support.",
           confidence: "medium",
         },
         care_control_tensions: [
@@ -2770,7 +2765,7 @@ ${schema}${interchangeGuide}`;
           {
             id: "E1",
             claim: copy.eClaim,
-            epistemic_type: "verified_fact",
+            epistemic_type: "institutional_claim",
             source_tier: "primary_legal_policy",
             source_title:
               "Jurisdiction-specific health-pass law or regulation — replace with verified source",
@@ -2893,7 +2888,7 @@ ${schema}${interchangeGuide}`;
         ],
       },
       calibrated_conclusion: {
-        strongly_supported: [copy.strong],
+        strongly_supported: [copy.finding],
         plausible_unconfirmed: [copy.plausible],
         disputed: [copy.disputed],
         unknown: [copy.unknown],

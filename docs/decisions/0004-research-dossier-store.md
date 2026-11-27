@@ -1,6 +1,6 @@
 # ADR-0004 — The Research Dossier Lives in Its Own Database
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-30
 - **Decision owners:** Product owner
 - **Authorizes:** `RESEARCH-1` (product owner, 2026-10-30), starting with `RESEARCH-1A`

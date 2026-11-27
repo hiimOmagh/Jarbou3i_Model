@@ -5,13 +5,15 @@ superseded, but its history is not rewritten.
 
 | ADR | Status | Decision |
 |---|---|---|
-| [ADR-0001](0001-benchmark-before-runtime-ui-migration.md) | Proposed | Benchmark before runtime UI migration and preserve canonical authorities |
-| [ADR-0002](0002-select-case-file-and-waive-gate0.md) | Proposed | Select UX-0 concept B (case file), waive the Gate 0 benchmark, authorize UIX-1 and UIX-2 |
-| [ADR-0003](0003-self-hosted-typeface.md) | Proposed | One self-hosted typeface, Readex Pro, for Arabic and Latin |
-| [ADR-0004](0004-research-dossier-store.md) | Proposed | The research dossier lives in its own database, beside the workspaces |
-| [ADR-0005](0005-sources-in-the-dossier-record.md) | Proposed | Sources and excerpts live in the dossier record, format 2 |
-| [ADR-0006](0006-promotion-through-resolution.md) | Proposed | An excerpt becomes evidence only through a committed resolution |
+| [ADR-0001](0001-benchmark-before-runtime-ui-migration.md) | Accepted | Benchmark before runtime UI migration and preserve canonical authorities |
+| [ADR-0002](0002-select-case-file-and-waive-gate0.md) | Accepted | Select UX-0 concept B (case file), waive the Gate 0 benchmark, authorize UIX-1 and UIX-2 |
+| [ADR-0003](0003-self-hosted-typeface.md) | Accepted | One self-hosted typeface, Readex Pro, for Arabic and Latin |
+| [ADR-0004](0004-research-dossier-store.md) | Accepted | The research dossier lives in its own database, beside the workspaces |
+| [ADR-0005](0005-sources-in-the-dossier-record.md) | Accepted | Sources and excerpts live in the dossier record, format 2 |
+| [ADR-0006](0006-promotion-through-resolution.md) | Accepted | An excerpt becomes evidence only through a committed resolution |
+| [ADR-0010](0010-case-archive.md) | Proposed | A unified case archive preserves separate authorities |
 
 `Proposed` means the decision is part of an unmerged implementation package.
 After the package is accepted, the status becomes `Accepted` in a dedicated
 documentation change or as part of the merge candidate.
+`ADR-0011` ([dependency migration gate](0011-dependency-migration-gate.md)) is Proposed.

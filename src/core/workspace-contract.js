@@ -1,7 +1,7 @@
 /* Versioned local-workspace contract. Canonical analysis revisions remain immutable. */
 
-import { createReviewLedger, verifyReviewLedger } from "./review-ledger.js";
-import { createResolutionLedger, verifyResolutionLedger } from "./resolution-transaction.js";
+import { canonicalStringify, sha256, WorkspaceContractError } from "./canonical-json.js";
+export { canonicalStringify, sha256, WorkspaceContractError } from "./canonical-json.js";
 
 export const WORKSPACE_FORMAT = "jarbou3i-local-workspace";
 export const WORKSPACE_FORMAT_VERSION = 3;
@@ -12,57 +12,12 @@ export const WORKSPACE_CHECKSUM_ALGORITHM = "SHA-256";
 const isRecord = (value) =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
-export class WorkspaceContractError extends Error {
-  constructor(code, message, details = {}) {
-    super(message);
-    this.name = "WorkspaceContractError";
-    this.code = code;
-    this.details = Object.freeze({ ...details });
-  }
-}
-
 function fail(code, message, details) {
   throw new WorkspaceContractError(code, message, details);
 }
 
 function clone(value) {
   return structuredClone(value);
-}
-
-export function canonicalStringify(value) {
-  const seen = new WeakSet();
-  const normalize = (item) => {
-    if (item === null || typeof item !== "object") return item;
-    if (seen.has(item)) fail("CYCLIC_VALUE", "Workspace values must be acyclic.");
-    seen.add(item);
-    if (Array.isArray(item)) {
-      const result = item.map(normalize);
-      seen.delete(item);
-      return result;
-    }
-    // Null prototype so an own "__proto__" key is kept as data, not dropped.
-    const result = Object.create(null);
-    for (const key of Object.keys(item).sort()) {
-      const child = item[key];
-      if (child !== undefined) result[key] = normalize(child);
-    }
-    seen.delete(item);
-    return result;
-  };
-  return JSON.stringify(normalize(value));
-}
-
-export async function sha256(value, cryptoImpl = globalThis.crypto) {
-  if (!cryptoImpl?.subtle?.digest) {
-    fail("CRYPTO_UNAVAILABLE", "SHA-256 support is required for workspace integrity.");
-  }
-  const bytes = new TextEncoder().encode(
-    typeof value === "string" ? value : canonicalStringify(value),
-  );
-  const digest = await cryptoImpl.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
 }
 
 function defaultId(prefix) {
@@ -120,6 +75,8 @@ export async function createWorkspace({
   const draftId = idFactory("draft");
   const payload = clone(analysis);
   const checksum = await sha256(payload, cryptoImpl);
+  const { createReviewLedger } = await import("./review-ledger.js");
+  const { createResolutionLedger } = await import("./resolution-transaction.js");
   return {
     format: WORKSPACE_FORMAT,
     format_version: WORKSPACE_FORMAT_VERSION,
@@ -222,7 +179,9 @@ function validateShape(workspace) {
 
 export async function verifyWorkspace(workspace, { cryptoImpl } = {}) {
   validateShape(workspace);
+  const { verifyReviewLedger } = await import("./review-ledger.js");
   await verifyReviewLedger(workspace.review_ledger, { cryptoImpl });
+  const { verifyResolutionLedger } = await import("./resolution-transaction.js");
   await verifyResolutionLedger(workspace.resolution_ledger, { workspace, cryptoImpl });
   for (const event of workspace.review_ledger.events) {
     if (event.workspace_id !== workspace.workspace_id) {
@@ -269,9 +228,11 @@ export async function migrateWorkspace(input, options = {}) {
   if (input.format === WORKSPACE_FORMAT && input.format_version === 1) {
     const migrated = clone(input);
     migrated.format_version = WORKSPACE_FORMAT_VERSION;
+    const { createReviewLedger } = await import("./review-ledger.js");
     migrated.review_ledger = createReviewLedger({
       clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
     });
+    const { createResolutionLedger } = await import("./resolution-transaction.js");
     migrated.resolution_ledger = createResolutionLedger({
       clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
     });
@@ -280,6 +241,7 @@ export async function migrateWorkspace(input, options = {}) {
   if (input.format === WORKSPACE_FORMAT && input.format_version === 2) {
     const migrated = clone(input);
     migrated.format_version = WORKSPACE_FORMAT_VERSION;
+    const { createResolutionLedger } = await import("./resolution-transaction.js");
     migrated.resolution_ledger = createResolutionLedger({
       clock: () => input.metadata?.updated_at || input.metadata?.created_at || new Date().toISOString(),
     });

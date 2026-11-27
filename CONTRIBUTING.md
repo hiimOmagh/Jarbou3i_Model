@@ -22,21 +22,23 @@ Keep contributions disciplined. This is a focused analytical tool, not a general
 
 ## Protected contribution workflow
 
-`main` is governed by an active repository ruleset. Do not work directly on `main` and do not attempt to bypass required checks.
+The integration branch was named `ux0-preview` until 2026-11-25.
 
-1. Start from an up-to-date `main`.
+`develop` is the integration branch: start contribution branches from it and target it with pull requests. Never target `main` for contributions; it is the owner-only production branch. Do not bypass required checks.
+
+1. Start from an up-to-date `develop`.
 2. Create a focused branch.
 3. Make and validate one bounded change.
-4. Push the branch and open a pull request.
+4. Push the branch and open a pull request targeting `develop`.
 5. Resolve review conversations.
-6. Keep the branch current with `main`.
+6. Keep the branch current with `develop`.
 7. Merge only after `No-browser gates` and `Browser gates` pass naturally.
 
 Example:
 
 ```bash
-git switch main
-git pull --ff-only origin main
+git switch develop
+git pull --ff-only origin develop
 git switch -c <type>/<short-scope>
 ```
 
@@ -67,6 +69,6 @@ Ordinary commits do not receive product versions or tags. Changes accumulate und
 
 ## Git flow
 
-Start work from an intake row on `feature/<row>-<slug>` and open a pull request into `ux0-preview`. Do not push directly to `main` or `ux0-preview`. Keep changes within the row’s scope, update the relevant documentation and wait for both required CI checks before merging. Obtain a different-model review covering bugs, specification compliance, security and money risks; this is project policy, not a GitHub approval requirement.
+Start work from an intake row on `feature/<row>-<slug>` and open a pull request into `develop`. Do not push directly to `main` or `develop`. Keep changes within the row’s scope, update the relevant documentation and wait for both required CI checks before merging. Obtain a different-model review covering bugs, specification compliance, security and money risks; this is project policy, not a GitHub approval requirement.
 
-Cut `release/<version>` from `ux0-preview` for a release pull request into `main`. The owner merges the release after the gates and review pass. Use `hotfix/<slug>` from `main` for urgent fixes and back-merge released changes into `ux0-preview`. Follow the [release process](docs/operations/release-process.md) for validation, tagging and rollback.
+Cut `release/<version>` from `develop` for a release pull request into `main`. The owner approves the release after the gates and review pass; an agent executes the merge. Use `hotfix/<slug>` from `main` for urgent fixes and back-merge released changes into `develop`. Follow the [release process](docs/operations/release-process.md) for validation, tagging and rollback.
