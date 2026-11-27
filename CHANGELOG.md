@@ -4,6 +4,28 @@
 
 Nothing yet.
 
+## v2.1.0-alpha.58
+
+Changes since v2.1.0-alpha.57.
+
+### What you will notice
+
+- The built-in Biopolitical sample now says in the app and in its export that it is an illustrative example with no evidence behind it (English, Arabic, French).
+- Check results now say that the app's checks passed and editorial approval is still pending, instead of "Publish-ready". The welcome line no longer promises a publication verdict.
+- Exported reports show each authored relationship with its endpoints, relation and confidence. The Strategic export carries a JSON disclosure of those relationships. The Biopolitical report names this group "explicit relationships" instead of "causal connections".
+- The Biopolitical timeline keeps the original evidence index in its source path.
+- French analysis prompts use "vous" throughout.
+- Printing hides the app header and workspace bar, and the duplicate "Workspace navigation" landmark is gone.
+- Dialogs keep focus and inertness correct (the app shell is inert while a dialog is open, one shared focus trap, the command palette closes cleanly over a dialog). Skip links land on focusable targets.
+
+### Behind the scenes
+
+- The Arabic, English and French interface text moved into src/locales with no wording change. A locale inventory check now covers all AR/EN/FR copy catalogs.
+- A dependency boundary check and ADR-0011 guard the planned module split. ADRs 0001-0006 are Accepted. ADR-0010 (unified case archive) is Proposed: a pure archive builder and checker exist, but saving and restoring are not built and restore stays off because older app versions cannot be fully locked out.
+- CI keeps first-failure evidence, forbids test.only, documents one rerun and quarantine rule, and skips browser jobs on documentation-only changes. The GitHub Pages deploy was retired: Cloudflare Pages is the only production origin.
+- Release evidence records and a checker were added for the manual reviews. The Arabic and French review is machine-only; native-speaker, screen-reader and keyboard-only reviews are still pending.
+- The development branch is now called develop (it was ux0-preview).
+
 ## v2.1.0-alpha.57
 
 Changes since v2.1.0-alpha.46.
