@@ -28,6 +28,7 @@ for (const gate of [
   "test:version-authority",
   "test:gate0:kit",
   "test:qa",
+  "test:dependencies",
   "test:static",
   "test:platform",
   "test:platform:services",
